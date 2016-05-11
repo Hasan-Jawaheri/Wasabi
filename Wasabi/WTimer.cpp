@@ -11,6 +11,10 @@ void WInitializeTimers() {
 	//begin accurate timing system
 	timeBeginPeriod(1);
 }
+void WUnInitializeTimers() {
+	//end accurate timing system
+	timeEndPeriod(1);
+}
 
 W_TIMER_TYPE _GetCurrentTime(void) {
 	//calculate elapsed time

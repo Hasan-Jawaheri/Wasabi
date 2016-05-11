@@ -50,21 +50,74 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 #endif
 
 	Wasabi* app = WInitialize();
+	app->maxFPS = 60.0f;
 	app->core = core;
 
 	if (app->Setup()) {
-		while (!core->__EXIT) {
-			if (core->WindowComponent->Loop()) {
-				if (!app->Loop(1.0f / 60.0f /* PLACEHOLDER */))
+		WTimer tmr(W_TIMER_SECONDS);
+		WTimer fpsChangeTmr(W_TIMER_SECONDS);
+		fpsChangeTmr.Start();
+		UINT numFrames = 0;
+		float deltaTime = 0.0f;
+		while (!app->core->__EXIT) {
+			tmr.Reset();
+			tmr.Start();
+
+			if (!app->core->WindowComponent->Loop())
+				continue;
+
+			if (deltaTime) {
+				if (!app->Loop(deltaTime))
 					break;
-				// TODO: render
+				if (app->curState)
+					app->curState->Update(deltaTime);
+			}
+
+			// TODO: render
+			//while (app->core->Update(deltaTime) == HX_WINDOWMINIMIZED)
+			//	hx->core->Loop();
+
+			numFrames++;
+
+			deltaTime = app->FPS < 0.0001 ? 1.0f / 60.0f : 1.0f / app->FPS;
+
+			if (app->maxFPS > 0.001) {
+				float maxDeltaTime = 1.0f / app->maxFPS; // delta time at max FPS
+				if (deltaTime < maxDeltaTime) {
+					WTimer sleepTimer(W_TIMER_SECONDS);
+					sleepTimer.Start();
+					while (sleepTimer.GetElapsedTime() < (maxDeltaTime - deltaTime));
+					deltaTime = maxDeltaTime;
+				}
+			}
+
+			if (fpsChangeTmr.GetElapsedTime() >= 0.5f) //0.5 second passed -> update FPS
+			{
+				app->FPS = (float)numFrames * 2.0f;
+				numFrames = 0;
+				fpsChangeTmr.Reset();
 			}
 		}
+
+		app->Cleanup();
 	}
-	app->Cleanup();
+
 	core->WindowComponent->Cleanup();
 
 	W_SAFE_DELETE(core);
 
+	WUnInitializeTimers();
+
 	return 0;
 }
+
+void Wasabi::SwitchState(WGameState* state) {
+	if (curState) {
+		curState->Cleanup();
+		W_SAFE_DELETE(curState);
+	}
+	curState = state;
+	if (curState)
+		curState->Load();
+}
+
