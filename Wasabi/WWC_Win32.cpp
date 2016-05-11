@@ -294,7 +294,7 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 		//send messages to child windows
 		if (HIWORD(wParam) == 0)
 			if (coreInst->engineParams["windowMenu"] != nullptr && coreInst->engineParams["menuPorc"] != nullptr)
-				((void(*)(HMENU, DWORD))coreInst->engineParams["menuProc"])(GetMenu(hWnd), LOWORD(wParam));
+				((void(*)(HMENU, UINT))coreInst->engineParams["menuProc"])(GetMenu(hWnd), LOWORD(wParam));
 		break;
 	}
 	default: //default behavior for other messages

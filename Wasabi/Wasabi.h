@@ -3,13 +3,26 @@
 #include "WError.h"
 #include "WCore.h"
 
+class Wasabi {
+public:
+	WCore* core;
+	float FPS, maxFPS;
+	class  WGameState* curState;
+
+	virtual WError	Setup() = 0;
+	virtual bool	Loop(float fDeltaTime) = 0;
+	virtual void	Cleanup() = 0;
+
+	void SwitchState(class WGameState* state);
+};
+
 class WGameState {
 protected:
-	class Wasabi* const app;
+	Wasabi* const app;
 	WCore* const core;
 
 public:
-	WGameState(class  Wasabi* const a) : app(a), core(a->core) {}
+	WGameState(Wasabi* const a) : app(a), core(a->core) {}
 	~WGameState(void) {}
 
 	virtual void Load(void) {}
@@ -18,19 +31,6 @@ public:
 	virtual void OnKeyup(char c) {}
 	virtual void OnInput(char c) {}
 	virtual void Cleanup(void) {}
-};
-
-class Wasabi {
-public:
-	WCore* core;
-	float FPS, maxFPS;
-	WGameState* curState;
-
-	virtual WError	Setup() = 0;
-	virtual bool	Loop(float fDeltaTime) = 0;
-	virtual void	Cleanup() = 0;
-
-	void SwitchState(WGameState* state);
 };
 
 Wasabi* WInitialize();
