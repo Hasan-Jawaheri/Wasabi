@@ -48,5 +48,8 @@ enum W_ERROR {
 
 class WError {
 public:
+	W_ERROR m_error;
 	WError(W_ERROR err);
+
+	operator bool();
 };

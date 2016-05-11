@@ -6,9 +6,20 @@ desc.: Wasabi Engine core
 
 #pragma once
 
+#include "Common.h"
+#include "WWindowComponent.h"
+
 class WCore {
 public:
 	class WSoundComponent* SoundComponent;
+	class WWindowComponent* WindowComponent;
+	std::map<std::string, void*> engineParams;
+
 	WCore();
+	~WCore();
+
+	WError Init(int width, int height);
+
+	bool __EXIT; // when set to true, the engine will exit asap
 };
 
