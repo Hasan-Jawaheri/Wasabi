@@ -57,7 +57,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 			if (core->WindowComponent->Loop()) {
 				if (!app->Loop(1.0f / 60.0f /* PLACEHOLDER */))
 					break;
-				// render
+				// TODO: render
 			}
 		}
 	}
