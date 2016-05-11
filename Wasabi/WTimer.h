@@ -40,3 +40,4 @@ private:
 };
 
 void WInitializeTimers();
+void WUnInitializeTimers();

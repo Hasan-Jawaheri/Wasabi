@@ -9,6 +9,7 @@ WCore::WCore() {
 		{ "classIcon", (void*)(NULL) }, // HICON
 		{ "classCursor", (void*)(LoadCursorA(NULL, MAKEINTRESOURCEA(32512))) }, // HCURSOR
 		{ "menuName", (void*)(NULL) }, // LPCSTR
+		{ "menuProc", (void*)(NULL) }, // void (*) (HMENU, UINT)
 		{ "classIcon_sm", (void*)(NULL) }, // HICON
 		{ "windowMenu", (void*)(NULL) }, // HMENU
 		{ "windowParent", (void*)(NULL) }, // HWND
