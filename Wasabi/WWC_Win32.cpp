@@ -3,17 +3,15 @@
 LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);
 
 WWC_Win32::WWC_Win32(WCore* core) : WWindowComponent(core) {
-	m_isMinimized = true;
-}
-WError WWC_Win32::Initialize(int width, int height) {
 	m_mainWindow = nullptr;
 	m_hInstance = GetModuleHandleA(nullptr);
 	m_minWindowX = 640 / 4;
 	m_minWindowY = 480 / 4;
 	m_maxWindowX = 640 * 20;
 	m_maxWindowY = 480 * 20;
-	m_isMinimized = false;
-
+	m_isMinimized = true;
+}
+WError WWC_Win32::Initialize(int width, int height) {
 	//do not initialize if the window is already there
 	if (m_mainWindow) {
 		//build window rect from client rect (client rect = directx rendering rect)
@@ -84,12 +82,12 @@ WError WWC_Win32::Initialize(int width, int height) {
 
 	GetWindowRect(m_mainWindow, &rc);
 	if (!m_mainWindow) //error creating the window
-	{
 		return WError(W_WINDOWNOTCREATED);
-	}
 
 	//give the main window's procedure an instance of the core
 	SetWindowLongA(m_mainWindow, GWL_USERDATA, (LONG)(void*)m_core);
+
+	m_isMinimized = false;
 
 	return WError(W_SUCCEEDED);
 }
