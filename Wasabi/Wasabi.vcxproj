@@ -162,12 +162,16 @@
     <ClCompile Include="WOrientation.cpp" />
     <ClCompile Include="WSound.cpp" />
     <ClCompile Include="WTimer.cpp" />
+    <ClCompile Include="WWC_Win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
+    <ClInclude Include="Wasabi.h" />
     <ClInclude Include="WBase.h" />
     <ClInclude Include="WCore.h" />
     <ClInclude Include="WError.h" />
+    <ClInclude Include="WWC_Win32.h" />
+    <ClInclude Include="WWindowComponent.h" />
     <ClInclude Include="WManager.h" />
     <ClInclude Include="WMath.h" />
     <ClInclude Include="WOrientation.h" />

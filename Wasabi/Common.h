@@ -11,6 +11,7 @@ desc.: Wasabi Engine common include
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <map>
 
 using namespace std;
 using std::ios;
