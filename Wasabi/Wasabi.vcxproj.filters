@@ -42,6 +42,9 @@
     <ClCompile Include="WWC_Win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WIC_Win32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h">
@@ -78,6 +81,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Wasabi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WInputComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WIC_Win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

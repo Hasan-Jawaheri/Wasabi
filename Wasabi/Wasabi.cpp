@@ -6,8 +6,10 @@
 
 #ifdef _WIN32
 #include "WWC_Win32.h"
+#include "WIC_Win32.h"
 #elif defined(__linux__)
 #include "WWC_Linux.h"
+#include "WIC_Linux.h"
 #endif
 
 /****************************************************************/
@@ -40,18 +42,22 @@ Wasabi* WInitialize() {
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow) {
 	WInitializeTimers();
 
+	Wasabi* app = WInitialize();
+	app->maxFPS = 60.0f;
+
 	WCore* core = new WCore();
+	app->core = core;
+	core->app = app;
+
 	core->SoundComponent = new WSoundComponent();
 
 #ifdef _WIN32
 	core->WindowComponent = new WWC_Win32(core);
+	core->InputComponent = new WIC_Win32(core);
 #elif defined(__linux__)
 	core->WindowComponent = new WWC_Linux(core);
+	core->InputComponent = new WIC_Linux(core);
 #endif
-
-	Wasabi* app = WInitialize();
-	app->maxFPS = 60.0f;
-	app->core = core;
 
 	if (app->Setup()) {
 		WTimer tmr(W_TIMER_SECONDS);

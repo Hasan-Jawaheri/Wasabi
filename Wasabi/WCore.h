@@ -11,8 +11,10 @@ desc.: Wasabi Engine core
 
 class WCore {
 public:
+	class Wasabi* app;
 	class WSoundComponent* SoundComponent;
 	class WWindowComponent* WindowComponent;
+	class WInputComponent* InputComponent;
 	std::map<std::string, void*> engineParams;
 
 	WCore();
@@ -23,3 +25,4 @@ public:
 	bool __EXIT; // when set to true, the engine will exit asap
 };
 
+#include "Wasabi.h"

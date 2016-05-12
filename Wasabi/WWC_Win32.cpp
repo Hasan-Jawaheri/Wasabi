@@ -1,4 +1,7 @@
+#ifdef _WIN32
+
 #include "WWC_Win32.h"
+#include "WIC_Win32.h"
 
 LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);
 
@@ -92,6 +95,20 @@ WError WWC_Win32::Initialize(int width, int height) {
 	return WError(W_SUCCEEDED);
 }
 bool WWC_Win32::Loop() {
+	MSG msg;
+	while (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) //find messages
+	{
+		//process the message
+		TranslateMessage(&msg);
+		DispatchMessageA(&msg);
+
+		//if a quit message is received, quit
+		if (msg.message == WM_QUIT || msg.message == WM_CLOSE || msg.message == WM_DESTROY) {
+			//exit
+			m_core->__EXIT = true;
+			return false;
+		}
+	}
 	return !m_isMinimized;
 }
 void WWC_Win32::Cleanup() {
@@ -218,23 +235,23 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 		coreInst->__EXIT = true;
 		break;
 
-	/*case WM_KEYDOWN:
+	case WM_KEYDOWN:
 		//ESCAPE KEY will close the application if m_escapeE is true
-		if (wParam == VK_ESCAPE && coreInst->InputDevice->__Impl__->_escapeE)
-			coreInst->__Impl__->EXIT = true;
-		coreInst->InputDevice->InsertRawInput(wParam, true);
-		if (coreInst->__Impl__->HX11->curState)
-			coreInst->__Impl__->HX11->curState->OnKeydown(wParam);
+		if (wParam == VK_ESCAPE && ((WIC_Win32*)coreInst->InputComponent)->m_escapeE)
+			coreInst->__EXIT = true;
+		coreInst->InputComponent->InsertRawInput(wParam, true);
+		if (coreInst->app->curState)
+			coreInst->app->curState->OnKeydown(wParam);
 		break;
 	case WM_KEYUP:
-		coreInst->InputDevice->InsertRawInput(wParam, false);
-		if (coreInst->__Impl__->HX11->curState)
-			coreInst->__Impl__->HX11->curState->OnKeyup(wParam);
+		coreInst->InputComponent->InsertRawInput(wParam, false);
+		if (coreInst->app->curState)
+			coreInst->app->curState->OnKeyup(wParam);
 		break;
 	case WM_CHAR:
-		if (coreInst->__Impl__->HX11->curState)
-			coreInst->__Impl__->HX11->curState->OnInput(wParam);
-		break;*/
+		if (coreInst->app->curState)
+			coreInst->app->curState->OnInput(wParam);
+		break;
 	case WM_GETMINMAXINFO:
 		//set the min/max window size
 		((MINMAXINFO*)lParam)->ptMinTrackSize.x = ((WWC_Win32*)coreInst->WindowComponent)->m_minWindowX;
@@ -259,36 +276,36 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	//mouse input update
-	/*case WM_LBUTTONDOWN:
-		coreInst->InputDevice->__Impl__->_leftClick = true;
+	case WM_LBUTTONDOWN:
+		((WIC_Win32*)coreInst->InputComponent)->m_leftClick = true;
 		break;
 	case WM_LBUTTONUP:
-		coreInst->InputDevice->__Impl__->_leftClick = false;
+		((WIC_Win32*)coreInst->InputComponent)->m_leftClick = false;
 		break;
 	case WM_RBUTTONDOWN:
-		coreInst->InputDevice->__Impl__->_rightClick = true;
+		((WIC_Win32*)coreInst->InputComponent)->m_rightClick = true;
 		break;
 	case WM_RBUTTONUP:
-		coreInst->InputDevice->__Impl__->_rightClick = false;
+		((WIC_Win32*)coreInst->InputComponent)->m_rightClick = false;
 		break;
 	case WM_MBUTTONDOWN:
-		coreInst->InputDevice->__Impl__->_middleClick = true;
+		((WIC_Win32*)coreInst->InputComponent)->m_middleClick = true;
 		break;
 	case WM_MBUTTONUP:
-		coreInst->InputDevice->__Impl__->_middleClick = false;
+		((WIC_Win32*)coreInst->InputComponent)->m_middleClick = false;
 		break;
 	case WM_MOUSEMOVE:
-		coreInst->InputDevice->__Impl__->_mouseX = LOWORD(lParam);
-		coreInst->InputDevice->__Impl__->_mouseY = HIWORD(lParam);
+		((WIC_Win32*)coreInst->InputComponent)->m_mouseX = LOWORD(lParam);
+		((WIC_Win32*)coreInst->InputComponent)->m_mouseY = HIWORD(lParam);
 		break;
 	case WM_MOUSEWHEEL:
 	{
 		if (HIWORD(wParam) == 120)
-			coreInst->InputDevice->__Impl__->_mouseZ++;
+			((WIC_Win32*)coreInst->InputComponent)->m_mouseZ++;
 		else
-			coreInst->InputDevice->__Impl__->_mouseZ--;
+			((WIC_Win32*)coreInst->InputComponent)->m_mouseZ--;
 		break;
-	}*/
+	}
 	case WM_COMMAND:
 	{
 		//send messages to child windows
@@ -303,3 +320,5 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 
 	return result;
 }
+
+#endif
