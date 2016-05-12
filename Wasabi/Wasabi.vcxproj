@@ -158,6 +158,7 @@
     <ClCompile Include="WBase.cpp" />
     <ClCompile Include="WCore.cpp" />
     <ClCompile Include="WError.cpp" />
+    <ClCompile Include="WIC_Win32.cpp" />
     <ClCompile Include="WMath.cpp" />
     <ClCompile Include="WOrientation.cpp" />
     <ClCompile Include="WSound.cpp" />
@@ -170,6 +171,8 @@
     <ClInclude Include="WBase.h" />
     <ClInclude Include="WCore.h" />
     <ClInclude Include="WError.h" />
+    <ClInclude Include="WIC_Win32.h" />
+    <ClInclude Include="WInputComponent.h" />
     <ClInclude Include="WWC_Win32.h" />
     <ClInclude Include="WWindowComponent.h" />
     <ClInclude Include="WManager.h" />
