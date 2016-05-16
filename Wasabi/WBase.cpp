@@ -4,11 +4,11 @@
 /********************************************************************************
 ***********************************WBase class**********************************
 ********************************************************************************/
-WBase::WBase(WCore* const core) {
+WBase::WBase(Wasabi* const app) {
 	//default values
 	m_ID = 0;
 	m_name = "";
-	m_core = core;
+	m_app = app;
 	m_iDbgChanges = 0;
 	m_mgr = nullptr;
 	m_refCount = 1;
@@ -37,9 +37,9 @@ void WBase::SetID(uint newID) {
 uint WBase::GetID() const {
 	return m_ID;
 }
-WCore* WBase::GetCorePtr() const {
+Wasabi* WBase::GetAppPtr() const {
 	//get a pointer to the main core of the object
-	return m_core;
+	return m_app;
 }
 void WBase::SetName(std::string name) {
 	if (m_iDbgChanges > 1)

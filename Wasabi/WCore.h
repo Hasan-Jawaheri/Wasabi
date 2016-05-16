@@ -6,6 +6,8 @@ desc.: Wasabi Engine core
 
 #pragma once
 
+#include <vulkan\vulkan.h>
+#pragma comment (lib, "vulkan-1.lib")
 #include "Common.h"
 #include "WWindowComponent.h"
 
@@ -23,6 +25,9 @@ public:
 	WError Init(int width, int height);
 
 	bool __EXIT; // when set to true, the engine will exit asap
+
+private:
+	VkInstance vkInstance;
 };
 
 #include "Wasabi.h"

@@ -6,8 +6,7 @@ desc.: Wasabi Engine OpenAL wrapper
 
 #pragma once
 
-#include "Common.h"
-#include "WCore.h"
+#include "Wasabi.h"
 #include "WBase.h"
 #include "WMath.h"
 #include "WOrientation.h"
@@ -21,7 +20,6 @@ desc.: Wasabi Engine OpenAL wrapper
 
 //forward declaration
 class WSound;
-class WCore;
 class WBase;
 
 class WSoundComponent {
@@ -66,7 +64,7 @@ Sound class
 *********************************************************************/
 class WSound : public WBase {
 public:
-	WSound(WCore* const core, uint ID = 0);
+	WSound(Wasabi* const app, uint ID = 0);
 	~WSound();
 
 	std::string GetTypeName() const;
