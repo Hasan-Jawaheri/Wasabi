@@ -2,7 +2,7 @@
 #include "WWC_Win32.h"
 #include <windows.h>
 
-WIC_Win32::WIC_Win32(WCore* const core) : WInputComponent(core) {
+WIC_Win32::WIC_Win32(Wasabi* const app) : WInputComponent(app) {
 	m_rightClick = m_leftClick = m_middleClick = false;
 	m_mouseX = m_mouseY = m_mouseZ = 0;
 	m_escapeE = true;
@@ -25,16 +25,16 @@ int WIC_Win32::WIC_Win32::MouseX(W_MOUSEPOSTYPE posT, UINT vpID) const {
 	//get mouse position and convert it to the desired type
 	RECT rc;
 	POINT pt, __pt;
-	GetWindowRect(((WWC_Win32*)m_core->WindowComponent)->GetWindow(), &rc);
+	GetWindowRect(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &rc);
 	GetCursorPos(&__pt);
 	GetCursorPos(&pt);
-	ScreenToClient(((WWC_Win32*)m_core->WindowComponent)->GetWindow(), &pt);
+	ScreenToClient(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &pt);
 
 	if (posT == MOUSEPOS_WINDOW)
 		return pt.x; //default, window position
 	/*else if (posT == MOUSEPOS_VIEWPORT) {
 		//convert the mouse position to viewport space
-		pt.x -= ((WWC_Win32*)m_core->WindowComponent)->GetViewportHandle(vpID)->vp.TopLeftX;
+		pt.x -= ((WWC_Win32*)m_app->WindowComponent)->GetViewportHandle(vpID)->vp.TopLeftX;
 
 		return pt.x;
 	}*/
@@ -49,16 +49,16 @@ int WIC_Win32::MouseY(W_MOUSEPOSTYPE posT, UINT vpID) const {
 	//get mouse position and convert it to the desired type
 	RECT rc;
 	POINT pt, __pt;
-	GetWindowRect(((WWC_Win32*)m_core->WindowComponent)->GetWindow(), &rc);
+	GetWindowRect(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &rc);
 	GetCursorPos(&__pt);
 	GetCursorPos(&pt);
-	ScreenToClient(((WWC_Win32*)m_core->WindowComponent)->GetWindow(), &pt);
+	ScreenToClient(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &pt);
 
 	if (posT == MOUSEPOS_WINDOW)
 		return pt.y; //default, window position
 	/*else if (posT == MOUSEPOS_VIEWPORT) {
 		//convert the mouse position to viewport space
-		pt.y -= m((WWC_Win32*)m_core->WindowComponent)->GetViewportHandle(vpID)->vp.TopLeftY;
+		pt.y -= m((WWC_Win32*)m_app->WindowComponent)->GetViewportHandle(vpID)->vp.TopLeftY;
 
 		return pt.y;
 	}*/
@@ -79,8 +79,8 @@ bool WIC_Win32::MouseInScreen(W_MOUSEPOSTYPE posT, UINT vpID) const {
 		POINT pt;
 		GetCursorPos(&pt);
 		RECT rc;
-		GetWindowRect(((WWC_Win32*)m_core->WindowComponent)->GetWindow(), &rc);
-		DWORD style = GetWindowLong(((WWC_Win32*)m_core->WindowComponent)->GetWindow(), GWL_STYLE);
+		GetWindowRect(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &rc);
+		DWORD style = GetWindowLong(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), GWL_STYLE);
 		rc.left += (style & WS_BORDER ? 10 : 0);
 		rc.top += (style & WS_CAPTION ? 30 : 0);
 		rc.right -= (style & WS_BORDER ? 10 : 0);
@@ -97,15 +97,15 @@ bool WIC_Win32::MouseInScreen(W_MOUSEPOSTYPE posT, UINT vpID) const {
 		POINT pt;
 		GetCursorPos(&pt);
 		RECT rc;
-		GetWindowRect(((WWC_Win32*)m_core->WindowComponent)->GetWindow(), &rc);
-		DWORD style = GetWindowLong(((WWC_Win32*)m_core->WindowComponent)->GetWindow(), GWL_STYLE);
+		GetWindowRect(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &rc);
+		DWORD style = GetWindowLong(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), GWL_STYLE);
 		rc.left += (style & WS_BORDER ? 10 : 0);
 		rc.top += (style & WS_CAPTION ? 30 : 0);
-		rc.top += (GetMenu(((WWC_Win32*)m_core->WindowComponent)->GetWindow()) == NULL ? 0 : 20);
+		rc.top += (GetMenu(((WWC_Win32*)m_app->WindowComponent)->GetWindow()) == NULL ? 0 : 20);
 		rc.right -= (style & WS_BORDER ? 10 : 0);
 		rc.bottom -= (style & WS_BORDER ? 10 : 0);
 
-		_hxViewport* vp = m((WWC_Win32*)m_core->WindowComponent)->GetViewportHandle(vpID);
+		_hxViewport* vp = m((WWC_Win32*)m_app->WindowComponent)->GetViewportHandle(vpID);
 		//compare to viewport coordianates
 		if (pt.x > vp->vp.TopLeftX + rc.left &&
 			pt.x < vp->vp.TopLeftX + vp->vp.Width + rc.left &&
@@ -121,7 +121,7 @@ void WIC_Win32::SetMousePosition(UINT x, UINT y) {
 	pos.x = x;
 	pos.y = y;
 	//convert to screen space
-	ClientToScreen(((WWC_Win32*)m_core->WindowComponent)->GetWindow(), &pos);
+	ClientToScreen(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &pos);
 	SetCursorPos(pos.x, pos.y);
 	m_mouseX = pos.x;
 	m_mouseY = pos.y;

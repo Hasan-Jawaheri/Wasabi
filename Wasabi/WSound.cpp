@@ -138,7 +138,7 @@ void WSoundComponent::m_UnRegisterSound(WBase* base) {
 }
 
 
-WSound::WSound(WCore* const core, uint ID) : WBase(core) {
+WSound::WSound(Wasabi* const app, uint ID) : WBase(app) {
 	m_valid = false;
 	m_numBuffers = W_NUM_SOUND_BUFFERS_PER_SOUND;
 	m_buffers = new ALuint[m_numBuffers];
@@ -161,7 +161,7 @@ WSound::WSound(WCore* const core, uint ID) : WBase(core) {
 	sprintf_s(name, 256, "Sound%3u", i++);
 	SetName(name);
 
-	GetCorePtr()->SoundComponent->m_RegisterSound(this);
+	GetAppPtr()->SoundComponent->m_RegisterSound(this);
 }
 WSound::~WSound(void) {
 	alDeleteBuffers(m_numBuffers, m_buffers);
@@ -177,7 +177,7 @@ WSound::~WSound(void) {
 	m_valid = false;
 
 	//unregister
-	GetCorePtr()->SoundComponent->m_UnRegisterSound(this);
+	GetAppPtr()->SoundComponent->m_UnRegisterSound(this);
 }
 std::string WSound::GetTypeName(void) const {
 	return "Sound";

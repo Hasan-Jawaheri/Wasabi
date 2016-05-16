@@ -6,7 +6,7 @@ desc.: Wasabi Engine timers helper library.
 
 #pragma once
 
-#include "Common.h"
+#include "Wasabi.h"
 
 #define W_TIMER_TYPE			float
 #define W_TIMER_SECONDS			1

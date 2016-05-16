@@ -6,8 +6,7 @@ desc.: Wasabi Engine entity manager
 
 #pragma once
 
-#include "Common.h"
-#include "WCore.h"
+#include "Wasabi.h"
 
 #define W_HASHTABLESIZE 512
 #define W_HASH(id) id == 0 ? 0 : max ( id % W_HASHTABLESIZE, 1 )
@@ -24,8 +23,8 @@ protected:
 	virtual std::string GetTypeName(void) const = 0;
 
 public:
-	WCore* const core;
-	WManager(WCore* const _core) : core(_core) { __bDbgDestructing = false; }
+	Wasabi* const app;
+	WManager(Wasabi* const _app) : app(_app) { __bDbgDestructing = false; }
 	~WManager(void) {
 		__bDbgDestructing = true;
 		for (uint j = 0; j < W_HASHTABLESIZE; j++)

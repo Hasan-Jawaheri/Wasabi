@@ -1,11 +1,10 @@
 #ifdef _WIN32
 
 #include "WWC_Win32.h"
-#include "WIC_Win32.h"
 
 LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);
 
-WWC_Win32::WWC_Win32(WCore* core) : WWindowComponent(core) {
+WWC_Win32::WWC_Win32(Wasabi* app) : WWindowComponent(app) {
 	m_mainWindow = nullptr;
 	m_hInstance = GetModuleHandleA(nullptr);
 	m_minWindowX = 640 / 4;
@@ -23,9 +22,9 @@ WError WWC_Win32::Initialize(int width, int height) {
 		rc.top = 0;
 		rc.right = width;
 		rc.bottom = height;
-		AdjustWindowRectEx(&rc, (DWORD)m_core->engineParams["windowStyle"],
-			(m_core->engineParams["windowMenu"] == nullptr) ? FALSE : TRUE,
-			(DWORD)m_core->engineParams["windowStyleEx"]);
+		AdjustWindowRectEx(&rc, (DWORD)m_app->engineParams["windowStyle"],
+			(m_app->engineParams["windowMenu"] == nullptr) ? FALSE : TRUE,
+			(DWORD)m_app->engineParams["windowStyleEx"]);
 
 		//adjust window position (no window re-creation)
 		SetWindowPos(m_mainWindow, nullptr, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE);
@@ -37,17 +36,17 @@ WError WWC_Win32::Initialize(int width, int height) {
 	WNDCLASSEXA wcex;
 
 	wcex.cbSize = sizeof WNDCLASSEXA;
-	wcex.style = (DWORD)m_core->engineParams["classStyle"];
+	wcex.style = (DWORD)m_app->engineParams["classStyle"];
 	wcex.lpfnWndProc = hMainWndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = m_hInstance;
-	wcex.hIcon = (HICON)m_core->engineParams["classIcon"];
-	wcex.hCursor = (HCURSOR)m_core->engineParams["classCursor"];
+	wcex.hIcon = (HICON)m_app->engineParams["classIcon"];
+	wcex.hCursor = (HCURSOR)m_app->engineParams["classCursor"];
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = (LPCSTR)m_core->engineParams["menuName"];
+	wcex.lpszMenuName = (LPCSTR)m_app->engineParams["menuName"];
 	wcex.lpszClassName = "WWndClasse";
-	wcex.hIconSm = (HICON)m_core->engineParams["classIcon_sm"];
+	wcex.hIconSm = (HICON)m_app->engineParams["classIcon_sm"];
 
 	//keep trying to register the class until a valid name exist (for multiple cores)
 	if (!RegisterClassExA(&wcex))
@@ -59,36 +58,36 @@ WError WWC_Win32::Initialize(int width, int height) {
 	rc.top = 0;
 	rc.right = width;
 	rc.bottom = height;
-	AdjustWindowRectEx(&rc, (DWORD)m_core->engineParams["windowStyle"],
-		(m_core->engineParams["windowMenu"] == nullptr) ? FALSE : TRUE,
-		(DWORD)m_core->engineParams["windowStyleEx"]);
+	AdjustWindowRectEx(&rc, (DWORD)m_app->engineParams["windowStyle"],
+		(m_app->engineParams["windowMenu"] == nullptr) ? FALSE : TRUE,
+		(DWORD)m_app->engineParams["windowStyleEx"]);
 
 	//set to default positions if specified
 	int x, y;
-	if ((int)m_core->engineParams["defWndX"] == -1 && (int)m_core->engineParams["defWndY"] == -1) {
+	if ((int)m_app->engineParams["defWndX"] == -1 && (int)m_app->engineParams["defWndY"] == -1) {
 		x = (GetSystemMetrics(SM_CXSCREEN) / 2) - ((rc.right - rc.left) / 2);
 		y = (GetSystemMetrics(SM_CYSCREEN) / 2) - ((rc.bottom - rc.top) / 2);
 	}
 	else {
-		x = (int)m_core->engineParams["defWndX"];
-		y = (int)m_core->engineParams["defWndY"];
+		x = (int)m_app->engineParams["defWndX"];
+		y = (int)m_app->engineParams["defWndY"];
 	}
 
 	//
 	//Create the main window
 	//
-	m_mainWindow = CreateWindowExA((DWORD)m_core->engineParams["windowStyleEx"], wcex.lpszClassName,
-		(LPCSTR)m_core->engineParams["appName"],
-		(DWORD)m_core->engineParams["windowStyle"],
+	m_mainWindow = CreateWindowExA((DWORD)m_app->engineParams["windowStyleEx"], wcex.lpszClassName,
+		(LPCSTR)m_app->engineParams["appName"],
+		(DWORD)m_app->engineParams["windowStyle"],
 		x, y, rc.right - rc.left, rc.bottom - rc.top,
-		(HWND)m_core->engineParams["windowParent"], (HMENU)m_core->engineParams["windowMenu"], m_hInstance, nullptr);
+		(HWND)m_app->engineParams["windowParent"], (HMENU)m_app->engineParams["windowMenu"], m_hInstance, nullptr);
 
 	GetWindowRect(m_mainWindow, &rc);
 	if (!m_mainWindow) //error creating the window
 		return WError(W_WINDOWNOTCREATED);
 
 	//give the main window's procedure an instance of the core
-	SetWindowLongA(m_mainWindow, GWL_USERDATA, (LONG)(void*)m_core);
+	SetWindowLongA(m_mainWindow, GWL_USERDATA, (LONG)(void*)m_app);
 
 	m_isMinimized = false;
 
@@ -105,7 +104,7 @@ bool WWC_Win32::Loop() {
 		//if a quit message is received, quit
 		if (msg.message == WM_QUIT || msg.message == WM_CLOSE || msg.message == WM_DESTROY) {
 			//exit
-			m_core->__EXIT = true;
+			m_app->__EXIT = true;
 			return false;
 		}
 	}
@@ -139,7 +138,7 @@ void WWC_Win32::SetWindowSize(int width, int height) {
 
 	//re-initialize the core to fit the new size
 	// TODO: resize engine
-	//m_core->Init(rc.right, rc.bottom, m_core->IsVSyncEnabled());
+	//m_app->Init(rc.right, rc.bottom, m_app->IsVSyncEnabled());
 }
 void WWC_Win32::MaximizeWindow(void) {
 	//show window as maximized
@@ -190,12 +189,12 @@ HINSTANCE WWC_Win32::GetInstance(void) const {
 void WWC_Win32::SetFullScreenState(bool bFullScreen) {
 	//set the fullscreen state of the window
 	// TODO: implement this
-	//m_core->GetSwapChain()->SetFullscreenState(bFullScreen, nullptr);
+	//m_app->GetSwapChain()->SetFullscreenState(bFullScreen, nullptr);
 }
 bool WWC_Win32::GetFullScreenState(void) const {
 	BOOL bf = false;
 	// TODO: implement this
-	//m_core->GetSwapChain()->GetFullscreenState(&bf, nullptr);
+	//m_app->GetSwapChain()->GetFullscreenState(&bf, nullptr);
 	return (bool)bf;
 }
 void WWC_Win32::SetWindowMinimumSize(int minX, int minY) {
@@ -210,10 +209,10 @@ void WWC_Win32::SetWindowMaximumSize(int maxX, int maxY) {
 //window procedure
 LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam) {
 	//get an inctance of the core
-	WCore* coreInst = (WCore*)GetWindowLong(hWnd, GWL_USERDATA);
+	Wasabi* appInst = (Wasabi*)GetWindowLong(hWnd, GWL_USERDATA);
 
 	//return default behavior if the instance is not set yet
-	if (!coreInst) {
+	if (!appInst) {
 		if (msg == WM_GETMINMAXINFO) {
 			//set the min/max window size
 			((MINMAXINFO*)lParam)->ptMinTrackSize.x = 10;
@@ -232,86 +231,86 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 	case WM_QUIT:
 	case WM_DESTROY:
-		coreInst->__EXIT = true;
+		appInst->__EXIT = true;
 		break;
 
 	case WM_KEYDOWN:
 		//ESCAPE KEY will close the application if m_escapeE is true
-		if (wParam == VK_ESCAPE && ((WIC_Win32*)coreInst->InputComponent)->m_escapeE)
-			coreInst->__EXIT = true;
-		coreInst->InputComponent->InsertRawInput(wParam, true);
-		if (coreInst->app->curState)
-			coreInst->app->curState->OnKeydown(wParam);
+		if (wParam == VK_ESCAPE && ((WIC_Win32*)appInst->InputComponent)->m_escapeE)
+			appInst->__EXIT = true;
+		appInst->InputComponent->InsertRawInput(wParam, true);
+		if (appInst->curState)
+			appInst->curState->OnKeydown(wParam);
 		break;
 	case WM_KEYUP:
-		coreInst->InputComponent->InsertRawInput(wParam, false);
-		if (coreInst->app->curState)
-			coreInst->app->curState->OnKeyup(wParam);
+		appInst->InputComponent->InsertRawInput(wParam, false);
+		if (appInst->curState)
+			appInst->curState->OnKeyup(wParam);
 		break;
 	case WM_CHAR:
-		if (coreInst->app->curState)
-			coreInst->app->curState->OnInput(wParam);
+		if (appInst->curState)
+			appInst->curState->OnInput(wParam);
 		break;
 	case WM_GETMINMAXINFO:
 		//set the min/max window size
-		((MINMAXINFO*)lParam)->ptMinTrackSize.x = ((WWC_Win32*)coreInst->WindowComponent)->m_minWindowX;
-		((MINMAXINFO*)lParam)->ptMinTrackSize.y = ((WWC_Win32*)coreInst->WindowComponent)->m_minWindowY;
-		((MINMAXINFO*)lParam)->ptMaxTrackSize.x = ((WWC_Win32*)coreInst->WindowComponent)->m_maxWindowX;
-		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = ((WWC_Win32*)coreInst->WindowComponent)->m_maxWindowY;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.x = ((WWC_Win32*)appInst->WindowComponent)->m_minWindowX;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.y = ((WWC_Win32*)appInst->WindowComponent)->m_minWindowY;
+		((MINMAXINFO*)lParam)->ptMaxTrackSize.x = ((WWC_Win32*)appInst->WindowComponent)->m_maxWindowX;
+		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = ((WWC_Win32*)appInst->WindowComponent)->m_maxWindowY;
 		break;
 	case WM_SIZE:
 	{
 		//flag the core as minimized to prevent rendering
 		if (wParam == SIZE_MINIMIZED)
-			((WWC_Win32*)coreInst->WindowComponent)->m_isMinimized = true;
+			((WWC_Win32*)appInst->WindowComponent)->m_isMinimized = true;
 		if (true /* TODO: block resizing while resizing */) {
-			((WWC_Win32*)coreInst->WindowComponent)->m_isMinimized = false; //flag core as not minimized to allow rendering
+			((WWC_Win32*)appInst->WindowComponent)->m_isMinimized = false; //flag core as not minimized to allow rendering
 			RECT rc;
 			GetClientRect(hWnd, &rc); //get window client dimensions
 
 										//re-initialize the core to fit the new size
-			if (!coreInst->Init(rc.right - rc.left, rc.bottom - rc.top))
+			if (!appInst->Resize(rc.right - rc.left, rc.bottom - rc.top))
 				return TRUE;
 		}
 		break;
 	}
 	//mouse input update
 	case WM_LBUTTONDOWN:
-		((WIC_Win32*)coreInst->InputComponent)->m_leftClick = true;
+		((WIC_Win32*)appInst->InputComponent)->m_leftClick = true;
 		break;
 	case WM_LBUTTONUP:
-		((WIC_Win32*)coreInst->InputComponent)->m_leftClick = false;
+		((WIC_Win32*)appInst->InputComponent)->m_leftClick = false;
 		break;
 	case WM_RBUTTONDOWN:
-		((WIC_Win32*)coreInst->InputComponent)->m_rightClick = true;
+		((WIC_Win32*)appInst->InputComponent)->m_rightClick = true;
 		break;
 	case WM_RBUTTONUP:
-		((WIC_Win32*)coreInst->InputComponent)->m_rightClick = false;
+		((WIC_Win32*)appInst->InputComponent)->m_rightClick = false;
 		break;
 	case WM_MBUTTONDOWN:
-		((WIC_Win32*)coreInst->InputComponent)->m_middleClick = true;
+		((WIC_Win32*)appInst->InputComponent)->m_middleClick = true;
 		break;
 	case WM_MBUTTONUP:
-		((WIC_Win32*)coreInst->InputComponent)->m_middleClick = false;
+		((WIC_Win32*)appInst->InputComponent)->m_middleClick = false;
 		break;
 	case WM_MOUSEMOVE:
-		((WIC_Win32*)coreInst->InputComponent)->m_mouseX = LOWORD(lParam);
-		((WIC_Win32*)coreInst->InputComponent)->m_mouseY = HIWORD(lParam);
+		((WIC_Win32*)appInst->InputComponent)->m_mouseX = LOWORD(lParam);
+		((WIC_Win32*)appInst->InputComponent)->m_mouseY = HIWORD(lParam);
 		break;
 	case WM_MOUSEWHEEL:
 	{
 		if (HIWORD(wParam) == 120)
-			((WIC_Win32*)coreInst->InputComponent)->m_mouseZ++;
+			((WIC_Win32*)appInst->InputComponent)->m_mouseZ++;
 		else
-			((WIC_Win32*)coreInst->InputComponent)->m_mouseZ--;
+			((WIC_Win32*)appInst->InputComponent)->m_mouseZ--;
 		break;
 	}
 	case WM_COMMAND:
 	{
 		//send messages to child windows
 		if (HIWORD(wParam) == 0)
-			if (coreInst->engineParams["windowMenu"] != nullptr && coreInst->engineParams["menuPorc"] != nullptr)
-				((void(*)(HMENU, UINT))coreInst->engineParams["menuProc"])(GetMenu(hWnd), LOWORD(wParam));
+			if (appInst->engineParams["windowMenu"] != nullptr && appInst->engineParams["menuPorc"] != nullptr)
+				((void(*)(HMENU, UINT))appInst->engineParams["menuProc"])(GetMenu(hWnd), LOWORD(wParam));
 		break;
 	}
 	default: //default behavior for other messages

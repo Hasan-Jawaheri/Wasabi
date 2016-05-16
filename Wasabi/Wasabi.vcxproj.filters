@@ -36,9 +36,6 @@
     <ClCompile Include="WError.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WCore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WWC_Win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -47,13 +44,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WManager.h">

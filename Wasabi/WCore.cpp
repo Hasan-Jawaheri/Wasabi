@@ -30,5 +30,34 @@ WError WCore::Init(int width, int height) {
 	if (!err)
 		return err;
 
-	return err;
+	/* Create Vulkan instance */
+	VkApplicationInfo appInfo = {};
+	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	appInfo.pApplicationName = (const char*)engineParams["appName"];
+	appInfo.pEngineName = "Wasabi";
+	appInfo.apiVersion = VK_API_VERSION_1_0;
+
+	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+
+	// Enable surface extensions depending on os
+#if defined(_WIN32)
+	enabledExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#elif defined(__linux__)
+	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+#endif
+
+	VkInstanceCreateInfo instanceCreateInfo = {};
+	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	instanceCreateInfo.pNext = NULL;
+	instanceCreateInfo.pApplicationInfo = &appInfo;
+	if (enabledExtensions.size() > 0) {
+		instanceCreateInfo.enabledExtensionCount = (uint32_t)enabledExtensions.size();
+		instanceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
+	}
+
+	VkResult r = vkCreateInstance(&instanceCreateInfo, nullptr, &vkInstance);
+	if (r != VK_SUCCESS)
+		return WError(W_FAILEDTOCREATEINSTANCE);
+
+	return WError(W_SUCCEEDED);
 }
