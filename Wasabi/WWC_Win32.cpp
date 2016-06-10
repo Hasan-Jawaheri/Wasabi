@@ -186,6 +186,12 @@ HINSTANCE WWC_Win32::GetInstance(void) const {
 	//return the instance
 	return m_hInstance;
 }
+void* WWC_Win32::GetPlatformHandle() const {
+	return (void*)m_hInstance;
+}
+void* WWC_Win32::GetWindowHandle() const {
+	return (void*)m_mainWindow;
+}
 void WWC_Win32::SetFullScreenState(bool bFullScreen) {
 	//set the fullscreen state of the window
 	// TODO: implement this

@@ -9,22 +9,22 @@ desc.: Wasabi Engine entity base class
 #include "Wasabi.h"
 
 class WBase {
-	virtual std::string GetTypeName() const = 0;
-
 public:
 	WBase(Wasabi* const app);
 	virtual ~WBase();
 
-	void				SetID(uint newID);
-	uint				GetID() const;
-	Wasabi*				GetAppPtr() const;
-	void				SetName(std::string name);
-	std::string			GetName() const;
-	void				AddReference();
-	void				RemoveReference();
-	virtual bool		Valid() const = 0;
+	virtual std::string GetTypeName() const = 0;
 
-	void				SetManager(void* mgr);
+	void			SetID(uint newID);
+	uint			GetID() const;
+	Wasabi*			GetAppPtr() const;
+	void			SetName(std::string name);
+	std::string		GetName() const;
+	void			AddReference();
+	void			RemoveReference();
+	virtual bool	Valid() const = 0;
+
+	void			SetManager(void* mgr);
 
 private:
 	int				m_refCount;

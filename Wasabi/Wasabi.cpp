@@ -261,24 +261,29 @@ WError Wasabi::StartEngine(int width, int height) {
 		return WError(W_UNABLETOCREATEDEVICE);
 	}
 
-	// Store properties (including limits) and features of the phyiscal device
-	// So examples can check against them and see if a feature is actually supported
-	vkGetPhysicalDeviceProperties(m_vkPhysDev, &m_deviceProperties);
-	vkGetPhysicalDeviceFeatures(m_vkPhysDev, &m_deviceFeatures);
-
-	// Gather physical device memory properties
-	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDev, &m_deviceMemoryProperties);
+	// Get the graphics queue
+	vkGetDeviceQueue(m_vkDevice, graphicsQueueIndex, 0, &m_queue);
 
 	werr = Renderer->Initiailize();
-	if (!werr) {
-		vkDestroyInstance(m_vkInstance, nullptr);
-		vkDestroyDevice(m_vkDevice, nullptr);
-	}
 	return werr;
 }
 
 WError Wasabi::Resize(int width, int height) {
 	return WError(W_SUCCEEDED);
+}
+
+
+VkInstance Wasabi::GetVulkanInstance() const {
+	return m_vkInstance;
+}
+VkPhysicalDevice Wasabi::GetVulkanPhysicalDevice() const {
+	return m_vkPhysDev;
+}
+VkDevice Wasabi::GetVulkanDevice() const {
+	return m_vkDevice;
+}
+VkQueue Wasabi::GetVulkanGraphicsQeueue() const {
+	return m_queue;
 }
 
 int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {

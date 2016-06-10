@@ -15,6 +15,8 @@ public:
 	virtual WError Initialize(int width, int height) = 0;
 	virtual bool Loop() = 0;
 	virtual void Cleanup() = 0;
+	virtual void* GetPlatformHandle() const = 0;
+	virtual void* GetWindowHandle() const = 0;
 
 	virtual void SetWindowTitle(const char* const title) {}
 	virtual void SetWindowPosition(int x, int y) {}

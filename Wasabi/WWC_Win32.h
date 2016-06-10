@@ -34,6 +34,8 @@ public:
 
 	HWND GetWindow(void) const;
 	HINSTANCE GetInstance(void) const;
+	virtual void* GetPlatformHandle() const;
+	virtual void* GetWindowHandle() const;
 
 private:
 	HWND						m_mainWindow;
