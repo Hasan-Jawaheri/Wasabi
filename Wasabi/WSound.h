@@ -24,8 +24,10 @@ class WBase;
 
 class WSoundComponent {
 	friend class WSound;
+	Wasabi* m_app;
+
 public:
-	WSoundComponent();
+	WSoundComponent(Wasabi* app);
 	~WSoundComponent();
 
 	ALCdevice*				GetALSoundDevice() const;

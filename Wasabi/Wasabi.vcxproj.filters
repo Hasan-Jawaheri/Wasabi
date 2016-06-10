@@ -1,84 +1,96 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{e7c387e5-5a0d-425c-ad2b-351a2dbdb74f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    <Filter Include="Sound">
+      <UniqueIdentifier>{4eb913a5-8ae9-48f8-87c2-d9cf60fb0619}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Windows">
+      <UniqueIdentifier>{7b2dcfa4-377f-4a07-836b-95460cd05ee0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{ff7aeda3-d9b1-4ba2-b9c9-92c6d1494c5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{45741f0c-4b58-4ca6-a3e8-0e594b29f530}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Wasabi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WMath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WTimer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WSound.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WOrientation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WError.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Sound</Filter>
     </ClCompile>
     <ClCompile Include="WWC_Win32.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Windows</Filter>
     </ClCompile>
     <ClCompile Include="WIC_Win32.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Wasabi.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WError.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WBase.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WOrientation.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WMath.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WTimer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WForwardRenderer.cpp">
+      <Filter>Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WMath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WTimer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="WRenderer.h">
+      <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="WSound.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WOrientation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WError.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WWindowComponent.h">
-      <Filter>Header Files</Filter>
+      <Filter>Sound</Filter>
     </ClInclude>
     <ClInclude Include="WWC_Win32.h">
-      <Filter>Header Files</Filter>
+      <Filter>Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Wasabi.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="WWindowComponent.h">
+      <Filter>Windows</Filter>
     </ClInclude>
     <ClInclude Include="WInputComponent.h">
-      <Filter>Header Files</Filter>
+      <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="WIC_Win32.h">
-      <Filter>Header Files</Filter>
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Wasabi.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WBase.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WError.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WMath.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WOrientation.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WTimer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WForwardRenderer.h">
+      <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

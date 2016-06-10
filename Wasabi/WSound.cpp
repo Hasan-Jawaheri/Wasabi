@@ -15,7 +15,8 @@ T BytesTo(BYTE* bytes, bool bLittleEndian = false) {
 	return ret;
 };
 
-WSoundComponent::WSoundComponent(void) {
+WSoundComponent::WSoundComponent(Wasabi* app) {
+	m_app = app;
 	m_oalDevice = nullptr;
 	m_oalContext = nullptr;
 
@@ -28,7 +29,7 @@ WSoundComponent::WSoundComponent(void) {
 		alcMakeContextCurrent(m_oalContext);
 	}
 }
-WSoundComponent::~WSoundComponent(void) {
+WSoundComponent::~WSoundComponent() {
 	for (uint i = 0; i < m_soundV.size(); i)
 		delete (m_soundV[i]);
 
