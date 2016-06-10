@@ -16,6 +16,12 @@
     <Filter Include="Core">
       <UniqueIdentifier>{45741f0c-4b58-4ca6-a3e8-0e594b29f530}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\tools">
+      <UniqueIdentifier>{27f60485-6dcf-45f7-9949-d2bd4e576f74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Images">
+      <UniqueIdentifier>{2e2ab278-0f95-4b95-b828-7f89a0693445}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WSound.cpp">
@@ -47,6 +53,12 @@
     </ClCompile>
     <ClCompile Include="WForwardRenderer.cpp">
       <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkantools.cpp">
+      <Filter>Core\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="WImages.cpp">
+      <Filter>Images</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +103,15 @@
     </ClInclude>
     <ClInclude Include="WForwardRenderer.h">
       <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkantools.h">
+      <Filter>Core\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanswapchain.hpp">
+      <Filter>Core\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="WImages.h">
+      <Filter>Images</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

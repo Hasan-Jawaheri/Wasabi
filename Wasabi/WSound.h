@@ -24,7 +24,6 @@ class WBase;
 
 class WSoundComponent {
 	friend class WSound;
-	Wasabi* m_app;
 
 public:
 	WSoundComponent(Wasabi* app);
@@ -49,6 +48,9 @@ public:
 	WSound*					GetSoundHandle(uint ID) const;
 	WSound*					GetSoundHandleByIndex(uint index) const;
 	uint					GetSoundsCount() const;
+
+protected:
+	Wasabi* m_app;
 
 private:
 	ALCdevice*				m_oalDevice;

@@ -156,6 +156,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="WImages.cpp" />
+    <ClCompile Include="vulkantools.cpp" />
     <ClCompile Include="Wasabi.cpp" />
     <ClCompile Include="WBase.cpp" />
     <ClCompile Include="WError.cpp" />
@@ -168,11 +170,14 @@
     <ClCompile Include="WWC_Win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="vulkanswapchain.hpp" />
+    <ClInclude Include="vulkantools.h" />
     <ClInclude Include="Wasabi.h" />
     <ClInclude Include="WBase.h" />
     <ClInclude Include="WError.h" />
     <ClInclude Include="WForwardRenderer.h" />
     <ClInclude Include="WIC_Win32.h" />
+    <ClInclude Include="WImages.h" />
     <ClInclude Include="WInputComponent.h" />
     <ClInclude Include="WRenderer.h" />
     <ClInclude Include="WWC_Win32.h" />

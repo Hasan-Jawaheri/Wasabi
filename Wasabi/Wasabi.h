@@ -7,6 +7,8 @@ desc.: Wasabi Engine main header file
 
 #include "vulkan/vulkan.h"
 #pragma comment (lib, "vulkan-1.lib")
+#include "vulkanswapchain.hpp"
+#include "vulkantools.h"
 
 #include <string>
 #include <fstream>
@@ -54,26 +56,29 @@ public:
 	Wasabi();
 	~Wasabi();
 
-	virtual WError	Setup() = 0;
-	virtual bool	Loop(float fDeltaTime) = 0;
-	virtual void	Cleanup() = 0;
+	virtual WError		Setup() = 0;
+	virtual bool		Loop(float fDeltaTime) = 0;
+	virtual void		Cleanup() = 0;
 
-	void			SwitchState(class WGameState* state);
+	void				SwitchState(class WGameState* state);
 
-	WError			StartEngine(int width, int height);
-	WError			Resize(int width, int height);
+	WError				StartEngine(int width, int height);
+	WError				Resize(int width, int height);
+
+	VkInstance			GetVulkanInstance() const;
+	VkPhysicalDevice	GetVulkanPhysicalDevice() const;
+	VkDevice			GetVulkanDevice() const;
+	VkQueue				GetVulkanGraphicsQeueue() const;
 
 protected:
-	virtual int		SelectGPU(std::vector<VkPhysicalDevice> devices);
-	virtual void	SetupComponents();
+	virtual int			SelectGPU(std::vector<VkPhysicalDevice> devices);
+	virtual void		SetupComponents();
 
 private:
-	VkInstance							m_vkInstance;
-	VkPhysicalDevice					m_vkPhysDev;
-	VkDevice							m_vkDevice;
-	VkPhysicalDeviceProperties			m_deviceProperties;
-	VkPhysicalDeviceFeatures			m_deviceFeatures;
-	VkPhysicalDeviceMemoryProperties	m_deviceMemoryProperties;
+	VkInstance			m_vkInstance;
+	VkPhysicalDevice	m_vkPhysDev;
+	VkDevice			m_vkDevice;
+	VkQueue				m_queue;
 };
 
 class WGameState {

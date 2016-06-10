@@ -8,8 +8,6 @@ desc.: Wasabi Engine renderer spec
 #include "Wasabi.h"
 
 class WRenderer {
-	Wasabi* m_app;
-
 public:
 	WRenderer(Wasabi* app) : m_app(app) {}
 	~WRenderer() {}
@@ -17,5 +15,8 @@ public:
 	virtual WError		Initiailize() = 0;
 	virtual WError		Render() = 0;
 	virtual void		Cleanup() = 0;
+
+protected:
+	Wasabi* m_app;
 };
 
