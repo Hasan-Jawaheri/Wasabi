@@ -12,6 +12,7 @@
 class Kofta : public Wasabi {
 public:
 	WError Setup() {
+		this->maxFPS = 0;
 		WError err = StartEngine(500, 500);
 		return err;
 	}
@@ -38,16 +39,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 	Wasabi* app = WInitialize();
 	app->maxFPS = 60.0f;
 
-	app->SoundComponent = new WSoundComponent();
-
-#ifdef _WIN32
-	app->WindowComponent = new WWC_Win32(app);
-	app->InputComponent = new WIC_Win32(app);
-#elif defined(__linux__)
-	app->WindowComponent = new WWC_Linux(app);
-	app->InputComponent = new WIC_Linux(app);
-#endif
-
 	if (app->Setup()) {
 		WTimer tmr(W_TIMER_SECONDS);
 		WTimer fpsChangeTmr(W_TIMER_SECONDS);
@@ -61,16 +52,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 			if (!app->WindowComponent->Loop())
 				continue;
 
-			if (deltaTime) {
+			if (deltaTime > 0.01f) {
 				if (!app->Loop(deltaTime))
 					break;
 				if (app->curState)
 					app->curState->Update(deltaTime);
 			}
 
-			// TODO: render
-			//while (app->core->Update(deltaTime) == HX_WINDOWMINIMIZED)
-			//	hx->core->Loop();
+			while (!app->Renderer->Render());
 
 			numFrames++;
 
@@ -121,14 +110,21 @@ Wasabi::Wasabi() {
 		{ "defWndX", (void*)(-1) }, // int
 		{ "defWndY", (void*)(-1) }, //int
 	};
+	SoundComponent = nullptr;
+	WindowComponent = nullptr;
+	Renderer = nullptr;
 }
 Wasabi::~Wasabi() {
 	if (WindowComponent)
 		WindowComponent->Cleanup();
+	if (Renderer)
+		Renderer->Cleanup();
 	W_SAFE_DELETE(SoundComponent);
 	W_SAFE_DELETE(WindowComponent);
+	W_SAFE_DELETE(Renderer);
 
-	vkDestroyInstance(vkInstance, nullptr);
+	vkDestroyDevice(m_vkDevice, nullptr);
+	vkDestroyInstance(m_vkInstance, nullptr);
 }
 
 void Wasabi::SwitchState(WGameState* state) {
@@ -175,52 +171,69 @@ VkInstance CreateVKInstance(const char* appName, const char* engineName) {
 }
 
 WError Wasabi::StartEngine(int width, int height) {
-	WError err = WindowComponent->Initialize(width, height);
-	if (!err)
-		return err;
+	SetupComponents();
+
+	WError werr = WindowComponent->Initialize(width, height);
+	if (!werr)
+		return werr;
 
 	/* Create vulkan instance */
-	vkInstance = CreateVKInstance((const char*)engineParams["appName"], "Wasabi");
-	if (!vkInstance)
+	m_vkInstance = CreateVKInstance((const char*)engineParams["appName"], "Wasabi");
+	if (!m_vkInstance)
 		return WError(W_FAILEDTOCREATEINSTANCE);
 
 
-	/*// Physical device
+	// Physical device
 	uint32_t gpuCount = 0;
 	// Get number of available physical devices
-	err = vkEnumeratePhysicalDevices(instance, &gpuCount, nullptr);
-	assert(!err);
-	assert(gpuCount > 0);
+	VkResult err = vkEnumeratePhysicalDevices(m_vkInstance, &gpuCount, nullptr);
+	if (err != VK_SUCCESS || gpuCount == 0) {
+		vkDestroyInstance(m_vkInstance, nullptr);
+		return WError(W_FAILEDTOLISTDEVICES);
+	}
+
 	// Enumerate devices
 	std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
-	err = vkEnumeratePhysicalDevices(instance, &gpuCount, physicalDevices.data());
-	if (err) {
-		vkTools::exitFatal("Could not enumerate phyiscal devices : \n" + vkTools::errorString(err), "Fatal error");
+	err = vkEnumeratePhysicalDevices(m_vkInstance, &gpuCount, physicalDevices.data());
+	if (err != VK_SUCCESS) {
+		vkDestroyInstance(m_vkInstance, nullptr);
+		return WError(W_FAILEDTOLISTDEVICES);
 	}
 
 	// Note :
 	// This example will always use the first physical device reported,
 	// change the vector index if you have multiple Vulkan devices installed
 	// and want to use another one
-	physicalDevice = physicalDevices[0];
+	int index = SelectGPU(physicalDevices);
+	if (index >= physicalDevices.size())
+		index = 0;
+	m_vkPhysDev = physicalDevices[index];
 
 	// Find a queue that supports graphics operations
 	uint32_t graphicsQueueIndex = 0;
 	uint32_t queueCount;
-	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, NULL);
-	assert(queueCount >= 1);
+	vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysDev, &queueCount, NULL);
+	if (queueCount == 0) {
+		vkDestroyInstance(m_vkInstance, nullptr);
+		return WError(W_FAILEDTOLISTDEVICES);
+	}
 
 	std::vector<VkQueueFamilyProperties> queueProps;
 	queueProps.resize(queueCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, queueProps.data());
+	vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysDev, &queueCount, queueProps.data());
 
 	for (graphicsQueueIndex = 0; graphicsQueueIndex < queueCount; graphicsQueueIndex++) {
 		if (queueProps[graphicsQueueIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			break;
 	}
-	assert(graphicsQueueIndex < queueCount);
+	if (graphicsQueueIndex == queueCount) {
+		vkDestroyInstance(m_vkInstance, nullptr);
+		return WError(W_HARDWARENOTSUPPORTED);
+	}
 
-	// Vulkan device
+	//
+	// Create Vulkan device
+	//
 	std::array<float, 1> queuePriorities = { 0.0f };
 	VkDeviceQueueCreateInfo queueCreateInfo = {};
 	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -228,54 +241,59 @@ WError Wasabi::StartEngine(int width, int height) {
 	queueCreateInfo.queueCount = 1;
 	queueCreateInfo.pQueuePriorities = queuePriorities.data();
 
-	err = createDevice(queueCreateInfo, enableValidation);
-	assert(!err);
+	std::vector<const char*> enabledExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+	VkDeviceCreateInfo deviceCreateInfo = {};
+	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	deviceCreateInfo.pNext = NULL;
+	deviceCreateInfo.queueCreateInfoCount = 1;
+	deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
+	deviceCreateInfo.pEnabledFeatures = NULL;
+
+	if (enabledExtensions.size() > 0) {
+		deviceCreateInfo.enabledExtensionCount = (uint32_t)enabledExtensions.size();
+		deviceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
+	}
+
+	err = vkCreateDevice(m_vkPhysDev, &deviceCreateInfo, nullptr, &m_vkDevice);
+	if (err != VK_SUCCESS) {
+		vkDestroyInstance(m_vkInstance, nullptr);
+		return WError(W_UNABLETOCREATEDEVICE);
+	}
 
 	// Store properties (including limits) and features of the phyiscal device
 	// So examples can check against them and see if a feature is actually supported
-	vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
-	vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
-
-#if defined(__ANDROID__)
-	LOGD(deviceProperties.deviceName);
-#endif
+	vkGetPhysicalDeviceProperties(m_vkPhysDev, &m_deviceProperties);
+	vkGetPhysicalDeviceFeatures(m_vkPhysDev, &m_deviceFeatures);
 
 	// Gather physical device memory properties
-	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
+	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDev, &m_deviceMemoryProperties);
 
-	// Get the graphics queue
-	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &queue);
-
-	// Find a suitable depth format
-	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(physicalDevice, &depthFormat);
-	assert(validDepthFormat);
-
-	swapChain.connect(instance, physicalDevice, device);
-
-	// Create synchronization objects
-	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
-	// Create a semaphore used to synchronize image presentation
-	// Ensures that the image is displayed before we start submitting new commands to the queu
-	err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete);
-	assert(!err);
-	// Create a semaphore used to synchronize command submission
-	// Ensures that the image is not presented until all commands have been sumbitted and executed
-	err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete);
-	assert(!err);
-
-	// Set up submit info structure
-	// Semaphores will stay the same during application lifetime
-	// Command buffer submission info is set by each example
-	submitInfo = vkTools::initializers::submitInfo();
-	submitInfo.pWaitDstStageMask = &submitPipelineStages;
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &semaphores.presentComplete;
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &semaphores.renderComplete;*/
-
-	return WError(W_SUCCEEDED);
+	werr = Renderer->Initiailize();
+	if (!werr) {
+		vkDestroyInstance(m_vkInstance, nullptr);
+		vkDestroyDevice(m_vkDevice, nullptr);
+	}
+	return werr;
 }
 
 WError Wasabi::Resize(int width, int height) {
 	return WError(W_SUCCEEDED);
+}
+
+int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {
+	return 0;
+}
+
+void Wasabi::SetupComponents() {
+	Renderer = new WForwardRenderer(this);
+	SoundComponent = new WSoundComponent(this);
+
+#ifdef _WIN32
+	WindowComponent = new WWC_Win32(this);
+	InputComponent = new WIC_Win32(this);
+#elif defined(__linux__)
+	WindowComponent = new WWC_Linux(this);
+	InputComponent = new WIC_Linux(this);
+#endif
 }

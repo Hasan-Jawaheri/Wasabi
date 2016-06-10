@@ -13,6 +13,7 @@ desc.: Wasabi Engine main header file
 #include <iostream>
 #include <vector>
 #include <map>
+#include <array>
 
 #include "WError.h"
 
@@ -20,6 +21,7 @@ using namespace std;
 using std::ios;
 using std::basic_filebuf;
 using std::vector;
+using std::array;
 
 #define W_SAFE_RELEASE(x) { if ( x ) { x->Release ( ); x = NULL; } }
 #define W_SAFE_REMOVEREF(x) { if ( x ) { x->RemoveReference ( ); x = NULL; } }
@@ -42,6 +44,7 @@ public:
 	class WSoundComponent* SoundComponent;
 	class WWindowComponent* WindowComponent;
 	class WInputComponent* InputComponent;
+	class WRenderer* Renderer;
 	std::map<std::string, void*> engineParams;
 
 	float FPS, maxFPS;
@@ -60,8 +63,17 @@ public:
 	WError			StartEngine(int width, int height);
 	WError			Resize(int width, int height);
 
+protected:
+	virtual int		SelectGPU(std::vector<VkPhysicalDevice> devices);
+	virtual void	SetupComponents();
+
 private:
-	VkInstance vkInstance;
+	VkInstance							m_vkInstance;
+	VkPhysicalDevice					m_vkPhysDev;
+	VkDevice							m_vkDevice;
+	VkPhysicalDeviceProperties			m_deviceProperties;
+	VkPhysicalDeviceFeatures			m_deviceFeatures;
+	VkPhysicalDeviceMemoryProperties	m_deviceMemoryProperties;
 };
 
 class WGameState {
@@ -82,6 +94,8 @@ public:
 
 #include "WWindowComponent.h"
 #include "WInputComponent.h"
+#include "WRenderer.h"
+#include "WForwardRenderer.h"
 #ifdef _WIN32
 #include "WWC_Win32.h"
 #include "WIC_Win32.h"
