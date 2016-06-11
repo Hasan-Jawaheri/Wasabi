@@ -6,6 +6,7 @@ desc.: Wasabi Engine renderer spec
 #pragma once
 
 #include "Wasabi.h"
+#include "WMath.h"
 
 class WRenderer {
 public:
@@ -15,6 +16,8 @@ public:
 	virtual WError		Initiailize() = 0;
 	virtual WError		Render() = 0;
 	virtual void		Cleanup() = 0;
+
+	virtual void		SetClearColor(WColor col) = 0;
 
 protected:
 	Wasabi* m_app;
