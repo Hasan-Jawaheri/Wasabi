@@ -12,6 +12,9 @@ class WForwardRenderer : public WRenderer {
 
 	VkRenderPass						m_renderPass;
 	VkPipelineCache						m_pipelineCache;
+	VkDescriptorPool					m_descriptorPool;
+	VkCommandPool						m_cmdPool; // Command buffer pool
+	VkCommandBuffer						m_setupCmdBuffer, m_renderCmdBuffer;
 
 	struct {
 		VkImage image;
@@ -24,9 +27,6 @@ class WForwardRenderer : public WRenderer {
 		VkSemaphore presentComplete; // Swap chain image presentation
 		VkSemaphore renderComplete; // Command buffer submission and execution
 	} m_semaphores;
-
-	VkCommandPool						m_cmdPool; // Command buffer pool
-	VkCommandBuffer						m_setupCmdBuffer, m_renderCmdBuffer;
 
 	VkFormat							m_depthFormat, m_colorFormat;
 	uint32_t							m_width, m_height;
@@ -47,9 +47,10 @@ public:
 
 	virtual void		SetClearColor(WColor col);
 
-	virtual VkQueue			GetQueue() const;
-	virtual VkRenderPass	GetRenderPass() const;
-	virtual VkPipelineCache	GetPipelineCache() const;
-	virtual VkCommandBuffer	GetCommnadBuffer() const;
-	virtual VkCommandPool	GetCommandPool() const;
+	virtual VkQueue				GetQueue() const;
+	virtual VkRenderPass		GetRenderPass() const;
+	virtual VkPipelineCache		GetPipelineCache() const;
+	virtual VkCommandBuffer		GetCommnadBuffer() const; 
+	virtual VkCommandPool		GetCommandPool() const;
+	virtual VkDescriptorPool	GetDescriptorPool() const;
 };
