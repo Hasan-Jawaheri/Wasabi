@@ -28,7 +28,6 @@ WForwardRenderer::WForwardRenderer(Wasabi* app) : WRenderer(app) {
 	m_cmdPool = VK_NULL_HANDLE;
 	m_renderPass = VK_NULL_HANDLE;
 	m_pipelineCache = VK_NULL_HANDLE;
-	m_descriptorPool = VK_NULL_HANDLE;
 	m_colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
 }
 WForwardRenderer::~WForwardRenderer() {
@@ -85,32 +84,6 @@ WError WForwardRenderer::Initiailize() {
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	err = vkCreatePipelineCache(m_device, &pipelineCacheCreateInfo, nullptr, &m_pipelineCache);
 	assert(!err);
-
-	// Create descriptor pool
-	// We need to tell the API the number of max. requested descriptors per type
-	VkDescriptorPoolSize typeCounts[1];
-	// This example only uses one descriptor type (uniform buffer) and only
-	// requests one descriptor of this type
-	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	typeCounts[0].descriptorCount = 1;
-	// For additional types you need to add new entries in the type count list
-	// E.g. for two combined image samplers :
-	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	// typeCounts[1].descriptorCount = 2;
-
-	// Create the global descriptor pool
-	// All descriptors used in this example are allocated from this pool
-	VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
-	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	descriptorPoolInfo.pNext = NULL;
-	descriptorPoolInfo.poolSizeCount = 1;
-	descriptorPoolInfo.pPoolSizes = typeCounts;
-	// Set the max. number of sets that can be requested
-	// Requesting descriptors beyond maxSets will result in an error
-	descriptorPoolInfo.maxSets = 1;
-
-	VkResult vkRes = vkCreateDescriptorPool(m_device, &descriptorPoolInfo, nullptr, &m_descriptorPool);
-	assert(!vkRes);
 
 	if (_EndSetupCommands() != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
@@ -205,8 +178,6 @@ WError WForwardRenderer::Render() {
 }
 
 void WForwardRenderer::Cleanup() {
-	if (m_descriptorPool)
-		vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 	if (m_renderPass)
 		vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 	if (m_pipelineCache)
@@ -467,7 +438,4 @@ VkCommandBuffer WForwardRenderer::GetCommnadBuffer() const {
 }
 VkCommandPool WForwardRenderer::GetCommandPool() const {
 	return m_cmdPool;
-}
-VkDescriptorPool WForwardRenderer::GetDescriptorPool() const {
-	return m_descriptorPool;
 }

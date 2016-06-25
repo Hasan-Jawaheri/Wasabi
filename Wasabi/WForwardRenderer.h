@@ -12,7 +12,7 @@ class WForwardRenderer : public WRenderer {
 
 	VkRenderPass						m_renderPass;
 	VkPipelineCache						m_pipelineCache;
-	VkDescriptorPool					m_descriptorPool;
+
 	VkCommandPool						m_cmdPool; // Command buffer pool
 	VkCommandBuffer						m_setupCmdBuffer, m_renderCmdBuffer;
 
@@ -47,10 +47,9 @@ public:
 
 	virtual void		SetClearColor(WColor col);
 
-	virtual VkQueue				GetQueue() const;
-	virtual VkRenderPass		GetRenderPass() const;
-	virtual VkPipelineCache		GetPipelineCache() const;
-	virtual VkCommandBuffer		GetCommnadBuffer() const; 
-	virtual VkCommandPool		GetCommandPool() const;
-	virtual VkDescriptorPool	GetDescriptorPool() const;
+	virtual VkQueue			GetQueue() const;
+	virtual VkRenderPass	GetRenderPass() const;
+	virtual VkPipelineCache	GetPipelineCache() const;
+	virtual VkCommandBuffer	GetCommnadBuffer() const;
+	virtual VkCommandPool	GetCommandPool() const;
 };
