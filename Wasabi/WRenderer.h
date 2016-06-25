@@ -19,11 +19,12 @@ public:
 
 	virtual void		SetClearColor(WColor col) = 0;
 
-	virtual VkQueue			GetQueue() const = 0;
-	virtual VkRenderPass	GetRenderPass() const = 0;
-	virtual VkPipelineCache	GetPipelineCache() const = 0;
-	virtual VkCommandBuffer	GetCommnadBuffer() const = 0;
-	virtual VkCommandPool	GetCommandPool() const = 0;
+	virtual VkQueue				GetQueue() const = 0;
+	virtual VkRenderPass		GetRenderPass() const = 0;
+	virtual VkPipelineCache		GetPipelineCache() const = 0;
+	virtual VkCommandBuffer		GetCommnadBuffer() const = 0;
+	virtual VkCommandPool		GetCommandPool() const = 0;
+	virtual VkDescriptorPool	GetDescriptorPool() const = 0;
 
 protected:
 	Wasabi* m_app;

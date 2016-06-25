@@ -7,7 +7,6 @@ class WObject : public WBase {
 
 	VkPipeline							m_pipeline;
 	VkDescriptorSetLayout				m_descriptorSetLayout;
-	VkDescriptorPool					m_descriptorPool;
 	VkDescriptorSet						m_descriptorSet;
 	VkPipelineLayout					m_pipelineLayout;
 
