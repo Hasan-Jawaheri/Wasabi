@@ -21,7 +21,7 @@ WBase::~WBase() {
 void WBase::SetManager(void* mgr) {
 	m_mgr = mgr;
 }
-void WBase::SetID(uint newID) {
+void WBase::SetID(unsigned int newID) {
 	if (m_iDbgChanges > 1)
 		std::cout << GetTypeName() << " with ID " << m_ID << " changed it's ID to " << newID << "\n";
 
@@ -34,7 +34,7 @@ void WBase::SetID(uint newID) {
 	if (m_mgr)
 		((WManager<WBase>*)m_mgr)->AddEntity(this);
 }
-uint WBase::GetID() const {
+unsigned int WBase::GetID() const {
 	return m_ID;
 }
 Wasabi* WBase::GetAppPtr() const {

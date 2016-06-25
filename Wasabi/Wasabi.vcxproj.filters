@@ -22,6 +22,12 @@
     <Filter Include="Images">
       <UniqueIdentifier>{2e2ab278-0f95-4b95-b828-7f89a0693445}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Geometry">
+      <UniqueIdentifier>{b7c40d3b-587d-45e0-a904-2513c3c8841d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{2410807c-e1a8-4552-b566-84db0e937e31}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WSound.cpp">
@@ -59,6 +65,12 @@
     </ClCompile>
     <ClCompile Include="WImages.cpp">
       <Filter>Images</Filter>
+    </ClCompile>
+    <ClCompile Include="WGeometry.cpp">
+      <Filter>Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="WObjects.cpp">
+      <Filter>Objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +124,12 @@
     </ClInclude>
     <ClInclude Include="WImages.h">
       <Filter>Images</Filter>
+    </ClInclude>
+    <ClInclude Include="WGeometry.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="WObjects.h">
+      <Filter>Objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

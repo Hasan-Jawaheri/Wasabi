@@ -14,6 +14,14 @@ public:
 	WError Setup() {
 		this->maxFPS = 0;
 		WError err = StartEngine(500, 500);
+
+		WObject* o = new WObject(this);
+		new WObject(this);
+		new WObject(this);
+		new WObject(this);
+		new WObject(this);
+		new WObject(this);
+
 		return err;
 	}
 	bool Loop(float fDeltaTime) {
@@ -110,9 +118,12 @@ Wasabi::Wasabi() {
 		{ "defWndX", (void*)(-1) }, // int
 		{ "defWndY", (void*)(-1) }, //int
 	};
+
 	SoundComponent = nullptr;
 	WindowComponent = nullptr;
 	Renderer = nullptr;
+
+	ObjectManager = new WObjectManager(this);
 }
 Wasabi::~Wasabi() {
 	if (WindowComponent)
@@ -264,6 +275,12 @@ WError Wasabi::StartEngine(int width, int height) {
 	// Get the graphics queue
 	vkGetDeviceQueue(m_vkDevice, graphicsQueueIndex, 0, &m_queue);
 
+	// Store properties (including limits) and features of the phyiscal device
+	vkGetPhysicalDeviceProperties(m_vkPhysDev, &m_deviceProperties);
+	vkGetPhysicalDeviceFeatures(m_vkPhysDev, &m_deviceFeatures);
+	// Gather physical device memory properties
+	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDev, &m_deviceMemoryProperties);
+
 	werr = Renderer->Initiailize();
 	return werr;
 }
@@ -272,6 +289,18 @@ WError Wasabi::Resize(int width, int height) {
 	return WError(W_SUCCEEDED);
 }
 
+
+void Wasabi::GetMemoryType(uint32_t typeBits, VkFlags properties, uint32_t * typeIndex) const {
+	for (uint32_t i = 0; i < 32; i++) {
+		if ((typeBits & 1) == 1) {
+			if ((m_deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				*typeIndex = i;
+				return;
+			}
+		}
+		typeBits >>= 1;
+	}
+}
 
 VkInstance Wasabi::GetVulkanInstance() const {
 	return m_vkInstance;

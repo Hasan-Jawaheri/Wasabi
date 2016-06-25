@@ -156,6 +156,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="WObjects.cpp" />
+    <ClCompile Include="WGeometry.cpp" />
     <ClCompile Include="WImages.cpp" />
     <ClCompile Include="vulkantools.cpp" />
     <ClCompile Include="Wasabi.cpp" />
@@ -170,12 +172,14 @@
     <ClCompile Include="WWC_Win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="WObjects.h" />
     <ClInclude Include="vulkanswapchain.hpp" />
     <ClInclude Include="vulkantools.h" />
     <ClInclude Include="Wasabi.h" />
     <ClInclude Include="WBase.h" />
     <ClInclude Include="WError.h" />
     <ClInclude Include="WForwardRenderer.h" />
+    <ClInclude Include="WGeometry.h" />
     <ClInclude Include="WIC_Win32.h" />
     <ClInclude Include="WImages.h" />
     <ClInclude Include="WInputComponent.h" />
