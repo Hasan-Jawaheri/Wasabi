@@ -442,14 +442,6 @@ VkResult WObject::_CreatePipeline() {
 	// pipeline only stores that they are used with this pipeline,
 	// but not their states
 
-	VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
-
-	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	// The layout used for this pipeline
-	pipelineCreateInfo.layout = m_pipelineLayout;
-	// Renderpass this pipeline is attached to
-	pipelineCreateInfo.renderPass = m_app->Renderer->GetRenderPass();
-
 	// Vertex input state
 	// Describes the topoloy used with this pipeline
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
@@ -481,14 +473,6 @@ VkResult WObject::_CreatePipeline() {
 	blendAttachmentState[0].blendEnable = VK_FALSE;
 	colorBlendState.attachmentCount = 1;
 	colorBlendState.pAttachments = blendAttachmentState;
-
-	// Viewport state
-	VkPipelineViewportStateCreateInfo viewportState = {};
-	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	// One viewport
-	viewportState.viewportCount = 1;
-	// One scissor rectangle
-	viewportState.scissorCount = 1;
 
 	// Enable dynamic states
 	// Describes the dynamic states to be used with this pipeline
@@ -535,6 +519,11 @@ VkResult WObject::_CreatePipeline() {
 
 	// Assign states
 	// Assign pipeline state create information
+	VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
+	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	// The layout used for this pipeline
+	pipelineCreateInfo.layout = m_pipelineLayout;
+
 	pipelineCreateInfo.stageCount = shaderStages.size();
 	pipelineCreateInfo.pStages = shaderStages.data();
 	pipelineCreateInfo.pVertexInputState = &m_vertices.inputState;
@@ -542,7 +531,7 @@ VkResult WObject::_CreatePipeline() {
 	pipelineCreateInfo.pRasterizationState = &rasterizationState;
 	pipelineCreateInfo.pColorBlendState = &colorBlendState;
 	pipelineCreateInfo.pMultisampleState = &multisampleState;
-	pipelineCreateInfo.pViewportState = &viewportState;
+	pipelineCreateInfo.pViewportState = NULL; // viewport state is dynamic
 	pipelineCreateInfo.pDepthStencilState = &depthStencilState;
 	pipelineCreateInfo.renderPass = m_app->Renderer->GetRenderPass();
 	pipelineCreateInfo.pDynamicState = &dynamicState;
