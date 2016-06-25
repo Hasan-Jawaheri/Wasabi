@@ -22,6 +22,7 @@ WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app) {
 	m_descriptorSetLayout = VK_NULL_HANDLE;
 	m_pipelineLayout = VK_NULL_HANDLE;
 	m_descriptorSet = VK_NULL_HANDLE;
+	m_descriptorPool = VK_NULL_HANDLE;
 
 	_CreateTriangle();
 	_CreatePipeline();
@@ -32,6 +33,8 @@ WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app) {
 WObject::~WObject() {
 	VkDevice device = m_app->GetVulkanDevice();
 
+	if (m_descriptorPool)
+		vkDestroyDescriptorPool(device, m_descriptorPool, nullptr);
 	if (m_descriptorSetLayout)
 		vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
 	if (m_pipelineLayout)
@@ -363,6 +366,34 @@ VkResult WObject::_CreateTriangle() {
 	assert(!err);
 
 	//
+	// Create descriptor pool
+	//
+	// We need to tell the API the number of max. requested descriptors per type
+	VkDescriptorPoolSize typeCounts[1];
+	// This example only uses one descriptor type (uniform buffer) and only
+	// requests one descriptor of this type
+	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	typeCounts[0].descriptorCount = 1;
+	// For additional types you need to add new entries in the type count list
+	// E.g. for two combined image samplers :
+	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	// typeCounts[1].descriptorCount = 2;
+
+	// Create the global descriptor pool
+	// All descriptors used in this example are allocated from this pool
+	VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	descriptorPoolInfo.pNext = NULL;
+	descriptorPoolInfo.poolSizeCount = 1;
+	descriptorPoolInfo.pPoolSizes = typeCounts;
+	// Set the max. number of sets that can be requested
+	// Requesting descriptors beyond maxSets will result in an error
+	descriptorPoolInfo.maxSets = 1;
+
+	VkResult vkRes = vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_descriptorPool);
+	assert(!vkRes);
+
+	//
 	// Create descriptor set
 	//
 
@@ -373,11 +404,11 @@ VkResult WObject::_CreateTriangle() {
 
 	VkDescriptorSetAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = m_app->Renderer->GetDescriptorPool();
+	allocInfo.descriptorPool = m_descriptorPool;
 	allocInfo.descriptorSetCount = 1;
 	allocInfo.pSetLayouts = &m_descriptorSetLayout;
 
-	VkResult vkRes = vkAllocateDescriptorSets(device, &allocInfo, &m_descriptorSet);
+	vkRes = vkAllocateDescriptorSets(device, &allocInfo, &m_descriptorSet);
 	assert(!vkRes);
 
 	// Binding 0 : Uniform buffer
