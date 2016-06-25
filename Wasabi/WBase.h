@@ -6,18 +6,21 @@ desc.: Wasabi Engine entity base class
 
 #pragma once
 
-#include "Wasabi.h"
+#include <vector>
+#include <string>
+using std::vector;
+using std::string;
 
 class WBase {
 public:
-	WBase(Wasabi* const app);
+	WBase(class Wasabi* const app);
 	virtual ~WBase();
 
 	virtual std::string GetTypeName() const = 0;
 
-	void			SetID(uint newID);
-	uint			GetID() const;
-	Wasabi*			GetAppPtr() const;
+	void			SetID(unsigned int newID);
+	unsigned int	GetID() const;
+	class Wasabi*	GetAppPtr() const;
 	void			SetName(std::string name);
 	std::string		GetName() const;
 	void			AddReference();
@@ -26,11 +29,12 @@ public:
 
 	void			SetManager(void* mgr);
 
+protected:
+	class Wasabi*	m_app;
 private:
 	int				m_refCount;
-	uint			m_ID;
+	unsigned int	m_ID;
 	std::string		m_name;
-	Wasabi*			m_app;
 	void*			m_mgr;
 
 	int				m_iDbgChanges;

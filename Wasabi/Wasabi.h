@@ -18,6 +18,8 @@ desc.: Wasabi Engine main header file
 #include <array>
 
 #include "WError.h"
+#include "WManager.h"
+#include "WBase.h"
 
 using namespace std;
 using std::ios;
@@ -43,11 +45,13 @@ typedef unsigned int uint;
 
 class Wasabi {
 public:
+	std::map<std::string, void*> engineParams;
 	class WSoundComponent* SoundComponent;
 	class WWindowComponent* WindowComponent;
 	class WInputComponent* InputComponent;
 	class WRenderer* Renderer;
-	std::map<std::string, void*> engineParams;
+
+	class WObjectManager* ObjectManager;
 
 	float FPS, maxFPS;
 	class  WGameState* curState;
@@ -69,16 +73,20 @@ public:
 	VkPhysicalDevice	GetVulkanPhysicalDevice() const;
 	VkDevice			GetVulkanDevice() const;
 	VkQueue				GetVulkanGraphicsQeueue() const;
+	void				GetMemoryType(uint32_t typeBits, VkFlags properties, uint32_t * typeIndex) const;
 
 protected:
 	virtual int			SelectGPU(std::vector<VkPhysicalDevice> devices);
 	virtual void		SetupComponents();
 
 private:
-	VkInstance			m_vkInstance;
-	VkPhysicalDevice	m_vkPhysDev;
-	VkDevice			m_vkDevice;
-	VkQueue				m_queue;
+	VkInstance							m_vkInstance;
+	VkPhysicalDevice					m_vkPhysDev;
+	VkDevice							m_vkDevice;
+	VkQueue								m_queue;
+	VkPhysicalDeviceProperties			m_deviceProperties;
+	VkPhysicalDeviceFeatures			m_deviceFeatures;
+	VkPhysicalDeviceMemoryProperties	m_deviceMemoryProperties;
 };
 
 class WGameState {
@@ -101,6 +109,7 @@ public:
 #include "WInputComponent.h"
 #include "WRenderer.h"
 #include "WForwardRenderer.h"
+#include "WObjects.h"
 #ifdef _WIN32
 #include "WWC_Win32.h"
 #include "WIC_Win32.h"
