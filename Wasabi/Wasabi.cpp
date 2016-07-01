@@ -16,11 +16,9 @@ public:
 		WError err = StartEngine(500, 500);
 
 		WObject* o = new WObject(this);
-		new WObject(this);
-		new WObject(this);
-		new WObject(this);
-		new WObject(this);
-		new WObject(this);
+		WGeometry* g = new WGeometry(this);
+		g->CreateCube(1);
+		o->SetGeometry(g);
 
 		return err;
 	}
@@ -124,6 +122,7 @@ Wasabi::Wasabi() {
 	Renderer = nullptr;
 
 	ObjectManager = new WObjectManager(this);
+	GeometryManager = new WGeometryManager(this);
 }
 Wasabi::~Wasabi() {
 	if (WindowComponent)

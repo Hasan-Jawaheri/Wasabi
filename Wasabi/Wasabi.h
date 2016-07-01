@@ -52,6 +52,7 @@ public:
 	class WRenderer* Renderer;
 
 	class WObjectManager* ObjectManager;
+	class WGeometryManager* GeometryManager;
 
 	float FPS, maxFPS;
 	class  WGameState* curState;
@@ -110,6 +111,7 @@ public:
 #include "WRenderer.h"
 #include "WForwardRenderer.h"
 #include "WObjects.h"
+#include "WGeometry.h"
 #ifdef _WIN32
 #include "WWC_Win32.h"
 #include "WIC_Win32.h"
