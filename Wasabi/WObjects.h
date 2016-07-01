@@ -23,28 +23,18 @@ class WObject : public WBase {
 		WMatrix viewMatrix;
 	} m_uboVS;
 
-	struct {
-		VkBuffer buf;
-		VkDeviceMemory mem;
-		VkPipelineVertexInputStateCreateInfo inputState;
-		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-	} m_vertices;
+	void _DestroyPipeline();
+	WError _CreatePipeline();
 
-	struct {
-		int count;
-		VkBuffer buf;
-		VkDeviceMemory mem;
-	} m_indices;
-
-	VkResult _CreateTriangle();
-	VkResult _CreatePipeline();
+	class WGeometry* m_geometry;
 
 public:
 	WObject(Wasabi* const app, unsigned int ID = 0);
 	~WObject();
 
 	void Render();
+
+	WError SetGeometry(class WGeometry* geometry);
 
 	virtual bool	Valid() const;
 };
