@@ -15,14 +15,21 @@ public:
 		this->maxFPS = 0;
 		WError err = StartEngine(500, 500);
 
-		WObject* o = new WObject(this, 0);
-		WObject* o2 = new WObject(this, 1);
-		WObject* o3 = new WObject(this, 2);
+		WObject* o = new WObject(this);
+		WObject* o2 = new WObject(this);
+		WObject* o3 = new WObject(this);
 		WGeometry* g = new WGeometry(this);
 		g->CreateCube(1);
 		o->SetGeometry(g);
 		o2->SetGeometry(g);
 		o3->SetGeometry(g);
+
+		o->SetPosition(-5, 5, 0);
+		o2->SetPosition(0, 0, -4);
+		o3->SetPosition(5, 5, 0);
+		o3->SetAngle(0, 0, 20);
+
+		CameraManager->GetDefaultCamera()->Move(-20);
 
 		return err;
 	}
@@ -130,6 +137,7 @@ Wasabi::Wasabi() {
 	EffectManager = new WEffectManager(this);
 	ShaderManager = new WShaderManager(this);
 	MaterialManager = new WMaterialManager(this);
+	CameraManager = new WCameraManager(this);
 }
 Wasabi::~Wasabi() {
 	if (WindowComponent)
@@ -145,6 +153,7 @@ Wasabi::~Wasabi() {
 	delete EffectManager;
 	delete ShaderManager;
 	delete MaterialManager;
+	delete CameraManager;
 
 	vkDestroyDevice(m_vkDevice, nullptr);
 	vkDestroyInstance(m_vkInstance, nullptr);
@@ -293,6 +302,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	// Gather physical device memory properties
 	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDev, &m_deviceMemoryProperties);
 
+	CameraManager->Load();
 	werr = Renderer->Initiailize();
 	return werr;
 }

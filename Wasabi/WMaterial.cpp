@@ -20,8 +20,7 @@ WMaterial::WMaterial(Wasabi* const app, unsigned int ID) : WBase(app) {
 WMaterial::~WMaterial() {
 	_DestroyResources();
 
-	if (m_effect)
-		m_effect->RemoveReference();
+	W_SAFE_REMOVEREF(m_effect);
 
 	m_app->MaterialManager->RemoveEntity(this);
 }
@@ -53,10 +52,8 @@ void WMaterial::_DestroyResources() {
 WError WMaterial::SetEffect(WEffect* const effect) {
 	VkDevice device = m_app->GetVulkanDevice();
 
-	if (m_effect)
-		m_effect->RemoveReference();
+	W_SAFE_REMOVEREF(m_effect);
 
-	m_effect = nullptr;
 	_DestroyResources();
 
 	if (!effect)

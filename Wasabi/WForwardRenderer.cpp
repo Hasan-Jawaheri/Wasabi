@@ -8,9 +8,9 @@ public:
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.ubo_info = {
 			W_UBO_INFO({
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"), // projection
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gWorld"), // world
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"), // projection
 			}),
 		};
 		m_desc.input_layout = {
@@ -65,6 +65,7 @@ WForwardRenderer::WForwardRenderer(Wasabi* app) : WRenderer(app) {
 }
 WForwardRenderer::~WForwardRenderer() {
 	Cleanup();
+	W_SAFE_REMOVEREF(m_default_fx);
 }
 
 WError WForwardRenderer::Initiailize() {
@@ -194,7 +195,9 @@ WError WForwardRenderer::Render() {
 		0);
 	vkCmdSetScissor(m_renderCmdBuffer, 0, 1, &scissor);
 
-	m_app->ObjectManager->Render();
+	WCamera* cam = m_app->CameraManager->GetDefaultCamera();
+	cam->Render(m_width, m_height);
+	m_app->ObjectManager->Render(cam);
 
 	vkCmdEndRenderPass(m_renderCmdBuffer);
 

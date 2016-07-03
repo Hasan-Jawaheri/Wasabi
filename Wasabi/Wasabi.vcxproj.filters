@@ -31,6 +31,9 @@
     <Filter Include="Materials">
       <UniqueIdentifier>{05fe7c84-8b0d-45ab-a014-dd015933c1fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{fcae07f5-6380-424b-b6a1-8587be14d03b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WSound.cpp">
@@ -80,6 +83,9 @@
     </ClCompile>
     <ClCompile Include="WMaterial.cpp">
       <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="WCamera.cpp">
+      <Filter>Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -145,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="WMaterial.h">
       <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="WCamera.h">
+      <Filter>Camera</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

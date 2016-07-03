@@ -20,6 +20,7 @@ desc.: Wasabi Engine main header file
 #include "WError.h"
 #include "WManager.h"
 #include "WBase.h"
+#include "WOrientation.h"
 
 using namespace std;
 using std::ios;
@@ -46,16 +47,17 @@ typedef unsigned int uint;
 class Wasabi {
 public:
 	std::map<std::string, void*> engineParams;
-	class WSoundComponent* SoundComponent;
-	class WWindowComponent* WindowComponent;
-	class WInputComponent* InputComponent;
-	class WRenderer* Renderer;
+	class WSoundComponent*		SoundComponent;
+	class WWindowComponent*		WindowComponent;
+	class WInputComponent*		InputComponent;
+	class WRenderer*			Renderer;
 
-	class WObjectManager* ObjectManager;
-	class WGeometryManager* GeometryManager;
-	class WEffectManager* EffectManager;
-	class WShaderManager* ShaderManager;
-	class WMaterialManager* MaterialManager;
+	class WObjectManager*		ObjectManager;
+	class WGeometryManager*		GeometryManager;
+	class WEffectManager*		EffectManager;
+	class WShaderManager*		ShaderManager;
+	class WMaterialManager*		MaterialManager;
+	class WCameraManager*		CameraManager;
 
 	float FPS, maxFPS;
 	class  WGameState* curState;
@@ -117,6 +119,7 @@ public:
 #include "WGeometry.h"
 #include "WEffect.h"
 #include "WMaterial.h"
+#include "WCamera.h"
 #ifdef _WIN32
 #include "WWC_Win32.h"
 #include "WIC_Win32.h"
