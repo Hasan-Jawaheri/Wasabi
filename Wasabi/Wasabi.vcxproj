@@ -156,6 +156,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="WCamera.cpp" />
     <ClCompile Include="WEffect.cpp" />
     <ClCompile Include="WMaterial.cpp" />
     <ClCompile Include="WObject.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="WWC_Win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="WCamera.h" />
     <ClInclude Include="WEffect.h" />
     <ClInclude Include="WMaterial.h" />
     <ClInclude Include="WObject.h" />

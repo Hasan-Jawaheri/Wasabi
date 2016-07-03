@@ -33,6 +33,9 @@ class WGeometry : public WBase {
 		VkDeviceMemory mem;
 	} m_indices;
 
+	WVector3		m_maxPt;
+	WVector3		m_minPt;
+
 public:
 	WGeometry(Wasabi* const app, unsigned int ID = 0);
 	~WGeometry();
@@ -40,6 +43,9 @@ public:
 	WError				CreateCube(float fSize, bool bDynamic = false);
 
 	WError				Draw();
+
+	WVector3			GetMinPoint() const;
+	WVector3			GetMaxPoint() const;
 
 	virtual bool		Valid() const;
 };

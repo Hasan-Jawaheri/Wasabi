@@ -40,6 +40,9 @@ WError WGeometry::CreateCube(float fSize, bool bDynamic) {
 	};
 	int vertexBufferSize = vertexBuffer.size() * sizeof(Vertex);
 
+	m_minPt = WVector3(-1.0f, -1.0f, 0.0f);
+	m_maxPt = WVector3(1.0f, 1.0f, 1.0f);
+
 	// Setup indices
 	std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
 	uint32_t indexBufferSize = indexBuffer.size() * sizeof(uint32_t);
@@ -199,4 +202,12 @@ WError WGeometry::Draw() {
 	vkCmdDrawIndexed(renderCmdBuffer, m_indices.count, 1, 0, 0, 1);
 
 	return WError(W_SUCCEEDED);
+}
+
+WVector3 WGeometry::GetMaxPoint() const {
+	return m_maxPt;
+}
+
+WVector3 WGeometry::GetMinPoint() const {
+	return m_minPt;
 }
