@@ -236,7 +236,7 @@ WError WEffect::BuildPipeline() {
 			IL = &m_shaders[i]->m_desc.input_layout;
 	size_t vtx_size = 0;
 	for (int i = 0; i < IL->size(); i++)
-		vtx_size += (*IL)[0].GetSize();
+		vtx_size += (*IL)[i].GetSize();
 
 	vector<VkVertexInputBindingDescription> bindingDesc (1);
 	// Binding description
