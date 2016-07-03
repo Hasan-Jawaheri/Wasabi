@@ -23,6 +23,9 @@ public:
 		unsigned int	num_components = 4);
 	WError			Load(std::string filename);
 
+	VkImageView		GetView() const;
+	VkImageLayout	GetViewLayout() const;
+
 	virtual bool	Valid() const;
 };
 
@@ -31,7 +34,13 @@ class WImageManager : public WManager<WImage> {
 
 	virtual std::string GetTypeName() const;
 
+	WImage* m_checker_image;
+
 public:
 	WImageManager(class Wasabi* const app);
+
+	void Load();
+
+	WImage* GetDefaultImage() const;
 };
 

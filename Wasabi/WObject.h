@@ -24,6 +24,9 @@ public:
 	WError					SetGeometry(class WGeometry* geometry);
 	WError					SetMaterial(class WMaterial* material);
 
+	class WGeometry*		GetGeometry() const;
+	class WMaterial*		GetMaterial() const;
+
 	void					Show();
 	void					Hide();
 	bool					Hidden() const;

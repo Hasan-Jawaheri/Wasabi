@@ -32,6 +32,7 @@ class WForwardRenderer : public WRenderer {
 	uint32_t							m_width, m_height;
 	bool								m_resizing;
 	VkClearColorValue					m_clearColor;
+	VkSampler							m_sampler;
 
 	VkResult _BeginSetupCommands();
 	VkResult _EndSetupCommands();
@@ -52,6 +53,7 @@ public:
 	virtual void		SetClearColor(WColor col);
 
 	virtual class WMaterial*CreateDefaultMaterial();
+	virtual VkSampler		GetDefaultSampler() const;
 
 	virtual VkQueue			GetQueue() const;
 	virtual VkRenderPass	GetRenderPass() const;

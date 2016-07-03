@@ -12,9 +12,15 @@ class WMaterial : public WBase {
 		VkBuffer buffer;
 		VkDeviceMemory memory;
 		VkDescriptorBufferInfo descriptor;
-		struct W_UBO_INFO* ubo_info;
+		struct W_BOUND_RESOURCE* ubo_info;
 	};
 	vector<UNIFORM_BUFFER_INFO> m_uniformBuffers;
+
+	struct SAMPLER_INFO {
+		VkDescriptorImageInfo descriptor;
+		struct W_BOUND_RESOURCE* sampler_info;
+	};
+	vector<SAMPLER_INFO> m_sampler_info;
 
 	class WEffect* m_effect;
 
@@ -36,6 +42,8 @@ public:
 	WError			SetVariableVector3(std::string varName, WVector3 vec);
 	WError			SetVariableVector4(std::string varName, WVector4 vec);
 	WError			SetVariableData(std::string varName, void* data, int len);
+
+	WError			SetTexture(int binding_index, class WImage* img);
 
 	virtual bool	Valid() const;
 };

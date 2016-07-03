@@ -34,7 +34,8 @@ public:
 		o3->SetAngle(0, 0, 20);
 
 		WImage* img = new WImage(this);
-		img->Load("textures/checker.bmp");
+		img->Load("textures/dummy.bmp");
+		o2->GetMaterial()->SetTexture(1, img);
 
 		CameraManager->GetDefaultCamera()->Move(-10);
 
@@ -365,8 +366,9 @@ WError Wasabi::StartEngine(int width, int height) {
 	// Gather physical device memory properties
 	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDev, &m_deviceMemoryProperties);
 
-	CameraManager->Load();
 	werr = Renderer->Initiailize();
+	CameraManager->Load();
+	ImageManager->Load();
 	return werr;
 }
 

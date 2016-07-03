@@ -6,8 +6,8 @@ public:
 
 	virtual void Load() {
 		m_desc.type = W_VERTEX_SHADER;
-		m_desc.ubo_info = {
-			W_UBO_INFO({
+		m_desc.bound_resources = {
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"), // projection
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gWorld"), // world
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
@@ -17,7 +17,7 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
 		};
-		LoadCodeGLSLFromFile("shaders/triangle.vert");
+		LoadCodeGLSLFromFile("shaders/texture.vert");
 	}
 };
 
@@ -27,7 +27,10 @@ public:
 
 	virtual void Load() {
 		m_desc.type = W_FRAGMENT_SHADER;
-		LoadCodeGLSLFromFile("shaders/triangle.frag");
+		m_desc.bound_resources = {
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+		};
+		LoadCodeGLSLFromFile("shaders/texture.frag");
 	}
 };
 
@@ -64,6 +67,7 @@ WForwardRenderer::WForwardRenderer(Wasabi* app) : WRenderer(app) {
 	m_depthStencil.mem = VK_NULL_HANDLE;
 	m_colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
 	m_resizing = false;
+	m_sampler = VK_NULL_HANDLE;
 
 	m_default_fx = nullptr;
 }
@@ -130,6 +134,28 @@ WError WForwardRenderer::Initiailize() {
 	//
 	// ===================================
 	//
+
+	//
+	// Create the texture sampler
+	//
+	VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
+	sampler.magFilter = VK_FILTER_LINEAR;
+	sampler.minFilter = VK_FILTER_LINEAR;
+	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	sampler.mipLodBias = 0.0f;
+	sampler.compareOp = VK_COMPARE_OP_NEVER;
+	sampler.minLod = 0.0f;
+	// Max level-of-detail should match mip level count
+	sampler.maxLod = 1;
+	// Enable anisotropic filtering
+	sampler.maxAnisotropy = 8;
+	sampler.anisotropyEnable = VK_TRUE;
+	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	err = vkCreateSampler(m_device, &sampler, nullptr, &m_sampler);
+	assert(!err);
 
 	//
 	// Create the default effect for rendering
@@ -264,6 +290,8 @@ WError WForwardRenderer::Render() {
 }
 
 void WForwardRenderer::Cleanup() {
+	if (m_sampler)
+		vkDestroySampler(m_device, m_sampler, nullptr);
 	if (m_renderPass)
 		vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 	if (m_pipelineCache)
@@ -274,8 +302,10 @@ void WForwardRenderer::Cleanup() {
 	if (m_semaphores.renderComplete)
 		vkDestroySemaphore(m_device, m_semaphores.renderComplete, nullptr);
 
-	g_FreeCommandBuffer(m_device, m_cmdPool, &m_setupCmdBuffer);
-	g_FreeCommandBuffer(m_device, m_cmdPool, &m_renderCmdBuffer);
+	if (m_setupCmdBuffer)
+		g_FreeCommandBuffer(m_device, m_cmdPool, &m_setupCmdBuffer);
+	if (m_setupCmdBuffer)
+		g_FreeCommandBuffer(m_device, m_cmdPool, &m_renderCmdBuffer);
 	if (m_cmdPool)
 		vkDestroyCommandPool(m_device, m_cmdPool, nullptr);
 
@@ -285,6 +315,15 @@ void WForwardRenderer::Cleanup() {
 	if (m_swapchainInitialized)
 		m_swapChain.cleanup();
 	m_swapchainInitialized = false;
+
+	m_setupCmdBuffer = m_renderCmdBuffer = VK_NULL_HANDLE;
+	m_cmdPool = VK_NULL_HANDLE;
+	m_renderPass = VK_NULL_HANDLE;
+	m_pipelineCache = VK_NULL_HANDLE;
+	m_depthStencil.view = VK_NULL_HANDLE;
+	m_depthStencil.image = VK_NULL_HANDLE;
+	m_depthStencil.mem = VK_NULL_HANDLE;
+	m_sampler = VK_NULL_HANDLE;
 }
 
 void WForwardRenderer::SetClearColor(WColor  col) {
@@ -295,6 +334,10 @@ class WMaterial* WForwardRenderer::CreateDefaultMaterial() {
 	WMaterial* mat = new WMaterial(m_app);
 	mat->SetEffect(m_default_fx);
 	return mat;
+}
+
+VkSampler WForwardRenderer::GetDefaultSampler() const {
+	return m_sampler;
 }
 
 VkResult WForwardRenderer::_BeginSetupCommands() {
