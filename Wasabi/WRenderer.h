@@ -19,6 +19,8 @@ public:
 
 	virtual void		SetClearColor(WColor col) = 0;
 
+	virtual class WMaterial*CreateDefaultMaterial() = 0;
+
 	virtual VkQueue			GetQueue() const = 0;
 	virtual VkRenderPass	GetRenderPass() const = 0;
 	virtual VkPipelineCache	GetPipelineCache() const = 0;

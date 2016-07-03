@@ -53,6 +53,9 @@ public:
 
 	class WObjectManager* ObjectManager;
 	class WGeometryManager* GeometryManager;
+	class WEffectManager* EffectManager;
+	class WShaderManager* ShaderManager;
+	class WMaterialManager* MaterialManager;
 
 	float FPS, maxFPS;
 	class  WGameState* curState;
@@ -110,8 +113,10 @@ public:
 #include "WInputComponent.h"
 #include "WRenderer.h"
 #include "WForwardRenderer.h"
-#include "WObjects.h"
+#include "WObject.h"
 #include "WGeometry.h"
+#include "WEffect.h"
+#include "WMaterial.h"
 #ifdef _WIN32
 #include "WWC_Win32.h"
 #include "WIC_Win32.h"

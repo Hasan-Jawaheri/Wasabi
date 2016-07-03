@@ -156,7 +156,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="WObjects.cpp" />
+    <ClCompile Include="WEffect.cpp" />
+    <ClCompile Include="WMaterial.cpp" />
+    <ClCompile Include="WObject.cpp" />
     <ClCompile Include="WGeometry.cpp" />
     <ClCompile Include="WImages.cpp" />
     <ClCompile Include="vulkantools.cpp" />
@@ -172,7 +174,9 @@
     <ClCompile Include="WWC_Win32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WObjects.h" />
+    <ClInclude Include="WEffect.h" />
+    <ClInclude Include="WMaterial.h" />
+    <ClInclude Include="WObject.h" />
     <ClInclude Include="vulkanswapchain.hpp" />
     <ClInclude Include="vulkantools.h" />
     <ClInclude Include="Wasabi.h" />

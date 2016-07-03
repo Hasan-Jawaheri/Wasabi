@@ -333,7 +333,8 @@ namespace vkTools
 	{
 		size_t size = 0;
 		const char *shaderCode = readBinaryFile(fileName, &size);
-		assert(size > 0);
+		if (size <= 0)
+			return VK_NULL_HANDLE;
 
 		VkShaderModule shaderModule;
 		VkShaderModuleCreateInfo moduleCreateInfo;
@@ -346,7 +347,30 @@ namespace vkTools
 		moduleCreateInfo.pCode = (uint32_t*)shaderCode;
 		moduleCreateInfo.flags = 0;
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
-		assert(!err);
+		if (err)
+			return VK_NULL_HANDLE;
+
+		return shaderModule;
+	}
+	VkShaderModule loadShaderFromCode(const char *code, int len, VkDevice device, VkShaderStageFlagBits stage) {
+		size_t size = len;
+		const char *shaderCode = code;
+		if (size <= 0)
+			return VK_NULL_HANDLE;
+
+		VkShaderModule shaderModule;
+		VkShaderModuleCreateInfo moduleCreateInfo;
+		VkResult err;
+
+		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		moduleCreateInfo.pNext = NULL;
+
+		moduleCreateInfo.codeSize = size;
+		moduleCreateInfo.pCode = (uint32_t*)shaderCode;
+		moduleCreateInfo.flags = 0;
+		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
+		if (err)
+			return VK_NULL_HANDLE;
 
 		return shaderModule;
 	}
@@ -357,7 +381,8 @@ namespace vkTools
 		std::string shaderSrc = readTextFile(fileName);
 		const char *shaderCode = shaderSrc.c_str();
 		size_t size = strlen(shaderCode);
-		assert(size > 0);
+		if (size <= 0)
+			return VK_NULL_HANDLE;
 
 		VkShaderModule shaderModule;
 		VkShaderModuleCreateInfo moduleCreateInfo;
@@ -377,7 +402,37 @@ namespace vkTools
 		memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderCode, size + 1);
 
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
-		assert(!err);
+		if (err)
+			return VK_NULL_HANDLE;
+
+		return shaderModule;
+	}
+	VkShaderModule loadShaderGLSLFromCode(const char *code, int len, VkDevice device, VkShaderStageFlagBits stage) {
+		const char *shaderCode = code;
+		size_t size = len;
+		if (size <= 0)
+			return VK_NULL_HANDLE;
+
+		VkShaderModule shaderModule;
+		VkShaderModuleCreateInfo moduleCreateInfo;
+		VkResult err;
+
+		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		moduleCreateInfo.pNext = NULL;
+
+		moduleCreateInfo.codeSize = 3 * sizeof(uint32_t) + size + 1;
+		moduleCreateInfo.pCode = (uint32_t*)malloc(moduleCreateInfo.codeSize);
+		moduleCreateInfo.flags = 0;
+
+		// Magic SPV number
+		((uint32_t *)moduleCreateInfo.pCode)[0] = 0x07230203;
+		((uint32_t *)moduleCreateInfo.pCode)[1] = 0;
+		((uint32_t *)moduleCreateInfo.pCode)[2] = stage;
+		memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderCode, size + 1);
+
+		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
+		if (err)
+			return VK_NULL_HANDLE;
 
 		return shaderModule;
 	}

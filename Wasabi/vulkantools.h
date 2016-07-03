@@ -77,12 +77,14 @@ namespace vkTools
 	VkShaderModule loadShader(AAssetManager* assetManager, const char *fileName, VkDevice device, VkShaderStageFlagBits stage);
 #else
 	VkShaderModule loadShader(const char *fileName, VkDevice device, VkShaderStageFlagBits stage);
+	VkShaderModule loadShaderFromCode(const char *code, int len, VkDevice device, VkShaderStageFlagBits stage);
 #endif
 
 	// Load a GLSL shader
 	// Note : Only for testing purposes, support for directly feeding GLSL shaders into Vulkan
 	// may be dropped at some point	
 	VkShaderModule loadShaderGLSL(const char *fileName, VkDevice device, VkShaderStageFlagBits stage);
+	VkShaderModule loadShaderGLSLFromCode(const char *code, int len, VkDevice device, VkShaderStageFlagBits stage);
 
 	// Returns a pre-present image memory barrier
 	// Transforms the image's layout from color attachment to present khr

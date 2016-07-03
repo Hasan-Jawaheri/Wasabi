@@ -15,10 +15,14 @@ public:
 		this->maxFPS = 0;
 		WError err = StartEngine(500, 500);
 
-		WObject* o = new WObject(this);
+		WObject* o = new WObject(this, 0);
+		WObject* o2 = new WObject(this, 1);
+		WObject* o3 = new WObject(this, 2);
 		WGeometry* g = new WGeometry(this);
 		g->CreateCube(1);
 		o->SetGeometry(g);
+		o2->SetGeometry(g);
+		o3->SetGeometry(g);
 
 		return err;
 	}
@@ -123,6 +127,9 @@ Wasabi::Wasabi() {
 
 	ObjectManager = new WObjectManager(this);
 	GeometryManager = new WGeometryManager(this);
+	EffectManager = new WEffectManager(this);
+	ShaderManager = new WShaderManager(this);
+	MaterialManager = new WMaterialManager(this);
 }
 Wasabi::~Wasabi() {
 	if (WindowComponent)
@@ -132,6 +139,12 @@ Wasabi::~Wasabi() {
 	W_SAFE_DELETE(SoundComponent);
 	W_SAFE_DELETE(WindowComponent);
 	W_SAFE_DELETE(Renderer);
+
+	delete ObjectManager;
+	delete GeometryManager;
+	delete EffectManager;
+	delete ShaderManager;
+	delete MaterialManager;
 
 	vkDestroyDevice(m_vkDevice, nullptr);
 	vkDestroyInstance(m_vkInstance, nullptr);
