@@ -28,6 +28,9 @@
     <Filter Include="Objects">
       <UniqueIdentifier>{2410807c-e1a8-4552-b566-84db0e937e31}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Materials">
+      <UniqueIdentifier>{05fe7c84-8b0d-45ab-a014-dd015933c1fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WSound.cpp">
@@ -69,8 +72,14 @@
     <ClCompile Include="WGeometry.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="WObjects.cpp">
+    <ClCompile Include="WObject.cpp">
       <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="WEffect.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="WMaterial.cpp">
+      <Filter>Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,8 +137,14 @@
     <ClInclude Include="WGeometry.h">
       <Filter>Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="WObjects.h">
+    <ClInclude Include="WObject.h">
       <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="WEffect.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="WMaterial.h">
+      <Filter>Materials</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

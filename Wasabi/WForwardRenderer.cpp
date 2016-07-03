@@ -1,5 +1,36 @@
 #include "WForwardRenderer.h"
 
+class ForwardRendererVS : public WShader {
+public:
+	ForwardRendererVS(class Wasabi* const app) : WShader(app) {}
+
+	virtual void Load() {
+		m_desc.type = W_VERTEX_SHADER;
+		m_desc.ubo_info = {
+			W_UBO_INFO({
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gWorld"), // world
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"), // projection
+			}),
+		};
+		m_desc.input_layout = {
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // color
+		};
+		LoadCodeGLSLFromFile("shaders/triangle.vert");
+	}
+};
+
+class ForwardRendererPS : public WShader {
+public:
+	ForwardRendererPS(class Wasabi* const app) : WShader(app) {}
+
+	virtual void Load() {
+		m_desc.type = W_FRAGMENT_SHADER;
+		LoadCodeGLSLFromFile("shaders/triangle.frag");
+	}
+};
+
 static VkCommandBuffer g_CreateCommandBuffer(VkDevice device, VkCommandPool pool) {
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
 		vkTools::initializers::commandBufferAllocateInfo(
@@ -29,6 +60,8 @@ WForwardRenderer::WForwardRenderer(Wasabi* app) : WRenderer(app) {
 	m_renderPass = VK_NULL_HANDLE;
 	m_pipelineCache = VK_NULL_HANDLE;
 	m_colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+
+	m_default_fx = nullptr;
 }
 WForwardRenderer::~WForwardRenderer() {
 	Cleanup();
@@ -90,6 +123,22 @@ WError WForwardRenderer::Initiailize() {
 	//
 	// ===================================
 	//
+
+	//
+	// Create the default effect for rendering
+	//
+	WShader* vs = new ForwardRendererVS(m_app);
+	vs->Load();
+	WShader* ps = new ForwardRendererPS(m_app);
+	ps->Load();
+	m_default_fx = new WEffect(m_app);
+	m_default_fx->BindShader(vs);
+	m_default_fx->BindShader(ps);
+	WError werr = m_default_fx->BuildPipeline();
+	vs->RemoveReference();
+	ps->RemoveReference();
+	if (!werr)
+		return werr;
 
 	return WError(W_SUCCEEDED);
 }
@@ -203,6 +252,12 @@ void WForwardRenderer::Cleanup() {
 
 void WForwardRenderer::SetClearColor(WColor  col) {
 	m_clearColor = { { col.r, col.g, col.b, col.a } };
+}
+
+class WMaterial* WForwardRenderer::CreateDefaultMaterial() {
+	WMaterial* mat = new WMaterial(m_app);
+	mat->SetEffect(m_default_fx);
+	return mat;
 }
 
 VkResult WForwardRenderer::_BeginSetupCommands() {

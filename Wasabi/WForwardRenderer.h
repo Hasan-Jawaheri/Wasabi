@@ -37,6 +37,8 @@ class WForwardRenderer : public WRenderer {
 	VkResult _SetupSemaphores();
 	VkResult _SetupSwapchain();
 
+	class WEffect* m_default_fx;
+
 public:
 	WForwardRenderer(Wasabi* app);
 	~WForwardRenderer();
@@ -46,6 +48,8 @@ public:
 	virtual void		Cleanup();
 
 	virtual void		SetClearColor(WColor col);
+
+	virtual class WMaterial*CreateDefaultMaterial();
 
 	virtual VkQueue			GetQueue() const;
 	virtual VkRenderPass	GetRenderPass() const;

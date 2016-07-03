@@ -182,52 +182,10 @@ WError WGeometry::CreateCube(float fSize, bool bDynamic) {
 	vkDestroyBuffer(device, stagingBuffers.indices.buffer, nullptr);
 	vkFreeMemory(device, stagingBuffers.indices.memory, nullptr);
 
-	// Binding description
-	m_vertices.bindingDescriptions.resize(1);
-	m_vertices.bindingDescriptions[0].binding = 0; // VERTEX_BUFFER_BIND_ID;
-	m_vertices.bindingDescriptions[0].stride = sizeof(Vertex);
-	m_vertices.bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-	// Attribute descriptions
-	// Describes memory layout and shader attribute locations
-	m_vertices.attributeDescriptions.resize(2);
-	// Location 0 : Position
-	m_vertices.attributeDescriptions[0].binding = 0; // VERTEX_BUFFER_BIND_ID;
-	m_vertices.attributeDescriptions[0].location = 0;
-	m_vertices.attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-	m_vertices.attributeDescriptions[0].offset = 0;
-	// Location 1 : Color
-	m_vertices.attributeDescriptions[1].binding = 0; // VERTEX_BUFFER_BIND_ID;
-	m_vertices.attributeDescriptions[1].location = 1;
-	m_vertices.attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-	m_vertices.attributeDescriptions[1].offset = sizeof(float) * 3;
-
-	// Assign to vertex buffer
-	m_vertices.inputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	m_vertices.inputState.pNext = NULL;
-	m_vertices.inputState.flags = VK_FLAGS_NONE;
-	m_vertices.inputState.vertexBindingDescriptionCount = m_vertices.bindingDescriptions.size();
-	m_vertices.inputState.pVertexBindingDescriptions = m_vertices.bindingDescriptions.data();
-	m_vertices.inputState.vertexAttributeDescriptionCount = m_vertices.attributeDescriptions.size();
-	m_vertices.inputState.pVertexAttributeDescriptions = m_vertices.attributeDescriptions.data();
-
-	m_vertices.assemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	m_vertices.assemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
 	return WError(W_SUCCEEDED);
 }
 
-WError WGeometry::PopulatePipelineInfo(VkGraphicsPipelineCreateInfo* info) const {
-	if (!Valid())
-		return WError(W_NOTVALID);
-
-	info->pVertexInputState = &m_vertices.inputState;
-	info->pInputAssemblyState = &m_vertices.assemblyState;
-
-	return WError(W_SUCCEEDED);
-}
-
-WError WGeometry::Bind() {
+WError WGeometry::Draw() {
 	VkCommandBuffer renderCmdBuffer = m_app->Renderer->GetCommnadBuffer();
 
 	// Bind triangle vertices

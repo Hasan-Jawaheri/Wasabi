@@ -5,28 +5,8 @@
 class WObject : public WBase {
 	virtual std::string GetTypeName() const;
 
-	VkPipeline							m_pipeline;
-	VkDescriptorSetLayout				m_descriptorSetLayout;
-	VkDescriptorPool					m_descriptorPool;
-	VkDescriptorSet						m_descriptorSet;
-	VkPipelineLayout					m_pipelineLayout;
-
-	struct {
-		VkBuffer buffer;
-		VkDeviceMemory memory;
-		VkDescriptorBufferInfo descriptor;
-	}  m_uniformDataVS;
-
-	struct {
-		WMatrix projectionMatrix;
-		WMatrix modelMatrix;
-		WMatrix viewMatrix;
-	} m_uboVS;
-
-	void _DestroyPipeline();
-	WError _CreatePipeline();
-
 	class WGeometry* m_geometry;
+	class WMaterial* m_material;
 
 public:
 	WObject(Wasabi* const app, unsigned int ID = 0);
@@ -35,6 +15,7 @@ public:
 	void Render();
 
 	WError SetGeometry(class WGeometry* geometry);
+	WError SetMaterial(class WMaterial* material);
 
 	virtual bool	Valid() const;
 };

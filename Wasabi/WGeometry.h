@@ -25,10 +25,6 @@ class WGeometry : public WBase {
 	struct {
 		VkBuffer buf;
 		VkDeviceMemory mem;
-		VkPipelineVertexInputStateCreateInfo inputState;
-		VkPipelineInputAssemblyStateCreateInfo assemblyState;
-		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 	} m_vertices;
 
 	struct {
@@ -43,8 +39,7 @@ public:
 
 	WError				CreateCube(float fSize, bool bDynamic = false);
 
-	WError				PopulatePipelineInfo(VkGraphicsPipelineCreateInfo* info) const;
-	WError				Bind();
+	WError				Draw();
 
 	virtual bool		Valid() const;
 };
