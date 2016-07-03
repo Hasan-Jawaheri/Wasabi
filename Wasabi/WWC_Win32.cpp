@@ -269,7 +269,7 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 		//flag the core as minimized to prevent rendering
 		if (wParam == SIZE_MINIMIZED)
 			((WWC_Win32*)appInst->WindowComponent)->m_isMinimized = true;
-		if (true /* TODO: block resizing while resizing */) {
+		else {
 			((WWC_Win32*)appInst->WindowComponent)->m_isMinimized = false; //flag core as not minimized to allow rendering
 			RECT rc;
 			GetClientRect(hWnd, &rc); //get window client dimensions
