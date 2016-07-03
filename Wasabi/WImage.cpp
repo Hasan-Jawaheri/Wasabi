@@ -18,7 +18,34 @@ std::string WImageManager::GetTypeName() const {
 }
 
 WImageManager::WImageManager(class Wasabi* const app) : WManager<WImage>(app) {
+	m_checker_image = nullptr;
+}
 
+void WImageManager::Load() {
+	m_checker_image = new WImage(app);
+	int size = 64;
+	int comp_size = 4;
+	int check_size = 16;
+	float* pixels = new float[size * size * comp_size];
+	for (int y = 0; y < size; y++) {
+		for (int x = 0; x < size; x++) {
+			int col = ((y/ check_size) + ((x/ check_size) % 2)) % 2;
+			if (comp_size > 0)
+				pixels[(y*size + x) * comp_size + 0] = col;
+			if (comp_size > 1)
+				pixels[(y*size + x) * comp_size + 1] = col;
+			if (comp_size > 2)
+				pixels[(y*size + x) * comp_size + 2] = col;
+			if (comp_size > 3)
+				pixels[(y*size + x) * comp_size + 3] = 1;
+		}
+	}
+	m_checker_image->CretaeFromPixelsArray(pixels, size, size, comp_size);
+	delete[] pixels;
+}
+
+WImage* WImageManager::GetDefaultImage() const {
+	return m_checker_image;
 }
 
 WImage::WImage(Wasabi* const app, unsigned int ID) : WBase(app) {
@@ -288,7 +315,15 @@ WError WImage::Load(std::string filename) {
 	free(data);
 
 	WError err = CretaeFromPixelsArray(pixels, w, h, n);
-	free(pixels);
+	delete[] pixels;
 
 	return err;
+}
+
+VkImageView WImage::GetView() const {
+	return m_view;
+}
+
+VkImageLayout WImage::GetViewLayout() const {
+	return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 }

@@ -25,7 +25,7 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() {
 	return VK_FORMAT_UNDEFINED;
 }
 
-size_t W_UBO_INFO::GetSize() {
+size_t W_BOUND_RESOURCE::GetSize() {
 	size_t s = 0;
 	for (int i = 0; i < variables.size(); i++)
 		s += variables[i].GetSize();
@@ -192,13 +192,23 @@ WError WEffect::BuildPipeline() {
 	//
 	vector<VkDescriptorSetLayoutBinding> layoutBindings;
 	for (int i = 0; i < m_shaders.size(); i++) {
-		if (m_shaders[i]->m_desc.ubo_info.size()) {
-			VkDescriptorSetLayoutBinding layoutBinding = {};
-			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			layoutBinding.descriptorCount = m_shaders[i]->m_desc.ubo_info.size();
-			layoutBinding.stageFlags = (VkShaderStageFlagBits)m_shaders[i]->m_desc.type;
-			layoutBinding.pImmutableSamplers = NULL;
-			layoutBindings.push_back(layoutBinding);
+		if (m_shaders[i]->m_desc.bound_resources.size()) {
+			for (int j = 0; j < m_shaders[i]->m_desc.bound_resources.size(); j++) {
+				VkDescriptorSetLayoutBinding layoutBinding = {};
+				layoutBinding.stageFlags = (VkShaderStageFlagBits)m_shaders[i]->m_desc.type;
+				layoutBinding.pImmutableSamplers = NULL;
+				if (m_shaders[i]->m_desc.bound_resources[j].type == W_TYPE_UBO) {
+					layoutBinding.binding = m_shaders[i]->m_desc.bound_resources[j].binding_index;
+					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					layoutBinding.descriptorCount = 1;
+					layoutBindings.push_back(layoutBinding);
+				} else if (m_shaders[i]->m_desc.bound_resources[j].type == W_TYPE_SAMPLER) {
+					layoutBinding.binding = m_shaders[i]->m_desc.bound_resources[j].binding_index;
+					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					layoutBinding.descriptorCount = 1;
+					layoutBindings.push_back(layoutBinding);
+				}
+			}
 		}
 	}
 

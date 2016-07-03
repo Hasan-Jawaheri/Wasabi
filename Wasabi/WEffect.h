@@ -13,6 +13,11 @@ enum W_SHADER_VARIABLE_TYPE {
 	W_TYPE_INT = 1,
 };
 
+enum W_SHADER_BOUND_RESOURCE_TYPE {
+	W_TYPE_UBO = 0,
+	W_TYPE_SAMPLER = 1,
+};
+
 typedef struct W_SHADER_VARIABLE_INFO {
 	W_SHADER_VARIABLE_INFO(W_SHADER_VARIABLE_TYPE _type, int _num_elems, std::string _name = "")
 		: type(_type), num_elems(_num_elems), name(_name) {}
@@ -25,17 +30,22 @@ typedef struct W_SHADER_VARIABLE_INFO {
 	VkFormat GetFormat();
 } W_SHADER_VARIABLE_INFO;
 
-typedef struct W_UBO_INFO {
-	W_UBO_INFO(std::vector<W_SHADER_VARIABLE_INFO> v) : variables(v) {}
+typedef struct W_BOUND_RESOURCE {
+	W_BOUND_RESOURCE(W_SHADER_BOUND_RESOURCE_TYPE t,
+					 unsigned int index,
+					 std::vector<W_SHADER_VARIABLE_INFO> v = std::vector<W_SHADER_VARIABLE_INFO>())
+		: variables(v), type(t), binding_index(index) {}
 
+	W_SHADER_BOUND_RESOURCE_TYPE type;
+	unsigned int binding_index;
 	std::vector<W_SHADER_VARIABLE_INFO> variables;
 
 	size_t GetSize();
-} W_UBO_INFO;
+} W_BOUND_RESOURCE;
 
 typedef struct W_SHADER_DESC {
 	W_SHADER_TYPE type;
-	std::vector<W_UBO_INFO> ubo_info;
+	std::vector<W_BOUND_RESOURCE> bound_resources;
 	std::vector<W_SHADER_VARIABLE_INFO> input_layout;
 } W_SHADER_DESC;
 

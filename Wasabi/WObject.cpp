@@ -94,6 +94,14 @@ WError WObject::SetMaterial(class WMaterial* material) {
 	return WError(W_SUCCEEDED);
 }
 
+WGeometry* WObject::GetGeometry() const {
+	return m_geometry;
+}
+
+WMaterial* WObject::GetMaterial() const {
+	return m_material;
+}
+
 bool WObject::Hidden() const {
 	return m_hidden;
 }
