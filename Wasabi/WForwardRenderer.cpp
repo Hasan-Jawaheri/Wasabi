@@ -15,7 +15,7 @@ public:
 		};
 		m_desc.input_layout = {
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // color
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
 		};
 		LoadCodeGLSLFromFile("shaders/triangle.vert");
 	}

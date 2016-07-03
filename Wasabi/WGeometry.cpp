@@ -29,19 +29,19 @@ WError WGeometry::CreateCube(float fSize, bool bDynamic) {
 
 	struct Vertex {
 		float pos[3];
-		float col[3];
+		float col[2];
 	};
 
 	// Setup vertices
 	std::vector<Vertex> vertexBuffer = {
-		{ { 1.0f,  1.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
-		{ { -1.0f,  1.0f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
-		{ { 0.0f, -1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
+		{ { 1.0f,  1.0f, 0.0f },{ 1.0f, 0.0f } },
+		{ { -1.0f,  1.0f, 0.0f },{ 0.0f, 0.0f } },
+		{ { 0.0f, -1.0f, 0.0f },{ 0.5f, 1.0f } }
 	};
 	int vertexBufferSize = vertexBuffer.size() * sizeof(Vertex);
 
-	m_minPt = WVector3(-1.0f, -1.0f, 0.0f);
-	m_maxPt = WVector3(1.0f, 1.0f, 1.0f);
+	m_minPt = WVector3(-1.1f, -1.1f, -0.1f);
+	m_maxPt = WVector3(1.1f, 1.1f, 0.1f);
 
 	// Setup indices
 	std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
