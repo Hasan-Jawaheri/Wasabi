@@ -58,6 +58,7 @@ public:
 	class WShaderManager*		ShaderManager;
 	class WMaterialManager*		MaterialManager;
 	class WCameraManager*		CameraManager;
+	class WImageManager*		ImageManager;
 
 	float FPS, maxFPS;
 	class  WGameState* curState;
