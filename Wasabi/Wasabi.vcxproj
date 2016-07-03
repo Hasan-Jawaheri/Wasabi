@@ -71,8 +71,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(VC_SourcePath)\stb\;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -81,8 +82,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(VC_IncludePath)\stb\;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -95,7 +97,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -126,7 +128,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -156,12 +158,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="stb\stb_vorbis.c" />
     <ClCompile Include="WCamera.cpp" />
     <ClCompile Include="WEffect.cpp" />
     <ClCompile Include="WMaterial.cpp" />
     <ClCompile Include="WObject.cpp" />
     <ClCompile Include="WGeometry.cpp" />
-    <ClCompile Include="WImages.cpp" />
+    <ClCompile Include="WImage.cpp" />
     <ClCompile Include="vulkantools.cpp" />
     <ClCompile Include="Wasabi.cpp" />
     <ClCompile Include="WBase.cpp" />
@@ -175,6 +178,24 @@
     <ClCompile Include="WWC_Win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="stb\stb.h" />
+    <ClInclude Include="stb\stb_connected_components.h" />
+    <ClInclude Include="stb\stb_c_lexer.h" />
+    <ClInclude Include="stb\stb_divide.h" />
+    <ClInclude Include="stb\stb_dxt.h" />
+    <ClInclude Include="stb\stb_easy_font.h" />
+    <ClInclude Include="stb\stb_herringbone_wang_tile.h" />
+    <ClInclude Include="stb\stb_image.h" />
+    <ClInclude Include="stb\stb_image_resize.h" />
+    <ClInclude Include="stb\stb_image_write.h" />
+    <ClInclude Include="stb\stb_leakcheck.h" />
+    <ClInclude Include="stb\stb_perlin.h" />
+    <ClInclude Include="stb\stb_rect_pack.h" />
+    <ClInclude Include="stb\stb_textedit.h" />
+    <ClInclude Include="stb\stb_tilemap_editor.h" />
+    <ClInclude Include="stb\stb_truetype.h" />
+    <ClInclude Include="stb\stb_voxel_render.h" />
+    <ClInclude Include="stb\stretchy_buffer.h" />
     <ClInclude Include="WCamera.h" />
     <ClInclude Include="WEffect.h" />
     <ClInclude Include="WMaterial.h" />
@@ -187,7 +208,7 @@
     <ClInclude Include="WForwardRenderer.h" />
     <ClInclude Include="WGeometry.h" />
     <ClInclude Include="WIC_Win32.h" />
-    <ClInclude Include="WImages.h" />
+    <ClInclude Include="WImage.h" />
     <ClInclude Include="WInputComponent.h" />
     <ClInclude Include="WRenderer.h" />
     <ClInclude Include="WWC_Win32.h" />

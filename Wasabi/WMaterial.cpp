@@ -1,6 +1,6 @@
 #include "WMaterial.h"
 
-std::string WMaterialManager::GetTypeName(void) const {
+std::string WMaterialManager::GetTypeName() const {
 	return "Material";
 }
 

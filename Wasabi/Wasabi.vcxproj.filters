@@ -34,6 +34,9 @@
     <Filter Include="Camera">
       <UniqueIdentifier>{fcae07f5-6380-424b-b6a1-8587be14d03b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="stb">
+      <UniqueIdentifier>{0fdb462f-c3a1-4b37-af15-cfe38d0c9df3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WSound.cpp">
@@ -69,9 +72,6 @@
     <ClCompile Include="vulkantools.cpp">
       <Filter>Core\tools</Filter>
     </ClCompile>
-    <ClCompile Include="WImages.cpp">
-      <Filter>Images</Filter>
-    </ClCompile>
     <ClCompile Include="WGeometry.cpp">
       <Filter>Geometry</Filter>
     </ClCompile>
@@ -86,6 +86,12 @@
     </ClCompile>
     <ClCompile Include="WCamera.cpp">
       <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="stb\stb_vorbis.c">
+      <Filter>stb</Filter>
+    </ClCompile>
+    <ClCompile Include="WImage.cpp">
+      <Filter>Images</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -137,9 +143,6 @@
     <ClInclude Include="vulkanswapchain.hpp">
       <Filter>Core\tools</Filter>
     </ClInclude>
-    <ClInclude Include="WImages.h">
-      <Filter>Images</Filter>
-    </ClInclude>
     <ClInclude Include="WGeometry.h">
       <Filter>Geometry</Filter>
     </ClInclude>
@@ -154,6 +157,63 @@
     </ClInclude>
     <ClInclude Include="WCamera.h">
       <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_c_lexer.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_connected_components.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_divide.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_dxt.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_easy_font.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_herringbone_wang_tile.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_image.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_image_resize.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_leakcheck.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_image_write.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_perlin.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_rect_pack.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_textedit.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_tilemap_editor.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_truetype.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stb_voxel_render.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="stb\stretchy_buffer.h">
+      <Filter>stb</Filter>
+    </ClInclude>
+    <ClInclude Include="WImage.h">
+      <Filter>Images</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

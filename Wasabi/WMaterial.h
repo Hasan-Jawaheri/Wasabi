@@ -43,7 +43,7 @@ public:
 class WMaterialManager : public WManager<WMaterial> {
 	friend class WMaterial;
 
-	virtual std::string GetTypeName(void) const;
+	virtual std::string GetTypeName() const;
 
 public:
 	WMaterialManager(class Wasabi* const app);
