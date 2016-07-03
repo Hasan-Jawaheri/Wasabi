@@ -120,6 +120,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 	return 0;
 }
 
+VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(
+	VkDebugReportFlagsEXT       flags,
+	VkDebugReportObjectTypeEXT  objectType,
+	uint64_t                    object,
+	size_t                      location,
+	int32_t                     messageCode,
+	const char*                 pLayerPrefix,
+	const char*                 pMessage,
+	void*                       pUserData) {
+	MessageBoxA(NULL, pMessage, "Vulkan Error", MB_OK | MB_ICONERROR);
+	std::cerr << pMessage << std::endl;
+	return VK_FALSE;
+}
+
 Wasabi::Wasabi() {
 	engineParams = {
 		{ "appName", (void*)"Wasabi" }, // LPCSTR
@@ -148,6 +162,7 @@ Wasabi::Wasabi() {
 	ShaderManager = new WShaderManager(this);
 	MaterialManager = new WMaterialManager(this);
 	CameraManager = new WCameraManager(this);
+	ImageManager = new WImageManager(this);
 }
 Wasabi::~Wasabi() {
 	if (WindowComponent)
@@ -164,6 +179,7 @@ Wasabi::~Wasabi() {
 	delete ShaderManager;
 	delete MaterialManager;
 	delete CameraManager;
+	delete ImageManager;
 
 	vkDestroyDevice(m_vkDevice, nullptr);
 	vkDestroyInstance(m_vkInstance, nullptr);
@@ -188,12 +204,17 @@ VkInstance CreateVKInstance(const char* appName, const char* engineName) {
 	appInfo.apiVersion = VK_API_VERSION_1_0;
 
 	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+	std::vector<const char*> enabledLayers = {};
 
 	// Enable surface extensions depending on os
 #if defined(_WIN32)
 	enabledExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #elif defined(__linux__)
 	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+#endif
+#if (defined(DEBUG) || defined(_DEBUG))
+	//enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+	enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
 
 	VkInstanceCreateInfo instanceCreateInfo = {};
@@ -204,11 +225,43 @@ VkInstance CreateVKInstance(const char* appName, const char* engineName) {
 		instanceCreateInfo.enabledExtensionCount = (uint32_t)enabledExtensions.size();
 		instanceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
 	}
+	if (enabledLayers.size() > 0) {
+		instanceCreateInfo.enabledLayerCount = enabledLayers.size();
+		instanceCreateInfo.ppEnabledLayerNames = enabledLayers.data();
+	}
 
 	VkInstance inst;
 	VkResult r = vkCreateInstance(&instanceCreateInfo, nullptr, &inst);
 	if (r != VK_SUCCESS)
 		return nullptr;
+
+#if (defined(DEBUG) || defined(_DEBUG))
+	/* Load VK_EXT_debug_report entry points in debug builds */
+	PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT =
+		reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>
+		(vkGetInstanceProcAddr(inst, "vkCreateDebugReportCallbackEXT"));
+	PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT =
+		reinterpret_cast<PFN_vkDebugReportMessageEXT>
+		(vkGetInstanceProcAddr(inst, "vkDebugReportMessageEXT"));
+	PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT =
+		reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>
+		(vkGetInstanceProcAddr(inst, "vkDestroyDebugReportCallbackEXT"));
+
+	/* Setup callback creation information */
+	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo;
+	callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+	callbackCreateInfo.pNext = nullptr;
+	callbackCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT |
+		VK_DEBUG_REPORT_WARNING_BIT_EXT |
+		VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+	callbackCreateInfo.pfnCallback = &VulkanDebugReportCallback;
+	callbackCreateInfo.pUserData = nullptr;
+
+	/* Register the callback */
+	VkDebugReportCallbackEXT callback;
+	VkResult result = vkCreateDebugReportCallbackEXT(inst, &callbackCreateInfo, nullptr, &callback);
+#endif
+
 	return inst;
 }
 
