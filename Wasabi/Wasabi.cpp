@@ -33,6 +33,9 @@ public:
 		o3->SetPosition(5, 5, 0);
 		o3->SetAngle(0, 0, 20);
 
+		WImage* img = new WImage(this);
+		img->Load("textures/crate_bc3.dds");
+
 		CameraManager->GetDefaultCamera()->Move(-10);
 
 		return err;

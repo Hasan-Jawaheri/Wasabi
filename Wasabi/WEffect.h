@@ -65,7 +65,7 @@ public:
 class WShaderManager : public WManager<WShader> {
 	friend class WShader;
 
-	virtual std::string GetTypeName(void) const;
+	virtual std::string GetTypeName() const;
 
 public:
 	WShaderManager(class Wasabi* const app);
@@ -102,7 +102,7 @@ public:
 class WEffectManager : public WManager<WEffect> {
 	friend class WEffect;
 
-	virtual std::string GetTypeName(void) const;
+	virtual std::string GetTypeName() const;
 
 public:
 	WEffectManager(class Wasabi* const app);

@@ -47,6 +47,7 @@ bool WObject::Valid() const {
 }
 
 void WObject::Render(WCamera* const cam) {
+	// TODO: check if geometry is compatible with material
 	if (m_geometry && m_material && m_geometry->Valid() && m_material->Valid() && !m_hidden) {
 		WMatrix worldM = GetWorldMatrix();
 		if (m_bFrustumCull) {
