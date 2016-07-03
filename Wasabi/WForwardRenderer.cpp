@@ -59,7 +59,11 @@ WForwardRenderer::WForwardRenderer(Wasabi* app) : WRenderer(app) {
 	m_cmdPool = VK_NULL_HANDLE;
 	m_renderPass = VK_NULL_HANDLE;
 	m_pipelineCache = VK_NULL_HANDLE;
+	m_depthStencil.view = VK_NULL_HANDLE;
+	m_depthStencil.image = VK_NULL_HANDLE;
+	m_depthStencil.mem = VK_NULL_HANDLE;
 	m_colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+	m_resizing = false;
 
 	m_default_fx = nullptr;
 }
@@ -109,6 +113,8 @@ WError WForwardRenderer::Initiailize() {
 	if (_BeginSetupCommands() != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
 
+	m_width = m_app->WindowComponent->GetWindowWidth();
+	m_height = m_app->WindowComponent->GetWindowHeight();
 	err = _SetupSwapchain();
 	if (err != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
@@ -140,6 +146,34 @@ WError WForwardRenderer::Initiailize() {
 	ps->RemoveReference();
 	if (!werr)
 		return werr;
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WForwardRenderer::Resize(unsigned int width, unsigned int height) {
+	if (m_resizing)
+		return WError(W_SUCCEEDED);
+
+	m_resizing = true;
+	m_width = width;
+	m_height = height;
+
+	if (_BeginSetupCommands() != VK_SUCCESS)
+		return WError(W_OUTOFMEMORY);
+
+	VkResult err = _SetupSwapchain();
+	if (err != VK_SUCCESS) {
+		_EndSetupCommands();
+		return WError(W_OUTOFMEMORY);
+	}
+
+	if (_EndSetupCommands() != VK_SUCCESS)
+		return WError(W_OUTOFMEMORY);
+
+	vkQueueWaitIdle(m_queue);
+	vkDeviceWaitIdle(m_device);
+
+	m_resizing = false;
 
 	return WError(W_SUCCEEDED);
 }
@@ -328,11 +362,23 @@ VkResult WForwardRenderer::_SetupSemaphores() {
 }
 
 VkResult WForwardRenderer::_SetupSwapchain() {
+	if (m_depthStencil.view)
+		vkDestroyImageView(m_device, m_depthStencil.view, nullptr);
+	m_depthStencil.view = VK_NULL_HANDLE;
+	if (m_depthStencil.image)
+		vkDestroyImage(m_device, m_depthStencil.image, nullptr);
+	m_depthStencil.image = VK_NULL_HANDLE;
+	if (m_depthStencil.mem)
+		vkFreeMemory(m_device, m_depthStencil.mem, nullptr);
+	m_depthStencil.mem = VK_NULL_HANDLE;
+
+	for (uint32_t i = 0; i < m_frameBuffers.size(); i++)
+		vkDestroyFramebuffer(m_device, m_frameBuffers[i], nullptr);
+	m_frameBuffers.clear();
+
 	//
 	// Setup the swap chain
 	//
-	m_width = m_app->WindowComponent->GetWindowWidth();
-	m_height = m_app->WindowComponent->GetWindowHeight();
 	m_swapChain.create(m_setupCmdBuffer, &m_width, &m_height);
 
 	//

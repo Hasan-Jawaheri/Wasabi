@@ -16,6 +16,7 @@ public:
 	virtual WError		Initiailize() = 0;
 	virtual WError		Render() = 0;
 	virtual void		Cleanup() = 0;
+	virtual WError		Resize(unsigned int width, unsigned int height) = 0;
 
 	virtual void		SetClearColor(WColor col) = 0;
 

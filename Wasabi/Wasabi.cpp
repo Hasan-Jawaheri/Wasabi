@@ -18,11 +18,15 @@ public:
 		WObject* o = new WObject(this);
 		WObject* o2 = new WObject(this);
 		WObject* o3 = new WObject(this);
+
 		WGeometry* g = new WGeometry(this);
 		g->CreateCube(1);
+
 		o->SetGeometry(g);
 		o2->SetGeometry(g);
 		o3->SetGeometry(g);
+
+		g->RemoveReference();
 
 		o->SetPosition(-5, 5, 0);
 		o2->SetPosition(0, 0, -4);
@@ -37,6 +41,9 @@ public:
 		char title[32];
 		sprintf_s(title, 32, "%f", FPS);
 		WindowComponent->SetWindowTitle(title);
+
+		CameraManager->GetDefaultCamera()->Fly(fDeltaTime * 0.1f);
+
 		return true;
 	}
 	void Cleanup() {
@@ -69,7 +76,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 			if (!app->WindowComponent->Loop())
 				continue;
 
-			if (deltaTime > 0.01f) {
+			if (deltaTime >= 0.00001f) {
 				if (!app->Loop(deltaTime))
 					break;
 				if (app->curState)
@@ -308,7 +315,7 @@ WError Wasabi::StartEngine(int width, int height) {
 }
 
 WError Wasabi::Resize(int width, int height) {
-	return WError(W_SUCCEEDED);
+	return Renderer->Resize(width, height);
 }
 
 

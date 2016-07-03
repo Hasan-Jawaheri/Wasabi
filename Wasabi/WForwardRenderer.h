@@ -30,6 +30,7 @@ class WForwardRenderer : public WRenderer {
 
 	VkFormat							m_depthFormat, m_colorFormat;
 	uint32_t							m_width, m_height;
+	bool								m_resizing;
 	VkClearColorValue					m_clearColor;
 
 	VkResult _BeginSetupCommands();
@@ -46,6 +47,7 @@ public:
 	virtual WError		Initiailize();
 	virtual WError		Render();
 	virtual void		Cleanup();
+	virtual WError		Resize(unsigned int width, unsigned int height);
 
 	virtual void		SetClearColor(WColor col);
 
