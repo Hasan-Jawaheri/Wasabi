@@ -167,20 +167,23 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 	// Update descriptor sets determining the shader binding points
 	// For every binding point used in a shader there needs to be one
 	// descriptor set matching that binding point
+	vector<VkWriteDescriptorSet> writes;
 	for (int i = 0; i < m_uniformBuffers.size(); i++) {
 		VkWriteDescriptorSet writeDescriptorSet = {};
 
-		// Binding 0 : Uniform buffer
+		// Binding i : Uniform buffer
 		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSet.dstSet = m_descriptorSet;
 		writeDescriptorSet.descriptorCount = 1;
 		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		writeDescriptorSet.pBufferInfo = &m_uniformBuffers[i].descriptor;
-		// Binds this uniform buffer to binding point 0
-		writeDescriptorSet.dstBinding = 0;
+		// Binds this uniform buffer to binding point i
+		writeDescriptorSet.dstBinding = i;
 
-		vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, NULL);
+		writes.push_back(writeDescriptorSet);
 	}
+
+	vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, NULL);
 
 	m_effect = effect;
 	effect->AddReference();
