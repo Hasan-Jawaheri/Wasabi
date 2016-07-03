@@ -13,7 +13,7 @@ class Kofta : public Wasabi {
 public:
 	WError Setup() {
 		this->maxFPS = 0;
-		WError err = StartEngine(500, 500);
+		WError err = StartEngine(640, 480);
 
 		WObject* o = new WObject(this);
 		WObject* o2 = new WObject(this);
@@ -33,7 +33,7 @@ public:
 		o3->SetPosition(5, 5, 0);
 		o3->SetAngle(0, 0, 20);
 
-		CameraManager->GetDefaultCamera()->Move(-20);
+		CameraManager->GetDefaultCamera()->Move(-10);
 
 		return err;
 	}
@@ -42,7 +42,7 @@ public:
 		sprintf_s(title, 32, "%f", FPS);
 		WindowComponent->SetWindowTitle(title);
 
-		CameraManager->GetDefaultCamera()->Fly(fDeltaTime * 0.1f);
+		CameraManager->GetDefaultCamera()->Fly(0.0002f);
 
 		return true;
 	}

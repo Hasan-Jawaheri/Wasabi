@@ -242,6 +242,15 @@ void WCamera::UpdateInternals() {
 		float r = m_maxRange / (m_maxRange - m_minRange);
 		m_ProjM._33 = r;
 		m_ProjM._43 = -r * m_minRange;
+		
+		// fix the coordinate system (we use LHS, Vulkan uses RHS, so flip y coordinate)
+		// also change depth from [-1, 1] to [0, 1]
+		m_ProjM *= WMatrix(
+			1,  0,       0, 0,
+			0, -1,       0, 0,
+			0,  0, 1.0/2.0, 1.0 / 2.0,
+			0,  0,       0, 1
+		);
 
 		// Create the m_frustum matrix from the view matrix and updated projection matrix.
 		WMatrix matrix = m_ViewM *m_ProjM;
