@@ -32,6 +32,13 @@ size_t W_BOUND_RESOURCE::GetSize() {
 	return s;
 }
 
+size_t W_INPUT_LAYOUT::GetSize() {
+	size_t s = 0;
+	for (int i = 0; i < attributes.size(); i++)
+		s += attributes[i].GetSize();
+	return s;
+}
+
 std::string WShaderManager::GetTypeName(void) const {
 	return "Shader";
 }
@@ -123,7 +130,7 @@ bool WEffect::Valid() const {
 	// valid when at least one shader has input layout (vertex shader)
 	for (int i = 0; i < m_shaders.size(); i++)
 		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER &&
-			m_shaders[i]->m_desc.input_layout.size() > 0 &&
+			m_shaders[i]->m_desc.input_layout.GetSize() > 0 &&
 			m_shaders[i]->Valid())
 			return true;
 	return false;
@@ -240,30 +247,27 @@ WError WEffect::BuildPipeline() {
 		return WError(W_FAILEDTOCREATEPIPELINELAYOUT);
 	}
 
-	std::vector<W_SHADER_VARIABLE_INFO>* IL = nullptr;
+	W_INPUT_LAYOUT* IL = nullptr;
 	for (int i = 0; i < m_shaders.size(); i++)
 		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER)
 			IL = &m_shaders[i]->m_desc.input_layout;
-	size_t vtx_size = 0;
-	for (int i = 0; i < IL->size(); i++)
-		vtx_size += (*IL)[i].GetSize();
 
 	vector<VkVertexInputBindingDescription> bindingDesc (1);
 	// Binding description
 	bindingDesc[0].binding = 0; // VERTEX_BUFFER_BIND_ID;
-	bindingDesc[0].stride = vtx_size;
+	bindingDesc[0].stride = IL->GetSize();
 	bindingDesc[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	std::vector<VkVertexInputAttributeDescription> attribDesc (IL->size());
+	std::vector<VkVertexInputAttributeDescription> attribDesc (IL->attributes.size());
 	// Attribute descriptions
 	// Describes memory layout and shader attribute locations
-	for (int i = 0; i < IL->size(); i++) {
+	for (int i = 0; i < IL->attributes.size(); i++) {
 		attribDesc[i].binding = 0;
 		attribDesc[i].location = i;
-		attribDesc[i].format = (*IL)[i].GetFormat();
+		attribDesc[i].format = IL->attributes[i].GetFormat();
 		attribDesc[i].offset = 0;
 		if (i > 0)
-			attribDesc[i].offset = attribDesc[i - 1].offset + (*IL)[i-1].GetSize();
+			attribDesc[i].offset = attribDesc[i - 1].offset + IL->attributes[i-1].GetSize();
 	}
 
 	// Assign to vertex buffer
@@ -406,4 +410,12 @@ VkPipelineLayout* WEffect::GetPipelineLayout() {
 
 VkDescriptorSetLayout* WEffect::GetDescriptorSetLayout() {
 	return &m_descriptorSetLayout;
+}
+
+W_INPUT_LAYOUT WEffect::GetInputLayout() const {
+	W_INPUT_LAYOUT l;
+	for (int i = 0; i < m_shaders.size(); i++)
+		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER)
+			l = m_shaders[i]->m_desc.input_layout;
+	return l;
 }

@@ -45,6 +45,8 @@ public:
 
 	WError			SetTexture(int binding_index, class WImage* img);
 
+	class WEffect*	GetEffect() const;
+
 	virtual bool	Valid() const;
 };
 
