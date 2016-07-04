@@ -246,14 +246,14 @@ void WCamera::UpdateInternals() {
 		// fix the coordinate system (we use LHS, Vulkan uses RHS, so flip y coordinate)
 		// also change depth from [-1, 1] to [0, 1]
 		m_ProjM *= WMatrix(
-			1,  0,       0, 0,
-			0, -1,       0, 0,
+			1,  0,       0,         0,
+			0, -1,       0,         0,
 			0,  0, 1.0/2.0, 1.0 / 2.0,
-			0,  0,       0, 1
+			0,  0,       0,         1
 		);
 
 		// Create the m_frustum matrix from the view matrix and updated projection matrix.
-		WMatrix matrix = m_ViewM *m_ProjM;
+		WMatrix matrix = m_ViewM * m_ProjM;
 
 		// Calculate near plane of m_frustum.
 		m_frustumPlanes[0].a = matrix._14 + matrix._13;

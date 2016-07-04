@@ -303,3 +303,7 @@ WError WMaterial::SetTexture(int binding_index, class WImage* img) {
 	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
 }
+
+class WEffect* WMaterial::GetEffect() const {
+	return m_effect;
+}

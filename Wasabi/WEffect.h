@@ -43,10 +43,21 @@ typedef struct W_BOUND_RESOURCE {
 	size_t GetSize();
 } W_BOUND_RESOURCE;
 
+typedef struct W_INPUT_LAYOUT {
+	W_INPUT_LAYOUT(std::vector<W_SHADER_VARIABLE_INFO> a)
+		: attributes(a) {
+	}
+	W_INPUT_LAYOUT() : attributes({}) {}
+
+	std::vector<W_SHADER_VARIABLE_INFO> attributes;
+
+	size_t GetSize();
+} W_INPUT_LAYOUT;
+
 typedef struct W_SHADER_DESC {
 	W_SHADER_TYPE type;
 	std::vector<W_BOUND_RESOURCE> bound_resources;
-	std::vector<W_SHADER_VARIABLE_INFO> input_layout;
+	W_INPUT_LAYOUT input_layout;
 } W_SHADER_DESC;
 
 class WShader : public WBase {
@@ -105,6 +116,7 @@ public:
 	
 	VkPipelineLayout*		GetPipelineLayout();
 	VkDescriptorSetLayout*	GetDescriptorSetLayout();
+	W_INPUT_LAYOUT			GetInputLayout() const;
 
 	virtual bool			Valid() const;
 };
