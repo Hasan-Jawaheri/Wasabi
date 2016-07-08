@@ -381,6 +381,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	werr = Renderer->Initiailize();
 	CameraManager->Load();
 	ImageManager->Load();
+	SpriteManager->Load();
 
 	if (TextComponent)
 		TextComponent->Initialize();

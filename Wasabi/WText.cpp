@@ -130,7 +130,6 @@ void WTextComponent::Initialize() {
 	ps->RemoveReference();
 	m_textMaterial = new WMaterial(m_app);
 	m_textMaterial->SetEffect(textFX);
-	m_textMaterial->SetName("m_textMaterial");
 	textFX->RemoveReference();
 
 	unsigned int num_verts = (unsigned int)m_app->engineParams["textBatchSize"] * 4;

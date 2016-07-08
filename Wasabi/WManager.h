@@ -27,35 +27,35 @@ template<typename T>
 class WManager {
 	bool __bDbgDestructing;
 protected:
-	std::vector<T*> _entities[W_HASHTABLESIZE];
+	std::vector<T*> m_entities[W_HASHTABLESIZE];
 
 	virtual std::string GetTypeName(void) const = 0;
 
 public:
-	class Wasabi* const app;
-	WManager(class Wasabi* const _app) : app(_app) { __bDbgDestructing = false; }
+	class Wasabi* const m_app;
+	WManager(class Wasabi* const _app) : m_app(_app) { __bDbgDestructing = false; }
 	~WManager(void) {
 		__bDbgDestructing = true;
 		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-			for (unsigned int i = 0; i < _entities[j].size(); i)
-				_entities[j][i]->RemoveReference();
+			for (unsigned int i = 0; i < m_entities[j].size(); i)
+				m_entities[j][i]->RemoveReference();
 	}
 	void AddEntity(T* entity) {
 		if (!entity)
 			return;
-		_entities[W_HASH(entity->GetID())].push_back(entity);
+		m_entities[W_HASH(entity->GetID())].push_back(entity);
 		entity->SetManager((void*)this);
 		std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Added to the manager.\n";
 	}
 	bool RemoveEntity(T* entity) {
 		unsigned int tableIndex = W_HASH(entity->GetID());
-		for (unsigned int i = 0; i < _entities[tableIndex].size(); i++)
-			if (_entities[tableIndex][i] == entity)
+		for (unsigned int i = 0; i < m_entities[tableIndex].size(); i++)
+			if (m_entities[tableIndex][i] == entity)
 			{
 				if (!__bDbgDestructing)
 					std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Removed from manager.\n";
 
-				_entities[tableIndex].erase(_entities[tableIndex].begin() + i);
+				m_entities[tableIndex].erase(m_entities[tableIndex].begin() + i);
 				return true;
 			}
 		return false;
@@ -67,31 +67,31 @@ public:
 	T* GetEntity(unsigned int ID) const {
 		unsigned int tableIndex = W_HASH(ID);
 		if (tableIndex) //ID 0 is not searched for
-			for (unsigned int i = 0; i < _entities[tableIndex].size(); i++)
-				if (_entities[tableIndex][i]->GetID() == ID)
-					return _entities[tableIndex][i];
+			for (unsigned int i = 0; i < m_entities[tableIndex].size(); i++)
+				if (m_entities[tableIndex][i]->GetID() == ID)
+					return m_entities[tableIndex][i];
 		return nullptr;
 	}
 	T* GetEntity(std::string name) const {
 		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-			for (unsigned int i = 0; i < _entities[j].size(); i++)
-				if (_entities[j][i]->GetName() == name)
-					return _entities[j][i];
+			for (unsigned int i = 0; i < m_entities[j].size(); i++)
+				if (m_entities[j][i]->GetName() == name)
+					return m_entities[j][i];
 		return nullptr;
 	}
 	T* GetEntityByIndex(unsigned int index) const {
 		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
 		{
-			if (index < _entities[j].size())
-				return _entities[j][index];
-			index -= _entities[j].size();
+			if (index < m_entities[j].size())
+				return m_entities[j][index];
+			index -= m_entities[j].size();
 		}
 		return nullptr;
 	}
 	unsigned int GetEntitiesCount(void) const {
 		unsigned int size = 0;
 		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-			size += _entities[j].size();
+			size += m_entities[j].size();
 		return size;
 	}
 };

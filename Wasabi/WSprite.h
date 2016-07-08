@@ -13,9 +13,9 @@ public:
 
 	void Render();
 
-	void					Show();
-	void					Hide();
-	bool					Hidden() const;
+	void			Show();
+	void			Hide();
+	bool			Hidden() const;
 
 	virtual bool	Valid() const;
 };
@@ -25,8 +25,14 @@ class WSpriteManager : public WManager<WSprite> {
 
 	virtual std::string GetTypeName() const;
 
+	class WGeometry* m_spriteGeometry;
+	class WMaterial* m_spriteMaterial;
+
 public:
 	WSpriteManager(class Wasabi* const app);
+	~WSpriteManager();
+
+	void Load();
 
 	void Render();
 };
