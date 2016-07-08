@@ -33,7 +33,7 @@ public:
 		o3->SetPosition(5, 5, 0);
 		o3->SetAngle(0, 0, 20);
 
-		TextComponent->CreateFont(1, "Arial");
+		TextComponent->CreateFont(1, "FORTE");
 
 		WImage* img = new WImage(this);
 		img->Load("textures/dummy.bmp");
@@ -46,12 +46,11 @@ public:
 	}
 	bool Loop(float fDeltaTime) {
 		char title[32];
-		sprintf_s(title, 32, "%f", FPS);
-		WindowComponent->SetWindowTitle(title);
-
+		sprintf_s(title, 32, "FPS: %.2f", FPS);
 		int mx = InputComponent->MouseX();
 		int my = InputComponent->MouseY();
-		TextComponent->RenderText("LOL\nnew line!", mx, my, 32);
+		int width = TextComponent->GetTextWidth(title, 32, 1);
+		TextComponent->RenderText(title, mx - width / 2, my - 32, 32, 1);
 
 		return true;
 	}
@@ -174,6 +173,7 @@ Wasabi::Wasabi() {
 	MaterialManager = new WMaterialManager(this);
 	CameraManager = new WCameraManager(this);
 	ImageManager = new WImageManager(this);
+	SpriteManager = new WSpriteManager(this);
 }
 Wasabi::~Wasabi() {
 	if (WindowComponent)
@@ -186,6 +186,7 @@ Wasabi::~Wasabi() {
 	W_SAFE_DELETE(Renderer);
 
 	delete ObjectManager;
+	delete SpriteManager;
 	delete GeometryManager;
 	delete EffectManager;
 	delete MaterialManager;

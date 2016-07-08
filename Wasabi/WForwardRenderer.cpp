@@ -261,6 +261,8 @@ WError WForwardRenderer::Render() {
 	cam->Render(m_width, m_height);
 	m_app->ObjectManager->Render(cam);
 
+	m_app->SpriteManager->Render();
+
 	m_app->TextComponent->Render();
 
 	vkCmdEndRenderPass(m_renderCmdBuffer);

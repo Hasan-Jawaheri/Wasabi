@@ -40,6 +40,9 @@
     <Filter Include="Text">
       <UniqueIdentifier>{d76a3483-ef7b-49ee-b854-abc5491f883f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sprites">
+      <UniqueIdentifier>{bcd88de3-4dd1-47c9-802d-bd82fa78f54f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WSound.cpp">
@@ -98,6 +101,9 @@
     </ClCompile>
     <ClCompile Include="WText.cpp">
       <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="WSprite.cpp">
+      <Filter>Sprites</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -223,6 +229,9 @@
     </ClInclude>
     <ClInclude Include="WText.h">
       <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="WSprite.h">
+      <Filter>Sprites</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

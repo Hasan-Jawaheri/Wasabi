@@ -60,6 +60,7 @@ public:
 	class WMaterialManager*		MaterialManager;
 	class WCameraManager*		CameraManager;
 	class WImageManager*		ImageManager;
+	class WSpriteManager*		SpriteManager;
 
 	float FPS, maxFPS;
 	class  WGameState* curState;
@@ -124,6 +125,7 @@ public:
 #include "WMaterial.h"
 #include "WCamera.h"
 #include "WImage.h"
+#include "WSprite.h"
 #ifdef _WIN32
 #include "WWC_Win32.h"
 #include "WIC_Win32.h"
