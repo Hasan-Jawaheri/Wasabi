@@ -139,7 +139,7 @@ void WSoundComponent::m_UnRegisterSound(WBase* base) {
 }
 
 
-WSound::WSound(Wasabi* const app, uint ID) : WBase(app) {
+WSound::WSound(Wasabi* const app, uint ID) : WBase(app, ID) {
 	m_valid = false;
 	m_numBuffers = W_NUM_SOUND_BUFFERS_PER_SOUND;
 	m_buffers = new ALuint[m_numBuffers];
@@ -153,9 +153,6 @@ WSound::WSound(Wasabi* const app, uint ID) : WBase(app) {
 	// Generate Source
 	alGetError(); //clear errors
 	alGenSources(1, &m_source);
-
-	//initiate the locals
-	SetID(ID);
 
 	char name[256];
 	static uint i = 0;

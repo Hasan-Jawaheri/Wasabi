@@ -18,6 +18,7 @@ class WMaterial : public WBase {
 
 	struct SAMPLER_INFO {
 		VkDescriptorImageInfo descriptor;
+		class WImage* img;
 		struct W_BOUND_RESOURCE* sampler_info;
 	};
 	vector<SAMPLER_INFO> m_sampler_info;

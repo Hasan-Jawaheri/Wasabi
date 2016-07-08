@@ -15,9 +15,7 @@ void WObjectManager::Render(WCamera* const cam) {
 	}
 }
 
-WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app) {
-	SetID(ID);
-
+WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_geometry = nullptr;
 	m_material = app->Renderer->CreateDefaultMaterial();
 

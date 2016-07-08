@@ -20,9 +20,7 @@ std::string WCameraManager::GetTypeName() const {
 	return "Camera";
 }
 
-WCamera::WCamera(Wasabi* const app, unsigned int ID) : WBase(app) {
-	SetID(ID);
-
+WCamera::WCamera(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	//initialize default values
 	m_lastWidth = m_app->WindowComponent->GetWindowWidth();
 	m_lastHeight = m_app->WindowComponent->GetWindowHeight();

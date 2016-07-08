@@ -50,8 +50,7 @@ std::string WShader::GetTypeName() const {
 	return "Shader";
 }
 
-WShader::WShader(class Wasabi* const app, unsigned int ID) : WBase(app) {
-	SetID(ID);
+WShader::WShader(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_module = VK_NULL_HANDLE;
 	app->ShaderManager->AddEntity(this);
 }
@@ -99,14 +98,15 @@ std::string WEffectManager::GetTypeName(void) const {
 WEffectManager::WEffectManager(class Wasabi* const app) : WManager<WEffect>(app) {
 }
 
-WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app) {
-	SetID(ID);
-
+WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 	m_pipeline = VK_NULL_HANDLE;
 	m_pipelineLayout = VK_NULL_HANDLE;
 	m_descriptorSetLayout = VK_NULL_HANDLE;
+
+	m_blendState.colorWriteMask = 0xf;
+	m_blendState.blendEnable = VK_FALSE;
 
 	app->EffectManager->AddEntity(this);
 }
@@ -183,6 +183,10 @@ void WEffect::_DestroyPipeline() {
 	m_descriptorSetLayout = VK_NULL_HANDLE;
 	m_pipeline = VK_NULL_HANDLE;
 	m_pipelineLayout = VK_NULL_HANDLE;
+}
+
+void WEffect::SetBlendingState(VkPipelineColorBlendAttachmentState state) {
+	m_blendState = state;
 }
 
 WError WEffect::BuildPipeline() {
@@ -305,9 +309,7 @@ WError WEffect::BuildPipeline() {
 	colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	// One blend attachment state
 	// Blending is not used in this example
-	VkPipelineColorBlendAttachmentState blendAttachmentState[1] = {};
-	blendAttachmentState[0].colorWriteMask = 0xf;
-	blendAttachmentState[0].blendEnable = VK_FALSE;
+	VkPipelineColorBlendAttachmentState blendAttachmentState[1] = { m_blendState };
 	colorBlendState.attachmentCount = 1;
 	colorBlendState.pAttachments = blendAttachmentState;
 

@@ -102,6 +102,8 @@ class WEffect : public WBase {
 	VkPipelineLayout					m_pipelineLayout;
 	VkDescriptorSetLayout				m_descriptorSetLayout;
 
+	VkPipelineColorBlendAttachmentState m_blendState;
+
 	void _DestroyPipeline();
 
 public:
@@ -111,6 +113,7 @@ public:
 	WError					BindShader(WShader* shader);
 	WError					UnbindShader(W_SHADER_TYPE type);
 	void					SetPrimitiveTopology(VkPrimitiveTopology topology);
+	void					SetBlendingState(VkPipelineColorBlendAttachmentState state);
 	WError					BuildPipeline();
 	WError					Bind();
 	

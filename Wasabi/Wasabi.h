@@ -50,6 +50,7 @@ public:
 	class WSoundComponent*		SoundComponent;
 	class WWindowComponent*		WindowComponent;
 	class WInputComponent*		InputComponent;
+	class WTextComponent*		TextComponent;
 	class WRenderer*			Renderer;
 
 	class WObjectManager*		ObjectManager;
@@ -114,6 +115,7 @@ public:
 
 #include "WWindowComponent.h"
 #include "WInputComponent.h"
+#include "WText.h"
 #include "WRenderer.h"
 #include "WForwardRenderer.h"
 #include "WObject.h"
