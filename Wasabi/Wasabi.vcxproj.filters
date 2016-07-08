@@ -37,6 +37,9 @@
     <Filter Include="stb">
       <UniqueIdentifier>{0fdb462f-c3a1-4b37-af15-cfe38d0c9df3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Text">
+      <UniqueIdentifier>{d76a3483-ef7b-49ee-b854-abc5491f883f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WSound.cpp">
@@ -92,6 +95,9 @@
     </ClCompile>
     <ClCompile Include="WImage.cpp">
       <Filter>Images</Filter>
+    </ClCompile>
+    <ClCompile Include="WText.cpp">
+      <Filter>Text</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -214,6 +220,9 @@
     </ClInclude>
     <ClInclude Include="WImage.h">
       <Filter>Images</Filter>
+    </ClInclude>
+    <ClInclude Include="WText.h">
+      <Filter>Text</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

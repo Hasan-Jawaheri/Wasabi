@@ -30,7 +30,7 @@ int WIC_Win32::WIC_Win32::MouseX(W_MOUSEPOSTYPE posT, UINT vpID) const {
 	GetCursorPos(&pt);
 	ScreenToClient(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &pt);
 
-	if (posT == MOUSEPOS_WINDOW)
+	if (posT == MOUSEPOS_WINDOW || posT == MOUSEPOS_VIEWPORT)
 		return pt.x; //default, window position
 	/*else if (posT == MOUSEPOS_VIEWPORT) {
 		//convert the mouse position to viewport space
@@ -54,7 +54,7 @@ int WIC_Win32::MouseY(W_MOUSEPOSTYPE posT, UINT vpID) const {
 	GetCursorPos(&pt);
 	ScreenToClient(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &pt);
 
-	if (posT == MOUSEPOS_WINDOW)
+	if (posT == MOUSEPOS_WINDOW || posT == MOUSEPOS_VIEWPORT)
 		return pt.y; //default, window position
 	/*else if (posT == MOUSEPOS_VIEWPORT) {
 		//convert the mouse position to viewport space

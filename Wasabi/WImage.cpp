@@ -48,9 +48,7 @@ WImage* WImageManager::GetDefaultImage() const {
 	return m_checker_image;
 }
 
-WImage::WImage(Wasabi* const app, unsigned int ID) : WBase(app) {
-	SetID(ID);
-
+WImage::WImage(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_image = VK_NULL_HANDLE;
 	m_deviceMemory = VK_NULL_HANDLE;
 	m_view = VK_NULL_HANDLE;
@@ -88,7 +86,9 @@ WError WImage::CretaeFromPixelsArray(
 	void*			pixels,
 	unsigned int	width,
 	unsigned int	height,
-	unsigned int	num_components) {
+	unsigned int	num_components,
+	VkFormat fmt,
+	size_t comp_size) {
 	VkDevice device = m_app->GetVulkanDevice();
 	VkResult err;
 	VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
@@ -106,20 +106,22 @@ WError WImage::CretaeFromPixelsArray(
 	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo();
 	uint8_t *data;
 
-	VkFormat format;
-	switch (num_components) {
-	case 1: format = VK_FORMAT_R32_SFLOAT; break;
-	case 2: format = VK_FORMAT_R32G32_SFLOAT; break;
-	case 3: format = VK_FORMAT_R32G32B32_SFLOAT; break;
-	case 4: format = VK_FORMAT_R32G32B32A32_SFLOAT; break;
-	default:
-		return WError(W_INVALIDPARAM);
+	VkFormat format = fmt;
+	if (fmt == VK_FORMAT_UNDEFINED) {
+		switch (num_components) {
+		case 1: format = VK_FORMAT_R32_SFLOAT; break;
+		case 2: format = VK_FORMAT_R32G32_SFLOAT; break;
+		case 3: format = VK_FORMAT_R32G32B32_SFLOAT; break;
+		case 4: format = VK_FORMAT_R32G32B32A32_SFLOAT; break;
+		default:
+			return WError(W_INVALIDPARAM);
+		}
 	}
 
 	_DestroyResources();
 
 	// Create a host-visible staging buffer that contains the raw image data
-	bufferCreateInfo.size = width * height * num_components * sizeof(float);
+	bufferCreateInfo.size = width * height * num_components * comp_size;
 	// This buffer is used as a transfer source for the buffer copy
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -327,3 +329,12 @@ VkImageView WImage::GetView() const {
 VkImageLayout WImage::GetViewLayout() const {
 	return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 }
+
+unsigned int WImage::GetWidth() {
+	return m_width;
+}
+
+unsigned int WImage::GetHeight() {
+	return m_height;
+}
+

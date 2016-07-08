@@ -20,7 +20,7 @@ public:
 		WObject* o3 = new WObject(this);
 
 		WGeometry* g = new WGeometry(this);
-		g->CreateCube(1);
+		g->CreateCone(1, 2, 10, 10);
 
 		o->SetGeometry(g);
 		o2->SetGeometry(g);
@@ -33,9 +33,12 @@ public:
 		o3->SetPosition(5, 5, 0);
 		o3->SetAngle(0, 0, 20);
 
+		TextComponent->CreateFont(1, "Arial");
+
 		WImage* img = new WImage(this);
 		img->Load("textures/dummy.bmp");
 		o2->GetMaterial()->SetTexture(1, img);
+		img->RemoveReference();
 
 		CameraManager->GetDefaultCamera()->Move(-10);
 
@@ -46,7 +49,9 @@ public:
 		sprintf_s(title, 32, "%f", FPS);
 		WindowComponent->SetWindowTitle(title);
 
-		CameraManager->GetDefaultCamera()->Fly(0.0002f);
+		int mx = InputComponent->MouseX();
+		int my = InputComponent->MouseY();
+		TextComponent->RenderText("LOL\nnew line!", mx, my, 32);
 
 		return true;
 	}
@@ -151,10 +156,15 @@ Wasabi::Wasabi() {
 		{ "defAdapter", (void*)(0) }, // int
 		{ "defWndX", (void*)(-1) }, // int
 		{ "defWndY", (void*)(-1) }, //int
+		{ "fontBmpSize", (void*)(512) }, // int
+		{ "fontBmpCharHeight", (void*)(32) }, // int
+		{ "fontBmpNumChars", (void*)(96) }, // int
+		{ "textBatchSize", (void*)(256) }, // int
 	};
 
 	SoundComponent = nullptr;
 	WindowComponent = nullptr;
+	TextComponent = nullptr;
 	Renderer = nullptr;
 
 	ObjectManager = new WObjectManager(this);
@@ -172,13 +182,14 @@ Wasabi::~Wasabi() {
 		Renderer->Cleanup();
 	W_SAFE_DELETE(SoundComponent);
 	W_SAFE_DELETE(WindowComponent);
+	W_SAFE_DELETE(TextComponent);
 	W_SAFE_DELETE(Renderer);
 
 	delete ObjectManager;
 	delete GeometryManager;
 	delete EffectManager;
-	delete ShaderManager;
 	delete MaterialManager;
+	delete ShaderManager;
 	delete CameraManager;
 	delete ImageManager;
 
@@ -369,6 +380,10 @@ WError Wasabi::StartEngine(int width, int height) {
 	werr = Renderer->Initiailize();
 	CameraManager->Load();
 	ImageManager->Load();
+
+	if (TextComponent)
+		TextComponent->Initialize();
+
 	return werr;
 }
 
@@ -409,10 +424,18 @@ int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {
 void Wasabi::SetupComponents() {
 	Renderer = new WForwardRenderer(this);
 	SoundComponent = new WSoundComponent(this);
+	TextComponent = new WTextComponent(this);
 
 #ifdef _WIN32
 	WindowComponent = new WWC_Win32(this);
 	InputComponent = new WIC_Win32(this);
+	char dir[MAX_PATH];
+	int size = MAX_PATH;
+	GetWindowsDirectoryA(dir, size);
+	std::string s = dir;
+	if (s[s.length() - 1] != '/' && s[s.length() - 1] != '\\')
+		s += '/';
+	TextComponent->AddFontDirectory(s + "fonts");
 #elif defined(__linux__)
 	WindowComponent = new WWC_Linux(this);
 	InputComponent = new WIC_Linux(this);

@@ -159,6 +159,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="stb\stb_vorbis.c" />
+    <ClCompile Include="WText.cpp" />
     <ClCompile Include="WCamera.cpp" />
     <ClCompile Include="WEffect.cpp" />
     <ClCompile Include="WMaterial.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="stb\stb_truetype.h" />
     <ClInclude Include="stb\stb_voxel_render.h" />
     <ClInclude Include="stb\stretchy_buffer.h" />
+    <ClInclude Include="WText.h" />
     <ClInclude Include="WCamera.h" />
     <ClInclude Include="WEffect.h" />
     <ClInclude Include="WMaterial.h" />

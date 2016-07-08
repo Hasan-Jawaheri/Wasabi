@@ -13,7 +13,7 @@ using std::string;
 
 class WBase {
 public:
-	WBase(class Wasabi* const app);
+	WBase(class Wasabi* const app, unsigned int ID = 0);
 	virtual ~WBase();
 
 	virtual std::string GetTypeName() const = 0;

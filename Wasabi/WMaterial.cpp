@@ -7,9 +7,7 @@ std::string WMaterialManager::GetTypeName() const {
 WMaterialManager::WMaterialManager(class Wasabi* const app) : WManager<WMaterial>(app) {
 }
 
-WMaterial::WMaterial(Wasabi* const app, unsigned int ID) : WBase(app) {
-	SetID(ID);
-
+WMaterial::WMaterial(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_descriptorSet = VK_NULL_HANDLE;
 	m_descriptorPool = VK_NULL_HANDLE;
 	m_effect = nullptr;
@@ -41,6 +39,12 @@ void WMaterial::_DestroyResources() {
 		vkDestroyBuffer(device, m_uniformBuffers[i].buffer, nullptr);
 	}
 	m_uniformBuffers.clear();
+
+	for (int i = 0; i < m_sampler_info.size(); i++) {
+		if (m_sampler_info[i].img)
+			m_sampler_info[i].img->RemoveReference();
+	}
+	m_sampler_info.clear();
 
 	if (m_descriptorPool)
 		vkDestroyDescriptorPool(device, m_descriptorPool, nullptr);
@@ -117,6 +121,8 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 				m_uniformBuffers.push_back(ubo);
 			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_SAMPLER) {
 				SAMPLER_INFO sampler;
+				sampler.img = m_app->ImageManager->GetDefaultImage();
+				m_app->ImageManager->GetDefaultImage()->AddReference();
 				sampler.descriptor.sampler = m_app->Renderer->GetDefaultSampler();
 				sampler.descriptor.imageView = m_app->ImageManager->GetDefaultImage()->GetView();
 				sampler.descriptor.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -287,7 +293,17 @@ WError WMaterial::SetTexture(int binding_index, class WImage* img) {
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
 		if (info->binding_index == binding_index) {
-			m_sampler_info[i].descriptor.imageView = img->GetView();
+			if (m_sampler_info[i].img)
+				W_SAFE_REMOVEREF(m_sampler_info[i].img);
+			if (img) {
+				m_sampler_info[i].descriptor.imageView = img->GetView();
+				img->AddReference();
+			} else {
+				// put the default image
+				m_sampler_info[i].img = m_app->ImageManager->GetDefaultImage();
+				m_app->ImageManager->GetDefaultImage()->AddReference();
+				m_sampler_info[i].descriptor.imageView = m_app->ImageManager->GetDefaultImage()->GetView();
+			}
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 

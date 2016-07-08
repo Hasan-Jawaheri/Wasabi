@@ -241,6 +241,8 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_KEYDOWN:
+		if (!appInst->InputComponent)
+			break;
 		//ESCAPE KEY will close the application if m_escapeE is true
 		if (wParam == VK_ESCAPE && ((WIC_Win32*)appInst->InputComponent)->m_escapeE)
 			appInst->__EXIT = true;
@@ -249,6 +251,8 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 			appInst->curState->OnKeydown(wParam);
 		break;
 	case WM_KEYUP:
+		if (!appInst->InputComponent)
+			break;
 		appInst->InputComponent->InsertRawInput(wParam, false);
 		if (appInst->curState)
 			appInst->curState->OnKeyup(wParam);
@@ -282,33 +286,41 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 	}
 	//mouse input update
 	case WM_LBUTTONDOWN:
-		((WIC_Win32*)appInst->InputComponent)->m_leftClick = true;
+		if (appInst->InputComponent)
+			((WIC_Win32*)appInst->InputComponent)->m_leftClick = true;
 		break;
 	case WM_LBUTTONUP:
-		((WIC_Win32*)appInst->InputComponent)->m_leftClick = false;
+		if (appInst->InputComponent)
+			((WIC_Win32*)appInst->InputComponent)->m_leftClick = false;
 		break;
 	case WM_RBUTTONDOWN:
-		((WIC_Win32*)appInst->InputComponent)->m_rightClick = true;
+		if (appInst->InputComponent)
+			((WIC_Win32*)appInst->InputComponent)->m_rightClick = true;
 		break;
 	case WM_RBUTTONUP:
-		((WIC_Win32*)appInst->InputComponent)->m_rightClick = false;
+		if (appInst->InputComponent)
+			((WIC_Win32*)appInst->InputComponent)->m_rightClick = false;
 		break;
 	case WM_MBUTTONDOWN:
-		((WIC_Win32*)appInst->InputComponent)->m_middleClick = true;
+		if (appInst->InputComponent)
+			((WIC_Win32*)appInst->InputComponent)->m_middleClick = true;
 		break;
 	case WM_MBUTTONUP:
-		((WIC_Win32*)appInst->InputComponent)->m_middleClick = false;
+		if (appInst->InputComponent)
+			((WIC_Win32*)appInst->InputComponent)->m_middleClick = false;
 		break;
 	case WM_MOUSEMOVE:
-		((WIC_Win32*)appInst->InputComponent)->m_mouseX = LOWORD(lParam);
-		((WIC_Win32*)appInst->InputComponent)->m_mouseY = HIWORD(lParam);
+		if (appInst->InputComponent) {
+			((WIC_Win32*)appInst->InputComponent)->m_mouseX = LOWORD(lParam);
+			((WIC_Win32*)appInst->InputComponent)->m_mouseY = HIWORD(lParam);
+		}
 		break;
 	case WM_MOUSEWHEEL:
 	{
-		if (HIWORD(wParam) == 120)
-			((WIC_Win32*)appInst->InputComponent)->m_mouseZ++;
-		else
-			((WIC_Win32*)appInst->InputComponent)->m_mouseZ--;
+		if (appInst->InputComponent) {
+			int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+			((WIC_Win32*)appInst->InputComponent)->m_mouseZ += delta;
+		}
 		break;
 	}
 	case WM_COMMAND:

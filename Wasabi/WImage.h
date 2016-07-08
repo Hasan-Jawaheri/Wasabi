@@ -16,15 +16,19 @@ public:
 	WImage(Wasabi* const app, unsigned int ID = 0);
 	~WImage();
 
-	WError CretaeFromPixelsArray(
-		void*			pixels,
-		unsigned int	width,
-		unsigned int	height,
-		unsigned int	num_components = 4);
+	WError			CretaeFromPixelsArray(
+						void*			pixels,
+						unsigned int	width,
+						unsigned int	height,
+						unsigned int	num_components = 4,
+						VkFormat		fmt = VK_FORMAT_UNDEFINED,
+						size_t			comp_size = sizeof(float));
 	WError			Load(std::string filename);
 
 	VkImageView		GetView() const;
 	VkImageLayout	GetViewLayout() const;
+	unsigned int	GetWidth();
+	unsigned int	GetHeight();
 
 	virtual bool	Valid() const;
 };

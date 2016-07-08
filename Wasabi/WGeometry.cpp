@@ -42,9 +42,7 @@ std::string WGeometryManager::GetTypeName(void) const {
 WGeometryManager::WGeometryManager(class Wasabi* const app) : WManager<WGeometry>(app) {
 }
 
-WGeometry::WGeometry(Wasabi* const app, unsigned int ID) : WBase(app) {
-	SetID(ID);
-
+WGeometry::WGeometry(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_vertices.buf = VK_NULL_HANDLE;
 	m_vertices.mem = VK_NULL_HANDLE;
 	m_indices.buf = VK_NULL_HANDLE;
@@ -888,6 +886,7 @@ void WGeometry::UnmapIndexBuffer() {
 }
 
 bool WGeometry::Intersect(WVector3 p1, WVector3 p2, unsigned int* triangleIndex, float* u, float* v, WVector3* pt) const {
+	// TODO: fill this
 	return false;
 }
 
@@ -1021,8 +1020,11 @@ void WGeometry::ApplyRotation(WMatrix mtx) {
 	vkUnmapMemory(device, m_vertices.mem);
 }
 
-WError WGeometry::Draw() {
+WError WGeometry::Draw(unsigned int num_triangles) {
 	VkCommandBuffer renderCmdBuffer = m_app->Renderer->GetCommnadBuffer();
+
+	if (num_triangles == -1 || num_triangles * 3 > m_indices.count)
+		num_triangles = m_indices.count / 3;
 
 	// Bind triangle vertices
 	VkDeviceSize offsets[1] = { 0 };
@@ -1032,7 +1034,7 @@ WError WGeometry::Draw() {
 	vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buf, 0, VK_INDEX_TYPE_UINT32);
 
 	// Draw indexed triangle
-	vkCmdDrawIndexed(renderCmdBuffer, m_indices.count, 1, 0, 0, 1);
+	vkCmdDrawIndexed(renderCmdBuffer, num_triangles * 3, 1, 0, 0, 1);
 
 	return WError(W_SUCCEEDED);
 }
