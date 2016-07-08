@@ -9,7 +9,7 @@ WCameraManager::~WCameraManager() {
 }
 
 void WCameraManager::Load() {
-	m_default_camera = new WCamera(app);
+	m_default_camera = new WCamera(m_app);
 }
 
 WCamera* WCameraManager::GetDefaultCamera() const {

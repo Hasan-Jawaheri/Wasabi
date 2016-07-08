@@ -22,7 +22,7 @@ WImageManager::WImageManager(class Wasabi* const app) : WManager<WImage>(app) {
 }
 
 void WImageManager::Load() {
-	m_checker_image = new WImage(app);
+	m_checker_image = new WImage(m_app);
 	int size = 64;
 	int comp_size = 4;
 	int check_size = 16;

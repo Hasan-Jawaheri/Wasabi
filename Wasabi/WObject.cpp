@@ -9,8 +9,8 @@ WObjectManager::WObjectManager(class Wasabi* const app) : WManager<WObject>(app)
 
 void WObjectManager::Render(WCamera* const cam) {
 	for (int i = 0; i < W_HASHTABLESIZE; i++) {
-		for (int j = 0; j < _entities[i].size(); j++) {
-			_entities[i][j]->Render(cam);
+		for (int j = 0; j < m_entities[i].size(); j++) {
+			m_entities[i][j]->Render(cam);
 		}
 	}
 }
