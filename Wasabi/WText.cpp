@@ -115,6 +115,16 @@ void WTextComponent::Initialize() {
 	bs.alphaBlendOp = VK_BLEND_OP_ADD;
 	bs.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	textFX->SetBlendingState(bs);
+
+	VkPipelineDepthStencilStateCreateInfo dss = {};
+	dss.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	dss.depthTestEnable = VK_FALSE;
+	dss.depthWriteEnable = VK_FALSE;
+	dss.depthBoundsTestEnable = VK_FALSE;
+	dss.stencilTestEnable = VK_FALSE;
+	dss.front = dss.back;
+	textFX->SetDepthStencilState(dss);
+
 	textFX->BuildPipeline();
 	vs->RemoveReference();
 	ps->RemoveReference();
@@ -254,7 +264,7 @@ WError WTextComponent::RenderText(std::string text, int x, int y, float fHeight,
 	if (text.length() > (unsigned int)m_app->engineParams["textBatchSize"])
 		return WError(W_INVALIDPARAM);
 
-	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(m_curFont);
+	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(fontID);
 	if (obj != m_fonts.end()) {
 		W_RENDERING_TEXT t;
 		t.str = text;
@@ -275,13 +285,13 @@ void WTextComponent::Render() {
 	float scrHeight = m_app->WindowComponent->GetWindowHeight();
 	for (auto text : m_texts) {
 		TextVertex* vb;
+		int curvert = 0;
 		m_textGeometry->MapVertexBuffer((void**)&vb);
 		float x = text.x * 2.0f / scrWidth - 1.0f;
 		float y = text.y * 2.0f / scrHeight - 1.0f;
 		float fScale = text.fHeight / (float)text.font.char_height;
 		float fMapSize = text.font.img->GetWidth();
 		float maxCharHeight = 0.0f;
-		int curvert = 0;
 		for (int i = 0; i < text.str.length(); i++) {
 			if (text.str[i] == '\n')
 				continue;

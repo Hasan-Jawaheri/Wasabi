@@ -108,6 +108,17 @@ WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_blendState.colorWriteMask = 0xf;
 	m_blendState.blendEnable = VK_FALSE;
 
+	m_depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	m_depthStencilState.depthTestEnable = VK_TRUE;
+	m_depthStencilState.depthWriteEnable = VK_TRUE;
+	m_depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	m_depthStencilState.depthBoundsTestEnable = VK_FALSE;
+	m_depthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
+	m_depthStencilState.back.passOp = VK_STENCIL_OP_KEEP;
+	m_depthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
+	m_depthStencilState.stencilTestEnable = VK_FALSE;
+	m_depthStencilState.front = m_depthStencilState.back;
+
 	app->EffectManager->AddEntity(this);
 }
 
@@ -187,6 +198,9 @@ void WEffect::_DestroyPipeline() {
 
 void WEffect::SetBlendingState(VkPipelineColorBlendAttachmentState state) {
 	m_blendState = state;
+}
+void WEffect::SetDepthStencilState(VkPipelineDepthStencilStateCreateInfo state) {
+	m_depthStencilState = state;
 }
 
 WError WEffect::BuildPipeline() {
@@ -284,7 +298,6 @@ WError WEffect::BuildPipeline() {
 	inputState.vertexAttributeDescriptionCount = attribDesc.size();
 	inputState.pVertexAttributeDescriptions = attribDesc.data();
 
-
 	//IA state
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState;
 	inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -327,22 +340,6 @@ WError WEffect::BuildPipeline() {
 	dynamicState.pDynamicStates = dynamicStateEnables.data();
 	dynamicState.dynamicStateCount = dynamicStateEnables.size();
 
-	// Depth and stencil state
-	// Describes depth and stenctil test and compare ops
-	VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
-	// Basic depth compare setup with depth writes and depth test enabled
-	// No stencil used 
-	depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depthStencilState.depthTestEnable = VK_TRUE;
-	depthStencilState.depthWriteEnable = VK_TRUE;
-	depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-	depthStencilState.depthBoundsTestEnable = VK_FALSE;
-	depthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
-	depthStencilState.back.passOp = VK_STENCIL_OP_KEEP;
-	depthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
-	depthStencilState.stencilTestEnable = VK_FALSE;
-	depthStencilState.front = depthStencilState.back;
-
 	// Multi sampling state
 	VkPipelineMultisampleStateCreateInfo multisampleState = {};
 	multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -378,7 +375,7 @@ WError WEffect::BuildPipeline() {
 	pipelineCreateInfo.pColorBlendState = &colorBlendState;
 	pipelineCreateInfo.pMultisampleState = &multisampleState;
 	pipelineCreateInfo.pViewportState = NULL; // viewport state is dynamic
-	pipelineCreateInfo.pDepthStencilState = &depthStencilState;
+	pipelineCreateInfo.pDepthStencilState = &m_depthStencilState;
 	pipelineCreateInfo.renderPass = m_app->Renderer->GetRenderPass();
 	pipelineCreateInfo.pDynamicState = &dynamicState;
 
