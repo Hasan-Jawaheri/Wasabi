@@ -95,7 +95,7 @@ float WCamera::GetMaxRange() const {
 }
 
 float WCamera::GetFOV() const {
-	return m_fFOV;
+	return W_RADTODEG(m_fFOV);
 }
 
 float WCamera::GetAspect() const {
@@ -230,7 +230,7 @@ void WCamera::UpdateInternals() {
 		//build projection matrix
 		m_orthoMatrix = WOrthogonalProjMatrix(m_lastWidth, m_lastHeight, m_minRange, m_maxRange);
 		if (m_projType == PROJECTION_PERSPECTIVE)
-			m_ProjM = WPerspectiveProjMatrixFOV(W_RADTODEG(m_fFOV), m_fAspect, m_minRange, m_maxRange);
+			m_ProjM = WPerspectiveProjMatrixFOV(m_fFOV, m_fAspect, m_minRange, m_maxRange);
 		else if (m_projType == PROJECTION_ORTHOGONAL)
 			m_ProjM = m_orthoMatrix;
 

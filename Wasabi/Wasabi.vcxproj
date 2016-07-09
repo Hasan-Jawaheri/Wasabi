@@ -71,8 +71,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;C:\Program Files (x86)\Havok 710r1\Source;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;C:\Program Files %28x86%29\Havok 710r1\Lib\win32_net_9-0\debug_multithreaded_dll;$(LibraryPath)</LibraryPath>
     <SourcePath>$(VC_SourcePath)\stb\;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -82,8 +82,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;C:\Program Files %28x86%29\Havok 710r1\Source;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;C:\Program Files (x86)\Havok 710r1\Lib\win32_net_9-0\release_multithreaded_dll;$(LibraryPath)</LibraryPath>
     <SourcePath>$(VC_IncludePath)\stb\;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -159,6 +159,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="stb\stb_vorbis.c" />
+    <ClCompile Include="WHavokPhysics.cpp" />
     <ClCompile Include="WSprite.cpp" />
     <ClCompile Include="WText.cpp" />
     <ClCompile Include="WCamera.cpp" />
@@ -198,6 +199,8 @@
     <ClInclude Include="stb\stb_truetype.h" />
     <ClInclude Include="stb\stb_voxel_render.h" />
     <ClInclude Include="stb\stretchy_buffer.h" />
+    <ClInclude Include="WHavokPhysics.h" />
+    <ClInclude Include="WPhysicsComponent.h" />
     <ClInclude Include="WSprite.h" />
     <ClInclude Include="WText.h" />
     <ClInclude Include="WCamera.h" />

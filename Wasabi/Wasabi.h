@@ -51,6 +51,7 @@ public:
 	class WWindowComponent*		WindowComponent;
 	class WInputComponent*		InputComponent;
 	class WTextComponent*		TextComponent;
+	class WPhysicsComponent*	PhysicsComponent;
 	class WRenderer*			Renderer;
 
 	class WObjectManager*		ObjectManager;
@@ -116,6 +117,7 @@ public:
 
 #include "WWindowComponent.h"
 #include "WInputComponent.h"
+#include "WPhysicsComponent.h"
 #include "WText.h"
 #include "WRenderer.h"
 #include "WForwardRenderer.h"
