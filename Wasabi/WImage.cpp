@@ -66,7 +66,7 @@ std::string WImage::GetTypeName() const {
 }
 
 bool WImage::Valid() const {
-	return true;
+	return m_view != VK_NULL_HANDLE;
 }
 
 void WImage::_DestroyResources() {

@@ -295,7 +295,7 @@ WError WMaterial::SetTexture(int binding_index, class WImage* img) {
 		if (info->binding_index == binding_index) {
 			if (m_sampler_info[i].img)
 				W_SAFE_REMOVEREF(m_sampler_info[i].img);
-			if (img) {
+			if (img && img->Valid()) {
 				m_sampler_info[i].descriptor.imageView = img->GetView();
 				img->AddReference();
 			} else {
