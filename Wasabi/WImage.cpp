@@ -300,7 +300,7 @@ WError WImage::Load(std::string filename) {
 	else
 		return WError(W_FILENOTFOUND);
 
-	int n, w, h;
+	int n = 4, w, h;
 	unsigned char *data;
 	if (stbi_info(filename.c_str(), &w, &h, &n) == 0)
 		return WError(W_INVALIDFILEFORMAT);

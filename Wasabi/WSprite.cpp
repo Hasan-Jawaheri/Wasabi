@@ -51,7 +51,7 @@ public:
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0,{
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4, "color"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "alpha"),
 			}),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 		};
@@ -61,15 +61,15 @@ public:
 			"#extension GL_ARB_shading_language_420pack : enable\n"
 			""
 			"layout(binding = 0) uniform UBO {\n"
-			"	vec4 color;\n"
+			"	float alpha;\n"
 			"} ubo;\n"
 			"layout(binding = 1) uniform sampler2D sampler;\n"
 			"layout(location = 0) in vec2 inUV;\n"
 			"layout(location = 0) out vec4 outFragColor;\n"
 			""
 			"void main() {\n"
-			"	float c = texture(sampler, inUV).r;\n"
-			"	outFragColor = vec4(c) * ubo.color;\n"
+			"	vec4 c = texture(sampler, inUV);\n"
+			"	outFragColor = vec4(c.rgb, c.a * ubo.alpha);\n"
 			"}\n"
 		);
 	}
@@ -157,16 +157,112 @@ std::string WSprite::GetTypeName() const {
 
 WSprite::WSprite(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_hidden = false;
+	m_img = nullptr;
+	m_angle = 0.0f;
+	m_pos = WVector2();
+	m_size = WVector2();
+	m_rotationCenter = WVector2();
+	m_priority = 0;
+	m_alpha = 1.0f;
 
 	app->SpriteManager->AddEntity(this);
 }
 
 WSprite::~WSprite() {
+	if (m_img)
+		m_img->RemoveReference();
+
 	m_app->SpriteManager->RemoveEntity(this);
 }
 
+void WSprite::SetImage(WImage* img) {
+	if (m_img)
+		m_img->RemoveReference();
+
+	m_img = img;
+
+	if (img) {
+		SetSize(img->GetWidth(), img->GetHeight());
+		img->AddReference();
+	}
+}
+
+void WSprite::SetPosition(float x, float y) {
+	m_pos = WVector2(x, y);
+}
+
+void WSprite::SetPosition(WVector2 pos) {
+	m_pos = pos;
+}
+
+void WSprite::Move(float units) {
+	m_pos += WVec2TransformNormal(WVector2(1.0f, 0.0f), WRotationMatrixZ(m_angle)) * units;
+}
+
+void WSprite::SetSize(float sizeX, float sizeY) {
+	m_size = WVector2(sizeX, sizeY);
+}
+
+void WSprite::SetSize(WVector2 size) {
+	m_size = size;
+}
+
+void WSprite::SetAngle(float fAngle) {
+	m_angle = W_DEGTORAD(fAngle);
+}
+
+void WSprite::Rotate(float fAngle) {
+	m_angle += W_DEGTORAD(fAngle);
+}
+
+void WSprite::SetRotationCenter(float x, float y) {
+	m_rotationCenter = WVector2(x, y);
+}
+
+
+void WSprite::SetRotationCenter(WVector2 center) {
+	m_rotationCenter = center;
+}
+
+void WSprite::SetPriority(unsigned int priority) {
+	m_priority = priority;
+}
+
+void WSprite::SetAlpha(float fAlpha) {
+	m_alpha = fAlpha;
+}
+
 void WSprite::Render() {
-	if (!m_hidden) {
+	float scrWidth = m_app->WindowComponent->GetWindowWidth();
+	float scrHeight = m_app->WindowComponent->GetWindowHeight();
+	if (!m_hidden && Valid()) {
+		SpriteVertex* vb;
+		m_app->SpriteManager->m_spriteGeometry->MapVertexBuffer((void**)&vb);
+
+		WVector2 rc = m_rotationCenter + m_pos;
+
+		vb[0].pos = m_pos - rc;
+		vb[0].uv = WVector2(0, 0);
+		vb[1].pos = m_pos + WVector2(m_size.x, 0) - rc;
+		vb[1].uv = WVector2(1, 0);
+		vb[2].pos = m_pos + WVector2(0, m_size.y) - rc;
+		vb[2].uv = WVector2(0, 1);
+		vb[3].pos = m_pos + WVector2(m_size.x, m_size.y) - rc;
+		vb[3].uv = WVector2(1, 1);
+
+		WMatrix rotMtx = WRotationMatrixZ(m_angle) * WTranslationMatrix(rc.x, rc.y, 0);
+		for (int i = 0; i < 4; i++) {
+			WVector3 pos = WVector3(vb[i].pos.x, vb[i].pos.y, 0.0f);
+			pos = WVec3TransformCoord(pos, rotMtx);
+			vb[i].pos = WVector2(pos.x, pos.y);
+			vb[i].pos = vb[i].pos * 2.0f / WVector2(scrWidth, scrHeight) - WVector2(1, 1);
+		}
+
+		m_app->SpriteManager->m_spriteGeometry->UnmapVertexBuffer();
+		m_app->SpriteManager->m_spriteMaterial->SetVariableFloat("alpha", m_alpha);
+		m_app->SpriteManager->m_spriteMaterial->SetTexture(1, m_img);
+		m_app->SpriteManager->m_spriteMaterial->Bind();
+		m_app->SpriteManager->m_spriteGeometry->Draw();
 	}
 }
 
@@ -182,6 +278,39 @@ bool WSprite::Hidden() const {
 	return m_hidden;
 }
 
+float WSprite::GetAngle() const {
+	return W_RADTODEG(m_angle);
+}
+
+float WSprite::GetPositionX() const {
+	return m_pos.x;
+}
+
+float WSprite::GetPositionY() const {
+	return m_pos.y;
+}
+
+WVector2 WSprite::GetPosition() const {
+	return m_pos;
+}
+
+float WSprite::GetSizeX() const {
+	return m_size.x;
+}
+
+float WSprite::GetSizeY() const {
+	return m_size.y;
+}
+
+WVector2 WSprite::GetSize() const {
+	return m_size;
+}
+
+unsigned int WSprite::GetPriority() const {
+	return m_priority;
+}
+
+
 bool WSprite::Valid() const {
-	return false; // TODO: do this
+	return m_img && m_img->Valid() && m_size.x > 0.0f && m_size.y >= 0.0f;
 }

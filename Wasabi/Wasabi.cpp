@@ -10,6 +10,7 @@
  */
 
 class Kofta : public Wasabi {
+	WSprite* spr;
 public:
 	WError Setup() {
 		this->maxFPS = 0;
@@ -40,6 +41,10 @@ public:
 		o2->GetMaterial()->SetTexture(1, img);
 		img->RemoveReference();
 
+		spr = new WSprite(this);
+		spr->SetImage(img);
+		spr->SetRotationCenter(WVector2(128, 128));
+
 		CameraManager->GetDefaultCamera()->Move(-10);
 
 		return err;
@@ -51,6 +56,9 @@ public:
 		int my = InputComponent->MouseY();
 		int width = TextComponent->GetTextWidth(title, 32, 1);
 		TextComponent->RenderText(title, mx - width / 2, my - 32, 32, 1);
+
+		spr->Rotate(0.01f);
+		spr->Move(0.1f);
 
 		return true;
 	}
