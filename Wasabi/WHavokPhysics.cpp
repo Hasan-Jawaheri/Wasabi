@@ -1,5 +1,7 @@
 #include "WHavokPhysics.h"
 
+#if 0
+
 // Classlists
 #define HK_CLASSES_FILE <Common/Serialize/Classlist/hkClasses.h>
 #include <Common/Serialize/Util/hkBuiltinTypeRegistry.cxx>
@@ -1719,3 +1721,5 @@ bool WMarbleAction::IsOnGround() const {
 WVector3 WMarbleAction::GetMotionDirection() const {
 	return m_curDir;
 }
+
+#endif
