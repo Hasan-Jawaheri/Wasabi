@@ -9,8 +9,16 @@
  *
  */
 
+#include "WHavokPhysics.h"
 class Kofta : public Wasabi {
 	WSprite* spr;
+
+protected:
+	void SetupComponents() {
+		Wasabi::SetupComponents();
+		PhysicsComponent = new WHavokPhysics(this);
+	}
+
 public:
 	WError Setup() {
 		this->maxFPS = 0;
@@ -98,6 +106,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 					break;
 				if (app->curState)
 					app->curState->Update(deltaTime);
+				if (app->PhysicsComponent)
+					app->PhysicsComponent->Step(deltaTime);
 			}
 
 			while (!app->Renderer->Render());
@@ -173,6 +183,7 @@ Wasabi::Wasabi() {
 	SoundComponent = nullptr;
 	WindowComponent = nullptr;
 	TextComponent = nullptr;
+	PhysicsComponent = nullptr;
 	Renderer = nullptr;
 
 	ObjectManager = new WObjectManager(this);
@@ -189,19 +200,23 @@ Wasabi::~Wasabi() {
 		WindowComponent->Cleanup();
 	if (Renderer)
 		Renderer->Cleanup();
+	if (PhysicsComponent)
+		PhysicsComponent->Cleanup();
+
 	W_SAFE_DELETE(SoundComponent);
 	W_SAFE_DELETE(WindowComponent);
 	W_SAFE_DELETE(TextComponent);
+	W_SAFE_DELETE(PhysicsComponent);
 	W_SAFE_DELETE(Renderer);
 
-	delete ObjectManager;
-	delete SpriteManager;
-	delete GeometryManager;
-	delete EffectManager;
-	delete MaterialManager;
-	delete ShaderManager;
-	delete CameraManager;
-	delete ImageManager;
+	W_SAFE_DELETE(ObjectManager);
+	W_SAFE_DELETE(SpriteManager);
+	W_SAFE_DELETE(GeometryManager);
+	W_SAFE_DELETE(EffectManager);
+	W_SAFE_DELETE(MaterialManager);
+	W_SAFE_DELETE(ShaderManager);
+	W_SAFE_DELETE(CameraManager);
+	W_SAFE_DELETE(ImageManager);
 
 	vkDestroyDevice(m_vkDevice, nullptr);
 	vkDestroyInstance(m_vkInstance, nullptr);
@@ -388,12 +403,17 @@ WError Wasabi::StartEngine(int width, int height) {
 	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDev, &m_deviceMemoryProperties);
 
 	werr = Renderer->Initiailize();
+	if (werr)
+		return werr;
+
 	CameraManager->Load();
 	ImageManager->Load();
 	SpriteManager->Load();
 
 	if (TextComponent)
 		TextComponent->Initialize();
+	if (PhysicsComponent)
+		werr = PhysicsComponent->Initialize();
 
 	return werr;
 }
