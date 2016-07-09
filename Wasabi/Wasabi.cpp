@@ -9,14 +9,14 @@
  *
  */
 
-#include "WHavokPhysics.h"
+//#include "WHavokPhysics.h"
 class Kofta : public Wasabi {
 	WSprite* spr;
 
 protected:
 	void SetupComponents() {
 		Wasabi::SetupComponents();
-		PhysicsComponent = new WHavokPhysics(this);
+		//PhysicsComponent = new WHavokPhysics(this);
 	}
 
 public:
