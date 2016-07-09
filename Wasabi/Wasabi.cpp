@@ -59,6 +59,7 @@ public:
 
 		spr->Rotate(0.01f);
 		spr->Move(0.1f);
+		spr->SetAlpha(0.6f);
 
 		return true;
 	}
