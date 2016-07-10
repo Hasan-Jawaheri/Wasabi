@@ -226,6 +226,27 @@ WError WMaterial::Bind() {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
+	VkDevice device = m_app->GetVulkanDevice();
+	vector<VkWriteDescriptorSet> writeDescriptorSets;
+	for (int i = 0; i < m_sampler_info.size(); i++) {
+		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
+		if (m_sampler_info[i].img && m_sampler_info[i].img->Valid()) {
+			m_sampler_info[i].descriptor.imageView = m_sampler_info[i].img->GetView();
+
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = m_descriptorSet;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
+			writeDescriptorSet.dstBinding = info->binding_index;
+
+			writeDescriptorSets.push_back(writeDescriptorSet);
+		}
+	}
+	if (writeDescriptorSets.size())
+		vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+
 	VkCommandBuffer renderCmdBuffer = m_app->Renderer->GetCommnadBuffer();
 	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *m_effect->GetPipelineLayout(), 0, 1, &m_descriptorSet, 0, NULL);
 
@@ -280,6 +301,8 @@ WError WMaterial::SetVariableData(std::string varName, void* data, int len) {
 					return WError(W_UNABLETOMAPBUFFER);
 				memcpy(pData, data, len);
 				vkUnmapMemory(device, m_uniformBuffers[0].memory);
+
+				isFound = true;
 			}
 			cur_offset += info->variables[j].GetSize();
 		}
@@ -295,13 +318,18 @@ WError WMaterial::SetTexture(int binding_index, class WImage* img) {
 		if (info->binding_index == binding_index) {
 			if (m_sampler_info[i].img)
 				W_SAFE_REMOVEREF(m_sampler_info[i].img);
-			if (img && img->Valid()) {
-				m_sampler_info[i].descriptor.imageView = img->GetView();
+			if (img) {
+				m_sampler_info[i].img = img;
 				img->AddReference();
 			} else {
-				// put the default image
 				m_sampler_info[i].img = m_app->ImageManager->GetDefaultImage();
 				m_app->ImageManager->GetDefaultImage()->AddReference();
+			}
+
+			if (img && img->Valid()) {
+				m_sampler_info[i].descriptor.imageView = img->GetView();
+			} else {
+				// put the default image
 				m_sampler_info[i].descriptor.imageView = m_app->ImageManager->GetDefaultImage()->GetView();
 			}
 
@@ -315,6 +343,8 @@ WError WMaterial::SetTexture(int binding_index, class WImage* img) {
 			writeDescriptorSet.dstBinding = info->binding_index;
 
 			vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, NULL);
+
+			isFound = true;
 		}
 	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);

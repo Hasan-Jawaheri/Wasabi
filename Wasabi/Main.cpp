@@ -24,14 +24,15 @@ public:
 		WObject* o3 = new WObject(this);
 
 		WGeometry* g = new WGeometry(this);
-		g->CreateCone(1, 2, 10, 10);
-		g->Scale(2);
+		if (g->CreateCone(1, 2, 10, 10)) {
+			g->Scale(2);
 
-		o->SetGeometry(g);
-		o2->SetGeometry(g);
-		o3->SetGeometry(g);
+			o->SetGeometry(g);
+			o2->SetGeometry(g);
+			o3->SetGeometry(g);
 
-		g->RemoveReference();
+			g->RemoveReference();
+		}
 
 		o->SetPosition(-5, 5, 0);
 		o2->SetPosition(0, 0, -4);
@@ -41,8 +42,8 @@ public:
 		TextComponent->CreateFont(1, "FORTE");
 
 		WImage* img = new WImage(this);
-		img->Load("textures/dummy.bmp");
 		o2->GetMaterial()->SetTexture(1, img);
+		img->Load("textures/dummy.bmp");
 		img->RemoveReference();
 
 		spr = new WSprite(this);

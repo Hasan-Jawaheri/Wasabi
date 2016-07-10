@@ -213,7 +213,7 @@ WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
 	}
 
 	f.img = new WImage(m_app);
-	WError err = f.img->CretaeFromPixelsArray(temp_bitmap, bmp_size, bmp_size, 1, VK_FORMAT_R8_UNORM, 1);
+	WError err = f.img->CretaeFromPixelsArray(temp_bitmap, bmp_size, bmp_size, false, 1, VK_FORMAT_R8_UNORM, 1);
 	delete[] temp_bitmap;
 
 	if (!err) {
