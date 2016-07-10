@@ -36,14 +36,10 @@ public:
 	}
 };
 
-WForwardRenderer::WForwardRenderer(Wasabi* app) : WRenderer(app) {
+WForwardRenderer::WForwardRenderer(Wasabi* const app) : WRenderer(app) {
 	m_sampler = VK_NULL_HANDLE;
 
 	m_default_fx = nullptr;
-}
-WForwardRenderer::~WForwardRenderer() {
-	Cleanup();
-	W_SAFE_REMOVEREF(m_default_fx);
 }
 
 WError WForwardRenderer::Initiailize() {
@@ -111,6 +107,8 @@ void WForwardRenderer::Cleanup() {
 	if (m_sampler)
 		vkDestroySampler(m_device, m_sampler, nullptr);
 	m_sampler = VK_NULL_HANDLE;
+
+	W_SAFE_REMOVEREF(m_default_fx);
 }
 
 class WMaterial* WForwardRenderer::CreateDefaultMaterial() {

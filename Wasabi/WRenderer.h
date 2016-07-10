@@ -17,7 +17,6 @@ class WRenderer {
 
 public:
 	WRenderer(Wasabi* const app);
-	~WRenderer();
 
 	virtual WError				Initiailize() = 0;
 	virtual WError				Render(class WRenderTarget* rt) = 0;

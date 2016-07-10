@@ -8,8 +8,7 @@ class WForwardRenderer : public WRenderer {
 	class WEffect*				m_default_fx;
 
 public:
-	WForwardRenderer(Wasabi* app);
-	~WForwardRenderer();
+	WForwardRenderer(Wasabi* const app);
 
 	virtual WError				Initiailize();
 	virtual WError				Render(class WRenderTarget* rt);
