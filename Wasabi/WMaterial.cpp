@@ -117,7 +117,6 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 				ubo.descriptor.offset = 0;
 				ubo.descriptor.range = shader->m_desc.bound_resources[j].GetSize();
 				ubo.ubo_info = &shader->m_desc.bound_resources[j];
-				ubo.dirty = false;
 
 				m_uniformBuffers.push_back(ubo);
 			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_SAMPLER) {
@@ -233,21 +232,6 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 		return WError(W_NORENDERTARGET);
 
 	vector<VkWriteDescriptorSet> writeDescriptorSets;
-	for (int i = 0; i < m_uniformBuffers.size(); i++) {
-		if (m_uniformBuffers[i].dirty) {
-			VkWriteDescriptorSet writeDescriptorSet = {};
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = m_descriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			writeDescriptorSet.pBufferInfo = &m_uniformBuffers[i].descriptor;
-			writeDescriptorSet.dstBinding = m_uniformBuffers[i].ubo_info->binding_index;
-
-			writeDescriptorSets.push_back(writeDescriptorSet);
-
-			m_uniformBuffers[i].dirty = false;
-		}
-	}
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
 		if (m_sampler_info[i].img && m_sampler_info[i].img->Valid()) {
@@ -325,7 +309,6 @@ WError WMaterial::SetVariableData(std::string varName, void* data, int len) {
 				memcpy(pData, data, len);
 				vkUnmapMemory(device, m_uniformBuffers[0].memory);
 
-				m_uniformBuffers[i].dirty = true;
 				isFound = true;
 			}
 			cur_offset += info->variables[j].GetSize();
