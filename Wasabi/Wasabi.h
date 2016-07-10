@@ -65,6 +65,7 @@ public:
 	class WImageManager*		ImageManager;
 	class WSpriteManager*		SpriteManager;
 	class WRenderTargetManager*	RenderTargetManager;
+	class WLightManager*		LightManager;
 
 	WTimer Timer;
 
@@ -140,6 +141,7 @@ public:
 #include "WImage.h"
 #include "WSprite.h"
 #include "WSound.h"
+#include "WLight.h"
 #ifdef _WIN32
 #include "WWC_Win32.h"
 #include "WIC_Win32.h"

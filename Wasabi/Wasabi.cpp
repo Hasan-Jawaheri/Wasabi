@@ -112,6 +112,7 @@ Wasabi::Wasabi() {
 	ImageManager = nullptr;
 	SpriteManager = nullptr;
 	RenderTargetManager = nullptr;
+	LightManager = nullptr;
 }
 Wasabi::~Wasabi() {
 	_DestroyResources();
@@ -140,6 +141,7 @@ void Wasabi::_DestroyResources() {
 	W_SAFE_DELETE(CameraManager);
 	W_SAFE_DELETE(RenderTargetManager);
 	W_SAFE_DELETE(ImageManager);
+	WSAFE_DELETE(LightManager);
 
 	if (m_swapChainInitialized)
 		m_swapChain.cleanup();
@@ -362,6 +364,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	ImageManager = new WImageManager(this);
 	SpriteManager = new WSpriteManager(this);
 	RenderTargetManager = new WRenderTargetManager(this);
+	LightManager = new WLightManager(this);
 
 	if (!CameraManager->Load()) {
 		_DestroyResources();
@@ -387,6 +390,10 @@ WError Wasabi::StartEngine(int width, int height) {
 		return WError(W_ERRORUNK);
 	}
 	if (!SpriteManager->Load()) {
+		_DestroyResources();
+		return WError(W_ERRORUNK);
+	}
+	if (!LightManager->Load()) {
 		_DestroyResources();
 		return WError(W_ERRORUNK);
 	}
