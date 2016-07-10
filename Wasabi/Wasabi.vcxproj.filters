@@ -124,6 +124,9 @@
     <ClCompile Include="WLight.cpp">
       <Filter>Lights</Filter>
     </ClCompile>
+    <ClCompile Include="WDeferredRenderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WRenderer.h">
@@ -260,6 +263,9 @@
     </ClInclude>
     <ClInclude Include="WLight.h">
       <Filter>Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="WDeferredRenderer.h">
+      <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

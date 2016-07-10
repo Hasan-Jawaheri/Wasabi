@@ -13,7 +13,7 @@ std::string WLightManager::GetTypeName() const {
 }
 
 WError WLightManager::Load() {
-
+	return WError(W_SUCCEEDED);
 }
 
 WLight::WLight(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
