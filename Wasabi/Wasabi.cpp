@@ -92,7 +92,7 @@ Wasabi::Wasabi() {
 		{ "fontBmpCharHeight", (void*)(32) }, // int
 		{ "fontBmpNumChars", (void*)(96) }, // int
 		{ "textBatchSize", (void*)(256) }, // int
-		{ "gemoetryImmutable", (void*)(false) }, // bool
+		{ "geometryImmutable", (void*)(false) }, // bool
 	};
 
 	SoundComponent = nullptr;

@@ -354,7 +354,7 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	// Destroy staging buffers
 destroy_staging:
 	// remove staging buffers if there's an error, geometry is immutable or if its dynamic
-	m_immutable = m_app->engineParams["gemoetryImmutable"];
+	m_immutable = m_app->engineParams["geometryImmutable"];
 	if (err || m_immutable || bDynamic) {
 		vkDestroyBuffer(device, m_vertices.staging.buf, nullptr);
 		vkFreeMemory(device, m_vertices.staging.mem, nullptr);

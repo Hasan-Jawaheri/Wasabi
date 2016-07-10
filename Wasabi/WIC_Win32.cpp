@@ -69,7 +69,7 @@ int WIC_Win32::MouseY(W_MOUSEPOSTYPE posT, UINT vpID) const {
 
 	return 0;
 }
-int WIC_Win32::MouseZ(void) const {
+int WIC_Win32::MouseZ() const {
 	//return registered mouse wheel position
 	return m_mouseZ;
 }
@@ -130,10 +130,10 @@ void WIC_Win32::SetMouseZ(int value) {
 	//set the mouse wheel position
 	m_mouseZ = value;
 }
-void WIC_Win32::EnableEscapeKeyQuit(void) {
+void WIC_Win32::EnableEscapeKeyQuit() {
 	m_escapeE = true;
 }
-void WIC_Win32::DisableEscapeKeyQuit(void) {
+void WIC_Win32::DisableEscapeKeyQuit() {
 	m_escapeE = false;
 }
 bool WIC_Win32::KeyDown(char key) const {

@@ -18,12 +18,12 @@ public:
 	virtual bool			MouseClick(W_MOUSEBUTTON button) const = 0;
 	virtual int				MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint vpID = 0) const = 0;
 	virtual int				MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint vpID = 0) const = 0;
-	virtual int				MouseZ(void) const = 0;
+	virtual int				MouseZ() const = 0;
 	virtual bool			MouseInScreen(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint vpID = 0) const = 0;
 	virtual void			SetMousePosition(uint x, uint y) = 0;
 	virtual void			SetMouseZ(int value) = 0;
-	virtual void			EnableEscapeKeyQuit(void) = 0;
-	virtual void			DisableEscapeKeyQuit(void) = 0;
+	virtual void			EnableEscapeKeyQuit() = 0;
+	virtual void			DisableEscapeKeyQuit() = 0;
 	virtual bool			KeyDown(char key) const = 0;
 
 	virtual void			InsertRawInput(char key, bool state) = 0;
