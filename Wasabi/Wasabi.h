@@ -82,7 +82,7 @@ public:
 	void				SwitchState(class WGameState* state);
 
 	WError				StartEngine(int width, int height);
-	WError				Resize(int width, int height);
+	virtual WError		Resize(unsigned int width, unsigned int height);
 
 	VkInstance			GetVulkanInstance() const;
 	VkPhysicalDevice	GetVulkanPhysicalDevice() const;
@@ -108,7 +108,7 @@ private:
 	VkPhysicalDeviceMemoryProperties	m_deviceMemoryProperties;
 	VkCommandPool						m_cmdPool;
 
-	void			_DestroyResources();
+	void								_DestroyResources();
 };
 
 class WGameState {
