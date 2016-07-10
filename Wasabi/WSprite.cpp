@@ -80,10 +80,13 @@ std::string WSpriteManager::GetTypeName() const {
 }
 
 WSpriteManager::WSpriteManager(class Wasabi* const app) : WManager<WSprite>(app) {
+	m_spriteGeometry = nullptr;
+	m_spriteMaterial = nullptr;
 }
+
 WSpriteManager::~WSpriteManager() {
-	m_spriteGeometry->RemoveReference();
-	m_spriteMaterial->RemoveReference();
+	W_SAFE_REMOVEREF(m_spriteGeometry);
+	W_SAFE_REMOVEREF(m_spriteMaterial);
 }
 
 void WSpriteManager::Load() {

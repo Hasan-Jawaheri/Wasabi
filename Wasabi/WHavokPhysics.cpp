@@ -409,7 +409,7 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 			if (posoff != -1) {
 				void* verts;
 				UINT geometryVerts = geometries[i]->GetNumVertices();
-				geometries[i]->MapVertexBuffer(&verts);// , true); TODO: make read-only?
+				geometries[i]->MapVertexBuffer(&verts) , true);
 				for (UINT n = 0; n < geometryVerts; n++) {
 					WVector3 curVert;
 					//offset by (m_rbNumVerts*structSize) to move to current location
@@ -527,14 +527,14 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 					//part.m_vertexBase = (float*)tmpVertBase;
 					//UINT structSize = geometries[i]->GetStructureSize ( );
 					//void* verts;
-					geometries[i]->MapVertexBuffer((void**)&part.m_vertexBase);// , true); TODO: make read-only?
+					geometries[i]->MapVertexBuffer((void**)&part.m_vertexBase, true);
 					part.m_vertexBase += posoff; // so that we are pointing at positions, stride remains the same
 						//for ( UINT n = 0; n < part.m_numVertices; n++ )
 						//	memcpy ( &tmpVertBase[n], &((char*)verts)[n*structSize], sizeof WVector3 );
 
 						DWORD* indices = nullptr;
 					UINT geometryIndices = geometries[i]->GetNumIndices();
-					geometries[i]->MapIndexBuffer(&indices);// , true); TODO: make read-only?
+					geometries[i]->MapIndexBuffer(&indices), true);
 					//if (geometries[i]->GetTopology() == D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST) {
 					part.m_indexBase = indices;
 					part.m_indexStriding = 3 * sizeof DWORD; //request a triangle list
