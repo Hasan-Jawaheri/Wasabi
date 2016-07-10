@@ -407,7 +407,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	return WError(W_SUCCEEDED);
 }
 
-WError Wasabi::Resize(int width, int height) {
+WError Wasabi::Resize(unsigned int width, unsigned int height) {
 	return Renderer->Resize(width, height);
 }
 
