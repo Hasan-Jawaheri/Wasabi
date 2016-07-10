@@ -13,7 +13,6 @@ class WMaterial : public WBase {
 		VkDeviceMemory memory;
 		VkDescriptorBufferInfo descriptor;
 		struct W_BOUND_RESOURCE* ubo_info;
-		bool dirty;
 	};
 	vector<UNIFORM_BUFFER_INFO> m_uniformBuffers;
 
