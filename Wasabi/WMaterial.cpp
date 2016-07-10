@@ -326,24 +326,6 @@ WError WMaterial::SetTexture(int binding_index, class WImage* img) {
 				m_app->ImageManager->GetDefaultImage()->AddReference();
 			}
 
-			if (img && img->Valid()) {
-				m_sampler_info[i].descriptor.imageView = img->GetView();
-			} else {
-				// put the default image
-				m_sampler_info[i].descriptor.imageView = m_app->ImageManager->GetDefaultImage()->GetView();
-			}
-
-			VkWriteDescriptorSet writeDescriptorSet = {};
-
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = m_descriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
-			writeDescriptorSet.dstBinding = info->binding_index;
-
-			vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, NULL);
-
 			isFound = true;
 		}
 	}
