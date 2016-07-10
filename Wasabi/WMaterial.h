@@ -13,6 +13,7 @@ class WMaterial : public WBase {
 		VkDeviceMemory memory;
 		VkDescriptorBufferInfo descriptor;
 		struct W_BOUND_RESOURCE* ubo_info;
+		bool dirty;
 	};
 	vector<UNIFORM_BUFFER_INFO> m_uniformBuffers;
 
@@ -42,6 +43,7 @@ public:
 	WError			SetVariableVector2(std::string varName, WVector2 vec);
 	WError			SetVariableVector3(std::string varName, WVector3 vec);
 	WError			SetVariableVector4(std::string varName, WVector4 vec);
+	WError			SetVariableColor(std::string varName, WColor col);
 	WError			SetVariableData(std::string varName, void* data, int len);
 
 	WError			SetTexture(int binding_index, class WImage* img);

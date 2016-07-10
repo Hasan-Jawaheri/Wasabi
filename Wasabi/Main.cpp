@@ -1,4 +1,5 @@
 #include "Wasabi.h"
+#include "WForwardRenderer.h"
 
 //#include "WHavokPhysics.h"
 class Kofta : public Wasabi {
@@ -24,8 +25,8 @@ public:
 		WObject* o3 = new WObject(this);
 
 		WGeometry* g = new WGeometry(this);
-		if (g->CreateCone(1, 2, 10, 10)) {
-			g->Scale(2);
+		if (g->CreateCone(1, 2, 4, 20)) {
+			g->Scale(1.4);
 
 			o->SetGeometry(g);
 			o2->SetGeometry(g);
@@ -42,7 +43,7 @@ public:
 		TextComponent->CreateFont(1, "FORTE");
 
 		WImage* img = new WImage(this);
-		o2->GetMaterial()->SetTexture(1, img);
+		((WFRMaterial*)o2->GetMaterial())->Texture(img);
 		img->Load("textures/dummy.bmp", true);
 		float* pixels;
 		int cs = img->GetComponentSize();
@@ -51,7 +52,9 @@ public:
 		img->MapPixels((void**)&pixels);
 		for (int y = 0; y < img->GetHeight(); y++) {
 			for (int x = 0; x < img->GetWidth(); x++) {
-				pixels[(y*img->GetWidth() + x) * nc + 0] = 0;
+				pixels[(y*img->GetWidth() + x) * nc + 0] *= 0.1f;
+				pixels[(y*img->GetWidth() + x) * nc + 1] *= 0.5f;
+				pixels[(y*img->GetWidth() + x) * nc + 2] *= 0.3f;
 			}
 		}
 		img->UnmapPixels();

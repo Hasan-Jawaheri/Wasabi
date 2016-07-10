@@ -46,7 +46,7 @@ WError WImageManager::Load() {
 		return WError(W_OUTOFMEMORY);
 
 	m_checker_image = new WImage(m_app);
-	int size = 64;
+	int size = 256;
 	int comp_size = 4;
 	int check_size = 16;
 	float* pixels = new float[size * size * comp_size];

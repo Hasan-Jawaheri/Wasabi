@@ -37,9 +37,11 @@ public:
 			"} ubo;\n"
 			""
 			"layout(location = 0) out vec2 outUV;\n"
+			"layout(location = 1) out vec3 outWorldNorm;\n"
 			""
 			"void main() {\n"
 			"	outUV = inUV;\n"
+			"	outWorldNorm = (ubo.modelMatrix * vec4(inNorm.xyz, 0.0)).xyz;\n"
 			"	gl_Position = ubo.projectionMatrix * ubo.viewMatrix * ubo.modelMatrix * vec4(inPos.xyz, 1.0);\n"
 			"}\n"
 		);
@@ -54,6 +56,10 @@ public:
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+			W_BOUND_RESOURCE(W_TYPE_UBO, 2, {
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4, "color"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "isTextured"),
+			}),
 		};
 		LoadCodeGLSL(
 			"#version 450\n"
@@ -62,13 +68,23 @@ public:
 			"#extension GL_ARB_shading_language_420pack : enable\n"
 			""
 			"layout(binding = 1) uniform sampler2D samplerColor;\n"
+			"layout(binding = 2) uniform UBO {\n"
+			"	vec4 color;\n"
+			"	int isTextured;\n"
+			"} ubo;\n"
 			""
 			"layout(location = 0) in vec2 inUV;\n"
+			"layout(location = 1) in vec3 inWorldNorm;\n"
 			""
 			"layout(location = 0) out vec4 outFragColor;\n"
 			""
 			"void main() {\n"
-			"	outFragColor = texture(samplerColor, inUV);\n"
+			"	if (ubo.isTextured == 1)\n"
+			"		outFragColor = texture(samplerColor, inUV);\n"
+			"	else\n"
+			"		outFragColor = ubo.color;\n"
+			"	float L = clamp(dot(inWorldNorm, vec3(0,1,0)) + 0.2, 0, 1);\n"
+			"	outFragColor *= L;\n"
 			"}\n"
 		);
 	}
@@ -76,7 +92,6 @@ public:
 
 WForwardRenderer::WForwardRenderer(Wasabi* const app) : WRenderer(app) {
 	m_sampler = VK_NULL_HANDLE;
-
 	m_default_fx = nullptr;
 }
 
@@ -150,12 +165,32 @@ void WForwardRenderer::Cleanup() {
 }
 
 class WMaterial* WForwardRenderer::CreateDefaultMaterial() {
-	WMaterial* mat = new WMaterial(m_app);
+	WFRMaterial* mat = new WFRMaterial(m_app);
 	mat->SetEffect(m_default_fx);
+	float r = (float)(rand() % 224 + 32) / 256.0f;
+	float g = (float)(rand() % 224 + 32) / 256.0f;
+	float b = (float)(rand() % 224 + 32) / 256.0f;
+	mat->SetColor(WColor(r, g, b, 1.0f));
 	return mat;
 }
 
 VkSampler WForwardRenderer::GetDefaultSampler() const {
 	return m_sampler;
+}
+
+WFRMaterial::WFRMaterial(Wasabi* const app, unsigned int ID) : WMaterial(app, ID) {
+
+}
+
+WError WFRMaterial::Texture(class WImage* img) {
+	int isTextured = 1;
+	SetVariableInt("isTextured", isTextured);
+	return SetTexture(1, img);
+}
+
+WError WFRMaterial::SetColor(WColor col) {
+	int isTextured = 0;
+	SetVariableInt("isTextured", isTextured);
+	return SetVariableColor("color", col);
 }
 
