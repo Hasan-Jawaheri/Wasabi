@@ -6,10 +6,6 @@ WRenderer::WRenderer(Wasabi* const app) : m_app(app) {
 	m_semaphores.renderComplete = VK_NULL_HANDLE;
 }
 
-WRenderer::~WRenderer() {
-	_Cleanup();
-}
-
 void WRenderer::_Cleanup() {
 	if (m_semaphores.presentComplete)
 		vkDestroySemaphore(m_device, m_semaphores.presentComplete, nullptr);
@@ -19,6 +15,8 @@ void WRenderer::_Cleanup() {
 	m_semaphores.renderComplete = VK_NULL_HANDLE;
 
 	W_SAFE_REMOVEREF(m_renderTarget);
+
+	Cleanup();
 }
 
 WError WRenderer::_Initialize() {
