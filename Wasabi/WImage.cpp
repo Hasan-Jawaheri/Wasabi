@@ -331,6 +331,8 @@ free_buffers:
 
 	m_width = width;
 	m_height = height;
+	m_numComponents = num_components;
+	m_componentSize = comp_size;
 	m_mapSize = bufferCreateInfo.size;
 
 	return WError(W_SUCCEEDED);
@@ -391,7 +393,7 @@ void WImage::UnmapPixels() {
 		if (err)
 			return;
 
-		VkBufferImageCopy bufferCopyRegion;
+		VkBufferImageCopy bufferCopyRegion = {};
 		// Setup buffer copy regions for each mip level
 		bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		bufferCopyRegion.imageSubresource.mipLevel = 0;
@@ -441,11 +443,23 @@ VkImageLayout WImage::GetViewLayout() const {
 	return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 }
 
-unsigned int WImage::GetWidth() {
+unsigned int WImage::GetWidth() const {
 	return m_width;
 }
 
-unsigned int WImage::GetHeight() {
+unsigned int WImage::GetHeight() const {
 	return m_height;
 }
 
+unsigned int WImage::GetNumComponents() const {
+	return m_numComponents;
+}
+
+unsigned int WImage::GetComponentSize() const {
+	return m_componentSize;
+}
+
+unsigned int WImage::GetPixelSize() const {
+	return m_numComponents * m_componentSize;
+
+}

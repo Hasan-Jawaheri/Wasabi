@@ -44,11 +44,23 @@ public:
 		WImage* img = new WImage(this);
 		o2->GetMaterial()->SetTexture(1, img);
 		img->Load("textures/dummy.bmp", true);
+		float* pixels;
+		int cs = img->GetComponentSize();
+		int nc = img->GetNumComponents();
+		int ps = img->GetPixelSize();
+		img->MapPixels((void**)&pixels);
+		for (int y = 0; y < img->GetHeight(); y++) {
+			for (int x = 0; x < img->GetWidth(); x++) {
+				pixels[(y*img->GetWidth() + x) * nc + 0] = 0;
+			}
+		}
+		img->UnmapPixels();
 		img->RemoveReference();
 
 		spr = new WSprite(this);
 		spr->SetImage(img);
 		spr->SetRotationCenter(WVector2(128, 128));
+		//spr->SetAlpha(0.6f);
 
 		CameraManager->GetDefaultCamera()->Move(-10);
 
@@ -64,7 +76,6 @@ public:
 
 		spr->Rotate(40.0f * fDeltaTime);
 		spr->Move(100.0f * fDeltaTime);
-		spr->SetAlpha(0.6f);
 
 		return true;
 	}

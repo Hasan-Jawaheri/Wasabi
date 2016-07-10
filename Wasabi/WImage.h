@@ -24,8 +24,11 @@ public:
 
 	VkImageView		GetView() const;
 	VkImageLayout	GetViewLayout() const;
-	unsigned int	GetWidth();
-	unsigned int	GetHeight();
+	unsigned int	GetWidth() const;
+	unsigned int	GetHeight() const;
+	unsigned int	GetNumComponents() const;
+	unsigned int	GetComponentSize() const;
+	unsigned int	GetPixelSize() const;
 
 	virtual bool	Valid() const;
 
@@ -36,7 +39,7 @@ private:
 	VkDeviceMemory m_deviceMemory;
 	VkImageView m_view;
 	bool m_readOnlyMap;
-	unsigned int m_width, m_height, m_mapSize;
+	unsigned int m_width, m_height, m_mapSize, m_numComponents, m_componentSize;
 
 	void _DestroyResources();
 };

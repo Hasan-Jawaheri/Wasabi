@@ -197,7 +197,8 @@ WError WForwardRenderer::Render() {
 	// Get next image in the swap chain (back/front buffer)
 	uint32_t currentBuffer;
 	VkResult err = m_swapChain->acquireNextImage(m_semaphores.presentComplete, &currentBuffer);
-	assert(!err);
+	if (err)
+		return WError(W_ERRORUNK);
 
 	//submitPostPresentBarrier(m_swapChain.buffers[currentBuffer].image);
 
@@ -221,10 +222,12 @@ WError WForwardRenderer::Render() {
 
 	// Bind descriptor sets describing shader binding points
 	err = vkResetCommandBuffer(m_renderCmdBuffer, 0);
-	assert(!err);
+	if (err)
+		return WError(W_ERRORUNK);
 
 	err = vkBeginCommandBuffer(m_renderCmdBuffer, &cmdBufInfo);
-	assert(!err);
+	if (err)
+		return WError(W_ERRORUNK);
 
 	vkCmdBeginRenderPass(m_renderCmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -253,7 +256,8 @@ WError WForwardRenderer::Render() {
 	vkCmdEndRenderPass(m_renderCmdBuffer);
 
 	err = vkEndCommandBuffer(m_renderCmdBuffer);
-	assert(!err);
+	if (err)
+		return WError(W_ERRORUNK);
 
 	// Command buffer to be sumitted to the queue
 	VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
@@ -268,12 +272,14 @@ WError WForwardRenderer::Render() {
 
 	// Submit to queue
 	err = vkQueueSubmit(m_queue, 1, &submitInfo, VK_NULL_HANDLE);
-	assert(!err);
+	if (err)
+		return WError(W_ERRORUNK);
 
 	//submitPrePresentBarrier(m_swapChain.buffers[currentBuffer].image);
 
 	err = m_swapChain->queuePresent(m_queue, currentBuffer, m_semaphores.renderComplete);
-	assert(!err);
+	if (err)
+		return WError(W_ERRORUNK);
 
 	vkDeviceWaitIdle(m_device);
 
