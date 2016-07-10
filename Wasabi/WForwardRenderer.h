@@ -18,3 +18,11 @@ public:
 	virtual class WMaterial*	CreateDefaultMaterial();
 	virtual VkSampler			GetDefaultSampler() const;
 };
+
+class WFRMaterial : public WMaterial {
+public:
+	WFRMaterial(Wasabi* const app, unsigned int ID = 0);
+
+	WError Texture(class WImage* img);
+	WError SetColor(WColor col);
+};
