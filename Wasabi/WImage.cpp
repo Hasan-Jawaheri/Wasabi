@@ -19,9 +19,32 @@ std::string WImageManager::GetTypeName() const {
 
 WImageManager::WImageManager(class Wasabi* const app) : WManager<WImage>(app) {
 	m_checker_image = nullptr;
+	m_copyCommandBuffer = VK_NULL_HANDLE;
 }
 
-void WImageManager::Load() {
+WImageManager::~WImageManager() {
+	VkDevice device = m_app->GetVulkanDevice();
+	if (m_copyCommandBuffer)
+		vkFreeCommandBuffers(device, m_app->GetCommandPool(), 1, &m_copyCommandBuffer);
+	m_copyCommandBuffer = VK_NULL_HANDLE;
+
+	W_SAFE_REMOVEREF(m_checker_image);
+}
+
+WError WImageManager::Load() {
+	VkDevice device = m_app->GetVulkanDevice();
+	VkCommandBufferAllocateInfo cmdBufInfo = {};
+
+	// Buffer copies are done on the queue, so we need a command buffer for them
+	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdBufInfo.commandPool = m_app->GetCommandPool();
+	cmdBufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	cmdBufInfo.commandBufferCount = 1;
+
+	VkResult err = vkAllocateCommandBuffers(device, &cmdBufInfo, &m_copyCommandBuffer);
+	if (err)
+		return WError(W_OUTOFMEMORY);
+
 	m_checker_image = new WImage(m_app);
 	int size = 64;
 	int comp_size = 4;
@@ -40,8 +63,52 @@ void WImageManager::Load() {
 				pixels[(y*size + x) * comp_size + 3] = 1;
 		}
 	}
-	m_checker_image->CretaeFromPixelsArray(pixels, size, size, false, comp_size);
+	WError werr = m_checker_image->CretaeFromPixelsArray(pixels, size, size, false, comp_size);
 	delete[] pixels;
+	if (!werr) {
+		vkFreeCommandBuffers(device, m_app->GetCommandPool(), 1, &m_copyCommandBuffer);
+		m_copyCommandBuffer = nullptr;
+		W_SAFE_REMOVEREF(m_checker_image);
+		return werr;
+	}
+
+	return WError(W_SUCCEEDED);
+}
+
+VkResult WImageManager::_BeginCopy() {
+	VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
+	cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	cmdBufferBeginInfo.pNext = NULL;
+
+	VkResult err = vkResetCommandBuffer(m_copyCommandBuffer, 0);
+	if (err)
+		return err;
+
+	// Put buffer region copies into command buffer
+	// Note that the staging buffer must not be deleted before the copies 
+	// have been submitted and executed
+	return vkBeginCommandBuffer(m_copyCommandBuffer, &cmdBufferBeginInfo);
+}
+
+VkResult WImageManager::_EndCopy() {
+	VkSubmitInfo copySubmitInfo = {};
+	VkResult err = vkEndCommandBuffer(m_copyCommandBuffer);
+	if (err)
+		return err;
+
+	// Submit copies to the queue
+	copySubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	copySubmitInfo.commandBufferCount = 1;
+	copySubmitInfo.pCommandBuffers = &m_copyCommandBuffer;
+
+	err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &copySubmitInfo, VK_NULL_HANDLE);
+	if (err)
+		return err;
+	err = vkQueueWaitIdle(m_app->Renderer->GetQueue());
+	if (err)
+		return err;
+
+	return VK_SUCCESS;
 }
 
 WImage* WImageManager::GetDefaultImage() const {
@@ -49,6 +116,8 @@ WImage* WImageManager::GetDefaultImage() const {
 }
 
 WImage::WImage(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+	m_stagingBuffer = VK_NULL_HANDLE;
+	m_stagingMemory = VK_NULL_HANDLE;
 	m_image = VK_NULL_HANDLE;
 	m_deviceMemory = VK_NULL_HANDLE;
 	m_view = VK_NULL_HANDLE;
@@ -71,12 +140,18 @@ bool WImage::Valid() const {
 
 void WImage::_DestroyResources() {
 	VkDevice device = m_app->GetVulkanDevice();
+	if (m_stagingBuffer)
+		vkDestroyBuffer(device, m_stagingBuffer, nullptr);
+	if (m_stagingMemory)
+		vkFreeMemory(device, m_stagingMemory, nullptr);
 	if (m_image)
 		vkDestroyImage(device, m_image, nullptr);
 	if (m_deviceMemory)
 		vkFreeMemory(device, m_deviceMemory, nullptr);
 	if (m_view)
 		vkDestroyImageView(device, m_view, nullptr);
+	m_stagingBuffer = VK_NULL_HANDLE;
+	m_stagingMemory = VK_NULL_HANDLE;
 	m_image = VK_NULL_HANDLE;
 	m_deviceMemory = VK_NULL_HANDLE;
 	m_view = VK_NULL_HANDLE;
@@ -95,16 +170,8 @@ WError WImage::CretaeFromPixelsArray(
 	VkResult err;
 	VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
 	VkMemoryRequirements memReqs = {};
-	VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
-	VkBufferCopy copyRegion = {};
-	VkSubmitInfo copySubmitInfo = {};
-	std::vector<VkBufferImageCopy> bufferCopyRegions;
 	VkBufferImageCopy bufferCopyRegion = {};
 	VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
-	VkCommandBuffer copyCommandBuffer;
-	VkCommandBufferAllocateInfo cmdBufInfo = {};
-	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingMemory;
 	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo();
 	uint8_t *data;
 
@@ -128,45 +195,33 @@ WError WImage::CretaeFromPixelsArray(
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	err = vkCreateBuffer(device, &bufferCreateInfo, nullptr, &stagingBuffer);
+	err = vkCreateBuffer(device, &bufferCreateInfo, nullptr, &m_stagingBuffer);
 	if (err) {
 		_DestroyResources();
 		return WError(W_OUTOFMEMORY);
 	}
 
 	// Get memory requirements for the staging buffer (alignment, memory type bits)
-	vkGetBufferMemoryRequirements(device, stagingBuffer, &memReqs);
+	vkGetBufferMemoryRequirements(device, m_stagingBuffer, &memReqs);
 
 	memAllocInfo.allocationSize = memReqs.size;
 	// Get memory type index for a host visible buffer
 	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memAllocInfo.memoryTypeIndex);
 
-	err = vkAllocateMemory(device, &memAllocInfo, nullptr, &stagingMemory);
+	err = vkAllocateMemory(device, &memAllocInfo, nullptr, &m_stagingMemory);
 	if (err) {
-		vkDestroyBuffer(device, stagingBuffer, nullptr);
+		vkDestroyBuffer(device, m_stagingBuffer, nullptr);
 		_DestroyResources();
 		return WError(W_OUTOFMEMORY);
 	}
-	err = vkBindBufferMemory(device, stagingBuffer, stagingMemory, 0);
+	err = vkBindBufferMemory(device, m_stagingBuffer, m_stagingMemory, 0);
 	if (err) goto free_buffers;
 
 	// Copy texture data into staging buffer
-	err = vkMapMemory(device, stagingMemory, 0, memReqs.size, 0, (void **)&data);
+	err = vkMapMemory(device, m_stagingMemory, 0, memReqs.size, 0, (void **)&data);
 	if (err) goto free_buffers;
 	memcpy(data, pixels, bufferCreateInfo.size);
-	vkUnmapMemory(device, stagingMemory);
-
-	// Setup buffer copy regions for each mip level
-	bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	bufferCopyRegion.imageSubresource.mipLevel = 0;
-	bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
-	bufferCopyRegion.imageSubresource.layerCount = 1;
-	bufferCopyRegion.imageExtent.width = width;
-	bufferCopyRegion.imageExtent.height = height;
-	bufferCopyRegion.imageExtent.depth = 1;
-	bufferCopyRegion.bufferOffset = 0;
-
-	bufferCopyRegions.push_back(bufferCopyRegion);
+	vkUnmapMemory(device, m_stagingMemory);
 
 	// Create optimal tiled target image
 	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -187,36 +242,30 @@ WError WImage::CretaeFromPixelsArray(
 
 	memAllocInfo.allocationSize = memReqs.size;
 
-	m_app->GetMemoryType(memReqs.memoryTypeBits,
-						 bDynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 						 &memAllocInfo.memoryTypeIndex);
 	err = vkAllocateMemory(device, &memAllocInfo, nullptr, &m_deviceMemory);
 	if (err) goto free_buffers;
 	err = vkBindImageMemory(device, m_image, m_deviceMemory, 0);
 	if (err) goto free_buffers;
 
-	// Buffer copies are done on the queue, so we need a command buffer for them
-	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmdBufInfo.commandPool = m_app->Renderer->GetCommandPool();
-	cmdBufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	cmdBufInfo.commandBufferCount = 1;
+	// Setup buffer copy regions for each mip level
+	bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	bufferCopyRegion.imageSubresource.mipLevel = 0;
+	bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
+	bufferCopyRegion.imageSubresource.layerCount = 1;
+	bufferCopyRegion.imageExtent.width = width;
+	bufferCopyRegion.imageExtent.height = height;
+	bufferCopyRegion.imageExtent.depth = 1;
+	bufferCopyRegion.bufferOffset = 0;
 
-	err = vkAllocateCommandBuffers(device, &cmdBufInfo, &copyCommandBuffer);
+	err = m_app->ImageManager->_BeginCopy();
 	if (err) goto free_buffers;
-
-	cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	cmdBufferBeginInfo.pNext = NULL;
-
-	// Put buffer region copies into command buffer
-	// Note that the staging buffer must not be deleted before the copies 
-	// have been submitted and executed
-	err = vkBeginCommandBuffer(copyCommandBuffer, &cmdBufferBeginInfo);
-	if (err) goto free_buffers_and_command;
 
 	// Image barrier for optimal image (target)
 	// Optimal image will be used as destination for the copy
 	vkTools::setImageLayout(
-		copyCommandBuffer,
+		m_app->ImageManager->m_copyCommandBuffer,
 		m_image,
 		VK_IMAGE_ASPECT_COLOR_BIT,
 		VK_IMAGE_LAYOUT_PREINITIALIZED,
@@ -224,42 +273,33 @@ WError WImage::CretaeFromPixelsArray(
 
 	// Copy mip levels from staging buffer
 	vkCmdCopyBufferToImage(
-		copyCommandBuffer,
-		stagingBuffer,
+		m_app->ImageManager->m_copyCommandBuffer,
+		m_stagingBuffer,
 		m_image,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		bufferCopyRegions.size(),
-		bufferCopyRegions.data()
+		1,
+		&bufferCopyRegion
 	);
 
 	// Change texture image layout to shader read after all mip levels have been copied
 	vkTools::setImageLayout(
-		copyCommandBuffer,
+		m_app->ImageManager->m_copyCommandBuffer,
 		m_image,
 		VK_IMAGE_ASPECT_COLOR_BIT,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-	err = vkEndCommandBuffer(copyCommandBuffer);
-	if (err) goto free_buffers_and_command;
-
-	// Submit copies to the queue
-	copySubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	copySubmitInfo.commandBufferCount = 1;
-	copySubmitInfo.pCommandBuffers = &copyCommandBuffer;
-
-	err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &copySubmitInfo, VK_NULL_HANDLE);
-	if (err) goto free_buffers_and_command;
-	err = vkQueueWaitIdle(m_app->Renderer->GetQueue());
-	if (err) goto free_buffers_and_command;
-
-free_buffers_and_command:
-	vkFreeCommandBuffers(device, m_app->Renderer->GetCommandPool(), 1, &copyCommandBuffer);
+	err = m_app->ImageManager->_EndCopy();
+	if (err) goto free_buffers;
 
 free_buffers:
 	// Clean up staging resources
-	vkFreeMemory(device, stagingMemory, nullptr);
-	vkDestroyBuffer(device, stagingBuffer, nullptr);
+	if (err || !bDynamic) {
+		vkFreeMemory(device, m_stagingMemory, nullptr);
+		vkDestroyBuffer(device, m_stagingBuffer, nullptr);
+		m_stagingMemory = VK_NULL_HANDLE;
+		m_stagingBuffer = VK_NULL_HANDLE;
+	}
 
 	if (err) {
 		_DestroyResources();
@@ -327,13 +367,15 @@ WError WImage::Load(std::string filename, bool bDynamic) {
 	return err;
 }
 
-WError WImage::MapPixels(void** const pixels) {
-	if (!Valid())
+WError WImage::MapPixels(void** const pixels, bool bReadOnly) {
+	if (!Valid() || !m_stagingMemory)
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
 
-	VkResult err = vkMapMemory(device, m_deviceMemory, 0, m_mapSize, 0, pixels);
+	m_readOnlyMap = bReadOnly;
+
+	VkResult err = vkMapMemory(device, m_stagingMemory, 0, m_mapSize, 0, pixels);
 	if (err)
 		return WError(W_NOTVALID);
 
@@ -342,7 +384,53 @@ WError WImage::MapPixels(void** const pixels) {
 
 void WImage::UnmapPixels() {
 	VkDevice device = m_app->GetVulkanDevice();
-	vkUnmapMemory(device, m_deviceMemory);
+	vkUnmapMemory(device, m_stagingMemory);
+
+	if (!m_readOnlyMap) {
+		VkResult err = m_app->ImageManager->_BeginCopy();
+		if (err)
+			return;
+
+		VkBufferImageCopy bufferCopyRegion;
+		// Setup buffer copy regions for each mip level
+		bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		bufferCopyRegion.imageSubresource.mipLevel = 0;
+		bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
+		bufferCopyRegion.imageSubresource.layerCount = 1;
+		bufferCopyRegion.imageExtent.width = m_width;
+		bufferCopyRegion.imageExtent.height = m_height;
+		bufferCopyRegion.imageExtent.depth = 1;
+		bufferCopyRegion.bufferOffset = 0;
+
+		// Image barrier for optimal image (target)
+		// Optimal image will be used as destination for the copy
+		vkTools::setImageLayout(
+			m_app->ImageManager->m_copyCommandBuffer,
+			m_image,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+		// Copy mip levels from staging buffer
+		vkCmdCopyBufferToImage(
+			m_app->ImageManager->m_copyCommandBuffer,
+			m_stagingBuffer,
+			m_image,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1,
+			&bufferCopyRegion
+		);
+
+		// Change texture image layout to shader read after all mip levels have been copied
+		vkTools::setImageLayout(
+			m_app->ImageManager->m_copyCommandBuffer,
+			m_image,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+		err = m_app->ImageManager->_EndCopy();
+	}
 }
 
 VkImageView WImage::GetView() const {

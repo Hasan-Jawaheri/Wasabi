@@ -40,6 +40,13 @@ std::string WGeometryManager::GetTypeName(void) const {
 }
 
 WGeometryManager::WGeometryManager(class Wasabi* const app) : WManager<WGeometry>(app) {
+	m_copyCommandBuffer = VK_NULL_HANDLE;
+}
+WGeometryManager::~WGeometryManager() {
+	VkDevice device = m_app->GetVulkanDevice();
+	if (m_copyCommandBuffer)
+		vkFreeCommandBuffers(device, m_app->GetCommandPool(), 1, &m_copyCommandBuffer);
+	m_copyCommandBuffer = VK_NULL_HANDLE;
 }
 
 WError WGeometryManager::Load() {
@@ -48,7 +55,7 @@ WError WGeometryManager::Load() {
 
 	// Buffer copies are done on the queue, so we need a command buffer for them
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmdBufInfo.commandPool = m_app->Renderer->GetCommandPool();
+	cmdBufInfo.commandPool = m_app->GetCommandPool();
 	cmdBufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	cmdBufInfo.commandBufferCount = 1;
 

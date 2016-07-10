@@ -6,14 +6,12 @@
 class WForwardRenderer : public WRenderer {
 	VkDevice							m_device;
 	VkQueue								m_queue;
-	VulkanSwapChain						m_swapChain;
-	bool								m_swapchainInitialized;
+	VulkanSwapChain*					m_swapChain;
 	std::vector<VkFramebuffer>			m_frameBuffers;
 
 	VkRenderPass						m_renderPass;
 	VkPipelineCache						m_pipelineCache;
 
-	VkCommandPool						m_cmdPool; // Command buffer pool
 	VkCommandBuffer						m_setupCmdBuffer, m_renderCmdBuffer;
 
 	struct {
@@ -59,5 +57,4 @@ public:
 	virtual VkRenderPass	GetRenderPass() const;
 	virtual VkPipelineCache	GetPipelineCache() const;
 	virtual VkCommandBuffer	GetCommnadBuffer() const;
-	virtual VkCommandPool	GetCommandPool() const;
 };

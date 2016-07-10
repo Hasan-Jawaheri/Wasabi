@@ -95,8 +95,10 @@ WTextComponent::~WTextComponent() {
 	W_SAFE_REMOVEREF(m_textMaterial);
 }
 
-void WTextComponent::Initialize() {
-	CreateFont(0, "Arial");
+WError WTextComponent::Initialize() {
+	WError err = CreateFont(0, "Arial");
+	if (!err)
+		return err;
 
 	WShader* vs = new TextVS(m_app);
 	vs->Load();
@@ -104,8 +106,18 @@ void WTextComponent::Initialize() {
 	ps->Load();
 	WEffect* textFX = new WEffect(m_app);
 	textFX->SetName("textFX");
-	textFX->BindShader(vs);
-	textFX->BindShader(ps);
+	err = textFX->BindShader(vs);
+	if (!err) {
+		vs->RemoveReference();
+		ps->RemoveReference();
+		return err;
+	}
+	err = textFX->BindShader(ps);
+	if (!err) {
+		vs->RemoveReference();
+		ps->RemoveReference();
+		return err;
+	}
 
 	VkPipelineColorBlendAttachmentState bs;
 	bs.colorWriteMask = 0xf;
@@ -128,12 +140,18 @@ void WTextComponent::Initialize() {
 	dss.front = dss.back;
 	textFX->SetDepthStencilState(dss);
 
-	textFX->BuildPipeline();
+	err = textFX->BuildPipeline();
 	vs->RemoveReference();
 	ps->RemoveReference();
+	if (!err)
+		return err;
 	m_textMaterial = new WMaterial(m_app);
-	m_textMaterial->SetEffect(textFX);
+	err = m_textMaterial->SetEffect(textFX);
 	textFX->RemoveReference();
+	if (!err) {
+		W_SAFE_REMOVEREF(m_textMaterial);
+		return err;
+	}
 
 	unsigned int num_verts = (unsigned int)m_app->engineParams["textBatchSize"] * 4;
 	unsigned int num_indices = (unsigned int)m_app->engineParams["textBatchSize"] * 6;
@@ -152,9 +170,17 @@ void WTextComponent::Initialize() {
 	}
 
 	m_textGeometry = new TextGeometry(m_app);
-	m_textGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
+	err = m_textGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
 	delete[] vb;
 	delete[] ib;
+
+	if (!err) {
+		W_SAFE_REMOVEREF(m_textMaterial);
+		W_SAFE_REMOVEREF(m_textGeometry);
+		return err;
+	}
+
+	return WError(W_SUCCEEDED);
 }
 
 void WTextComponent::AddFontDirectory(std::string dir) {

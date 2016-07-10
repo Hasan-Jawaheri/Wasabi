@@ -87,6 +87,8 @@ public:
 	VkPhysicalDevice	GetVulkanPhysicalDevice() const;
 	VkDevice			GetVulkanDevice() const;
 	VkQueue				GetVulkanGraphicsQeueue() const;
+	VulkanSwapChain*	GetSwapChain();
+	VkCommandPool		GetCommandPool() const;
 	void				GetMemoryType(uint32_t typeBits, VkFlags properties, uint32_t * typeIndex) const;
 
 protected:
@@ -98,9 +100,14 @@ private:
 	VkPhysicalDevice					m_vkPhysDev;
 	VkDevice							m_vkDevice;
 	VkQueue								m_queue;
+	VulkanSwapChain						m_swapChain;
+	bool								m_swapChainInitialized;
 	VkPhysicalDeviceProperties			m_deviceProperties;
 	VkPhysicalDeviceFeatures			m_deviceFeatures;
 	VkPhysicalDeviceMemoryProperties	m_deviceMemoryProperties;
+	VkCommandPool						m_cmdPool;
+
+	void			_DestroyResources();
 };
 
 class WGameState {

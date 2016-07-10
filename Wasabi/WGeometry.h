@@ -131,6 +131,7 @@ class WGeometryManager : public WManager<WGeometry> {
 
 public:
 	WGeometryManager(class Wasabi* const app);
+	~WGeometryManager();
 
 	WError Load();
 };

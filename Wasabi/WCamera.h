@@ -65,7 +65,7 @@ public:
 	WCameraManager(Wasabi* const app);
 	~WCameraManager();
 
-	void	Load();
+	WError	Load();
 
 	WCamera* GetDefaultCamera() const;
 };

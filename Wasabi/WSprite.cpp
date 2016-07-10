@@ -89,14 +89,26 @@ WSpriteManager::~WSpriteManager() {
 	W_SAFE_REMOVEREF(m_spriteMaterial);
 }
 
-void WSpriteManager::Load() {
+WError WSpriteManager::Load() {
 	WShader* vs = new SpriteVS(m_app);
 	vs->Load();
 	WShader* ps = new SpritePS(m_app);
 	ps->Load();
 	WEffect* textFX = new WEffect(m_app);
-	textFX->BindShader(vs);
-	textFX->BindShader(ps);
+	WError err = textFX->BindShader(vs);
+	if (!err) {
+		vs->RemoveReference();
+		ps->RemoveReference();
+		textFX->RemoveReference();
+		return err;
+	}
+	err = textFX->BindShader(ps);
+	if (!err) {
+		vs->RemoveReference();
+		ps->RemoveReference();
+		textFX->RemoveReference();
+		return err;
+	}
 
 	VkPipelineColorBlendAttachmentState bs;
 	bs.colorWriteMask = 0xf;
@@ -119,12 +131,23 @@ void WSpriteManager::Load() {
 	dss.front = dss.back;
 	textFX->SetDepthStencilState(dss);
 
-	textFX->BuildPipeline();
+	err = textFX->BuildPipeline();
 	vs->RemoveReference();
 	ps->RemoveReference();
+
+	if (!err) {
+		textFX->RemoveReference();
+		return err;
+	}
+
 	m_spriteMaterial = new WMaterial(m_app);
-	m_spriteMaterial->SetEffect(textFX);
+	err = m_spriteMaterial->SetEffect(textFX);
 	textFX->RemoveReference();
+
+	if (!err) {
+		W_SAFE_REMOVEREF(m_spriteMaterial);
+		return err;
+	}
 
 	unsigned int num_verts = 4;
 	unsigned int num_indices = 6;
@@ -141,9 +164,17 @@ void WSpriteManager::Load() {
 	ib[5] = 2;
 
 	m_spriteGeometry = new SpriteGeometry(m_app);
-	m_spriteGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
+	err = m_spriteGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
 	delete[] vb;
 	delete[] ib;
+
+	if (!err) {
+		W_SAFE_REMOVEREF(m_spriteMaterial);
+		W_SAFE_REMOVEREF(m_spriteGeometry);
+		return err;
+	}
+
+	return WError(W_SUCCEEDED);
 }
 
 void WSpriteManager::Render() {

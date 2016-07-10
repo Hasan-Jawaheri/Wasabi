@@ -94,6 +94,7 @@ Wasabi::Wasabi() {
 		{ "textBatchSize", (void*)(256) }, // int
 		{ "geometryImmutable", (void*)(false) }, // bool
 	};
+	m_swapChainInitialized = false;
 
 	SoundComponent = nullptr;
 	WindowComponent = nullptr;
@@ -101,16 +102,20 @@ Wasabi::Wasabi() {
 	PhysicsComponent = nullptr;
 	Renderer = nullptr;
 
-	ObjectManager = new WObjectManager(this);
-	GeometryManager = new WGeometryManager(this);
-	EffectManager = new WEffectManager(this);
-	ShaderManager = new WShaderManager(this);
-	MaterialManager = new WMaterialManager(this);
-	CameraManager = new WCameraManager(this);
-	ImageManager = new WImageManager(this);
-	SpriteManager = new WSpriteManager(this);
+	ObjectManager = nullptr;
+	GeometryManager = nullptr;
+	EffectManager = nullptr;
+	ShaderManager = nullptr;
+	MaterialManager = nullptr;
+	CameraManager = nullptr;
+	ImageManager = nullptr;
+	SpriteManager = nullptr;
 }
 Wasabi::~Wasabi() {
+	_DestroyResources();
+}
+
+void Wasabi::_DestroyResources() {
 	if (WindowComponent)
 		WindowComponent->Cleanup();
 	if (Renderer)
@@ -127,11 +132,18 @@ Wasabi::~Wasabi() {
 	W_SAFE_DELETE(ObjectManager);
 	W_SAFE_DELETE(SpriteManager);
 	W_SAFE_DELETE(GeometryManager);
-	W_SAFE_DELETE(EffectManager);
 	W_SAFE_DELETE(MaterialManager);
+	W_SAFE_DELETE(EffectManager);
 	W_SAFE_DELETE(ShaderManager);
 	W_SAFE_DELETE(CameraManager);
 	W_SAFE_DELETE(ImageManager);
+
+	if (m_swapChainInitialized)
+		m_swapChain.cleanup();
+	m_swapChainInitialized = false;
+
+	if (m_cmdPool)
+		vkDestroyCommandPool(m_vkDevice, m_cmdPool, nullptr);
 
 	vkDestroyDevice(m_vkDevice, nullptr);
 	vkDestroyInstance(m_vkInstance, nullptr);
@@ -218,12 +230,6 @@ VkInstance CreateVKInstance(const char* appName, const char* engineName) {
 }
 
 WError Wasabi::StartEngine(int width, int height) {
-	SetupComponents();
-
-	WError werr = WindowComponent->Initialize(width, height);
-	if (!werr)
-		return werr;
-
 	/* Create vulkan instance */
 	m_vkInstance = CreateVKInstance((const char*)engineParams["appName"], "Wasabi");
 	if (!m_vkInstance)
@@ -235,7 +241,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	// Get number of available physical devices
 	VkResult err = vkEnumeratePhysicalDevices(m_vkInstance, &gpuCount, nullptr);
 	if (err != VK_SUCCESS || gpuCount == 0) {
-		vkDestroyInstance(m_vkInstance, nullptr);
+		_DestroyResources();
 		return WError(W_FAILEDTOLISTDEVICES);
 	}
 
@@ -243,7 +249,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
 	err = vkEnumeratePhysicalDevices(m_vkInstance, &gpuCount, physicalDevices.data());
 	if (err != VK_SUCCESS) {
-		vkDestroyInstance(m_vkInstance, nullptr);
+		_DestroyResources();
 		return WError(W_FAILEDTOLISTDEVICES);
 	}
 
@@ -261,7 +267,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	uint32_t queueCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysDev, &queueCount, NULL);
 	if (queueCount == 0) {
-		vkDestroyInstance(m_vkInstance, nullptr);
+		_DestroyResources();
 		return WError(W_FAILEDTOLISTDEVICES);
 	}
 
@@ -274,7 +280,7 @@ WError Wasabi::StartEngine(int width, int height) {
 			break;
 	}
 	if (graphicsQueueIndex == queueCount) {
-		vkDestroyInstance(m_vkInstance, nullptr);
+		_DestroyResources();
 		return WError(W_HARDWARENOTSUPPORTED);
 	}
 
@@ -304,7 +310,7 @@ WError Wasabi::StartEngine(int width, int height) {
 
 	err = vkCreateDevice(m_vkPhysDev, &deviceCreateInfo, nullptr, &m_vkDevice);
 	if (err != VK_SUCCESS) {
-		vkDestroyInstance(m_vkInstance, nullptr);
+		_DestroyResources();
 		return WError(W_UNABLETOCREATEDEVICE);
 	}
 
@@ -317,28 +323,84 @@ WError Wasabi::StartEngine(int width, int height) {
 	// Gather physical device memory properties
 	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDev, &m_deviceMemoryProperties);
 
-	werr = Renderer->Initiailize();
-	if (!werr)
-		return werr;
+	SetupComponents();
 
-	if (!GeometryManager->Load())
+	WError werr = WindowComponent->Initialize(width, height);
+	if (!werr) {
+		_DestroyResources();
+		return werr;
+	}
+
+	m_swapChain.connect(m_vkInstance, m_vkPhysDev, m_vkDevice);
+	if (!m_swapChain.initSurface(
+		WindowComponent->GetPlatformHandle(),
+		WindowComponent->GetWindowHandle())) {
+		_DestroyResources();
+		return WError(W_UNABLETOCREATESWAPCHAIN);
+	}
+	m_swapChainInitialized = true;
+
+	VkCommandPoolCreateInfo cmdPoolInfo = {};
+	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	cmdPoolInfo.queueFamilyIndex = m_swapChain.queueNodeIndex;
+	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	err = vkCreateCommandPool(m_vkDevice, &cmdPoolInfo, nullptr, &m_cmdPool);
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
+		return WError(W_OUTOFMEMORY);
+	}
+
+	ObjectManager = new WObjectManager(this);
+	GeometryManager = new WGeometryManager(this);
+	EffectManager = new WEffectManager(this);
+	ShaderManager = new WShaderManager(this);
+	MaterialManager = new WMaterialManager(this);
+	CameraManager = new WCameraManager(this);
+	ImageManager = new WImageManager(this);
+	SpriteManager = new WSpriteManager(this);
+
+	werr = Renderer->Initiailize();
+	if (!werr) {
+		_DestroyResources();
+		return werr;
+	}
+
+	if (!GeometryManager->Load()) {
+		_DestroyResources();
 		return WError(W_ERRORUNK);
-	CameraManager->Load();
-	ImageManager->Load();
-	SpriteManager->Load();
+	}
+	if (!CameraManager->Load()) {
+		_DestroyResources();
+		return WError(W_ERRORUNK);
+	}
+	if (!ImageManager->Load()) {
+		_DestroyResources();
+		return WError(W_ERRORUNK);
+	}
+	if (!SpriteManager->Load()) {
+		_DestroyResources();
+		return WError(W_ERRORUNK);
+	}
 
 	if (TextComponent)
-		TextComponent->Initialize();
+		werr = TextComponent->Initialize();
+	if (!werr) {
+		_DestroyResources();
+		return WError(W_ERRORUNK);
+	}
 	if (PhysicsComponent)
 		werr = PhysicsComponent->Initialize();
+	if (!werr) {
+		_DestroyResources();
+		return WError(W_ERRORUNK);
+	}
 
-	return werr;
+	return WError(W_SUCCEEDED);
 }
 
 WError Wasabi::Resize(int width, int height) {
 	return Renderer->Resize(width, height);
 }
-
 
 void Wasabi::GetMemoryType(uint32_t typeBits, VkFlags properties, uint32_t * typeIndex) const {
 	for (uint32_t i = 0; i < 32; i++) {
@@ -363,6 +425,14 @@ VkDevice Wasabi::GetVulkanDevice() const {
 }
 VkQueue Wasabi::GetVulkanGraphicsQeueue() const {
 	return m_queue;
+}
+
+VulkanSwapChain* Wasabi::GetSwapChain() {
+	return &m_swapChain;
+}
+
+VkCommandPool Wasabi::GetCommandPool() const {
+	return m_cmdPool;
 }
 
 int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {

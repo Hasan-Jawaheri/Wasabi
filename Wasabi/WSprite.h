@@ -61,7 +61,7 @@ public:
 	WSpriteManager(class Wasabi* const app);
 	~WSpriteManager();
 
-	void Load();
+	WError Load();
 
 	void Render();
 };

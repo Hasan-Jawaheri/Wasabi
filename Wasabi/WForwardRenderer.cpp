@@ -58,10 +58,8 @@ static void g_FreeCommandBuffer(VkDevice device, VkCommandPool pool, VkCommandBu
 }
 
 WForwardRenderer::WForwardRenderer(Wasabi* app) : WRenderer(app) {
-	m_swapchainInitialized = false;
 	m_clearColor = { { 0.425f, 0.425f, 0.425f, 1.0f } };
 	m_setupCmdBuffer = m_renderCmdBuffer = VK_NULL_HANDLE;
-	m_cmdPool = VK_NULL_HANDLE;
 	m_renderPass = VK_NULL_HANDLE;
 	m_pipelineCache = VK_NULL_HANDLE;
 	m_depthStencil.view = VK_NULL_HANDLE;
@@ -90,26 +88,13 @@ WError WForwardRenderer::Initiailize() {
 	if (!m_depthFormat)
 		return WError(W_HARDWARENOTSUPPORTED);
 
-	m_swapChain.connect(m_app->GetVulkanInstance(), physDev, m_device);
-	if (!m_swapChain.initSurface(
-		m_app->WindowComponent->GetPlatformHandle(),
-		m_app->WindowComponent->GetWindowHandle()))
-		return WError(W_UNABLETOCREATESWAPCHAIN);
-	m_swapchainInitialized = true;
+	m_swapChain = m_app->GetSwapChain();
 
 	VkResult err = _SetupSemaphores();
 	if (err != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
 
-	VkCommandPoolCreateInfo cmdPoolInfo = {};
-	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	cmdPoolInfo.queueFamilyIndex = m_swapChain.queueNodeIndex;
-	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	err = vkCreateCommandPool(m_device, &cmdPoolInfo, nullptr, &m_cmdPool);
-	if (err != VK_SUCCESS)
-		return WError(W_OUTOFMEMORY);
-
-	m_renderCmdBuffer = g_CreateCommandBuffer(m_device, m_cmdPool);
+	m_renderCmdBuffer = g_CreateCommandBuffer(m_device, m_app->GetCommandPool());
 	if (m_renderCmdBuffer == VK_NULL_HANDLE)
 		return WError(W_OUTOFMEMORY);
 
@@ -211,7 +196,7 @@ WError WForwardRenderer::Render() {
 
 	// Get next image in the swap chain (back/front buffer)
 	uint32_t currentBuffer;
-	VkResult err = m_swapChain.acquireNextImage(m_semaphores.presentComplete, &currentBuffer);
+	VkResult err = m_swapChain->acquireNextImage(m_semaphores.presentComplete, &currentBuffer);
 	assert(!err);
 
 	//submitPostPresentBarrier(m_swapChain.buffers[currentBuffer].image);
@@ -287,7 +272,7 @@ WError WForwardRenderer::Render() {
 
 	//submitPrePresentBarrier(m_swapChain.buffers[currentBuffer].image);
 
-	err = m_swapChain.queuePresent(m_queue, currentBuffer, m_semaphores.renderComplete);
+	err = m_swapChain->queuePresent(m_queue, currentBuffer, m_semaphores.renderComplete);
 	assert(!err);
 
 	vkDeviceWaitIdle(m_device);
@@ -309,21 +294,15 @@ void WForwardRenderer::Cleanup() {
 		vkDestroySemaphore(m_device, m_semaphores.renderComplete, nullptr);
 
 	if (m_setupCmdBuffer)
-		g_FreeCommandBuffer(m_device, m_cmdPool, &m_setupCmdBuffer);
+		g_FreeCommandBuffer(m_device, m_app->GetCommandPool(), &m_setupCmdBuffer);
 	if (m_setupCmdBuffer)
-		g_FreeCommandBuffer(m_device, m_cmdPool, &m_renderCmdBuffer);
-	if (m_cmdPool)
-		vkDestroyCommandPool(m_device, m_cmdPool, nullptr);
+		g_FreeCommandBuffer(m_device, m_app->GetCommandPool(), &m_renderCmdBuffer);
 
 	for (uint32_t i = 0; i < m_frameBuffers.size(); i++)
 		vkDestroyFramebuffer(m_device, m_frameBuffers[i], nullptr);
 	m_frameBuffers.clear();
-	if (m_swapchainInitialized)
-		m_swapChain.cleanup();
-	m_swapchainInitialized = false;
 
 	m_setupCmdBuffer = m_renderCmdBuffer = VK_NULL_HANDLE;
-	m_cmdPool = VK_NULL_HANDLE;
 	m_renderPass = VK_NULL_HANDLE;
 	m_pipelineCache = VK_NULL_HANDLE;
 	m_depthStencil.view = VK_NULL_HANDLE;
@@ -347,9 +326,9 @@ VkSampler WForwardRenderer::GetDefaultSampler() const {
 }
 
 VkResult WForwardRenderer::_BeginSetupCommands() {
-	g_FreeCommandBuffer(m_device, m_cmdPool, &m_setupCmdBuffer);
+	g_FreeCommandBuffer(m_device, m_app->GetCommandPool(), &m_setupCmdBuffer);
 
-	m_setupCmdBuffer = g_CreateCommandBuffer(m_device, m_cmdPool);
+	m_setupCmdBuffer = g_CreateCommandBuffer(m_device, m_app->GetCommandPool());
 	if (m_setupCmdBuffer == VK_NULL_HANDLE)
 		return VK_ERROR_OUT_OF_DEVICE_MEMORY;
 
@@ -358,7 +337,7 @@ VkResult WForwardRenderer::_BeginSetupCommands() {
 
 	VkResult err = vkBeginCommandBuffer(m_setupCmdBuffer, &cmdBufInfo);
 	if (err != VK_SUCCESS) {
-		g_FreeCommandBuffer(m_device, m_cmdPool, &m_setupCmdBuffer);
+		g_FreeCommandBuffer(m_device, m_app->GetCommandPool(), &m_setupCmdBuffer);
 		return err;
 	}
 
@@ -388,7 +367,7 @@ VkResult WForwardRenderer::_EndSetupCommands() {
 	if (err != VK_SUCCESS)
 		return err;
 
-	g_FreeCommandBuffer(m_device, m_cmdPool, &m_setupCmdBuffer);
+	g_FreeCommandBuffer(m_device, m_app->GetCommandPool(), &m_setupCmdBuffer);
 
 	return err;
 }
@@ -428,7 +407,7 @@ VkResult WForwardRenderer::_SetupSwapchain() {
 	//
 	// Setup the swap chain
 	//
-	m_swapChain.create(m_setupCmdBuffer, &m_width, &m_height);
+	m_swapChain->create(m_setupCmdBuffer, &m_width, &m_height);
 
 	//
 	// Create the render pass
@@ -567,9 +546,9 @@ VkResult WForwardRenderer::_SetupSwapchain() {
 	frameBufferCreateInfo.layers = 1;
 
 	// Create frame buffers for every swap chain image
-	m_frameBuffers.resize(m_swapChain.imageCount);
+	m_frameBuffers.resize(m_swapChain->imageCount);
 	for (uint32_t i = 0; i < m_frameBuffers.size(); i++) {
-		imageViews[0] = m_swapChain.buffers[i].view;
+		imageViews[0] = m_swapChain->buffers[i].view;
 		VkResult err = vkCreateFramebuffer(m_device, &frameBufferCreateInfo, nullptr, &m_frameBuffers[i]);
 		assert(!err);
 	}
@@ -588,7 +567,4 @@ VkPipelineCache WForwardRenderer::GetPipelineCache() const {
 }
 VkCommandBuffer WForwardRenderer::GetCommnadBuffer() const {
 	return m_renderCmdBuffer;
-}
-VkCommandPool WForwardRenderer::GetCommandPool() const {
-	return m_cmdPool;
 }

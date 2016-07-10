@@ -419,8 +419,12 @@ public:
 		{
 			vkDestroyImageView(device, buffers[i].view, nullptr);
 		}
-		fpDestroySwapchainKHR(device, swapChain, nullptr);
-		vkDestroySurfaceKHR(instance, surface, nullptr);
+		if (swapChain)
+			fpDestroySwapchainKHR(device, swapChain, nullptr);
+		if (surface)
+			vkDestroySurfaceKHR(instance, surface, nullptr);
+		swapChain = VK_NULL_HANDLE;
+		surface = VK_NULL_HANDLE;
 	}
 
 };
