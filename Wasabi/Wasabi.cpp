@@ -23,7 +23,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 					app->PhysicsComponent->Step(deltaTime);
 			}
 
-			while (!app->Renderer->Render());
+			app->Renderer->Render();
 
 			numFrames++;
 
