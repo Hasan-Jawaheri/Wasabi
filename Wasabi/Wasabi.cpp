@@ -21,8 +21,12 @@ protected:
 
 public:
 	WError Setup() {
-		this->maxFPS = 0;
+		this->maxFPS = 60;
 		WError err = StartEngine(640, 480);
+		if (!err) {
+			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
+			return err;
+		}
 
 		WObject* o = new WObject(this);
 		WObject* o2 = new WObject(this);
@@ -178,6 +182,7 @@ Wasabi::Wasabi() {
 		{ "fontBmpCharHeight", (void*)(32) }, // int
 		{ "fontBmpNumChars", (void*)(96) }, // int
 		{ "textBatchSize", (void*)(256) }, // int
+		{ "gemoetryImmutable", (void*)(false) }, // bool
 	};
 
 	SoundComponent = nullptr;
@@ -403,12 +408,14 @@ WError Wasabi::StartEngine(int width, int height) {
 	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDev, &m_deviceMemoryProperties);
 
 	werr = Renderer->Initiailize();
-	if (werr)
+	if (!werr)
 		return werr;
 
 	CameraManager->Load();
 	ImageManager->Load();
 	SpriteManager->Load();
+	if (!GeometryManager->Load())
+		return WError(W_ERRORUNK);
 
 	if (TextComponent)
 		TextComponent->Initialize();

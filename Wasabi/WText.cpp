@@ -81,6 +81,9 @@ public:
 WTextComponent::WTextComponent(Wasabi* app) : m_app(app) {
 	m_curFont;
 	m_curColor = WColor(0.1f, 0.6f, 0.2f, 1.0f);
+
+	m_textGeometry = nullptr;
+	m_textMaterial = nullptr;
 }
 
 WTextComponent::~WTextComponent() {
@@ -88,8 +91,8 @@ WTextComponent::~WTextComponent() {
 		delete[] i->second.cdata;
 		i->second.img->RemoveReference();
 	}
-	m_textGeometry->RemoveReference();
-	m_textMaterial->RemoveReference();
+	W_SAFE_REMOVEREF(m_textGeometry);
+	W_SAFE_REMOVEREF(m_textMaterial);
 }
 
 void WTextComponent::Initialize() {

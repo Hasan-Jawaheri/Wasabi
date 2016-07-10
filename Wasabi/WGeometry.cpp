@@ -42,11 +42,62 @@ std::string WGeometryManager::GetTypeName(void) const {
 WGeometryManager::WGeometryManager(class Wasabi* const app) : WManager<WGeometry>(app) {
 }
 
+WError WGeometryManager::Load() {
+	VkDevice device = m_app->GetVulkanDevice();
+	VkCommandBufferAllocateInfo cmdBufInfo = {};
+	VkCommandBuffer copyCommandBuffer;
+
+	// Buffer copies are done on the queue, so we need a command buffer for them
+	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdBufInfo.commandPool = m_app->Renderer->GetCommandPool();
+	cmdBufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	cmdBufInfo.commandBufferCount = 1;
+
+	VkResult err = vkAllocateCommandBuffers(device, &cmdBufInfo, &copyCommandBuffer);
+	if (err)
+		return WError(W_OUTOFMEMORY);
+
+	return WError(W_SUCCEEDED);
+}
+
+VkResult WGeometryManager::_BeginCopy() {
+	VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
+	cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	cmdBufferBeginInfo.pNext = NULL;
+
+	VkResult err = vkResetCommandBuffer(m_copyCommandBuffer, 0);
+	if (err)
+		return err;
+
+	// Put buffer region copies into command buffer
+	// Note that the staging buffer must not be deleted before the copies 
+	// have been submitted and executed
+	return vkBeginCommandBuffer(m_copyCommandBuffer, &cmdBufferBeginInfo);
+}
+
+VkResult WGeometryManager::_EndCopy() {
+	VkSubmitInfo copySubmitInfo = {};
+	VkResult err = vkEndCommandBuffer(m_copyCommandBuffer);
+	if (err)
+		return err;
+
+	// Submit copies to the queue
+	copySubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	copySubmitInfo.commandBufferCount = 1;
+	copySubmitInfo.pCommandBuffers = &m_copyCommandBuffer;
+
+	err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &copySubmitInfo, VK_NULL_HANDLE);
+	if (err)
+		return err;
+	err = vkQueueWaitIdle(m_app->Renderer->GetQueue());
+	if (err)
+		return err;
+}
+
 WGeometry::WGeometry(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
-	m_vertices.buf = VK_NULL_HANDLE;
-	m_vertices.mem = VK_NULL_HANDLE;
-	m_indices.buf = VK_NULL_HANDLE;
-	m_indices.mem = VK_NULL_HANDLE;
+	ZeroMemory(&m_vertices, sizeof(m_vertices));
+	ZeroMemory(&m_indices, sizeof(m_indices));
+	m_dynamic = false;
 	
 	app->GeometryManager->AddEntity(this);
 }
@@ -62,24 +113,20 @@ std::string WGeometry::GetTypeName() const {
 }
 
 bool WGeometry::Valid() const {
-	return m_indices.buf && m_vertices.buf;
+	return m_indices.buffer.buf && m_vertices.buffer.buf;
 }
 
 void WGeometry::_DestroyResources() {
 	VkDevice device = m_app->GetVulkanDevice();
-	if (m_vertices.buf)
-		vkDestroyBuffer(device, m_vertices.buf, nullptr);
-	if (m_vertices.mem)
-		vkFreeMemory(device, m_vertices.mem, nullptr);
-	if (m_indices.buf)
-		vkDestroyBuffer(device, m_indices.buf, nullptr);
-	if (m_indices.mem)
-		vkFreeMemory(device, m_indices.mem, nullptr);
-
-	m_vertices.buf = VK_NULL_HANDLE;
-	m_vertices.mem = VK_NULL_HANDLE;
-	m_indices.buf = VK_NULL_HANDLE;
-	m_indices.mem = VK_NULL_HANDLE;
+	W_BUFFER* buffers[] = {&m_vertices.buffer, &m_vertices.staging, &m_indices.buffer, &m_indices.staging};
+	for (int i = 0; i < sizeof(buffers) / sizeof(W_BUFFER*); i++) {
+		if (buffers[i]->buf)
+			vkDestroyBuffer(device, buffers[i]->buf, nullptr);
+		buffers[i]->buf = VK_NULL_HANDLE;
+		if (buffers[i]->mem)
+			vkFreeMemory(device, buffers[i]->mem, nullptr);
+		buffers[i]->mem = VK_NULL_HANDLE;
+	}
 }
 
 void WGeometry::_CalcMinMax(void* vb, unsigned int num_verts) {
@@ -160,25 +207,11 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	VkDevice device = m_app->GetVulkanDevice();
 	VkMemoryAllocateInfo memAlloc = {};
 	VkMemoryRequirements memReqs;
-	VkCommandBufferAllocateInfo cmdBufInfo = {};
-	VkCommandBuffer copyCommandBuffer;
 	VkBufferCreateInfo vertexBufferInfo = {};
 	VkBufferCreateInfo indexbufferInfo = {};
-	VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
 	VkBufferCopy copyRegion = {};
-	VkSubmitInfo copySubmitInfo = {};
 	void *data;
 	VkResult err;
-
-	struct StagingBuffer {
-		VkDeviceMemory memory;
-		VkBuffer buffer;
-	};
-
-	struct {
-		StagingBuffer vertices;
-		StagingBuffer indices;
-	} stagingBuffers;
 
 	if (num_verts <= 0 || num_indices <= 0 || !vb || !ib)
 		return WError(W_INVALIDPARAM);
@@ -195,32 +228,22 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 
 	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-	// Buffer copies are done on the queue, so we need a command buffer for them
-	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmdBufInfo.commandPool = m_app->Renderer->GetCommandPool();
-	cmdBufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	cmdBufInfo.commandBufferCount = 1;
-
-	err = vkAllocateCommandBuffers(device, &cmdBufInfo, &copyCommandBuffer);
-	if (err)
-		return WError(W_OUTOFMEMORY);
-
 	// Vertex buffer
 	vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	vertexBufferInfo.size = vertexBufferSize;
 	// Buffer is used as the copy source
 	vertexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	// Create a host-visible buffer to copy the vertex data to (staging buffer)
-	err = vkCreateBuffer(device, &vertexBufferInfo, nullptr, &stagingBuffers.vertices.buffer);
+	err = vkCreateBuffer(device, &vertexBufferInfo, nullptr, &m_vertices.staging.buf);
 	if (err)
-		goto destroy_command;
-	vkGetBufferMemoryRequirements(device, stagingBuffers.vertices.buffer, &memReqs);
+		goto destroy_resources;
+	vkGetBufferMemoryRequirements(device, m_vertices.staging.buf, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
 	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &stagingBuffers.vertices.memory);
+	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_vertices.staging.mem);
 	if (err) {
-		vkDestroyBuffer(device, stagingBuffers.vertices.buffer, nullptr);
-		goto destroy_command;
+		vkDestroyBuffer(device, m_vertices.staging.buf, nullptr);
+		goto destroy_resources;
 	}
 
 	// Index buffer
@@ -228,134 +251,119 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	indexbufferInfo.size = indexBufferSize;
 	indexbufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	// Copy index data to a buffer visible to the host (staging buffer)
-	err = vkCreateBuffer(device, &indexbufferInfo, nullptr, &stagingBuffers.indices.buffer);
+	err = vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_indices.staging.buf);
 	if (err) {
-		vkDestroyBuffer(device, stagingBuffers.vertices.buffer, nullptr);
-		vkFreeMemory(device, stagingBuffers.vertices.memory, nullptr);
-		goto destroy_command;
+		vkDestroyBuffer(device, m_vertices.staging.buf, nullptr);
+		vkFreeMemory(device, m_vertices.staging.mem, nullptr);
+		goto destroy_resources;
 	}
 
-	vkGetBufferMemoryRequirements(device, stagingBuffers.indices.buffer, &memReqs);
+	vkGetBufferMemoryRequirements(device, m_indices.staging.buf, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
 	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &stagingBuffers.indices.memory);
+	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_indices.staging.mem);
 	if (err) {
-		vkDestroyBuffer(device, stagingBuffers.vertices.buffer, nullptr);
-		vkFreeMemory(device, stagingBuffers.vertices.memory, nullptr);
-		vkDestroyBuffer(device, stagingBuffers.indices.buffer, nullptr);
-		goto destroy_command;
+		vkDestroyBuffer(device, m_vertices.staging.buf, nullptr);
+		vkFreeMemory(device, m_vertices.staging.mem, nullptr);
+		vkDestroyBuffer(device, m_indices.staging.buf, nullptr);
+		goto destroy_resources;
 	}
 
 	// Map and copy VB
-	err = vkMapMemory(device, stagingBuffers.vertices.memory, 0, memAlloc.allocationSize, 0, &data);
+	err = vkMapMemory(device, m_vertices.staging.buf, 0, memAlloc.allocationSize, 0, &data);
 	if (err)
 		goto destroy_staging;
 	memcpy(data, vb, vertexBufferSize);
-	vkUnmapMemory(device, stagingBuffers.vertices.memory);
-	err = vkBindBufferMemory(device, stagingBuffers.vertices.buffer, stagingBuffers.vertices.memory, 0);
+	vkUnmapMemory(device, m_vertices.staging.buf);
+	err = vkBindBufferMemory(device, m_vertices.staging.buf, m_vertices.staging.mem, 0);
 	if (err)
 		goto destroy_staging;
 
 	// Create the destination buffer with device only visibility
 	// Buffer will be used as a vertex buffer
 	vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-	err = vkCreateBuffer(device, &vertexBufferInfo, nullptr, &m_vertices.buf);
+	err = vkCreateBuffer(device, &vertexBufferInfo, nullptr, &m_vertices.buffer.buf);
 	if (err)
 		goto destroy_staging;
-	vkGetBufferMemoryRequirements(device, m_vertices.buf, &memReqs);
+	vkGetBufferMemoryRequirements(device, m_vertices.buffer.buf, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
 	m_app->GetMemoryType(memReqs.memoryTypeBits,
 		bDynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		&memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_vertices.mem);
+	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_vertices.buffer.buf);
 	if (err)
 		goto destroy_staging;
-	err = vkBindBufferMemory(device, m_vertices.buf, m_vertices.mem, 0);
+	err = vkBindBufferMemory(device, m_vertices.buffer.buf, m_vertices.buffer.mem, 0);
 	if (err)
 		goto destroy_staging;
 
 	// Map and copy IB
-	err = vkMapMemory(device, stagingBuffers.indices.memory, 0, indexBufferSize, 0, &data);
+	err = vkMapMemory(device, m_indices.staging.buf, 0, indexBufferSize, 0, &data);
 	if (err)
 		goto destroy_staging;
 	memcpy(data, ib, indexBufferSize);
-	vkUnmapMemory(device, stagingBuffers.indices.memory);
-	err = vkBindBufferMemory(device, stagingBuffers.indices.buffer, stagingBuffers.indices.memory, 0);
+	vkUnmapMemory(device, m_indices.staging.mem);
+	err = vkBindBufferMemory(device, m_indices.staging.buf, m_indices.staging.mem, 0);
 	if (err)
 		goto destroy_staging;
 
 	// Create destination buffer with device only visibility
 	// Buffer will be used as an index buffer
 	indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-	err = vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_indices.buf);
+	err = vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_indices.buffer.buf);
 	if (err)
 		goto destroy_staging;
-	vkGetBufferMemoryRequirements(device, m_indices.buf, &memReqs);
+	vkGetBufferMemoryRequirements(device, m_indices.buffer.buf, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
 	m_app->GetMemoryType(memReqs.memoryTypeBits,
 		bDynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		&memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_indices.mem);
+	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_indices.buffer.mem);
 	if (err)
 		goto destroy_staging;
-	err = vkBindBufferMemory(device, m_indices.buf, m_indices.mem, 0);
+	err = vkBindBufferMemory(device, m_indices.buffer.buf, m_indices.buffer.mem, 0);
 	if (err)
 		goto destroy_staging;
 
-
-	cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	cmdBufferBeginInfo.pNext = NULL;
-
-	// Put buffer region copies into command buffer
-	// Note that the staging buffer must not be deleted before the copies 
-	// have been submitted and executed
-	err = vkBeginCommandBuffer(copyCommandBuffer, &cmdBufferBeginInfo);
+	err = m_app->GeometryManager->_BeginCopy();
 	if (err)
 		goto destroy_staging;
 
 	// Vertex buffer
 	copyRegion.size = vertexBufferSize;
 	vkCmdCopyBuffer(
-		copyCommandBuffer,
-		stagingBuffers.vertices.buffer,
-		m_vertices.buf,
+		m_app->GeometryManager->m_copyCommandBuffer,
+		m_vertices.staging.buf,
+		m_vertices.buffer.buf,
 		1,
 		&copyRegion);
 	// Index buffer
 	copyRegion.size = indexBufferSize;
 	vkCmdCopyBuffer(
-		copyCommandBuffer,
-		stagingBuffers.indices.buffer,
-		m_indices.buf,
+		m_app->GeometryManager->m_copyCommandBuffer,
+		m_indices.staging.buf,
+		m_indices.buffer.buf,
 		1,
 		&copyRegion);
 
-	err = vkEndCommandBuffer(copyCommandBuffer);
-	if (err)
-		goto destroy_staging;
-
-	// Submit copies to the queue
-	copySubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	copySubmitInfo.commandBufferCount = 1;
-	copySubmitInfo.pCommandBuffers = &copyCommandBuffer;
-
-	err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &copySubmitInfo, VK_NULL_HANDLE);
-	if (err)
-		goto destroy_staging;
-	err = vkQueueWaitIdle(m_app->Renderer->GetQueue());
+	err = m_app->GeometryManager->_EndCopy();
 	if (err)
 		goto destroy_staging;
 
 	// Destroy staging buffers
 destroy_staging:
-	vkDestroyBuffer(device, stagingBuffers.vertices.buffer, nullptr);
-	vkFreeMemory(device, stagingBuffers.vertices.memory, nullptr);
-	vkDestroyBuffer(device, stagingBuffers.indices.buffer, nullptr);
-	vkFreeMemory(device, stagingBuffers.indices.memory, nullptr);
+	// remove staging buffers if there's an error, geometry is immutable or if its dynamic
+	m_immutable = m_app->engineParams["gemoetryImmutable"];
+	if (err || m_immutable || bDynamic) {
+		vkDestroyBuffer(device, m_vertices.staging.buf, nullptr);
+		vkFreeMemory(device, m_vertices.staging.mem, nullptr);
+		vkDestroyBuffer(device, m_indices.staging.buf, nullptr);
+		vkFreeMemory(device, m_indices.staging.mem, nullptr);
+		m_vertices.staging.buf = m_indices.staging.buf = VK_NULL_HANDLE;
+		m_vertices.staging.mem = m_indices.staging.mem = VK_NULL_HANDLE;
+	}
 
-destroy_command:
-	vkFreeCommandBuffers(device, m_app->Renderer->GetCommandPool(), 1, &copyCommandBuffer);
-
+destroy_resources:
 	if (err) {
 		_DestroyResources();
 		return WError(W_OUTOFMEMORY);
@@ -363,6 +371,7 @@ destroy_command:
 
 	m_indices.count = num_indices;
 	m_vertices.count = num_verts;
+	m_dynamic = bDynamic;
 	_CalcMinMax(vb, num_verts);
 
 	return WError(W_SUCCEEDED);
@@ -795,7 +804,7 @@ WError WGeometry::CreateCylinder(float fRadius, float fHeight, unsigned int hseg
 }
 
 WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
-	if (!from->Valid())
+	if (!from->Valid() || (from->m_immutable && !from->m_dynamic))
 		return WError(W_INVALIDPARAM);
 
 	unsigned int num_verts = from->GetNumVertices();
@@ -847,28 +856,34 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 	return err;
 }
 
-WError WGeometry::MapVertexBuffer(void** const vb) {
-	if (!Valid())
+WError WGeometry::MapVertexBuffer(void** const vb, bool bReadOnly) {
+	if (!Valid() || (m_immutable && !m_dynamic))
 		return WError(W_NOTVALID);
 
+	m_vertices.readOnlyMap = bReadOnly;
+
+	W_BUFFER* b = m_dynamic ? &m_vertices.buffer : &m_vertices.staging;
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription().GetSize();
 
-	VkResult err = vkMapMemory(device, m_vertices.mem, 0, m_vertices.count * vtx_size, 0, vb);
+	VkResult err = vkMapMemory(device, b->mem, 0, m_vertices.count * vtx_size, 0, vb);
 	if (err)
 		return WError(W_NOTVALID);
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WGeometry::MapIndexBuffer(DWORD** const ib) {
-	if (!Valid())
+WError WGeometry::MapIndexBuffer(DWORD** const ib, bool bReadOnly) {
+	if (!Valid() || (m_immutable && !m_dynamic))
 		return WError(W_NOTVALID);
 
+	m_indices.readOnlyMap = bReadOnly;
+
+	W_BUFFER* b = m_dynamic ? &m_indices.buffer : &m_indices.staging;
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription().GetSize();
 
-	VkResult err = vkMapMemory(device, m_indices.mem, 0, m_indices.count * sizeof(DWORD), 0, (void**)ib);
+	VkResult err = vkMapMemory(device, b->mem, 0, m_indices.count * sizeof(DWORD), 0, (void**)ib);
 	if (err)
 		return WError(W_NOTVALID);
 
@@ -877,12 +892,56 @@ WError WGeometry::MapIndexBuffer(DWORD** const ib) {
 
 void WGeometry::UnmapVertexBuffer() {
 	VkDevice device = m_app->GetVulkanDevice();
-	vkUnmapMemory(device, m_vertices.mem);
+	if (m_dynamic) {
+		vkUnmapMemory(device, m_vertices.buffer.mem);
+	} else {
+		vkUnmapMemory(device, m_vertices.staging.mem);
+		if (!m_vertices.readOnlyMap) {
+			VkBufferCopy copyRegion = {};
+
+			VkResult err = m_app->GeometryManager->_BeginCopy();
+			if (err)
+				return;
+
+			// Vertex buffer
+			copyRegion.size = m_vertices.count * GetVertexDescription().GetSize();
+			vkCmdCopyBuffer(
+				m_app->GeometryManager->m_copyCommandBuffer,
+				m_vertices.staging.buf,
+				m_vertices.buffer.buf,
+				1,
+				&copyRegion);
+
+			m_app->GeometryManager->_EndCopy();
+		}
+	}
 }
 
 void WGeometry::UnmapIndexBuffer() {
 	VkDevice device = m_app->GetVulkanDevice();
-	vkUnmapMemory(device, m_indices.mem);
+	if (m_dynamic) {
+		vkUnmapMemory(device, m_indices.buffer.mem);
+	} else {
+		vkUnmapMemory(device, m_indices.staging.mem);
+		if (!m_indices.readOnlyMap) {
+			VkBufferCopy copyRegion = {};
+
+			VkResult err = m_app->GeometryManager->_BeginCopy();
+			if (err)
+				return;
+
+			// Index buffer
+			copyRegion.size = m_indices.count * sizeof(DWORD);
+			vkCmdCopyBuffer(
+				m_app->GeometryManager->m_copyCommandBuffer,
+				m_indices.staging.buf,
+				m_indices.buffer.buf,
+				1,
+				&copyRegion);
+
+			m_app->GeometryManager->_EndCopy();
+		}
+	}
 }
 
 bool WGeometry::Intersect(WVector3 p1, WVector3 p2, unsigned int* triangleIndex, float* u, float* v, WVector3* pt) const {
@@ -890,134 +949,152 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, unsigned int* triangleIndex,
 	return false;
 }
 
-void WGeometry::Scale(float mulFactor) {
-	if (!Valid())
-		return;
+WError WGeometry::Scale(float mulFactor) {
+	if (!Valid() || (m_immutable && !m_dynamic))
+		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription().GetSize();
 	int offset = GetVertexDescription().GetOffset("position");
 
 	void* data;
-	VkResult err = vkMapMemory(device, m_vertices.mem, 0, m_vertices.count * vtx_size, 0, &data);
-	if (err)
-		return;
+	WError err = MapVertexBuffer(&data);
+	if (!err)
+		return err;
+
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
 		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
 		v *= mulFactor;
 		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
 	}
-	vkUnmapMemory(device, m_vertices.mem);
+
+	UnmapVertexBuffer();
+	return WError(W_SUCCEEDED);
 }
 
-void WGeometry::ScaleX(float mulFactor) {
-	if (!Valid())
-		return;
+WError WGeometry::ScaleX(float mulFactor) {
+	if (!Valid() || (m_immutable && !m_dynamic))
+		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription().GetSize();
 	int offset = GetVertexDescription().GetOffset("position");
 
 	void* data;
-	VkResult err = vkMapMemory(device, m_vertices.mem, 0, m_vertices.count * vtx_size, 0, &data);
-	if (err)
-		return;
+	WError err = MapVertexBuffer(&data);
+	if (!err)
+		return err;
+
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
 		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
 		v.x *= mulFactor;
 		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
 	}
-	vkUnmapMemory(device, m_vertices.mem);
+
+	UnmapVertexBuffer();
+	return WError(W_SUCCEEDED);
 }
 
-void WGeometry::ScaleY(float mulFactor) {
-	if (!Valid())
-		return;
+WError WGeometry::ScaleY(float mulFactor) {
+	if (!Valid() || (m_immutable && !m_dynamic))
+		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription().GetSize();
 	int offset = GetVertexDescription().GetOffset("position");
 
 	void* data;
-	VkResult err = vkMapMemory(device, m_vertices.mem, 0, m_vertices.count * vtx_size, 0, &data);
-	if (err)
-		return;
+	WError err = MapVertexBuffer(&data);
+	if (!err)
+		return err;
+
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
 		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
 		v.y *= mulFactor;
 		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
 	}
-	vkUnmapMemory(device, m_vertices.mem);
+
+	UnmapVertexBuffer();
+	return WError(W_SUCCEEDED);
 }
 
-void WGeometry::ScaleZ(float mulFactor) {
-	if (!Valid())
-		return;
+WError WGeometry::ScaleZ(float mulFactor) {
+	if (!Valid() || (m_immutable && !m_dynamic))
+		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription().GetSize();
 	int offset = GetVertexDescription().GetOffset("position");
 
 	void* data;
-	VkResult err = vkMapMemory(device, m_vertices.mem, 0, m_vertices.count * vtx_size, 0, &data);
-	if (err)
-		return;
+	WError err = MapVertexBuffer(&data);
+	if (!err)
+		return err;
+
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
 		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
 		v.z *= mulFactor;
 		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
 	}
-	vkUnmapMemory(device, m_vertices.mem);
+
+	UnmapVertexBuffer();
+	return WError(W_SUCCEEDED);
 }
 
-void WGeometry::ApplyOffset(float x, float y, float z) {
-	ApplyOffset(WVector3(x, y, z));
+WError WGeometry::ApplyOffset(float x, float y, float z) {
+	return ApplyOffset(WVector3(x, y, z));
 }
 
-void WGeometry::ApplyOffset(WVector3 _offset) {
-	if (!Valid())
-		return;
+WError WGeometry::ApplyOffset(WVector3 _offset) {
+	if (!Valid() || (m_immutable && !m_dynamic))
+		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription().GetSize();
 	int offset = GetVertexDescription().GetOffset("position");
 
 	void* data;
-	VkResult err = vkMapMemory(device, m_vertices.mem, 0, m_vertices.count * vtx_size, 0, &data);
-	if (err)
-		return;
+	WError err = MapVertexBuffer(&data);
+	if (!err)
+		return err;
+
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
 		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
 		v += _offset;
 		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
 	}
-	vkUnmapMemory(device, m_vertices.mem);
+
+	UnmapVertexBuffer();
+	return WError(W_SUCCEEDED);
 }
 
-void WGeometry::ApplyRotation(WMatrix mtx) {
-	if (!Valid())
-		return;
+WError WGeometry::ApplyRotation(WMatrix mtx) {
+	if (!Valid() || (m_immutable && !m_dynamic))
+		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription().GetSize();
 	int offset = GetVertexDescription().GetOffset("position");
 
 	void* data;
-	VkResult err = vkMapMemory(device, m_vertices.mem, 0, m_vertices.count * vtx_size, 0, &data);
-	if (err)
-		return;
+	WError err = MapVertexBuffer(&data);
+	if (!err)
+		return err;
+
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
 		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
 		v = WVec3TransformCoord(v, mtx);
 		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
 	}
-	vkUnmapMemory(device, m_vertices.mem);
+
+	UnmapVertexBuffer();
+	return WError(W_SUCCEEDED);
 }
 
 WError WGeometry::Draw(unsigned int num_triangles) {
@@ -1028,10 +1105,10 @@ WError WGeometry::Draw(unsigned int num_triangles) {
 
 	// Bind triangle vertices
 	VkDeviceSize offsets[1] = { 0 };
-	vkCmdBindVertexBuffers(renderCmdBuffer, 0/*VERTEX_BUFFER_BIND_ID*/, 1, &m_vertices.buf, offsets);
+	vkCmdBindVertexBuffers(renderCmdBuffer, 0/*VERTEX_BUFFER_BIND_ID*/, 1, &m_vertices.buffer.buf, offsets);
 
 	// Bind triangle indices
-	vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buf, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buffer.buf, 0, VK_INDEX_TYPE_UINT32);
 
 	// Draw indexed triangle
 	vkCmdDrawIndexed(renderCmdBuffer, num_triangles * 3, 1, 0, 0, 1);

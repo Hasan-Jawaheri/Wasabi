@@ -44,26 +44,6 @@ struct WDefaultVertex {
 class WGeometry : public WBase {
 	virtual std::string GetTypeName() const;
 
-	struct {
-		int count;
-		VkBuffer buf;
-		VkDeviceMemory mem;
-	} m_vertices;
-
-	struct {
-		int count;
-		VkBuffer buf;
-		VkDeviceMemory mem;
-	} m_indices;
-
-	WVector3		m_maxPt;
-	WVector3		m_minPt;
-
-	void _DestroyResources();
-	void _CalcMinMax(void* vb, unsigned int num_vert);
-	void _CalcNormals(void* vb, unsigned int num_verts, void* ib, unsigned int num_indices);
-	void _CalcTangents(void* vb, unsigned int num_verts);
-
 public:
 	WGeometry(Wasabi* const app, unsigned int ID = 0);
 	~WGeometry();
@@ -77,11 +57,6 @@ public:
 		});
 	}
 
-	/*
-		CopyFrom only works if *from is dynamic. Scale*, Apply*, Map* and Unmap* functions
-		only work if the object is created with bDynamic = true.
-		TODO: remove the dynamic constraint by having backup data buffers in RAM
-	*/
 	WError				CreateFromData(	void* vb, unsigned int num_verts,
 										void* ib, unsigned int num_indices, bool bDynamic = false,
 										bool bCalcNormals = false, bool bCalcTangents = false);
@@ -93,19 +68,19 @@ public:
 	WError				CreateCylinder(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic = false);
 	WError				CopyFrom(WGeometry* const from, bool bDynamic = false);
 
-	WError				MapVertexBuffer(void** const vb);
-	WError				MapIndexBuffer(DWORD** const ib);
+	WError				MapVertexBuffer(void** const vb, bool bReadOnly = false);
+	WError				MapIndexBuffer(DWORD** const ib, bool bReadOnly = false);
 	void				UnmapVertexBuffer();
 	void				UnmapIndexBuffer();
 
 	bool				Intersect(WVector3 p1, WVector3 p2, unsigned int* triangleIndex, float* u, float* v, WVector3* pt) const;
-	void				Scale(float mulFactor);
-	void				ScaleX(float mulFactor);
-	void				ScaleY(float mulFactor);
-	void				ScaleZ(float mulFactor);
-	void				ApplyOffset(float x, float y, float z);
-	void				ApplyOffset(WVector3 offset);
-	void				ApplyRotation(WMatrix mtx);
+	WError				Scale(float mulFactor);
+	WError				ScaleX(float mulFactor);
+	WError				ScaleY(float mulFactor);
+	WError				ScaleZ(float mulFactor);
+	WError				ApplyOffset(float x, float y, float z);
+	WError				ApplyOffset(WVector3 offset);
+	WError				ApplyRotation(WMatrix mtx);
 
 	WError				Draw(unsigned int num_triangles = -1);
 
@@ -115,6 +90,33 @@ public:
 	unsigned int		GetNumIndices() const;
 
 	virtual bool		Valid() const;
+
+private:
+	struct W_BUFFER {
+		VkBuffer buf;
+		VkDeviceMemory mem;
+	};
+	struct {
+		int count;
+		W_BUFFER buffer, staging;
+		bool readOnlyMap;
+	} m_vertices;
+
+	struct {
+		int count;
+		W_BUFFER buffer, staging;
+		bool readOnlyMap;
+	} m_indices;
+
+	WVector3		m_maxPt;
+	WVector3		m_minPt;
+	bool			m_dynamic;
+	bool			m_immutable;
+
+	void _DestroyResources();
+	void _CalcMinMax(void* vb, unsigned int num_vert);
+	void _CalcNormals(void* vb, unsigned int num_verts, void* ib, unsigned int num_indices);
+	void _CalcTangents(void* vb, unsigned int num_verts);
 };
 
 class WGeometryManager : public WManager<WGeometry> {
@@ -122,7 +124,14 @@ class WGeometryManager : public WManager<WGeometry> {
 
 	virtual std::string GetTypeName(void) const;
 
+	VkCommandBuffer m_copyCommandBuffer;
+
+	VkResult _BeginCopy();
+	VkResult _EndCopy();
+
 public:
 	WGeometryManager(class Wasabi* const app);
+
+	WError Load();
 };
 
