@@ -16,11 +16,13 @@ desc.: Wasabi Engine main header file
 #include <vector>
 #include <map>
 #include <array>
+#include <chrono>
 
 #include "WError.h"
 #include "WManager.h"
 #include "WBase.h"
 #include "WOrientation.h"
+#include "WTimer.h"
 
 using namespace std;
 using std::ios;
@@ -62,6 +64,8 @@ public:
 	class WCameraManager*		CameraManager;
 	class WImageManager*		ImageManager;
 	class WSpriteManager*		SpriteManager;
+
+	WTimer Timer;
 
 	float FPS, maxFPS;
 	class  WGameState* curState;
@@ -128,6 +132,7 @@ public:
 #include "WCamera.h"
 #include "WImage.h"
 #include "WSprite.h"
+#include "WSound.h"
 #ifdef _WIN32
 #include "WWC_Win32.h"
 #include "WIC_Win32.h"

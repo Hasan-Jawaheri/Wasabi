@@ -114,6 +114,7 @@
     <ClCompile Include="WHavokPhysics.cpp">
       <Filter>Physics\Havok</Filter>
     </ClCompile>
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WRenderer.h">
