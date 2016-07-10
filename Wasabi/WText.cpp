@@ -140,7 +140,7 @@ WError WTextComponent::Initialize() {
 	dss.front = dss.back;
 	textFX->SetDepthStencilState(dss);
 
-	err = textFX->BuildPipeline();
+	err = textFX->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
 	vs->RemoveReference();
 	ps->RemoveReference();
 	if (!err)
@@ -308,7 +308,7 @@ WError WTextComponent::RenderText(std::string text, int x, int y, float fHeight,
 	return WError(W_INVALIDPARAM);
 }
 
-void WTextComponent::Render() {
+void WTextComponent::Render(WRenderTarget* rt) {
 	float scrWidth = m_app->WindowComponent->GetWindowWidth();
 	float scrHeight = m_app->WindowComponent->GetWindowHeight();
 	for (auto text : m_texts) {
@@ -354,8 +354,8 @@ void WTextComponent::Render() {
 		m_textGeometry->UnmapVertexBuffer();
 		m_textMaterial->SetVariableFloatArray("color", (float*)&text.col, 4);
 		m_textMaterial->SetTexture(1, text.font.img);
-		m_textMaterial->Bind();
-		m_textGeometry->Draw((curvert / 4) * 2);
+		m_textMaterial->Bind(rt);
+		m_textGeometry->Draw(rt, (curvert / 4) * 2);
 	}
 	m_texts.clear();
 }

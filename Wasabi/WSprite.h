@@ -31,7 +31,7 @@ public:
 	void			SetPriority(unsigned int priority);
 	void			SetAlpha(float fAlpha);
 
-	void			Render();
+	void			Render(class WRenderTarget* rt);
 
 	void			Show();
 	void			Hide();
@@ -63,5 +63,5 @@ public:
 
 	WError Load();
 
-	void Render();
+	void Render(class WRenderTarget* rt);
 };

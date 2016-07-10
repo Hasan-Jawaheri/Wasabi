@@ -82,7 +82,7 @@ public:
 	WError				ApplyOffset(WVector3 offset);
 	WError				ApplyRotation(WMatrix mtx);
 
-	WError				Draw(unsigned int num_triangles = -1);
+	WError				Draw(class WRenderTarget* rt, unsigned int num_triangles = -1);
 
 	WVector3			GetMinPoint() const;
 	WVector3			GetMaxPoint() const;

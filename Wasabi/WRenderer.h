@@ -6,29 +6,46 @@ desc.: Wasabi Engine renderer spec
 #pragma once
 
 #include "Wasabi.h"
-#include "WMath.h"
 
 class WRenderer {
+	friend int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow);
+	friend class Wasabi;
+
+	WError _Initialize();
+	void _Render();
+	void _Cleanup();
+
 public:
-	WRenderer(Wasabi* app) : m_app(app) {}
-	~WRenderer() {}
+	WRenderer(Wasabi* const app);
+	~WRenderer();
 
-	virtual WError		Initiailize() = 0;
-	virtual WError		Render() = 0;
-	virtual void		Cleanup() = 0;
-	virtual WError		Resize(unsigned int width, unsigned int height) = 0;
+	virtual WError				Initiailize() = 0;
+	virtual WError				Render(class WRenderTarget* rt) = 0;
+	virtual void				Cleanup() = 0;
+	virtual WError				Resize(unsigned int width, unsigned int height);
 
-	virtual void		SetClearColor(WColor col) = 0;
+	virtual class WMaterial*	CreateDefaultMaterial() = 0;
+	virtual VkSampler			GetDefaultSampler() const = 0;
 
-	virtual class WMaterial*CreateDefaultMaterial() = 0;
-	virtual VkSampler		GetDefaultSampler() const = 0;
-
-	virtual VkQueue			GetQueue() const = 0;
-	virtual VkRenderPass	GetRenderPass() const = 0;
-	virtual VkPipelineCache	GetPipelineCache() const = 0;
-	virtual VkCommandBuffer	GetCommnadBuffer() const = 0;
+	VkQueue						GetQueue() const;
+	class WRenderTarget*		GetDefaultRenderTarget() const;
 
 protected:
-	Wasabi* m_app;
+	Wasabi*						m_app;
+
+	VkDevice					m_device;
+	VkQueue						m_queue;
+	VulkanSwapChain*			m_swapChain;
+	WRenderTarget*				m_renderTarget;
+
+	// Synchronization semaphores
+	struct {
+		VkSemaphore presentComplete; // Swap chain image presentation
+		VkSemaphore renderComplete; // Command buffer submission and execution
+	} m_semaphores;
+
+	VkFormat					m_depthFormat, m_colorFormat;
+	uint32_t					m_width, m_height;
+	bool						m_resizing;
 };
 

@@ -116,8 +116,8 @@ public:
 	void					SetPrimitiveTopology(VkPrimitiveTopology topology);
 	void					SetBlendingState(VkPipelineColorBlendAttachmentState state);
 	void					SetDepthStencilState(VkPipelineDepthStencilStateCreateInfo state);
-	WError					BuildPipeline();
-	WError					Bind();
+	WError					BuildPipeline(class WRenderTarget* rt);
+	WError					Bind(class WRenderTarget* rt);
 	
 	VkPipelineLayout*		GetPipelineLayout();
 	VkDescriptorSetLayout*	GetDescriptorSetLayout();

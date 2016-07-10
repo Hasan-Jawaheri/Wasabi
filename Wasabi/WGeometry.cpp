@@ -1105,8 +1105,10 @@ WError WGeometry::ApplyRotation(WMatrix mtx) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WGeometry::Draw(unsigned int num_triangles) {
-	VkCommandBuffer renderCmdBuffer = m_app->Renderer->GetCommnadBuffer();
+WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles) {
+	VkCommandBuffer renderCmdBuffer = rt->GetCommnadBuffer();
+	if (!renderCmdBuffer)
+		return WError(W_NORENDERTARGET);
 
 	if (num_triangles == -1 || num_triangles * 3 > m_indices.count)
 		num_triangles = m_indices.count / 3;

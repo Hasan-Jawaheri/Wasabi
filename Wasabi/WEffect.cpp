@@ -203,7 +203,7 @@ void WEffect::SetDepthStencilState(VkPipelineDepthStencilStateCreateInfo state) 
 	m_depthStencilState = state;
 }
 
-WError WEffect::BuildPipeline() {
+WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	VkDevice device = m_app->GetVulkanDevice();
 
 	if (!Valid())
@@ -376,11 +376,11 @@ WError WEffect::BuildPipeline() {
 	pipelineCreateInfo.pMultisampleState = &multisampleState;
 	pipelineCreateInfo.pViewportState = NULL; // viewport state is dynamic
 	pipelineCreateInfo.pDepthStencilState = &m_depthStencilState;
-	pipelineCreateInfo.renderPass = m_app->Renderer->GetRenderPass();
+	pipelineCreateInfo.renderPass = rt->GetRenderPass();
 	pipelineCreateInfo.pDynamicState = &dynamicState;
 
 	// Create rendering pipeline
-	err = vkCreateGraphicsPipelines(device, m_app->Renderer->GetPipelineCache(), 1, &pipelineCreateInfo, nullptr, &m_pipeline);
+	err = vkCreateGraphicsPipelines(device, rt->GetPipelineCache(), 1, &pipelineCreateInfo, nullptr, &m_pipeline);
 	if (err) {
 		vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
 		vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
@@ -392,11 +392,13 @@ WError WEffect::BuildPipeline() {
 	return WError(W_SUCCEEDED);
 }
 
-WError WEffect::Bind() {
+WError WEffect::Bind(WRenderTarget* rt) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
-	VkCommandBuffer renderCmdBuffer = m_app->Renderer->GetCommnadBuffer();
+	VkCommandBuffer renderCmdBuffer = rt->GetCommnadBuffer();
+	if (!renderCmdBuffer)
+		return WError(W_NORENDERTARGET);
 
 	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 

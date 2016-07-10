@@ -131,7 +131,7 @@ WError WSpriteManager::Load() {
 	dss.front = dss.back;
 	textFX->SetDepthStencilState(dss);
 
-	err = textFX->BuildPipeline();
+	err = textFX->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
 	vs->RemoveReference();
 	ps->RemoveReference();
 
@@ -177,10 +177,10 @@ WError WSpriteManager::Load() {
 	return WError(W_SUCCEEDED);
 }
 
-void WSpriteManager::Render() {
+void WSpriteManager::Render(WRenderTarget* rt) {
 	for (int i = 0; i < W_HASHTABLESIZE; i++) {
 		for (int j = 0; j < m_entities[i].size(); j++) {
-			m_entities[i][j]->Render();
+			m_entities[i][j]->Render(rt);
 		}
 	}
 }
@@ -266,7 +266,7 @@ void WSprite::SetAlpha(float fAlpha) {
 	m_alpha = fAlpha;
 }
 
-void WSprite::Render() {
+void WSprite::Render(WRenderTarget* rt) {
 	float scrWidth = m_app->WindowComponent->GetWindowWidth();
 	float scrHeight = m_app->WindowComponent->GetWindowHeight();
 	if (!m_hidden && Valid()) {
@@ -295,8 +295,8 @@ void WSprite::Render() {
 		m_app->SpriteManager->m_spriteGeometry->UnmapVertexBuffer();
 		m_app->SpriteManager->m_spriteMaterial->SetVariableFloat("alpha", m_alpha);
 		m_app->SpriteManager->m_spriteMaterial->SetTexture(1, m_img);
-		m_app->SpriteManager->m_spriteMaterial->Bind();
-		m_app->SpriteManager->m_spriteGeometry->Draw();
+		m_app->SpriteManager->m_spriteMaterial->Bind(rt);
+		m_app->SpriteManager->m_spriteGeometry->Draw(rt);
 	}
 }
 

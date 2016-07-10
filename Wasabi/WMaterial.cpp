@@ -222,11 +222,15 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WMaterial::Bind() {
+WError WMaterial::Bind(WRenderTarget* rt) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
+	VkCommandBuffer renderCmdBuffer = rt->GetCommnadBuffer();
+	if (!renderCmdBuffer)
+		return WError(W_NORENDERTARGET);
+
 	vector<VkWriteDescriptorSet> writeDescriptorSets;
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
@@ -247,10 +251,9 @@ WError WMaterial::Bind() {
 	if (writeDescriptorSets.size())
 		vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 
-	VkCommandBuffer renderCmdBuffer = m_app->Renderer->GetCommnadBuffer();
 	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *m_effect->GetPipelineLayout(), 0, 1, &m_descriptorSet, 0, NULL);
 
-	return m_effect->Bind();
+	return m_effect->Bind(rt);
 }
 
 WError WMaterial::SetVariableFloat(std::string varName, float fVal) {
