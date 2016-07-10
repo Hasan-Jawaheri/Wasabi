@@ -40,7 +40,7 @@ void WImageManager::Load() {
 				pixels[(y*size + x) * comp_size + 3] = 1;
 		}
 	}
-	m_checker_image->CretaeFromPixelsArray(pixels, size, size, comp_size);
+	m_checker_image->CretaeFromPixelsArray(pixels, size, size, false, comp_size);
 	delete[] pixels;
 }
 
@@ -86,9 +86,11 @@ WError WImage::CretaeFromPixelsArray(
 	void*			pixels,
 	unsigned int	width,
 	unsigned int	height,
+	bool			bDynamic,
 	unsigned int	num_components,
 	VkFormat fmt,
 	size_t comp_size) {
+
 	VkDevice device = m_app->GetVulkanDevice();
 	VkResult err;
 	VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
@@ -185,7 +187,9 @@ WError WImage::CretaeFromPixelsArray(
 
 	memAllocInfo.allocationSize = memReqs.size;
 
-	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &memAllocInfo.memoryTypeIndex);
+	m_app->GetMemoryType(memReqs.memoryTypeBits,
+						 bDynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+						 &memAllocInfo.memoryTypeIndex);
 	err = vkAllocateMemory(device, &memAllocInfo, nullptr, &m_deviceMemory);
 	if (err) goto free_buffers;
 	err = vkBindImageMemory(device, m_image, m_deviceMemory, 0);
@@ -287,11 +291,12 @@ free_buffers:
 
 	m_width = width;
 	m_height = height;
+	m_mapSize = bufferCreateInfo.size;
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WImage::Load(std::string filename) {
+WError WImage::Load(std::string filename, bool bDynamic) {
 	// check if file exists
 	FILE* fp;
 	fopen_s(&fp, filename.c_str(), "r");
@@ -316,10 +321,28 @@ WError WImage::Load(std::string filename) {
 	}
 	free(data);
 
-	WError err = CretaeFromPixelsArray(pixels, w, h, n);
+	WError err = CretaeFromPixelsArray(pixels, w, h, bDynamic, n);
 	delete[] pixels;
 
 	return err;
+}
+
+WError WImage::MapPixels(void** const pixels) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	VkDevice device = m_app->GetVulkanDevice();
+
+	VkResult err = vkMapMemory(device, m_deviceMemory, 0, m_mapSize, 0, pixels);
+	if (err)
+		return WError(W_NOTVALID);
+
+	return WError(W_SUCCEEDED);
+}
+
+void WImage::UnmapPixels() {
+	VkDevice device = m_app->GetVulkanDevice();
+	vkUnmapMemory(device, m_deviceMemory);
 }
 
 VkImageView WImage::GetView() const {

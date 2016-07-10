@@ -8,7 +8,7 @@ class WImage : public WBase {
 	VkImage m_image;
 	VkDeviceMemory m_deviceMemory;
 	VkImageView m_view;
-	unsigned int m_width, m_height;
+	unsigned int m_width, m_height, m_mapSize;
 
 	void _DestroyResources();
 
@@ -20,10 +20,14 @@ public:
 						void*			pixels,
 						unsigned int	width,
 						unsigned int	height,
+						bool			bDynamic = false,
 						unsigned int	num_components = 4,
 						VkFormat		fmt = VK_FORMAT_UNDEFINED,
 						size_t			comp_size = sizeof(float));
-	WError			Load(std::string filename);
+	WError			Load(std::string filename, bool bDynamic = false);
+
+	WError			MapPixels(void** const pixels);
+	void			UnmapPixels();
 
 	VkImageView		GetView() const;
 	VkImageLayout	GetViewLayout() const;
