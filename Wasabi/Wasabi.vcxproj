@@ -161,6 +161,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="stb\stb_vorbis.c" />
     <ClCompile Include="WHavokPhysics.cpp" />
+    <ClCompile Include="WLight.cpp" />
     <ClCompile Include="WRenderer.cpp" />
     <ClCompile Include="WSprite.cpp" />
     <ClCompile Include="WText.cpp" />
@@ -202,6 +203,7 @@
     <ClInclude Include="stb\stb_voxel_render.h" />
     <ClInclude Include="stb\stretchy_buffer.h" />
     <ClInclude Include="WHavokPhysics.h" />
+    <ClInclude Include="WLight.h" />
     <ClInclude Include="WPhysicsComponent.h" />
     <ClInclude Include="WSprite.h" />
     <ClInclude Include="WText.h" />

@@ -49,6 +49,9 @@
     <Filter Include="Physics\Havok">
       <UniqueIdentifier>{95afe61e-59d0-42d3-a9cd-eb4245120aa1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Lights">
+      <UniqueIdentifier>{24c1d5e9-7d65-45c7-9886-6f1724be9ca0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WSound.cpp">
@@ -117,6 +120,9 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="WRenderer.cpp">
       <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="WLight.cpp">
+      <Filter>Lights</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -251,6 +257,9 @@
     </ClInclude>
     <ClInclude Include="WPhysicsComponent.h">
       <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="WLight.h">
+      <Filter>Lights</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
