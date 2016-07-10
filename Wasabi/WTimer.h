@@ -6,8 +6,6 @@ desc.: Wasabi Engine timers helper library.
 
 #pragma once
 
-#include "Wasabi.h"
-
 #define W_TIMER_TYPE			float
 #define W_TIMER_SECONDS			1
 #define W_TIMER_MINUTES			(1.0f/60.0f)
@@ -24,11 +22,11 @@ public:
 	WTimer(float fUnit = W_TIMER_MILLISECONDS);
 	~WTimer(void);
 
-	void				Start(void);
-	void				Pause(void);
-	void				Reset(void);
+	void				Start();
+	void				Pause();
+	void				Reset();
 
-	W_TIMER_TYPE	GetElapsedTime(void) const;
+	W_TIMER_TYPE	GetElapsedTime() const;
 
 private:
 	__int64 m_startTime;
@@ -36,7 +34,7 @@ private:
 	__int64 m_totalPauseTime;
 	float m_SPC;
 	float m_unit;
-	W_TIMER_TYPE GetPauseTime(void) const;
+	W_TIMER_TYPE GetPauseTime() const;
 };
 
 void WInitializeTimers();

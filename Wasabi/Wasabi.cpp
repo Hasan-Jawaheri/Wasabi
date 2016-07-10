@@ -1,107 +1,15 @@
 #include "Wasabi.h"
-#include "WTimer.h"
-#include "WSound.h"
-
-/****************************************************************/
-/*
- *
- * DUMMY USER CODE
- *
- */
-
-//#include "WHavokPhysics.h"
-class Kofta : public Wasabi {
-	WSprite* spr;
-
-protected:
-	void SetupComponents() {
-		Wasabi::SetupComponents();
-		//PhysicsComponent = new WHavokPhysics(this);
-	}
-
-public:
-	WError Setup() {
-		this->maxFPS = 60;
-		WError err = StartEngine(640, 480);
-		if (!err) {
-			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
-			return err;
-		}
-
-		WObject* o = new WObject(this);
-		WObject* o2 = new WObject(this);
-		WObject* o3 = new WObject(this);
-
-		WGeometry* g = new WGeometry(this);
-		g->CreateCone(1, 2, 10, 10);
-		g->Scale(2);
-
-		o->SetGeometry(g);
-		o2->SetGeometry(g);
-		o3->SetGeometry(g);
-
-		g->RemoveReference();
-
-		o->SetPosition(-5, 5, 0);
-		o2->SetPosition(0, 0, -4);
-		o3->SetPosition(5, 5, 0);
-		o3->SetAngle(0, 0, 20);
-
-		TextComponent->CreateFont(1, "FORTE");
-
-		WImage* img = new WImage(this);
-		img->Load("textures/dummy.bmp");
-		o2->GetMaterial()->SetTexture(1, img);
-		img->RemoveReference();
-
-		spr = new WSprite(this);
-		spr->SetImage(img);
-		spr->SetRotationCenter(WVector2(128, 128));
-
-		CameraManager->GetDefaultCamera()->Move(-10);
-
-		return err;
-	}
-	bool Loop(float fDeltaTime) {
-		char title[32];
-		sprintf_s(title, 32, "FPS: %.2f", FPS);
-		int mx = InputComponent->MouseX();
-		int my = InputComponent->MouseY();
-		int width = TextComponent->GetTextWidth(title, 32, 1);
-		TextComponent->RenderText(title, mx - width / 2, my - 32, 32, 1);
-
-		spr->Rotate(0.01f);
-		spr->Move(0.1f);
-		spr->SetAlpha(0.6f);
-
-		return true;
-	}
-	void Cleanup() {
-
-	}
-};
-
-Wasabi* WInitialize() {
-	return new Kofta();
-}
-
-/****************************************************************/
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow) {
-	WInitializeTimers();
-
 	Wasabi* app = WInitialize();
 	app->maxFPS = 60.0f;
 
 	if (app->Setup()) {
-		WTimer tmr(W_TIMER_SECONDS);
-		WTimer fpsChangeTmr(W_TIMER_SECONDS);
-		fpsChangeTmr.Start();
-		UINT numFrames = 0;
-		float deltaTime = 0.0f;
+		unsigned int numFrames = 0;
+		float maxFPSReached = app->maxFPS > 0.001f ? app->maxFPS : 60.0f;
+		float deltaTime = 1.0f / maxFPSReached;
 		while (!app->__EXIT) {
-			tmr.Reset();
-			tmr.Start();
+			auto tStart = std::chrono::high_resolution_clock::now();
 
 			if (!app->WindowComponent->Loop())
 				continue;
@@ -119,32 +27,33 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 
 			numFrames++;
 
-			deltaTime = app->FPS < 0.0001 ? 1.0f / 60.0f : 1.0f / app->FPS;
+			auto tEnd = std::chrono::high_resolution_clock::now();
+			auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+			deltaTime = (float)tDiff / 1000.0f;
 
 			if (app->maxFPS > 0.001) {
 				float maxDeltaTime = 1.0f / app->maxFPS; // delta time at max FPS
 				if (deltaTime < maxDeltaTime) {
-					WTimer sleepTimer(W_TIMER_SECONDS);
-					sleepTimer.Start();
-					while (sleepTimer.GetElapsedTime() < (maxDeltaTime - deltaTime));
+					auto sleepStart = std::chrono::high_resolution_clock::now();
+					double diff;
+					do {
+						auto sleepNow = std::chrono::high_resolution_clock::now();
+						diff = std::chrono::duration<double, std::milli>(sleepNow - sleepStart).count();
+					} while ((float)diff / 1000.0f < (maxDeltaTime - deltaTime));
 					deltaTime = maxDeltaTime;
 				}
-			}
+				deltaTime = max(deltaTime, 1.0f / app->maxFPS); // dont let deltaTime be 0
+			} else
+				deltaTime = max(deltaTime, maxFPSReached); // dont let deltaTime be 0
 
-			if (fpsChangeTmr.GetElapsedTime() >= 0.5f) //0.5 second passed -> update FPS
-			{
-				app->FPS = (float)numFrames * 2.0f;
-				numFrames = 0;
-				fpsChangeTmr.Reset();
-			}
+			app->FPS = 1.0f / deltaTime;
+			maxFPSReached = max(maxFPSReached, app->FPS);
 		}
 
 		app->Cleanup();
 	}
 
 	W_SAFE_DELETE(app);
-
-	WUnInitializeTimers();
 
 	return 0;
 }

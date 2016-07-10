@@ -16,7 +16,7 @@ void WUnInitializeTimers() {
 	timeEndPeriod(1);
 }
 
-W_TIMER_TYPE _GetCurrentTime(void) {
+W_TIMER_TYPE _GetCurrentTime() {
 	//calculate elapsed time
 	__int64 currtime = 0;
 	QueryPerformanceCounter((LARGE_INTEGER*)&currtime);
@@ -33,27 +33,27 @@ WTimer::WTimer(float fUnit) {
 
 	Reset();
 }
-WTimer::~WTimer(void) {
+WTimer::~WTimer() {
 }
-void WTimer::Start(void) {
+void WTimer::Start() {
 	m_totalPauseTime += GetPauseTime();
 	m_pauseStartTime = -1;
 }
-void WTimer::Pause(void) {
+void WTimer::Pause() {
 	m_pauseStartTime = _GetCurrentTime();
 }
-void WTimer::Reset(void) {
+void WTimer::Reset() {
 	m_startTime = _GetCurrentTime();
 	m_totalPauseTime = 0;
 	Pause();
 }
-W_TIMER_TYPE WTimer::GetElapsedTime(void) const {
+W_TIMER_TYPE WTimer::GetElapsedTime() const {
 	W_TIMER_TYPE totalElapsedTime = _GetCurrentTime() - m_startTime;
 	if (m_totalPauseTime + GetPauseTime() > totalElapsedTime) //dont allow negative values
 		return 0;
 	return ((totalElapsedTime - (m_totalPauseTime + GetPauseTime()))*m_SPC)*m_unit; //multiply to convert unit
 }
-W_TIMER_TYPE WTimer::GetPauseTime(void) const {
+W_TIMER_TYPE WTimer::GetPauseTime() const {
 	if (m_pauseStartTime)
 		return 0;
 

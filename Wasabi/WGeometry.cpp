@@ -91,6 +91,8 @@ VkResult WGeometryManager::_EndCopy() {
 	err = vkQueueWaitIdle(m_app->Renderer->GetQueue());
 	if (err)
 		return err;
+
+	return VK_SUCCESS;
 }
 
 WGeometry::WGeometry(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
