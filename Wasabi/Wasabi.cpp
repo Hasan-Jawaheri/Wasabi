@@ -34,6 +34,7 @@ public:
 
 		WGeometry* g = new WGeometry(this);
 		g->CreateCone(1, 2, 10, 10);
+		g->Scale(2);
 
 		o->SetGeometry(g);
 		o2->SetGeometry(g);
@@ -411,11 +412,11 @@ WError Wasabi::StartEngine(int width, int height) {
 	if (!werr)
 		return werr;
 
+	if (!GeometryManager->Load())
+		return WError(W_ERRORUNK);
 	CameraManager->Load();
 	ImageManager->Load();
 	SpriteManager->Load();
-	if (!GeometryManager->Load())
-		return WError(W_ERRORUNK);
 
 	if (TextComponent)
 		TextComponent->Initialize();

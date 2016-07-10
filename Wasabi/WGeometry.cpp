@@ -45,7 +45,6 @@ WGeometryManager::WGeometryManager(class Wasabi* const app) : WManager<WGeometry
 WError WGeometryManager::Load() {
 	VkDevice device = m_app->GetVulkanDevice();
 	VkCommandBufferAllocateInfo cmdBufInfo = {};
-	VkCommandBuffer copyCommandBuffer;
 
 	// Buffer copies are done on the queue, so we need a command buffer for them
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -53,7 +52,7 @@ WError WGeometryManager::Load() {
 	cmdBufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	cmdBufInfo.commandBufferCount = 1;
 
-	VkResult err = vkAllocateCommandBuffers(device, &cmdBufInfo, &copyCommandBuffer);
+	VkResult err = vkAllocateCommandBuffers(device, &cmdBufInfo, &m_copyCommandBuffer);
 	if (err)
 		return WError(W_OUTOFMEMORY);
 
@@ -270,7 +269,7 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	}
 
 	// Map and copy VB
-	err = vkMapMemory(device, m_vertices.staging.buf, 0, memAlloc.allocationSize, 0, &data);
+	err = vkMapMemory(device, m_vertices.staging.mem, 0, memAlloc.allocationSize, 0, &data);
 	if (err)
 		goto destroy_staging;
 	memcpy(data, vb, vertexBufferSize);
@@ -290,7 +289,7 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	m_app->GetMemoryType(memReqs.memoryTypeBits,
 		bDynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		&memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_vertices.buffer.buf);
+	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_vertices.buffer.mem);
 	if (err)
 		goto destroy_staging;
 	err = vkBindBufferMemory(device, m_vertices.buffer.buf, m_vertices.buffer.mem, 0);
@@ -298,7 +297,7 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 		goto destroy_staging;
 
 	// Map and copy IB
-	err = vkMapMemory(device, m_indices.staging.buf, 0, indexBufferSize, 0, &data);
+	err = vkMapMemory(device, m_indices.staging.mem, 0, indexBufferSize, 0, &data);
 	if (err)
 		goto destroy_staging;
 	memcpy(data, ib, indexBufferSize);
