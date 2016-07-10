@@ -24,6 +24,7 @@ public:
 
 	VkImageView		GetView() const;
 	VkImageLayout	GetViewLayout() const;
+	VkFormat		GetFormat() const;
 	unsigned int	GetWidth() const;
 	unsigned int	GetHeight() const;
 	unsigned int	GetNumComponents() const;
@@ -33,13 +34,14 @@ public:
 	virtual bool	Valid() const;
 
 private:
-	VkBuffer m_stagingBuffer;
-	VkDeviceMemory m_stagingMemory;
-	VkImage m_image;
-	VkDeviceMemory m_deviceMemory;
-	VkImageView m_view;
-	bool m_readOnlyMap;
-	unsigned int m_width, m_height, m_mapSize, m_numComponents, m_componentSize;
+	VkBuffer		m_stagingBuffer;
+	VkDeviceMemory	m_stagingMemory;
+	VkImage			m_image;
+	VkDeviceMemory	m_deviceMemory;
+	VkImageView		m_view;
+	VkFormat		m_format;
+	bool			m_readOnlyMap;
+	unsigned int	m_width, m_height, m_mapSize, m_numComponents, m_componentSize;
 
 	void _DestroyResources();
 };
@@ -71,7 +73,8 @@ public:
 	WRenderTarget(Wasabi* const app, unsigned int ID = 0);
 	~WRenderTarget();
 
-	WError			Create(unsigned int width, unsigned int height);
+	WError			Create(unsigned int width, unsigned int height, WImage* target, bool bDepth = true,
+						   VkFormat depthFormat = VK_FORMAT_D32_SFLOAT_S8_UINT);
 	WError			Create(unsigned int width, unsigned int height, VkImageView* views,
 						   unsigned int num_views, VkFormat colorFormat, VkFormat depthFormat);
 
@@ -97,6 +100,7 @@ private:
 	} m_depthStencil;
 	std::vector<VkFramebuffer>	m_frameBuffers;
 	VkFormat					m_depthFormat, m_colorFormat;
+	WImage*						m_target;
 
 	VkRenderPass				m_renderPass;
 	VkPipelineCache				m_pipelineCache;

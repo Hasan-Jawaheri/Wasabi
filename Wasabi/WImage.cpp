@@ -334,6 +334,7 @@ free_buffers:
 	m_numComponents = num_components;
 	m_componentSize = comp_size;
 	m_mapSize = bufferCreateInfo.size;
+	m_format = format;
 
 	return WError(W_SUCCEEDED);
 }
@@ -441,6 +442,10 @@ VkImageView WImage::GetView() const {
 
 VkImageLayout WImage::GetViewLayout() const {
 	return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+}
+
+VkFormat WImage::GetFormat() const {
+	return m_format;
 }
 
 unsigned int WImage::GetWidth() const {
@@ -591,6 +596,194 @@ void WRenderTarget::_DestroyResources() {
 	m_depthStencil.view = VK_NULL_HANDLE;
 	m_depthStencil.image = VK_NULL_HANDLE;
 	m_depthStencil.mem = VK_NULL_HANDLE;
+}
+
+WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* target, bool bDepth, VkFormat depthFormat) {
+	if (!target || !target->Valid())
+		return WError(W_INVALIDPARAM);
+
+	VkDevice device = m_app->GetVulkanDevice();
+
+	_DestroyResources();
+
+	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
+		vkTools::initializers::commandBufferAllocateInfo(
+			m_app->GetCommandPool(),
+			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			1);
+
+	VkResult err = vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &m_renderCmdBuffer);
+	if (err != VK_SUCCESS)
+		return WError(W_OUTOFMEMORY);
+
+	// create pipeline cache
+	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
+	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+	err = vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &m_pipelineCache);
+	if (err != VK_SUCCESS)
+		return WError(W_OUTOFMEMORY);
+
+	//
+	// Create the render pass
+	//
+	VkAttachmentDescription attachments[2] = {};
+
+	// Color attachment
+	attachments[0].format = target->GetFormat();
+	attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
+	attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	if (bDepth) {
+		// Depth attachment
+		attachments[1].format = depthFormat;
+		attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
+		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		attachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	}
+
+	VkAttachmentReference colorReference = {};
+	colorReference.attachment = 0;
+	colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference depthReference = {};
+	if (bDepth) {
+		depthReference.attachment = 1;
+		depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	}
+
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.flags = 0;
+	subpass.inputAttachmentCount = 0;
+	subpass.pInputAttachments = NULL;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorReference;
+	subpass.pResolveAttachments = NULL;
+	subpass.pDepthStencilAttachment = &depthReference;
+	subpass.preserveAttachmentCount = 0;
+	subpass.pPreserveAttachments = NULL;
+
+	if (!bDepth) {
+		subpass.pDepthStencilAttachment = NULL;
+	}
+
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.pNext = NULL;
+	renderPassInfo.attachmentCount = bDepth ? 2 : 1;
+	renderPassInfo.pAttachments = attachments;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = 0;
+	renderPassInfo.pDependencies = NULL;
+
+	err = vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_renderPass);
+	assert(!err);
+
+	//
+	// Create the depth-stencil buffer
+	//
+	if (bDepth) {
+		VkImageCreateInfo image = {};
+		image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		image.pNext = NULL;
+		image.imageType = VK_IMAGE_TYPE_2D;
+		image.format = depthFormat;
+		image.extent = { width, height, 1 };
+		image.mipLevels = 1;
+		image.arrayLayers = 1;
+		image.samples = VK_SAMPLE_COUNT_1_BIT;
+		image.tiling = VK_IMAGE_TILING_OPTIMAL;
+		image.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		image.flags = 0;
+
+		VkMemoryAllocateInfo mem_alloc = {};
+		mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		mem_alloc.pNext = NULL;
+		mem_alloc.allocationSize = 0;
+		mem_alloc.memoryTypeIndex = 0;
+
+		VkImageViewCreateInfo depthStencilView = {};
+		depthStencilView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		depthStencilView.pNext = NULL;
+		depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		depthStencilView.format = depthFormat;
+		depthStencilView.flags = 0;
+		depthStencilView.subresourceRange = {};
+		depthStencilView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+		depthStencilView.subresourceRange.baseMipLevel = 0;
+		depthStencilView.subresourceRange.levelCount = 1;
+		depthStencilView.subresourceRange.baseArrayLayer = 0;
+		depthStencilView.subresourceRange.layerCount = 1;
+
+		VkMemoryRequirements memReqs;
+
+		err = vkCreateImage(device, &image, nullptr, &m_depthStencil.image);
+		assert(!err);
+		vkGetImageMemoryRequirements(device, m_depthStencil.image, &memReqs);
+		mem_alloc.allocationSize = memReqs.size;
+		m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &mem_alloc.memoryTypeIndex);
+		err = vkAllocateMemory(device, &mem_alloc, nullptr, &m_depthStencil.mem);
+		assert(!err);
+
+		err = vkBindImageMemory(device, m_depthStencil.image, m_depthStencil.mem, 0);
+		assert(!err);
+
+		m_app->RenderTargetManager->_BeginSetLayout();
+		vkTools::setImageLayout(
+			m_app->RenderTargetManager->m_commandBuffer,
+			m_depthStencil.image,
+			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		m_app->RenderTargetManager->_EndSetLayout();
+
+		depthStencilView.image = m_depthStencil.image;
+		err = vkCreateImageView(device, &depthStencilView, nullptr, &m_depthStencil.view);
+		assert(!err);
+	}
+
+	//
+	// Create the frame buffers
+	//
+	VkImageView imageViews[2];
+
+	// Depth/Stencil attachment is the same for all frame buffers
+	imageViews[0] = target->GetView();
+	imageViews[1] = m_depthStencil.view;
+
+	VkFramebufferCreateInfo frameBufferCreateInfo = {};
+	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	frameBufferCreateInfo.pNext = NULL;
+	frameBufferCreateInfo.renderPass = m_renderPass;
+	frameBufferCreateInfo.attachmentCount = bDepth ? 2 : 1;
+	frameBufferCreateInfo.pAttachments = imageViews;
+	frameBufferCreateInfo.width = width;
+	frameBufferCreateInfo.height = height;
+	frameBufferCreateInfo.layers = 1;
+
+	// Create frame buffers for every swap chain image
+	m_frameBuffers.resize(1);
+	err = vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &m_frameBuffers[0]);
+	assert(!err);
+
+	m_width = width;
+	m_height = height;
+	m_depthFormat = depthFormat;
+	m_colorFormat = target->GetFormat();
+	m_target = target;
+	target->AddReference();
+
+	return WError(W_SUCCEEDED);
 }
 
 WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageView* views,
