@@ -8,8 +8,10 @@ WCameraManager::~WCameraManager() {
 	W_SAFE_REMOVEREF(m_default_camera);
 }
 
-void WCameraManager::Load() {
+WError WCameraManager::Load() {
 	m_default_camera = new WCamera(m_app);
+
+	return WError(W_SUCCEEDED);
 }
 
 WCamera* WCameraManager::GetDefaultCamera() const {

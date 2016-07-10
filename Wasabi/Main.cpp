@@ -43,7 +43,7 @@ public:
 
 		WImage* img = new WImage(this);
 		o2->GetMaterial()->SetTexture(1, img);
-		img->Load("textures/dummy.bmp");
+		img->Load("textures/dummy.bmp", true);
 		img->RemoveReference();
 
 		spr = new WSprite(this);

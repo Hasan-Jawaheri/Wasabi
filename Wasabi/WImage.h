@@ -5,13 +5,6 @@
 class WImage : public WBase {
 	virtual std::string GetTypeName() const;
 
-	VkImage m_image;
-	VkDeviceMemory m_deviceMemory;
-	VkImageView m_view;
-	unsigned int m_width, m_height, m_mapSize;
-
-	void _DestroyResources();
-
 public:
 	WImage(Wasabi* const app, unsigned int ID = 0);
 	~WImage();
@@ -26,7 +19,7 @@ public:
 						size_t			comp_size = sizeof(float));
 	WError			Load(std::string filename, bool bDynamic = false);
 
-	WError			MapPixels(void** const pixels);
+	WError			MapPixels(void** const pixels, bool bReadOnly = false);
 	void			UnmapPixels();
 
 	VkImageView		GetView() const;
@@ -35,6 +28,17 @@ public:
 	unsigned int	GetHeight();
 
 	virtual bool	Valid() const;
+
+private:
+	VkBuffer m_stagingBuffer;
+	VkDeviceMemory m_stagingMemory;
+	VkImage m_image;
+	VkDeviceMemory m_deviceMemory;
+	VkImageView m_view;
+	bool m_readOnlyMap;
+	unsigned int m_width, m_height, m_mapSize;
+
+	void _DestroyResources();
 };
 
 class WImageManager : public WManager<WImage> {
@@ -43,11 +47,16 @@ class WImageManager : public WManager<WImage> {
 	virtual std::string GetTypeName() const;
 
 	WImage* m_checker_image;
+	VkCommandBuffer m_copyCommandBuffer;
+
+	VkResult _BeginCopy();
+	VkResult _EndCopy();
 
 public:
 	WImageManager(class Wasabi* const app);
+	~WImageManager();
 
-	void Load();
+	WError Load();
 
 	WImage* GetDefaultImage() const;
 };

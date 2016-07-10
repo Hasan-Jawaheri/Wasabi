@@ -27,7 +27,6 @@ public:
 	virtual VkRenderPass	GetRenderPass() const = 0;
 	virtual VkPipelineCache	GetPipelineCache() const = 0;
 	virtual VkCommandBuffer	GetCommnadBuffer() const = 0;
-	virtual VkCommandPool	GetCommandPool() const = 0;
 
 protected:
 	Wasabi* m_app;

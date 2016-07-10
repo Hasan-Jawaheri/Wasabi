@@ -31,7 +31,7 @@ public:
 	~WTextComponent();
 
 	void AddFontDirectory(std::string dir);
-	void Initialize();
+	WError Initialize();
 
 	WError CreateFont(unsigned int ID, std::string fontName);
 	WError DestroyFont(unsigned int ID);
