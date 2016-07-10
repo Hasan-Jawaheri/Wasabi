@@ -41,7 +41,7 @@ public:
 	WError RenderText(std::string text, int x, int y, float fHeight);
 	WError RenderText(std::string text, int x, int y, float fHeight, unsigned int fontID);
 	WError RenderText(std::string text, int x, int y, float fHeight, unsigned int fontID, WColor col);
-	void Render();
+	void Render(class WRenderTarget* rt);
 
 	unsigned int GetTextWidth(std::string text, float fHeight, unsigned int fontID = -1);
 

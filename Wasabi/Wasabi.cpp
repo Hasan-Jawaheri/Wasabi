@@ -1,4 +1,5 @@
 #include "Wasabi.h"
+#include "WForwardRenderer.h"
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow) {
 	Wasabi* app = WInitialize();
@@ -23,7 +24,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 					app->PhysicsComponent->Step(deltaTime);
 			}
 
-			app->Renderer->Render();
+			app->Renderer->_Render();
 
 			numFrames++;
 
@@ -110,6 +111,7 @@ Wasabi::Wasabi() {
 	CameraManager = nullptr;
 	ImageManager = nullptr;
 	SpriteManager = nullptr;
+	RenderTargetManager = nullptr;
 }
 Wasabi::~Wasabi() {
 	_DestroyResources();
@@ -119,7 +121,7 @@ void Wasabi::_DestroyResources() {
 	if (WindowComponent)
 		WindowComponent->Cleanup();
 	if (Renderer)
-		Renderer->Cleanup();
+		Renderer->_Cleanup();
 	if (PhysicsComponent)
 		PhysicsComponent->Cleanup();
 
@@ -136,6 +138,7 @@ void Wasabi::_DestroyResources() {
 	W_SAFE_DELETE(EffectManager);
 	W_SAFE_DELETE(ShaderManager);
 	W_SAFE_DELETE(CameraManager);
+	W_SAFE_DELETE(RenderTargetManager);
 	W_SAFE_DELETE(ImageManager);
 
 	if (m_swapChainInitialized)
@@ -358,18 +361,24 @@ WError Wasabi::StartEngine(int width, int height) {
 	CameraManager = new WCameraManager(this);
 	ImageManager = new WImageManager(this);
 	SpriteManager = new WSpriteManager(this);
+	RenderTargetManager = new WRenderTargetManager(this);
 
-	werr = Renderer->Initiailize();
+	if (!CameraManager->Load()) {
+		_DestroyResources();
+		return WError(W_ERRORUNK);
+	}
+	if (!RenderTargetManager->Load()) {
+		_DestroyResources();
+		return WError(W_ERRORUNK);
+	}
+
+	werr = Renderer->_Initialize();
 	if (!werr) {
 		_DestroyResources();
 		return werr;
 	}
 
 	if (!GeometryManager->Load()) {
-		_DestroyResources();
-		return WError(W_ERRORUNK);
-	}
-	if (!CameraManager->Load()) {
 		_DestroyResources();
 		return WError(W_ERRORUNK);
 	}

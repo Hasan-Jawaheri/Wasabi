@@ -161,6 +161,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="stb\stb_vorbis.c" />
     <ClCompile Include="WHavokPhysics.cpp" />
+    <ClCompile Include="WRenderer.cpp" />
     <ClCompile Include="WSprite.cpp" />
     <ClCompile Include="WText.cpp" />
     <ClCompile Include="WCamera.cpp" />

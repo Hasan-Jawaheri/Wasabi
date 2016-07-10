@@ -19,7 +19,7 @@ public:
 	WObject(Wasabi* const app, unsigned int ID = 0);
 	~WObject();
 
-	void Render(class WCamera* const cam);
+	void					Render(class WRenderTarget* rt);
 
 	WError					SetGeometry(class WGeometry* geometry);
 	WError					SetMaterial(class WMaterial* material);
@@ -45,7 +45,7 @@ public:
 	virtual bool			UpdateLocals(WVector3 offset = WVector3(0, 0, 0));
 	virtual void			OnStateChange(STATE_CHANGE_TYPE type);
 
-	virtual bool	Valid() const;
+	virtual bool			Valid() const;
 };
 
 class WObjectManager : public WManager<WObject> {
@@ -56,5 +56,5 @@ class WObjectManager : public WManager<WObject> {
 public:
 	WObjectManager(class Wasabi* const app);
 
-	void Render(class WCamera* const cam);
+	void Render(class WRenderTarget* rt);
 };

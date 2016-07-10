@@ -7,10 +7,10 @@ std::string WObjectManager::GetTypeName() const {
 WObjectManager::WObjectManager(class Wasabi* const app) : WManager<WObject>(app) {
 }
 
-void WObjectManager::Render(WCamera* const cam) {
+void WObjectManager::Render(WRenderTarget* rt) {
 	for (int i = 0; i < W_HASHTABLESIZE; i++) {
 		for (int j = 0; j < m_entities[i].size(); j++) {
-			m_entities[i][j]->Render(cam);
+			m_entities[i][j]->Render(rt);
 		}
 	}
 }
@@ -44,10 +44,11 @@ bool WObject::Valid() const {
 	return true; // TODO: put actual implementation
 }
 
-void WObject::Render(WCamera* const cam) {
+void WObject::Render(WRenderTarget* rt) {
 	if (m_geometry && m_material && m_geometry->Valid() && m_material->Valid() && !m_hidden) {
 		if (m_geometry->GetVertexDescription().GetSize() != m_material->GetEffect()->GetInputLayout().GetSize())
 			return;
+		WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();
 		if (m_bFrustumCull) {
 			WMatrix wmtx = GetWorldMatrix();
@@ -64,8 +65,8 @@ void WObject::Render(WCamera* const cam) {
 		m_material->SetVariableMatrix("gView", cam->GetViewMatrix());
 
 		WError err;
-		err = m_material->Bind();
-		err = m_geometry->Draw();
+		err = m_material->Bind(rt);
+		err = m_geometry->Draw(rt);
 	}
 }
 

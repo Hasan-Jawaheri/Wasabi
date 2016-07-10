@@ -64,6 +64,7 @@ public:
 	class WCameraManager*		CameraManager;
 	class WImageManager*		ImageManager;
 	class WSpriteManager*		SpriteManager;
+	class WRenderTargetManager*	RenderTargetManager;
 
 	WTimer Timer;
 
@@ -131,7 +132,6 @@ public:
 #include "WPhysicsComponent.h"
 #include "WText.h"
 #include "WRenderer.h"
-#include "WForwardRenderer.h"
 #include "WObject.h"
 #include "WGeometry.h"
 #include "WEffect.h"
