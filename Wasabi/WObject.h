@@ -5,16 +5,6 @@
 class WObject : public WBase, public WOrientation {
 	virtual std::string GetTypeName() const;
 
-	class WGeometry* m_geometry;
-	class WMaterial* m_material;
-
-	bool			m_bAltered;
-	bool			m_valid;
-	bool			m_hidden;
-	bool			m_bFrustumCull;
-	WMatrix			m_WorldM;
-	float			m_fScaleX, m_fScaleY, m_fScaleZ;
-
 public:
 	WObject(Wasabi* const app, unsigned int ID = 0);
 	~WObject();
@@ -42,10 +32,20 @@ public:
 	float					GetScaleY() const;
 	float					GetScaleZ() const;
 	WMatrix					GetWorldMatrix();
-	virtual bool			UpdateLocals(WVector3 offset = WVector3(0, 0, 0));
+	bool					UpdateLocals(WVector3 offset = WVector3(0, 0, 0));
 	virtual void			OnStateChange(STATE_CHANGE_TYPE type);
 
 	virtual bool			Valid() const;
+
+private:
+	class WGeometry* m_geometry;
+	class WMaterial* m_material;
+
+	bool			m_bAltered;
+	bool			m_hidden;
+	bool			m_bFrustumCull;
+	WMatrix			m_WorldM;
+	float			m_fScaleX, m_fScaleY, m_fScaleZ;
 };
 
 class WObjectManager : public WManager<WObject> {
