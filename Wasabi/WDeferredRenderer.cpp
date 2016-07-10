@@ -1,13 +1,13 @@
-#include "WForwardRenderer.h"
+#include "WDeferredRenderer.h"
 
-class ForwardRendererVS : public WShader {
+class DeferredRendererVS : public WShader {
 public:
-	ForwardRendererVS(class Wasabi* const app) : WShader(app) {}
+	DeferredRendererVS(class Wasabi* const app) : WShader(app) {}
 
 	virtual void Load() {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0,{
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"), // projection
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gWorld"), // world
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
@@ -46,9 +46,9 @@ public:
 	}
 };
 
-class ForwardRendererPS : public WShader {
+class DeferredRendererPS : public WShader {
 public:
-	ForwardRendererPS(class Wasabi* const app) : WShader(app) {}
+	DeferredRendererPS(class Wasabi* const app) : WShader(app) {}
 
 	virtual void Load() {
 		m_desc.type = W_FRAGMENT_SHADER;
@@ -74,13 +74,13 @@ public:
 	}
 };
 
-WForwardRenderer::WForwardRenderer(Wasabi* const app) : WRenderer(app) {
+WDeferredRenderer::WDeferredRenderer(Wasabi* const app) : WRenderer(app) {
 	m_sampler = VK_NULL_HANDLE;
 
 	m_default_fx = nullptr;
 }
 
-WError WForwardRenderer::Initiailize() {
+WError WDeferredRenderer::Initiailize() {
 	//
 	// Create the texture sampler
 	//
@@ -107,9 +107,9 @@ WError WForwardRenderer::Initiailize() {
 	//
 	// Create the default effect for rendering
 	//
-	WShader* vs = new ForwardRendererVS(m_app);
+	WShader* vs = new DeferredRendererVS(m_app);
 	vs->Load();
-	WShader* ps = new ForwardRendererPS(m_app);
+	WShader* ps = new DeferredRendererPS(m_app);
 	ps->Load();
 	m_default_fx = new WEffect(m_app);
 	m_default_fx->BindShader(vs);
@@ -123,11 +123,11 @@ WError WForwardRenderer::Initiailize() {
 	return WError(W_SUCCEEDED);
 }
 
-WError WForwardRenderer::Resize(unsigned int width, unsigned int height) {
+WError WDeferredRenderer::Resize(unsigned int width, unsigned int height) {
 	return WRenderer::Resize(width, height);
 }
 
-WError WForwardRenderer::Render(WRenderTarget* rt) {
+WError WDeferredRenderer::Render(WRenderTarget* rt) {
 	WError err = rt->Begin();
 	if (!err)
 		return err;
@@ -141,7 +141,7 @@ WError WForwardRenderer::Render(WRenderTarget* rt) {
 	return rt->End();
 }
 
-void WForwardRenderer::Cleanup() {
+void WDeferredRenderer::Cleanup() {
 	if (m_sampler)
 		vkDestroySampler(m_device, m_sampler, nullptr);
 	m_sampler = VK_NULL_HANDLE;
@@ -149,13 +149,13 @@ void WForwardRenderer::Cleanup() {
 	W_SAFE_REMOVEREF(m_default_fx);
 }
 
-class WMaterial* WForwardRenderer::CreateDefaultMaterial() {
+class WMaterial* WDeferredRenderer::CreateDefaultMaterial() {
 	WMaterial* mat = new WMaterial(m_app);
 	mat->SetEffect(m_default_fx);
 	return mat;
 }
 
-VkSampler WForwardRenderer::GetDefaultSampler() const {
+VkSampler WDeferredRenderer::GetDefaultSampler() const {
 	return m_sampler;
 }
 

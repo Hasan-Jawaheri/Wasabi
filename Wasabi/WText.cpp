@@ -30,18 +30,18 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
 		});
 		LoadCodeGLSL(
-"#version 450\n"
-"#extension GL_ARB_separate_shader_objects : enable\n"
-"#extension GL_ARB_shading_language_420pack : enable\n"
-""
-"layout(location = 0) in  vec2 inPos;\n"
-"layout(location = 1) in  vec2 inUV;\n"
-"layout(location = 0) out vec2 outUV;\n"
-""
-"void main() {\n"
-"	outUV = inUV;\n"
-"	gl_Position = vec4(inPos.xy, 0.0, 1.0);\n"
-"}\n"
+			"#version 450\n"
+			"#extension GL_ARB_separate_shader_objects : enable\n"
+			"#extension GL_ARB_shading_language_420pack : enable\n"
+			""
+			"layout(location = 0) in  vec2 inPos;\n"
+			"layout(location = 1) in  vec2 inUV;\n"
+			"layout(location = 0) out vec2 outUV;\n"
+			""
+			"void main() {\n"
+			"	outUV = inUV;\n"
+			"	gl_Position = vec4(inPos.xy, 0.0, 1.0);\n"
+			"}\n"
 		);
 	}
 };
@@ -59,21 +59,21 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 		};
 		LoadCodeGLSL(
-"#version 450\n"
-"#extension GL_ARB_separate_shader_objects : enable\n"
-"#extension GL_ARB_shading_language_420pack : enable\n"
-""
-"layout(binding = 0) uniform UBO {\n"
-"	vec4 color;\n"
-"} ubo;\n"
-"layout(binding = 1) uniform sampler2D sampler;\n"
-"layout(location = 0) in vec2 inUV;\n"
-"layout(location = 0) out vec4 outFragColor;\n"
-""
-"void main() {\n"
-"	float c = texture(sampler, inUV).r;\n"
-"	outFragColor = vec4(c) * ubo.color;\n"
-"}\n"
+			"#version 450\n"
+			"#extension GL_ARB_separate_shader_objects : enable\n"
+			"#extension GL_ARB_shading_language_420pack : enable\n"
+			""
+			"layout(binding = 0) uniform UBO {\n"
+			"	vec4 color;\n"
+			"} ubo;\n"
+			"layout(binding = 1) uniform sampler2D sampler;\n"
+			"layout(location = 0) in vec2 inUV;\n"
+			"layout(location = 0) out vec4 outFragColor;\n"
+			""
+			"void main() {\n"
+			"	float c = texture(sampler, inUV).r;\n"
+			"	outFragColor = vec4(c) * ubo.color;\n"
+			"}\n"
 		);
 	}
 };
