@@ -32,7 +32,7 @@ public:
 	~WMaterial();
 
 	WError			SetEffect(class WEffect* const effect);
-	WError			Bind(class WRenderTarget* rt);
+	virtual WError	Bind(class WRenderTarget* rt);
 
 	WError			SetVariableFloat(std::string varName, float fVal);
 	WError			SetVariableFloatArray(std::string varName, float* fArr, int num_elements);

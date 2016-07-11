@@ -63,6 +63,7 @@ void WObject::Render(WRenderTarget* rt) {
 		m_material->SetVariableMatrix("gWorld", worldM);
 		m_material->SetVariableMatrix("gProjection", cam->GetProjectionMatrix());
 		m_material->SetVariableMatrix("gView", cam->GetViewMatrix());
+		m_material->SetVariableVector3("gCamPos", cam->GetPosition());
 
 		WError err;
 		err = m_material->Bind(rt);

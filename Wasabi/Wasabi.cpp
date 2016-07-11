@@ -7,6 +7,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 
 	if (app->Setup()) {
 		unsigned int numFrames = 0;
+		auto fpsTimer = std::chrono::high_resolution_clock::now();
 		float maxFPSReached = app->maxFPS > 0.001f ? app->maxFPS : 60.0f;
 		float deltaTime = 1.0f / maxFPSReached;
 		while (!app->__EXIT) {
@@ -32,6 +33,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 			auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
 			deltaTime = (float)tDiff / 1000.0f;
 
+			if (std::chrono::duration<double, std::milli>(tEnd - fpsTimer).count() / 1000.0f > 0.5f) {
+				app->FPS = 1.0f / deltaTime;
+				fpsTimer = std::chrono::high_resolution_clock::now();
+			}
+			maxFPSReached = max(maxFPSReached, 1.0f / deltaTime);
+
 			if (app->maxFPS > 0.001) {
 				float maxDeltaTime = 1.0f / app->maxFPS; // delta time at max FPS
 				if (deltaTime < maxDeltaTime) {
@@ -45,10 +52,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 				}
 				deltaTime = max(deltaTime, 1.0f / app->maxFPS); // dont let deltaTime be 0
 			} else
-				deltaTime = max(deltaTime, maxFPSReached); // dont let deltaTime be 0
-
-			app->FPS = 1.0f / deltaTime;
-			maxFPSReached = max(maxFPSReached, app->FPS);
+				deltaTime = max(deltaTime, 1.0f / maxFPSReached); // dont let deltaTime be 0
 		}
 
 		app->Cleanup();

@@ -300,7 +300,7 @@ WError WMaterial::SetVariableData(std::string varName, void* data, int len) {
 		size_t cur_offset = 0;
 		for (int j = 0; j < info->variables.size(); j++) {
 			if (info->variables[j].name == varName) {
-				if (info->variables[j].GetSize() != len)
+				if (info->variables[j].GetSize() < len)
 					return WError(W_INVALIDPARAM);
 				uint8_t *pData;
 				VkResult vkRes = vkMapMemory(device, m_uniformBuffers[i].memory, cur_offset, len, 0, (void **)&pData);
