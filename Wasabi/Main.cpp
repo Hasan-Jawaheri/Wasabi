@@ -13,7 +13,7 @@ protected:
 
 public:
 	WError Setup() {
-		this->maxFPS = 60;
+		this->maxFPS = 0;
 		WError err = StartEngine(640, 480);
 		if (!err) {
 			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
@@ -25,7 +25,7 @@ public:
 		WObject* o3 = new WObject(this);
 
 		WGeometry* g = new WGeometry(this);
-		if (g->CreateCone(1, 2, 4, 20)) {
+		if (g->CreateSphere(1, 15, 15)) {
 			g->Scale(1.4);
 
 			o->SetGeometry(g);
@@ -37,27 +37,14 @@ public:
 
 		o->SetPosition(-5, 5, 0);
 		o2->SetPosition(0, 0, -4);
-		o3->SetPosition(5, 5, 0);
-		o3->SetAngle(0, 0, 20);
+		o3->SetPosition(4, 4, 0);
+		o3->SetAngle(0, 0, 80);
 
 		TextComponent->CreateFont(1, "FORTE");
 
 		WImage* img = new WImage(this);
 		((WFRMaterial*)o2->GetMaterial())->Texture(img);
 		img->Load("textures/dummy.bmp", true);
-		float* pixels;
-		int cs = img->GetComponentSize();
-		int nc = img->GetNumComponents();
-		int ps = img->GetPixelSize();
-		img->MapPixels((void**)&pixels);
-		for (int y = 0; y < img->GetHeight(); y++) {
-			for (int x = 0; x < img->GetWidth(); x++) {
-				pixels[(y*img->GetWidth() + x) * nc + 0] *= 0.1f;
-				pixels[(y*img->GetWidth() + x) * nc + 1] *= 0.5f;
-				pixels[(y*img->GetWidth() + x) * nc + 2] *= 0.3f;
-			}
-		}
-		img->UnmapPixels();
 		img->RemoveReference();
 
 		spr = new WSprite(this);

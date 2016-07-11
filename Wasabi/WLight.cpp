@@ -1,11 +1,11 @@
 #include "WLight.h"
 
 WLightManager::WLightManager(Wasabi* const app) : WManager<WLight>(app) {
-
+	m_defaultLight = nullptr;
 }
 
 WLightManager::~WLightManager() {
-
+	W_SAFE_REMOVEREF(m_defaultLight);
 }
 
 std::string WLightManager::GetTypeName() const {
@@ -13,12 +13,22 @@ std::string WLightManager::GetTypeName() const {
 }
 
 WError WLightManager::Load() {
+	m_defaultLight = new WLight(m_app);
+	m_defaultLight->SetPosition(0, 1, 0);
+	m_defaultLight->Point(0, 0, 0);
 	return WError(W_SUCCEEDED);
+}
+
+WLight* WLightManager::GetDefaultLight() const {
+	return m_defaultLight;
 }
 
 WLight::WLight(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_hidden = false;
-
+	m_type = W_LIGHT_DIRECTIONAL;
+	m_range = 50.0f;
+	m_color = WColor(1, 1, 1);
+	m_intensity = 1.0f;
 	m_app->LightManager->AddEntity(this);
 }
 
@@ -33,6 +43,39 @@ std::string WLight::GetTypeName() const {
 bool WLight::Valid() const {
 	return true;
 }
+
+void WLight::SetType(W_LIGHT_TYPE type) {
+	m_type = type;
+}
+
+void WLight::SetColor(WColor col) {
+	m_color = col;
+}
+
+void WLight::SetRange(float fRange) {
+	m_range = fRange;
+}
+
+void WLight::SetIntensity(float fIntensity) {
+	m_intensity = fIntensity;
+}
+
+W_LIGHT_TYPE WLight::GetType() {
+	return m_type;
+}
+
+WColor WLight::GetColor() {
+	return m_color;
+}
+
+float WLight::GetRange() {
+	return m_range;
+}
+
+float WLight::GetIntensity() {
+	return m_intensity;
+}
+
 
 void WLight::Show() {
 	m_hidden = false;

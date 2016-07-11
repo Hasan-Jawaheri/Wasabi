@@ -1,5 +1,13 @@
 #include "WForwardRenderer.h"
 
+struct LightStruct {
+	WVector4 color;
+	WVector4 dir;
+	WVector4 pos;
+	int type;
+	float pad[3];
+};
+
 class ForwardRendererVS : public WShader {
 public:
 	ForwardRendererVS(class Wasabi* const app) : WShader(app) {}
@@ -37,12 +45,14 @@ public:
 			"} ubo;\n"
 			""
 			"layout(location = 0) out vec2 outUV;\n"
-			"layout(location = 1) out vec3 outWorldNorm;\n"
+			"layout(location = 1) out vec3 outWorldPos;\n"
+			"layout(location = 2) out vec3 outWorldNorm;\n"
 			""
 			"void main() {\n"
 			"	outUV = inUV;\n"
+			"	outWorldPos = (ubo.modelMatrix * vec4(inPos.xyz, 1.0)).xyz;\n"
 			"	outWorldNorm = (ubo.modelMatrix * vec4(inNorm.xyz, 0.0)).xyz;\n"
-			"	gl_Position = ubo.projectionMatrix * ubo.viewMatrix * ubo.modelMatrix * vec4(inPos.xyz, 1.0);\n"
+			"	gl_Position = ubo.projectionMatrix * ubo.viewMatrix * vec4(outWorldPos.xyz, 1.0);\n"
 			"}\n"
 		);
 	}
@@ -53,12 +63,21 @@ public:
 	ForwardRendererPS(class Wasabi* const app) : WShader(app) {}
 
 	virtual void Load() {
+		int maxLights = (int)m_app->engineParams["maxLights"];
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 			W_BOUND_RESOURCE(W_TYPE_UBO, 2, {
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4, "color"),
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "isTextured"),
+			}),
+			W_BOUND_RESOURCE(W_TYPE_UBO, 3, { // TODO: make a shared UBO
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "numLights"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "pad"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, (sizeof(LightStruct) / 4) * maxLights, "lights"),
+			}),
+			W_BOUND_RESOURCE(W_TYPE_UBO, 4,{
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "camPos"),
 			}),
 		};
 		LoadCodeGLSL(
@@ -67,24 +86,69 @@ public:
 			"#extension GL_ARB_separate_shader_objects : enable\n"
 			"#extension GL_ARB_shading_language_420pack : enable\n"
 			""
+			"struct Light {\n"
+			"	vec4 color;\n"
+			"	vec4 dir;\n"
+			"	vec4 pos;\n"
+			"	int type;\n"
+			"};\n"
+			""
 			"layout(binding = 1) uniform sampler2D samplerColor;\n"
 			"layout(binding = 2) uniform UBO {\n"
 			"	vec4 color;\n"
 			"	int isTextured;\n"
 			"} ubo;\n"
+			"layout(binding = 3) uniform LUBO {\n"
+			"	int numLights;\n"
+			"	Light lights[" + std::to_string(maxLights) + "];\n"
+			"} lubo;\n"
+			"layout(binding = 4) uniform CAM {\n"
+			"	vec3 camPos;\n"
+			"} cam;\n"
 			""
 			"layout(location = 0) in vec2 inUV;\n"
-			"layout(location = 1) in vec3 inWorldNorm;\n"
+			"layout(location = 1) in vec3 inWorldPos;\n"
+			"layout(location = 2) in vec3 inWorldNorm;\n"
 			""
 			"layout(location = 0) out vec4 outFragColor;\n"
+			""
+			"vec3 DirectionalLight(in vec3 dir, in vec3 col, in float intensity) {\n"
+			"	float L = clamp(dot(inWorldNorm, -dir), 0, 1);\n"
+			"	return vec3(L * col * intensity);\n"
+			"}\n"
+			""
+			"vec3 PointLight(in vec3 pos, in vec3 col, in float intensity, in float range) {\n"
+			"	return vec3(0,0,0);\n"
+			"}\n"
+			""
+			"vec3 SpotLight(in vec3 pos, in vec3 dir, in vec3 col, in float intensity, in float range) {\n"
+			"	return vec3(0,0,0);\n"
+			"}\n"
 			""
 			"void main() {\n"
 			"	if (ubo.isTextured == 1)\n"
 			"		outFragColor = texture(samplerColor, inUV);\n"
 			"	else\n"
 			"		outFragColor = ubo.color;\n"
-			"	float L = clamp(dot(inWorldNorm, vec3(0,1,0)) + 0.2, 0, 1);\n"
-			"	outFragColor *= L;\n"
+			"	vec3 lighting = vec3(0,0,0);"
+			"	for (int i = 0; i < lubo.numLights; i++) {\n"
+			"		if (lubo.lights[i].type == 0)\n"
+			"			lighting += DirectionalLight(lubo.lights[i].dir.xyz,\n"
+			"										 lubo.lights[i].color.rgb,\n"
+			"										 lubo.lights[i].color.a);\n"
+			"		else if (lubo.lights[i].type == 1)\n"
+			"			lighting += PointLight( lubo.lights[i].pos.xyz,\n"
+			"									lubo.lights[i].color.rgb,\n"
+			"									lubo.lights[i].color.a,\n"
+			"									lubo.lights[i].dir.a);\n"
+			"		else if (lubo.lights[i].type == 2)\n"
+			"			lighting += SpotLight(  lubo.lights[i].pos.xyz,\n"
+			"									lubo.lights[i].dir.xyz,\n"
+			"									lubo.lights[i].color.rgb,\n"
+			"									lubo.lights[i].color.a,\n"
+			"									lubo.lights[i].dir.a);\n"
+			"	}\n"
+			"	outFragColor.rgb = outFragColor.rgb * 0.2f + outFragColor.rgb * 0.8f * lighting;\n" // ambient 20%
 			"}\n"
 		);
 	}
@@ -93,6 +157,8 @@ public:
 WForwardRenderer::WForwardRenderer(Wasabi* const app) : WRenderer(app) {
 	m_sampler = VK_NULL_HANDLE;
 	m_default_fx = nullptr;
+	m_lights = nullptr;
+	m_app->engineParams.insert(std::pair<std::string, void*>("maxLights", (void*)8));
 }
 
 WError WForwardRenderer::Initiailize() {
@@ -135,6 +201,8 @@ WError WForwardRenderer::Initiailize() {
 	if (!werr)
 		return werr;
 
+	m_lights = new LightStruct[(int)m_app->engineParams["maxLights"]];
+
 	return WError(W_SUCCEEDED);
 }
 
@@ -143,6 +211,24 @@ WError WForwardRenderer::Resize(unsigned int width, unsigned int height) {
 }
 
 WError WForwardRenderer::Render(WRenderTarget* rt) {
+	// create the lights UBO data
+	int max_lights = (int)m_app->engineParams["maxLights"];
+	m_numLights = 0;
+	for (int i = 0; m_numLights < max_lights; i++) {
+		WLight* light = m_app->LightManager->GetEntityByIndex(i);
+		if (!light)
+			break;
+
+		WColor c = light->GetColor();
+		WVector3 l = light->GetLVector();
+		WVector3 p = light->GetPosition();
+		m_lights[i].color = WVector4(c.r, c.g, c.b, light->GetIntensity());
+		m_lights[i].dir = WVector4(l.x, l.y, l.z, light->GetRange());
+		m_lights[i].pos = WVector4(p.x, p.y, p.z, 0);
+		m_lights[i].type = (int)light->GetType();
+		m_numLights++;
+	}
+
 	WError err = rt->Begin();
 	if (!err)
 		return err;
@@ -162,6 +248,7 @@ void WForwardRenderer::Cleanup() {
 	m_sampler = VK_NULL_HANDLE;
 
 	W_SAFE_REMOVEREF(m_default_fx);
+	W_SAFE_DELETE_ARRAY(m_lights);
 }
 
 class WMaterial* WForwardRenderer::CreateDefaultMaterial() {
@@ -180,6 +267,15 @@ VkSampler WForwardRenderer::GetDefaultSampler() const {
 
 WFRMaterial::WFRMaterial(Wasabi* const app, unsigned int ID) : WMaterial(app, ID) {
 
+}
+
+WError WFRMaterial::Bind(WRenderTarget* rt) {
+	//TODO: remove this and make shared UBO
+	int nLights = ((WForwardRenderer*)m_app->Renderer)->m_numLights;
+	SetVariableInt("numLights", nLights);
+	SetVariableData("lights", ((WForwardRenderer*)m_app->Renderer)->m_lights, nLights * sizeof(LightStruct));
+
+	return WMaterial::Bind(rt);
 }
 
 WError WFRMaterial::Texture(class WImage* img) {

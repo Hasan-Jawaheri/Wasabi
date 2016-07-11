@@ -3,8 +3,10 @@
 #include "Wasabi.h"
 
 class WForwardRenderer : public WRenderer {
+	friend class WFRMaterial; // TODO: can be removed
 	VkSampler					m_sampler;
-
+	struct LightStruct*			m_lights;
+	int							m_numLights;
 	class WEffect*				m_default_fx;
 
 public:
@@ -22,6 +24,8 @@ public:
 class WFRMaterial : public WMaterial {
 public:
 	WFRMaterial(Wasabi* const app, unsigned int ID = 0);
+
+	virtual WError Bind(class WRenderTarget* rt);
 
 	WError Texture(class WImage* img);
 	WError SetColor(WColor col);
