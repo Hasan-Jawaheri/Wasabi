@@ -5,8 +5,8 @@
 #include "WMath.h"
 
 #define W_ATTRIBUTE_POSITION	W_VERTEX_ATTRIBUTE(std::string("position"), 3)
-#define W_ATTRIBUTE_NORMAL		W_VERTEX_ATTRIBUTE(std::string("normal"), 3)
 #define W_ATTRIBUTE_TANGENT		W_VERTEX_ATTRIBUTE(std::string("tangent"), 3)
+#define W_ATTRIBUTE_NORMAL		W_VERTEX_ATTRIBUTE(std::string("normal"), 3)
 #define W_ATTRIBUTE_UV			W_VERTEX_ATTRIBUTE(std::string("uv"), 2)
 
 struct W_VERTEX_ATTRIBUTE {
@@ -36,8 +36,8 @@ struct WDefaultVertex {
 					: pos(x, y, z), norm(nx, ny, nz), tang(tx, ty, tz), texC(u, v) {
 	};
 	WVector3 pos;
-	WVector3 norm;
 	WVector3 tang;
+	WVector3 norm;
 	WVector2 texC;
 };
 
@@ -51,8 +51,8 @@ public:
 	virtual W_VERTEX_DESCRIPTION GetVertexDescription() const {
 		return W_VERTEX_DESCRIPTION({
 			W_ATTRIBUTE_POSITION,
-			W_ATTRIBUTE_NORMAL,
 			W_ATTRIBUTE_TANGENT,
+			W_ATTRIBUTE_NORMAL,
 			W_ATTRIBUTE_UV,
 		});
 	}
@@ -67,6 +67,10 @@ public:
 	WError				CreateCone(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic = false);
 	WError				CreateCylinder(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic = false);
 	WError				CopyFrom(WGeometry* const from, bool bDynamic = false);
+
+	WError				LoadFromWGM(std::string filename, bool bDynamic = false);
+	WError				SaveToWGM(std::string filename);
+	WError				LoadFromHXM(std::string filename, bool bDynamic = false);
 
 	WError				MapVertexBuffer(void** const vb, bool bReadOnly = false);
 	WError				MapIndexBuffer(DWORD** const ib, bool bReadOnly = false);
