@@ -29,6 +29,7 @@ WLight::WLight(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_range = 50.0f;
 	m_color = WColor(1, 1, 1);
 	m_intensity = 1.0f;
+	SetEmittingAngle(45.0f);
 	m_app->LightManager->AddEntity(this);
 }
 
@@ -60,22 +61,31 @@ void WLight::SetIntensity(float fIntensity) {
 	m_intensity = fIntensity;
 }
 
-W_LIGHT_TYPE WLight::GetType() {
+void WLight::SetEmittingAngle(float fAngle) {
+	float fRads = W_DEGTORAD(fAngle / 2.0f);
+	m_tanPhi = tanf(fRads) * m_range;
+	m_cosAngle = cosf(fRads);
+}
+
+W_LIGHT_TYPE WLight::GetType() const {
 	return m_type;
 }
 
-WColor WLight::GetColor() {
+WColor WLight::GetColor() const {
 	return m_color;
 }
 
-float WLight::GetRange() {
+float WLight::GetRange() const {
 	return m_range;
 }
 
-float WLight::GetIntensity() {
+float WLight::GetIntensity() const {
 	return m_intensity;
 }
 
+float WLight::GetMinCosAngle() const {
+	return m_cosAngle;
+}
 
 void WLight::Show() {
 	m_hidden = false;
@@ -87,6 +97,13 @@ void WLight::Hide() {
 
 bool WLight::Hidden() const {
 	return m_hidden;
+}
+
+bool WLight::InCameraView(WCamera* cam) const {
+	if (m_type == W_LIGHT_DIRECTIONAL)
+		return true;
+	// not the most efficient for point lights, but a good approximation
+	return cam->CheckSphereInFrustum(GetPosition(), m_range);
 }
 
 WMatrix WLight::GetWorldMatrix() {
