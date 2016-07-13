@@ -83,7 +83,7 @@ public:
 
 		WGeometry* g = new WGeometry(this);
 		if (g->CreateSphere(1, 15, 15)) {
-			g->LoadFromHXM("models/F16.HXM");
+			g->LoadFromWGM("models/F16.WGM");
 			g->Scale(0.2);
 
 			o2->SetGeometry(g);
