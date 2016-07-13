@@ -1,5 +1,23 @@
 #include "WGeometry.h"
 
+static void ConvertVertices(void* vbFrom, void* vbTo, unsigned int num_verts,
+							W_VERTEX_DESCRIPTION vtx_from, W_VERTEX_DESCRIPTION vtx_to) {
+
+	size_t vtx_size = vtx_to.GetSize();
+	size_t from_vtx_size = vtx_from.GetSize();
+	for (int i = 0; i < num_verts; i++) {
+		char* fromvtx = (char*)vbFrom + from_vtx_size * i;
+		char* myvtx = (char*)vbTo + vtx_size * i;
+		for (int j = 0; j < vtx_to.attributes.size(); j++) {
+			std::string name = vtx_to.attributes[j].name;
+			int off_in_from = vtx_from.GetOffset(name);
+			int index_in_from = vtx_from.GetIndex(name);
+			if (off_in_from >= 0 && vtx_to.attributes[j].size == vtx_from.attributes[index_in_from].size)
+				memcpy(myvtx + vtx_to.GetOffset(name), fromvtx + off_in_from, vtx_to.attributes[j].size * 4);
+		}
+	}
+}
+
 size_t W_VERTEX_DESCRIPTION::GetSize() const {
 	size_t s = 0;
 	for (int i = 0; i < attributes.size(); i++)
@@ -42,6 +60,7 @@ std::string WGeometryManager::GetTypeName(void) const {
 WGeometryManager::WGeometryManager(class Wasabi* const app) : WManager<WGeometry>(app) {
 	m_copyCommandBuffer = VK_NULL_HANDLE;
 }
+
 WGeometryManager::~WGeometryManager() {
 	VkDevice device = m_app->GetVulkanDevice();
 	if (m_copyCommandBuffer)
@@ -819,11 +838,9 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 	unsigned int num_indices = from->GetNumIndices();
 	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription();
 	W_VERTEX_DESCRIPTION from_desc = from->GetVertexDescription();
-	size_t vtx_size = my_desc.GetSize();
-	size_t from_vtx_size = from_desc.GetSize();
 	void *vb, *fromvb, *fromib;
 
-	vb = malloc(num_verts * vtx_size);
+	vb = malloc(num_verts *my_desc.GetSize());
 	if (!vb)
 		return WError(W_OUTOFMEMORY);
 
@@ -839,17 +856,7 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 		return err;
 	}
 
-	for (int i = 0; i < num_verts; i++) {
-		char* fromvtx = (char*)fromvb + from_vtx_size * i;
-		char* myvtx = (char*)vb + vtx_size * i;
-		for (int j = 0; j < my_desc.attributes.size(); j++) {
-			std::string name = my_desc.attributes[j].name;
-			int off_in_from = from_desc.GetOffset(name);
-			int index_in_from = from_desc.GetIndex(name);
-			if (off_in_from >= 0 && my_desc.attributes[j].size == from_desc.attributes[index_in_from].size)
-				memcpy(myvtx + my_desc.GetOffset(name), fromvtx + off_in_from, my_desc.attributes[j].size * 4);
-		}
-	}
+	ConvertVertices(fromvb, vb, num_verts, from_desc, my_desc);
 
 	bool bCalcTangents = false, bCalcNormals = false;
 	if (my_desc.GetOffset("normal") >= 0 && from_desc.GetOffset("normal") == -1)
@@ -869,22 +876,28 @@ WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
 }
 
 WError WGeometry::SaveToWGM(std::string filename) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	fstream file;
+	file.open(filename, ios::out | ios::binary);
+	if (!file.is_open())
+		return WError(W_FILENOTFOUND);
+
+
+
+	file.close();
+
 	return WError(W_SUCCEEDED);
 }
 
 WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
-	class HXGeometry : public WGeometry {
-	public:
-		HXGeometry(Wasabi* const app, unsigned int ID = 0) : WGeometry(app, ID) {}
-		virtual W_VERTEX_DESCRIPTION GetVertexDescription() const {
-			return W_VERTEX_DESCRIPTION({
-				W_ATTRIBUTE_POSITION,
-				W_ATTRIBUTE_TANGENT,
-				W_ATTRIBUTE_NORMAL,
-				W_ATTRIBUTE_UV,
-			});
-		}
-	};
+	W_VERTEX_DESCRIPTION hx_vtx_desc = W_VERTEX_DESCRIPTION({
+		W_ATTRIBUTE_POSITION,
+		W_ATTRIBUTE_TANGENT,
+		W_ATTRIBUTE_NORMAL,
+		W_ATTRIBUTE_UV,
+	});
 
 	//open the file for reading
 	fstream file;
@@ -904,7 +917,7 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 		return WError(W_INVALIDFILEFORMAT);
 	}
 
-	//read the header ([topology(1)][vertex size(1)][vbSize(4)][ibSize(4)])
+	//read the header ([topology(1)][vertex size(1)][vbSize(4)][ibSize(4)][[usedBuffers(1)]])
 	file.read((char*)&topology, 1); //topology is saved in D3D format
 	file.read((char*)&structSize, 1);
 	file.read((char*)&numV, 4);
@@ -930,17 +943,17 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	file.read((char*)ind, numI * sizeof DWORD);
 	file.close();
 
-	HXGeometry* g = new HXGeometry(m_app);
-	WError err = g->CreateFromData(v, numV, ind, numI, true);
+	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription();
+	void* newverts = (char*)calloc(numV, my_desc.GetSize());
+	ConvertVertices(v, newverts, numV, hx_vtx_desc, my_desc);
+	W_SAFE_DELETE_ARRAY(v);
+
+	WError err = CreateFromData(newverts, numV, ind, numI, bDynamic);
 
 	//de-allocate the temporary buffers
-	W_SAFE_DELETE_ARRAY(v);
+	W_SAFE_FREE(newverts);
 	W_SAFE_DELETE_ARRAY(ind);
 
-	if (err)
-		err = CopyFrom(g, bDynamic);
-
-	g->RemoveReference();
 	return err;
 }
 

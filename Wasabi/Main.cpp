@@ -46,7 +46,7 @@ void ApplyMousePivot(Wasabi* app, WCamera* cam, float& fYaw, float& fPitch, floa
 	float fMouseZ = app->InputComponent->MouseZ();
 	fDist += (fMouseZ / 120.0f) * (abs(fDist)/10.0f);
 	app->InputComponent->SetMouseZ(0);
-	fDist = min(-4, fDist);
+	fDist = min(-1, fDist);
 
 	cam->SetPosition(x, y, z);
 	cam->SetAngle(0, 0, 0);
