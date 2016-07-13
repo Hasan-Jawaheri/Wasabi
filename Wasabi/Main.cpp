@@ -1,14 +1,65 @@
 #include "Wasabi.h"
 #include "WForwardRenderer.h"
 
+void ApplyMousePivot(Wasabi* app, WCamera* cam, float& fYaw, float& fPitch,
+					 float x, float y, float z, float fDist = -150.0f) {
+	static bool bMouseHidden = false;
+	static int lx, ly;
+	if (app->InputComponent->MouseClick(MOUSE_LEFT)) {
+		if (!bMouseHidden) {
+			ShowCursor(FALSE);
+			bMouseHidden = true;
+
+			lx = app->InputComponent->MouseX(MOUSEPOS_DESKTOP, 0);
+			ly = app->InputComponent->MouseY(MOUSEPOS_DESKTOP, 0);
+
+			POINT pt = { 640 / 2, 480 / 2 };
+			ClientToScreen(((WWC_Win32*)app->WindowComponent)->GetWindow(), &pt);
+			SetCursorPos(pt.x, pt.y);
+		}
+
+		int mx = app->InputComponent->MouseX(MOUSEPOS_VIEWPORT, 0);
+		int my = app->InputComponent->MouseY(MOUSEPOS_VIEWPORT, 0);
+
+		int dx = mx - 640 / 2;
+		int dy = my - 480 / 2;
+
+		if (abs(dx) < 2)
+			dx = 0;
+		if (abs(dy) < 2)
+			dy = 0;
+
+		fYaw += (float)dx / 2.0f;
+		fPitch += (float)dy / 2.0f;
+
+		if (dx || dy)
+			app->InputComponent->SetMousePosition(640 / 2, 480 / 2);
+	} else {
+		if (bMouseHidden) {
+			ShowCursor(TRUE);
+			bMouseHidden = false;
+
+			SetCursorPos(lx, ly);
+		}
+	}
+
+	cam->SetPosition(x, y, z);
+	cam->SetAngle(0, 0, 0);
+	cam->Yaw(fYaw);
+	cam->Pitch(fPitch);
+	cam->Move(fDist);
+}
+
 //#include "WHavokPhysics.h"
 class Kofta : public Wasabi {
-	WSprite* spr;
+	float fYaw, fPitch;
 
 protected:
 	void SetupComponents() {
 		Wasabi::SetupComponents();
 		//PhysicsComponent = new WHavokPhysics(this);
+		fYaw = 0;
+		fPitch = 30;
 	}
 
 public:
@@ -28,14 +79,18 @@ public:
 		if (g->CreateSphere(1, 15, 15)) {
 			g->Scale(1.4);
 
-			o->SetGeometry(g);
 			o2->SetGeometry(g);
 			o3->SetGeometry(g);
 
 			g->RemoveReference();
 		}
 
-		o->SetPosition(-5, 5, 0);
+		WGeometry* gPlain = new WGeometry(this);
+		gPlain->CreatePlain(15.0f, 0, 0);
+		o->SetGeometry(gPlain);
+		((WFRMaterial*)o->GetMaterial())->SetColor(WColor(0.2, 0.1, 0.15));
+
+		o->SetPosition(0, 0, 0);
 		o2->SetPosition(0, 0, -4);
 		o3->SetPosition(4, 4, 0);
 		o3->SetAngle(0, 0, 80);
@@ -47,12 +102,15 @@ public:
 		img->Load("textures/dummy.bmp", true);
 		img->RemoveReference();
 
-		spr = new WSprite(this);
-		spr->SetImage(img);
-		spr->SetRotationCenter(WVector2(128, 128));
-		//spr->SetAlpha(0.6f);
+		CameraManager->GetDefaultCamera()->SetPosition(0, 15, -15);
+		CameraManager->GetDefaultCamera()->Point(0, 0, 0);
 
-		CameraManager->GetDefaultCamera()->Move(-10);
+		WLight* l = new WLight(this);
+		l->SetPosition(-20, 10, 0);
+		l->Point(0, 0, 0);
+		l->SetType(W_LIGHT_SPOT);
+		l->SetRange(50);
+		l->SetIntensity(2.0f);
 
 		return err;
 	}
@@ -64,8 +122,7 @@ public:
 		int width = TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
 		TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 1);
 
-		spr->Rotate(40.0f * fDeltaTime);
-		spr->Move(100.0f * fDeltaTime);
+		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, 0, 0, 0, -20.0f);
 
 		return true;
 	}

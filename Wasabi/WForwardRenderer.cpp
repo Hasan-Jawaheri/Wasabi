@@ -77,7 +77,7 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, (sizeof(LightStruct) / 4) * maxLights, "lights"),
 			}),
 			W_BOUND_RESOURCE(W_TYPE_UBO, 4,{
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "camPos"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "gCamPos"),
 			}),
 		};
 		LoadCodeGLSL(
@@ -103,7 +103,7 @@ public:
 			"	Light lights[" + std::to_string(maxLights) + "];\n"
 			"} lubo;\n"
 			"layout(binding = 4) uniform CAM {\n"
-			"	vec3 camPos;\n"
+			"	vec3 gCamPos;\n"
 			"} cam;\n"
 			""
 			"layout(location = 0) in vec2 inUV;\n"
@@ -112,17 +112,45 @@ public:
 			""
 			"layout(location = 0) out vec4 outFragColor;\n"
 			""
+			"" // DIRECTIONAL LIGHT CODE
 			"vec3 DirectionalLight(in vec3 dir, in vec3 col, in float intensity) {\n"
-			"	float L = clamp(dot(inWorldNorm, -dir), 0, 1);\n"
-			"	return vec3(L * col * intensity);\n"
+			""  // N dot L lighting term
+			"	vec3 lDir = -normalize(dir); \n"
+			"	float nl = clamp(dot(inWorldNorm, lDir), 0, 1);\n"
+			"	vec3 camDir = normalize(cam.gCamPos - inWorldPos);\n"
+			""  // Calculate specular term
+			"	float spec = max(dot(reflect(-lDir, inWorldNorm), camDir), 0.0f);\n"
+			"	vec3 unspecced = vec3(col * nl) * intensity;\n"
+			"	return unspecced * spec;\n"
 			"}\n"
 			""
+			"" // POINT LIGHT CODE
 			"vec3 PointLight(in vec3 pos, in vec3 col, in float intensity, in float range) {\n"
-			"	return vec3(0,0,0);\n"
+			""  // The distance from surface to light
+			"	vec3 lightVec = pos - inWorldPos;\n"
+			"	float d = length (lightVec);\n"
+			""  // N dot L lighting term
+			"	vec3 lDir = normalize(lightVec);\n"
+			"	float nl = dot(inWorldNorm, lDir);\n"
+			""  // Calculate specular term
+			"	vec3 camDir = normalize(cam.gCamPos - inWorldPos);\n"
+			"	vec3 h = normalize(lDir + camDir);\n"
+			"	float spec = clamp(dot(inWorldNorm, h), 0, 1);\n"
+			""
+			"	float xVal = (range-d)/range;\n"
+			"	return vec3(col * xVal * spec * nl * intensity);\n"
 			"}\n"
 			""
-			"vec3 SpotLight(in vec3 pos, in vec3 dir, in vec3 col, in float intensity, in float range) {\n"
-			"	return vec3(0,0,0);\n"
+			"" // SPOT LIGHT CODE
+			"vec3 SpotLight(in vec3 pos, in vec3 dir, in vec3 col, in float intensity, in float range, float minCos) {\n"
+			"	vec3 color = PointLight(pos, col, intensity, range);\n"
+			""  // The vector from the surface to the light
+			"	vec3 lightVec = normalize(pos - inWorldPos);\n"
+			""
+			"	float cosAngle = dot(-lightVec, dir);\n"
+			"	color *= max ((cosAngle - minCos) / (1.0f-minCos), 0);\n"
+			""  // Scale color by spotlight factor
+			"	return color;\n"
 			"}\n"
 			""
 			"void main() {\n"
@@ -146,7 +174,8 @@ public:
 			"									lubo.lights[i].dir.xyz,\n"
 			"									lubo.lights[i].color.rgb,\n"
 			"									lubo.lights[i].color.a,\n"
-			"									lubo.lights[i].dir.a);\n"
+			"									lubo.lights[i].dir.a,\n"
+			"									lubo.lights[i].pos.a);\n"
 			"	}\n"
 			"	outFragColor.rgb = outFragColor.rgb * 0.2f + outFragColor.rgb * 0.8f * lighting;\n" // ambient 20%
 			"}\n"
@@ -218,15 +247,16 @@ WError WForwardRenderer::Render(WRenderTarget* rt) {
 		WLight* light = m_app->LightManager->GetEntityByIndex(i);
 		if (!light)
 			break;
-
-		WColor c = light->GetColor();
-		WVector3 l = light->GetLVector();
-		WVector3 p = light->GetPosition();
-		m_lights[i].color = WVector4(c.r, c.g, c.b, light->GetIntensity());
-		m_lights[i].dir = WVector4(l.x, l.y, l.z, light->GetRange());
-		m_lights[i].pos = WVector4(p.x, p.y, p.z, 0);
-		m_lights[i].type = (int)light->GetType();
-		m_numLights++;
+		if (!light->Hidden() && light->InCameraView(rt->GetCamera())) {
+			WColor c = light->GetColor();
+			WVector3 l = light->GetLVector();
+			WVector3 p = light->GetPosition();
+			m_lights[m_numLights].color = WVector4(c.r, c.g, c.b, light->GetIntensity());
+			m_lights[m_numLights].dir = WVector4(l.x, l.y, l.z, light->GetRange());
+			m_lights[m_numLights].pos = WVector4(p.x, p.y, p.z, light->GetMinCosAngle());
+			m_lights[m_numLights].type = (int)light->GetType();
+			m_numLights++;
+		}
 	}
 
 	WError err = rt->Begin();

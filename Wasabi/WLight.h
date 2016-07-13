@@ -19,15 +19,18 @@ public:
 	void			SetColor(WColor col);
 	void			SetRange(float fRange);
 	void			SetIntensity(float fIntensity);
+	void			SetEmittingAngle(float fAngle);
 
-	W_LIGHT_TYPE	GetType();
-	WColor			GetColor();
-	float			GetRange();
-	float			GetIntensity();
+	W_LIGHT_TYPE	GetType() const;
+	WColor			GetColor() const;
+	float			GetRange() const;
+	float			GetIntensity() const;
+	float			GetMinCosAngle() const;
 
 	void			Show();
 	void			Hide();
 	bool			Hidden() const;
+	bool			InCameraView(WCamera* cam) const;
 
 	WMatrix			GetWorldMatrix();
 	bool			UpdateLocals();
@@ -43,6 +46,8 @@ private:
 	WColor			m_color;
 	float			m_range;
 	float			m_intensity;
+	float			m_tanPhi;
+	float			m_cosAngle;
 };
 
 class WLightManager : public WManager<WLight> {
