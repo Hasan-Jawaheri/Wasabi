@@ -1,8 +1,8 @@
 #include "Wasabi.h"
 #include "WForwardRenderer.h"
 
-void ApplyMousePivot(Wasabi* app, WCamera* cam, float& fYaw, float& fPitch,
-					 float x, float y, float z, float fDist = -150.0f) {
+void ApplyMousePivot(Wasabi* app, WCamera* cam, float& fYaw, float& fPitch, float& fDist,
+					 float x, float y, float z) {
 	static bool bMouseHidden = false;
 	static int lx, ly;
 	if (app->InputComponent->MouseClick(MOUSE_LEFT)) {
@@ -43,6 +43,11 @@ void ApplyMousePivot(Wasabi* app, WCamera* cam, float& fYaw, float& fPitch,
 		}
 	}
 
+	float fMouseZ = app->InputComponent->MouseZ();
+	fDist += (fMouseZ / 120.0f) * (abs(fDist)/10.0f);
+	app->InputComponent->SetMouseZ(0);
+	fDist = min(-4, fDist);
+
 	cam->SetPosition(x, y, z);
 	cam->SetAngle(0, 0, 0);
 	cam->Yaw(fYaw);
@@ -52,7 +57,7 @@ void ApplyMousePivot(Wasabi* app, WCamera* cam, float& fYaw, float& fPitch,
 
 //#include "WHavokPhysics.h"
 class Kofta : public Wasabi {
-	float fYaw, fPitch;
+	float fYaw, fPitch, fDist;
 
 protected:
 	void SetupComponents() {
@@ -60,6 +65,7 @@ protected:
 		//PhysicsComponent = new WHavokPhysics(this);
 		fYaw = 0;
 		fPitch = 30;
+		fDist = -15;
 	}
 
 public:
@@ -77,7 +83,8 @@ public:
 
 		WGeometry* g = new WGeometry(this);
 		if (g->CreateSphere(1, 15, 15)) {
-			g->Scale(1.4);
+			g->LoadFromHXM("models/F16.HXM");
+			g->Scale(0.2);
 
 			o2->SetGeometry(g);
 			o3->SetGeometry(g);
@@ -105,12 +112,15 @@ public:
 		CameraManager->GetDefaultCamera()->SetPosition(0, 15, -15);
 		CameraManager->GetDefaultCamera()->Point(0, 0, 0);
 
+		WLight* sky = LightManager->GetDefaultLight();
+		sky->Hide();
+
 		WLight* l = new WLight(this);
-		l->SetPosition(-20, 10, 0);
+		l->SetPosition(-5, 2, 0);
 		l->Point(0, 0, 0);
-		l->SetType(W_LIGHT_SPOT);
-		l->SetRange(50);
-		l->SetIntensity(2.0f);
+		l->SetType(W_LIGHT_POINT);
+		l->SetRange(10);
+		l->SetIntensity(4.0f);
 
 		return err;
 	}
@@ -122,7 +132,7 @@ public:
 		int width = TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
 		TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 1);
 
-		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, 0, 0, 0, -20.0f);
+		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, fDist, 0, 0, 0);
 
 		return true;
 	}

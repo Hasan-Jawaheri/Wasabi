@@ -828,15 +828,15 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 		return WError(W_OUTOFMEMORY);
 
 	WError err = from->MapIndexBuffer((DWORD**)&fromib);
-	if (err) {
+	if (!err) {
 		free(vb);
-		return WError(W_INVALIDPARAM);
+		return err;
 	}
 	err = from->MapVertexBuffer(&fromvb);
-	if (err) {
+	if (!err) {
 		from->UnmapIndexBuffer();
 		free(vb);
-		return WError(W_INVALIDPARAM);
+		return err;
 	}
 
 	for (int i = 0; i < num_verts; i++) {
@@ -847,7 +847,7 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 			int off_in_from = from_desc.GetOffset(name);
 			int index_in_from = from_desc.GetIndex(name);
 			if (off_in_from >= 0 && my_desc.attributes[j].size == from_desc.attributes[index_in_from].size)
-				memcpy(myvtx + my_desc.GetOffset(name), fromvtx + off_in_from, my_desc.attributes[j].size);
+				memcpy(myvtx + my_desc.GetOffset(name), fromvtx + off_in_from, my_desc.attributes[j].size * 4);
 		}
 	}
 
@@ -863,6 +863,87 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 	from->UnmapIndexBuffer();
 	return err;
 }
+
+WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
+	return WError(W_SUCCEEDED);
+}
+
+WError WGeometry::SaveToWGM(std::string filename) {
+	return WError(W_SUCCEEDED);
+}
+
+WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
+	class HXGeometry : public WGeometry {
+	public:
+		HXGeometry(Wasabi* const app, unsigned int ID = 0) : WGeometry(app, ID) {}
+		virtual W_VERTEX_DESCRIPTION GetVertexDescription() const {
+			return W_VERTEX_DESCRIPTION({
+				W_ATTRIBUTE_POSITION,
+				W_ATTRIBUTE_TANGENT,
+				W_ATTRIBUTE_NORMAL,
+				W_ATTRIBUTE_UV,
+			});
+		}
+	};
+
+	//open the file for reading
+	fstream file;
+	file.open(filename, ios::in | ios::binary);
+	if (!file.is_open())
+		return WError(W_FILENOTFOUND);
+
+	UINT numV = 0, numI = 0, structSize = 0, filesize = 0;
+	char usedBuffers = 1, topology;
+
+	file.seekg(0, ios::end);
+	filesize = file.tellg();
+	file.seekg(0, ios::beg);
+
+	if (filesize < 11) {
+		file.close();
+		return WError(W_INVALIDFILEFORMAT);
+	}
+
+	//read the header ([topology(1)][vertex size(1)][vbSize(4)][ibSize(4)])
+	file.read((char*)&topology, 1); //topology is saved in D3D format
+	file.read((char*)&structSize, 1);
+	file.read((char*)&numV, 4);
+	file.read((char*)&numI, 4);
+
+	if (filesize == filesize + 11 + 44 * numV + sizeof(DWORD) * numI)
+		file.read(&usedBuffers, 1);
+
+	if (topology != 4 /*D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST*/ ||
+		structSize != 44 || // wrong vertex format, cannot read it (3x position, 3x tangent, 3x normal, 2x uv)
+		!(usedBuffers & 1) || numI == 0 || numV == 0 || // no index/vertex buffers
+		(filesize != 11 + 44 * numV + sizeof(DWORD) * numI && filesize != 10 + 44 * numV + sizeof(DWORD) * numI)) {
+		file.close();
+		return WError(W_INVALIDFILEFORMAT);
+	}
+
+	//allocate temporary vertex/index buffers
+	void* v = new char[numV * structSize];
+	DWORD* ind = new DWORD[numI];
+
+	//read data
+	file.read((char*)v, numV * structSize);
+	file.read((char*)ind, numI * sizeof DWORD);
+	file.close();
+
+	HXGeometry* g = new HXGeometry(m_app);
+	WError err = g->CreateFromData(v, numV, ind, numI, true);
+
+	//de-allocate the temporary buffers
+	W_SAFE_DELETE_ARRAY(v);
+	W_SAFE_DELETE_ARRAY(ind);
+
+	if (err)
+		err = CopyFrom(g, bDynamic);
+
+	g->RemoveReference();
+	return err;
+}
+
 
 WError WGeometry::MapVertexBuffer(void** const vb, bool bReadOnly) {
 	if (!Valid() || (m_immutable && !m_dynamic))

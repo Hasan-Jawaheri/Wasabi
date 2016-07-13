@@ -23,8 +23,8 @@ public:
 		};
 		m_desc.input_layout = W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // normal
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // tangent
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // normal
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
 		});
 		LoadCodeGLSL(
@@ -34,8 +34,8 @@ public:
 			"#extension GL_ARB_shading_language_420pack : enable\n"
 			""
 			"layout(location = 0) in vec3 inPos;\n"
-			"layout(location = 1) in vec3 inNorm;\n"
-			"layout(location = 2) in vec3 inTang;\n"
+			"layout(location = 1) in vec3 inTang;\n"
+			"layout(location = 2) in vec3 inNorm;\n"
 			"layout(location = 3) in vec2 inUV;\n"
 			""
 			"layout(binding = 0) uniform UBO {\n"
