@@ -872,7 +872,68 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 }
 
 WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
-	return WError(W_SUCCEEDED);
+	fstream file;
+	file.open(filename, ios::in | ios::binary);
+	if (!file.is_open())
+		return WError(W_FILENOTFOUND);
+
+	W_VERTEX_DESCRIPTION from_desc;
+	char temp[256];
+	unsigned int num_attributes;
+	file.read((char*)&num_attributes, sizeof(unsigned int));
+	from_desc.attributes.resize(num_attributes);
+	for (int i = 0; i < num_attributes; i++) {
+		file.read((char*)&from_desc.attributes[i].size, sizeof(unsigned char));
+		unsigned int namesize = from_desc.attributes[i].name.length();
+		file.read((char*)&namesize, sizeof(unsigned int));
+		file.read(temp, min(namesize, 255));
+		temp[min(namesize, 255)] = '\0';
+		from_desc.attributes[i].name = temp;
+	}
+
+	unsigned int numV, numI;
+	file.read((char*)&numV, sizeof(unsigned int));
+	file.read((char*)&numI, sizeof(unsigned int));
+
+	void *vb, *ib;
+	vb = W_SAFE_ALLOC(numV * from_desc.GetSize());
+	ib = W_SAFE_ALLOC(numI * sizeof(DWORD));
+	if (!ib || !vb) {
+		W_SAFE_FREE(vb);
+		W_SAFE_FREE(ib);
+		return WError(W_OUTOFMEMORY);
+	}
+
+	file.read((char*)vb, numV * from_desc.GetSize());
+	file.read((char*)ib, numI * sizeof(DWORD));
+
+	WError err;
+	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription();
+	void* convertedVB = calloc(numV, my_desc.GetSize());
+	if (!convertedVB) {
+		err = WError(W_OUTOFMEMORY);
+		W_SAFE_FREE(vb);
+	}  else {
+		ConvertVertices(vb, convertedVB, numV, from_desc, my_desc);
+		W_SAFE_FREE(vb);
+
+		bool bCalcTangents = false, bCalcNormals = false;
+		if (my_desc.GetOffset("normal") >= 0 && from_desc.GetOffset("normal") == -1)
+			bCalcNormals = true;
+		if (my_desc.GetOffset("tangent") >= 0 && from_desc.GetOffset("tangent") == -1)
+			bCalcTangents = true;
+
+		WError err = CreateFromData(convertedVB, numV, ib, numI, bDynamic, bCalcNormals, bCalcTangents);
+		free(convertedVB);
+	}
+	W_SAFE_FREE(ib);
+
+	UnmapVertexBuffer();
+	UnmapIndexBuffer();
+
+	file.close();
+
+	return err;
 }
 
 WError WGeometry::SaveToWGM(std::string filename) {
@@ -884,7 +945,36 @@ WError WGeometry::SaveToWGM(std::string filename) {
 	if (!file.is_open())
 		return WError(W_FILENOTFOUND);
 
+	void *vb, *ib;
+	WError err = MapVertexBuffer(&vb, true);
+	if (!err) {
+		file.close();
+		return err;
+	}
+	err = MapIndexBuffer((DWORD**)&ib, true);
+	if (!err) {
+		UnmapVertexBuffer();
+		file.close();
+		return err;
+	}
 
+	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription();
+	unsigned int num_attributes = my_desc.attributes.size();
+	file.write((char*)&num_attributes, sizeof(unsigned int));
+	for (int i = 0; i < num_attributes; i++) {
+		file.write((char*)&my_desc.attributes[i].size, sizeof(unsigned char));
+		unsigned int namesize = my_desc.attributes[i].name.length();
+		file.write((char*)&namesize, sizeof(unsigned int));
+		file.write(my_desc.attributes[i].name.c_str(), namesize);
+	}
+
+	file.write((char*)&m_vertices.count, sizeof(unsigned int));
+	file.write((char*)&m_indices.count, sizeof(unsigned int));
+	file.write((char*)vb, m_vertices.count * my_desc.GetSize());
+	file.write((char*)ib, m_indices.count * sizeof(DWORD));
+
+	UnmapVertexBuffer();
+	UnmapIndexBuffer();
 
 	file.close();
 
@@ -938,6 +1028,12 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	void* v = new char[numV * structSize];
 	DWORD* ind = new DWORD[numI];
 
+	if (!v || !ind) {
+		W_SAFE_DELETE_ARRAY(v);
+		W_SAFE_DELETE_ARRAY(ind);
+		return WError(W_OUTOFMEMORY);
+	}
+
 	//read data
 	file.read((char*)v, numV * structSize);
 	file.read((char*)ind, numI * sizeof DWORD);
@@ -945,13 +1041,19 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 
 	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription();
 	void* newverts = (char*)calloc(numV, my_desc.GetSize());
+	if (!newverts) {
+		W_SAFE_DELETE_ARRAY(v);
+		W_SAFE_DELETE_ARRAY(ind);
+		return WError(W_OUTOFMEMORY);
+	}
+
 	ConvertVertices(v, newverts, numV, hx_vtx_desc, my_desc);
 	W_SAFE_DELETE_ARRAY(v);
 
 	WError err = CreateFromData(newverts, numV, ind, numI, bDynamic);
 
 	//de-allocate the temporary buffers
-	W_SAFE_FREE(newverts);
+	free(newverts);
 	W_SAFE_DELETE_ARRAY(ind);
 
 	return err;

@@ -10,6 +10,7 @@
 #define W_ATTRIBUTE_UV			W_VERTEX_ATTRIBUTE(std::string("uv"), 2)
 
 struct W_VERTEX_ATTRIBUTE {
+	W_VERTEX_ATTRIBUTE() : size(0) {}
 	W_VERTEX_ATTRIBUTE(std::string n, unsigned char s) : name(n), size(s) {}
 
 	std::string name;
@@ -17,7 +18,7 @@ struct W_VERTEX_ATTRIBUTE {
 };
 
 struct W_VERTEX_DESCRIPTION {
-	W_VERTEX_DESCRIPTION(std::vector<W_VERTEX_ATTRIBUTE> attribs) : attributes(attribs) {}
+	W_VERTEX_DESCRIPTION(std::vector<W_VERTEX_ATTRIBUTE> attribs = {}) : attributes(attribs) {}
 
 	std::vector<W_VERTEX_ATTRIBUTE> attributes;
 
