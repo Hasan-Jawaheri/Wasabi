@@ -78,7 +78,7 @@ public:
 	WShader(class Wasabi* const app, unsigned int ID = 0);
 	~WShader();
 
-	virtual void Load() = 0;
+	virtual void		Load() = 0;
 
 	virtual bool		Valid() const;
 };
@@ -104,6 +104,7 @@ class WEffect : public WBase {
 
 	VkPipelineColorBlendAttachmentState m_blendState;
 	VkPipelineDepthStencilStateCreateInfo m_depthStencilState;
+	VkPipelineRasterizationStateCreateInfo m_rasterizationState;
 
 	void _DestroyPipeline();
 
@@ -116,6 +117,7 @@ public:
 	void					SetPrimitiveTopology(VkPrimitiveTopology topology);
 	void					SetBlendingState(VkPipelineColorBlendAttachmentState state);
 	void					SetDepthStencilState(VkPipelineDepthStencilStateCreateInfo state);
+	void					SetRasterizationState(VkPipelineRasterizationStateCreateInfo state);
 	WError					BuildPipeline(class WRenderTarget* rt);
 	WError					Bind(class WRenderTarget* rt);
 	
