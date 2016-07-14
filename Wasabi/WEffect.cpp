@@ -119,6 +119,17 @@ WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_depthStencilState.stencilTestEnable = VK_FALSE;
 	m_depthStencilState.front = m_depthStencilState.back;
 
+	// Rasterization state
+	m_rasterizationState = {};
+	m_rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	m_rasterizationState.polygonMode = VK_POLYGON_MODE_FILL; // Solid polygon mode
+	m_rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT; // Backface culling
+	m_rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	m_rasterizationState.depthClampEnable = VK_FALSE;
+	m_rasterizationState.rasterizerDiscardEnable = VK_FALSE;
+	m_rasterizationState.depthBiasEnable = VK_FALSE;
+	m_rasterizationState.lineWidth = 1.0f;
+
 	app->EffectManager->AddEntity(this);
 }
 
@@ -199,8 +210,13 @@ void WEffect::_DestroyPipeline() {
 void WEffect::SetBlendingState(VkPipelineColorBlendAttachmentState state) {
 	m_blendState = state;
 }
+
 void WEffect::SetDepthStencilState(VkPipelineDepthStencilStateCreateInfo state) {
 	m_depthStencilState = state;
+}
+
+void WEffect::SetRasterizationState(VkPipelineRasterizationStateCreateInfo state) {
+	m_rasterizationState = state;
 }
 
 WError WEffect::BuildPipeline(WRenderTarget* rt) {
@@ -303,19 +319,6 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-	// Rasterization state
-	VkPipelineRasterizationStateCreateInfo rasterizationState = {};
-	rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	// Solid polygon mode
-	rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-	// No culling
-	rasterizationState.cullMode = VK_CULL_MODE_NONE;
-	rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-	rasterizationState.depthClampEnable = VK_FALSE;
-	rasterizationState.rasterizerDiscardEnable = VK_FALSE;
-	rasterizationState.depthBiasEnable = VK_FALSE;
-	rasterizationState.lineWidth = 1.0f;
-
 	// Color blend state
 	// Describes blend modes and color masks
 	VkPipelineColorBlendStateCreateInfo colorBlendState = {};
@@ -371,7 +374,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
 	pipelineCreateInfo.stageCount = shaderStages.size();
 	pipelineCreateInfo.pStages = shaderStages.data();
-	pipelineCreateInfo.pRasterizationState = &rasterizationState;
+	pipelineCreateInfo.pRasterizationState = &m_rasterizationState;
 	pipelineCreateInfo.pColorBlendState = &colorBlendState;
 	pipelineCreateInfo.pMultisampleState = &multisampleState;
 	pipelineCreateInfo.pViewportState = NULL; // viewport state is dynamic
