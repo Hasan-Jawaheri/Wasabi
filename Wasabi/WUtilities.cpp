@@ -8,8 +8,8 @@ bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, int* _x, int* _y) {
 
 	float fX = pos.x * cam->GetMinRange() / pos.z;
 	float fY = pos.y * cam->GetMinRange() / pos.z;
-	float fTriHalfSideX = cam->GetMinRange() * tanf(0.5f * cam->GetFOV());
-	float fTriHalfSideY = cam->GetMinRange() * tanf(0.5f * cam->GetFOV());
+	float fTriHalfSideX = cam->GetMinRange() * tanf(0.5f * W_DEGTORAD(cam->GetFOV()));
+	float fTriHalfSideY = cam->GetMinRange() * tanf(0.5f * W_DEGTORAD(cam->GetFOV()));
 
 	fTriHalfSideX *= cam->GetAspect();
 

@@ -244,7 +244,7 @@ void WCamera::UpdateInternals() {
 			0,  0, 1.0/2.0, 1.0 / 2.0,
 			0,  0,       0,         1
 		);*/
-		m_ProjM._22 *= -1;
+		m_ProjM._22 *= -1; // flip Y-axis in the render
 
 		// Create the m_frustum matrix from the view matrix and updated projection matrix.
 		WMatrix matrix = m_ViewM * m_ProjM;
