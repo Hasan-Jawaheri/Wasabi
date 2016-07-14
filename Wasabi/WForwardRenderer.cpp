@@ -52,7 +52,7 @@ public:
 			"	outUV = inUV;\n"
 			"	outWorldPos = (ubo.modelMatrix * vec4(inPos.xyz, 1.0)).xyz;\n"
 			"	outWorldNorm = (ubo.modelMatrix * vec4(inNorm.xyz, 0.0)).xyz;\n"
-			"	gl_Position = ubo.projectionMatrix * ubo.viewMatrix * vec4(outWorldPos.xyz, 1.0);\n"
+			"	gl_Position = ubo.projectionMatrix * ubo.viewMatrix * ubo.modelMatrix * vec4(inPos.xyz, 1.0);\n"
 			"}\n"
 		);
 	}
@@ -131,7 +131,7 @@ public:
 			"	float d = length (lightVec);\n"
 			""  // N dot L lighting term
 			"	vec3 lDir = normalize(lightVec);\n"
-			"	float nl = dot(inWorldNorm, lDir);\n"
+			"	float nl = clamp(dot(inWorldNorm, lDir), 0, 1);\n"
 			""  // Calculate specular term
 			"	vec3 camDir = normalize(cam.gCamPos - inWorldPos);\n"
 			"	vec3 h = normalize(lDir + camDir);\n"

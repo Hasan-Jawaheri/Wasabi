@@ -78,7 +78,6 @@ public:
 	void				UnmapVertexBuffer();
 	void				UnmapIndexBuffer();
 
-	bool				Intersect(WVector3 p1, WVector3 p2, unsigned int* triangleIndex, float* u, float* v, WVector3* pt) const;
 	WError				Scale(float mulFactor);
 	WError				ScaleX(float mulFactor);
 	WError				ScaleY(float mulFactor);
@@ -86,6 +85,10 @@ public:
 	WError				ApplyOffset(float x, float y, float z);
 	WError				ApplyOffset(WVector3 offset);
 	WError				ApplyRotation(WMatrix mtx);
+
+	bool				Intersect(WVector3 p1, WVector3 p2,
+								  WVector3* pt = nullptr, WVector2* uv = nullptr,
+								  unsigned int* triangleIndex = nullptr);
 
 	WError				Draw(class WRenderTarget* rt, unsigned int num_triangles = -1);
 

@@ -23,6 +23,7 @@ desc.: Wasabi Engine main header file
 #include "WBase.h"
 #include "WOrientation.h"
 #include "WTimer.h"
+#include "WMath.h"
 
 using namespace std;
 using std::ios;
@@ -128,6 +129,7 @@ public:
 	virtual void Cleanup(void) {}
 };
 
+#include "WUtilities.h"
 #include "WWindowComponent.h"
 #include "WInputComponent.h"
 #include "WPhysicsComponent.h"

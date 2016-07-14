@@ -35,7 +35,7 @@ public:
 	void		SetAspect(float aspect);
 	void		SetProjectionType(W_PROJECTIONTYPE type);
 
-	void		Render(UINT width, UINT height);
+	void		Render(unsigned int width, unsigned int height);
 
 	WMatrix		GetViewMatrix() const;
 	WMatrix		GetProjectionMatrix(bool bForceOrtho = false) const;
