@@ -15,6 +15,102 @@ void WObjectManager::Render(WRenderTarget* rt) {
 	}
 }
 
+WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iObjStartID, unsigned int iObjEndID,
+									WVector3* _pt, WVector2* uv, unsigned int* faceIndex) const {
+	struct pickStruct {
+		WObject* obj;
+		WVector3 pos;
+		WVector2 uv;
+		unsigned int face;
+	};
+	vector<pickStruct> pickedObjects;
+
+	WCamera* cam = m_app->Renderer->GetDefaultRenderTarget()->GetCamera();
+	if (!cam)
+		return nullptr;
+
+	int Width = m_app->WindowComponent->GetWindowWidth();
+	int Height = m_app->WindowComponent->GetWindowHeight();
+	cam->Render(Width, Height);
+
+	WMatrix P = cam->GetProjectionMatrix();
+	WMatrix V = cam->GetViewMatrix();
+	WMatrix inverseV = WMatrixInverse(V);
+
+	// Compute picking ray in view space.
+	float vx = (+2.0f*x / Width  - 1.0f) / P(0, 0);
+	float vy = (+2.0f*y / Height - 1.0f) / P(1, 1);
+
+	WVector3 pos(0.0f, 0.0f, 0.0f);
+	WVector3 dir(vx, vy, 1.0f);
+
+	pos = WVec3TransformCoord(pos, inverseV);
+	dir = WVec3TransformNormal(dir, inverseV);
+
+	for (unsigned int j = 0; j < W_HASHTABLESIZE; j++) {
+		for (unsigned int i = m_entities[j].size() - 1; i >= 0 && i != UINT_MAX; i--) {
+			if (((m_entities[j][i]->GetID() >= iObjStartID && m_entities[j][i]->GetID() <= iObjEndID) ||
+				(!iObjStartID && !iObjEndID)) && m_entities[j][i]->Valid()) {
+				if (m_entities[j][i]->Hidden())
+					continue;
+
+				unsigned int hit = 0;
+				WGeometry* temp = m_entities[j][i]->GetGeometry();
+				if (temp) {
+					//these calculations are per-subset
+					WMatrix inverseW = WMatrixInverse(m_entities[j][i]->GetWorldMatrix());
+
+					WVector3 subsetPos = WVec3TransformCoord(pos, inverseW);
+					WVector3 subsetDir = WVec3TransformNormal(dir, inverseW);
+
+					WVector3 boxPos = (temp->GetMaxPoint() + temp->GetMinPoint()) / 2.0f;
+					WVector3 boxSize = (temp->GetMaxPoint() - temp->GetMinPoint()) / 2.0f;
+
+					pickStruct p;
+					p.obj = m_entities[j][i];
+					if (WUtil::RayIntersectBox(boxSize, subsetPos, subsetDir, boxPos)) {
+						WVector3 pt;
+						bool b = temp->Intersect(subsetPos, subsetDir, &pt, &p.uv, &p.face);
+						WMatrix m = m_entities[j][i]->GetWorldMatrix();
+						p.pos.x = (pt.x * m._11) + (pt.y * m._21) + (pt.z * m._31) + (1 * m._41);
+						p.pos.y = (pt.x * m._12) + (pt.y * m._22) + (pt.z * m._32) + (1 * m._42);
+						p.pos.z = (pt.x * m._13) + (pt.y * m._23) + (pt.z * m._33) + (1 * m._43);
+
+						if (b) {
+							if (bAnyHit) {
+								if (faceIndex) *faceIndex = p.face;
+								if (_pt) *_pt = pt;
+								if (uv) *uv = p.uv;
+								return m_entities[j][i];
+							}
+							pickedObjects.push_back(p);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (!pickedObjects.size())
+		return 0;
+
+	unsigned int nearest = 0;
+	float distance = FLT_MAX;
+	for (unsigned int i = 0; i < pickedObjects.size(); i++) {
+		float fCurDist = WVec3Length(pickedObjects[i].pos - cam->GetPosition());
+		if (fCurDist < distance) {
+			nearest = i;
+			distance = fCurDist;
+		}
+	}
+
+	if (_pt) *_pt = pickedObjects[nearest].pos;
+	if (uv) *uv = pickedObjects[nearest].uv;
+	if (faceIndex) *faceIndex = pickedObjects[nearest].face;
+	return pickedObjects[nearest].obj;
+}
+
+
 WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_geometry = nullptr;
 	m_material = app->Renderer->CreateDefaultMaterial();

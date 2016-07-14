@@ -56,5 +56,8 @@ class WObjectManager : public WManager<WObject> {
 public:
 	WObjectManager(class Wasabi* const app);
 
+	WObject* PickObject(int x, int y, bool bAnyHit, unsigned int iObjStartID = 0, unsigned int iObjEndID = 0,
+						WVector3* pt = nullptr, WVector2* uv = nullptr, unsigned int* faceIndex = nullptr) const;
+
 	void Render(class WRenderTarget* rt);
 };

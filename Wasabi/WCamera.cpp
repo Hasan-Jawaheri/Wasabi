@@ -104,7 +104,7 @@ float WCamera::GetAspect() const {
 	return m_fAspect;
 }
 
-void WCamera::Render(UINT width, UINT height) {
+void WCamera::Render(unsigned int width, unsigned int height) {
 	if (m_lastWidth != width || m_lastHeight != height) {
 		m_bAltered = true;
 		m_lastWidth = width;
@@ -232,25 +232,19 @@ void WCamera::UpdateInternals() {
 		//build projection matrix
 		m_orthoMatrix = WOrthogonalProjMatrix(m_lastWidth, m_lastHeight, m_minRange, m_maxRange);
 		if (m_projType == PROJECTION_PERSPECTIVE)
-			m_ProjM = WPerspectiveProjMatrixFOV(m_fFOV, m_fAspect, m_minRange, m_maxRange);
+			m_ProjM = WPerspectiveProjMatrixFOV(W_RADTODEG(m_fFOV), m_fAspect, m_minRange, m_maxRange);
 		else if (m_projType == PROJECTION_ORTHOGONAL)
 			m_ProjM = m_orthoMatrix;
-
-		//
-		//update the m_frustum
-		//
-		float r = m_maxRange / (m_maxRange - m_minRange);
-		m_ProjM._33 = r;
-		m_ProjM._43 = -r * m_minRange;
 		
 		// fix the coordinate system (we use LHS, Vulkan uses RHS, so flip y coordinate)
 		// also change depth from [-1, 1] to [0, 1]
-		m_ProjM *= WMatrix(
+		/*m_ProjM *= WMatrix(
 			1,  0,       0,         0,
 			0, -1,       0,         0,
 			0,  0, 1.0/2.0, 1.0 / 2.0,
 			0,  0,       0,         1
-		);
+		);*/
+		m_ProjM._22 *= -1;
 
 		// Create the m_frustum matrix from the view matrix and updated projection matrix.
 		WMatrix matrix = m_ViewM * m_ProjM;

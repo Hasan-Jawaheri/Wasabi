@@ -182,6 +182,7 @@
     <ClCompile Include="WOrientation.cpp" />
     <ClCompile Include="WSound.cpp" />
     <ClCompile Include="WTimer.cpp" />
+    <ClCompile Include="WUtilities.cpp" />
     <ClCompile Include="WWC_Win32.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -224,6 +225,7 @@
     <ClInclude Include="WImage.h" />
     <ClInclude Include="WInputComponent.h" />
     <ClInclude Include="WRenderer.h" />
+    <ClInclude Include="WUtilities.h" />
     <ClInclude Include="WWC_Win32.h" />
     <ClInclude Include="WWindowComponent.h" />
     <ClInclude Include="WManager.h" />

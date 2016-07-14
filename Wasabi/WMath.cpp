@@ -331,7 +331,7 @@ const WMatrix WPerspectiveProjMatrix(const float w, const float h,
 }
 const WMatrix WPerspectiveProjMatrixFOV(const float fFOV, const float fAspect,
 	const float zn, const float zf) {
-	float yScale = 1.0f / tanf(fFOV / 2.0f);
+	float yScale = 1.0f / tanf(W_DEGTORAD(fFOV) / 2.0f);
 	float xScale = yScale / fAspect;
 	return WMatrix(xScale, 0, 0, 0,
 		0, yScale, 0, 0,

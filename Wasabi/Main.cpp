@@ -78,16 +78,16 @@ public:
 		}
 
 		WObject* o = new WObject(this);
-		WObject* o2 = new WObject(this);
+		WObject* o2 = new WObject(this, 2);
 		WObject* o3 = new WObject(this);
 
 		WGeometry* g = new WGeometry(this);
 		if (g->CreateSphere(1, 15, 15)) {
-			g->LoadFromWGM("models/F16.WGM");
-			g->Scale(0.2);
+			g->Scale(1.4);
 
 			o2->SetGeometry(g);
-			o3->SetGeometry(g);
+			o2->SetName("lol");
+			//o3->SetGeometry(g);
 
 			g->RemoveReference();
 		}
@@ -133,6 +133,14 @@ public:
 		TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 1);
 
 		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, fDist, 0, 0, 0);
+
+		WVector3 pt;
+		if (WObject* o = ObjectManager->PickObject(mx, my, false, 0, 1, &pt)) {
+			ObjectManager->GetEntity("lol")->SetPosition(pt);
+			WVector2 out;
+			int x, y;
+			WUtil::Point3DToScreen2D(this, pt, &x, &y);
+		}
 
 		return true;
 	}

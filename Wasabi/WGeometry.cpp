@@ -1148,11 +1148,6 @@ void WGeometry::UnmapIndexBuffer() {
 	}
 }
 
-bool WGeometry::Intersect(WVector3 p1, WVector3 p2, unsigned int* triangleIndex, float* u, float* v, WVector3* pt) const {
-	// TODO: fill this
-	return false;
-}
-
 WError WGeometry::Scale(float mulFactor) {
 	if (!Valid() || (m_immutable && !m_dynamic))
 		return WError(W_NOTVALID);
@@ -1299,6 +1294,110 @@ WError WGeometry::ApplyRotation(WMatrix mtx) {
 
 	UnmapVertexBuffer();
 	return WError(W_SUCCEEDED);
+}
+
+bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, unsigned int* triangleIndex) {
+	if (!Valid())
+		return false;
+
+	/*
+	Check all triangles, what is intersected will
+	be inserted into the vector intersection, then
+	the closest triangle to p1 will be returned
+	*/
+
+	struct IntersectionInfo {
+		unsigned int index;
+		float u, v;
+		WVector3 point;
+	};
+	vector<IntersectionInfo> intersection;
+
+	void *vb;
+	DWORD* ib;
+	WError err = MapVertexBuffer(&vb, true);
+	if (!err)
+		return false;
+	err = MapIndexBuffer(&ib, true);
+	if (!err) {
+		UnmapVertexBuffer();
+		return false;
+	}
+
+	unsigned int pos_offset = GetVertexDescription().GetOffset("position");
+	unsigned int vtx_size = GetVertexDescription().GetSize();
+	for (UINT i = 0; i < m_indices.count / 3; i++) {
+		WVector3 v0;
+		WVector3 v1;
+		WVector3 v2;
+		memcpy(&v0, &((char*)vb)[ib[i * 3 + 0] * vtx_size + pos_offset], sizeof WVector3);
+		memcpy(&v1, &((char*)vb)[ib[i * 3 + 1] * vtx_size + pos_offset], sizeof WVector3);
+		memcpy(&v2, &((char*)vb)[ib[i * 3 + 2] * vtx_size + pos_offset], sizeof WVector3);
+
+		WVector3 e1, e2, h, s, q;
+		float a, f, u, v;
+
+		e1 = v1 - v0; //vector ( e1, v1, v0 );
+		e2 = v2 - v0; //vector ( e2, v2, v0 );
+		h = WVec3Cross(p2, e2);
+		a = WVec3Dot(e1, h);
+
+		if (a > -0.00001 && a < 0.00001)
+			continue; //no intersection
+
+		f = 1 / a;
+		s = p1 - v0; //vector ( s, p, v0 );
+		u = f * (WVec3Dot(s, h));
+
+		if (u < 0.0 || u > 1.0)
+			continue; //no intersection
+
+		q = WVec3Cross(s, e1);
+		v = f * WVec3Dot(p2, q);
+		if (v < 0.0 || u + v > 1.0)
+			continue; //no intersection
+					  // at this stage we can compute t to find out where 
+					  // the intersection point is on the line
+		float t = f * WVec3Dot(e2, q);
+		if (t > 0.00001) // ray intersection
+		{
+			//add this triangle to the intersection vector
+			IntersectionInfo ii;
+			ii.index = i;
+			ii.u = u;
+			ii.v = v;
+			ii.point = v0 + u*(v1 - v0) + v*(v2 - v0);
+
+			intersection.push_back(ii);
+			continue;
+		} else // this means that there is a line intersection  
+			   // but not a ray intersection
+			continue;
+	}
+
+	UnmapVertexBuffer();
+	UnmapIndexBuffer();
+
+	//no intersection
+	if (!intersection.size())
+		return false;
+
+	//find the closest triangle to p1 and return it's info
+	unsigned int chosen = 0;
+	float ld = WVec3LengthSq(p1 - intersection[0].point);
+	for (unsigned int i = 1; i < intersection.size(); i++) {
+		float fDist = WVec3LengthSq(p1 - intersection[i].point);
+		if (fDist < ld) {
+			ld = fDist;
+			chosen = i;
+		}
+	}
+
+	if (uv) *uv = WVector2(intersection[chosen].u,  intersection[chosen].v);
+	if (pt) *pt = intersection[chosen].point;
+	if (triangleIndex) *triangleIndex = intersection[chosen].index;
+
+	return true;
 }
 
 WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles) {

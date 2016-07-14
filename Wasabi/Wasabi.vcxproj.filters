@@ -127,6 +127,9 @@
     <ClCompile Include="WDeferredRenderer.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="WUtilities.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WRenderer.h">
@@ -266,6 +269,9 @@
     </ClInclude>
     <ClInclude Include="WDeferredRenderer.h">
       <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="WUtilities.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
