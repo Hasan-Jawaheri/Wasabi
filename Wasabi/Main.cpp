@@ -140,6 +140,7 @@ public:
 			WVector2 out;
 			int x, y;
 			WUtil::Point3DToScreen2D(this, pt, &x, &y);
+			int g = 0;
 		}
 
 		return true;
