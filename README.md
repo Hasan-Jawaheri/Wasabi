@@ -2,8 +2,8 @@
 Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game Engine.
 
 ## Current Features
-[tick]: (https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/tick.png  =36x36)
-[prog]: (https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico  =36x36)
+[tick]: <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/tick.png" width="36" height="36">
+[prog]: <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="36" height="36">
 
 * ![alt tag][tick] OpenAL Sounds
 * ![alt tag][tick] Sprites
