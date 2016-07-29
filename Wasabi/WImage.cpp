@@ -218,10 +218,12 @@ WError WImage::CretaeFromPixelsArray(
 	if (err) goto free_buffers;
 
 	// Copy texture data into staging buffer
-	err = vkMapMemory(device, m_stagingMemory, 0, memReqs.size, 0, (void **)&data);
-	if (err) goto free_buffers;
-	memcpy(data, pixels, bufferCreateInfo.size);
-	vkUnmapMemory(device, m_stagingMemory);
+	if (pixels) {
+		err = vkMapMemory(device, m_stagingMemory, 0, memReqs.size, 0, (void **)&data);
+		if (err) goto free_buffers;
+		memcpy(data, pixels, bufferCreateInfo.size);
+		vkUnmapMemory(device, m_stagingMemory);
+	}
 
 	// Create optimal tiled target image
 	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -984,7 +986,7 @@ WError WRenderTarget::Begin() {
 	renderPassBeginInfo.renderArea.offset.y = 0;
 	renderPassBeginInfo.renderArea.extent.width = m_width;
 	renderPassBeginInfo.renderArea.extent.height = m_height;
-	renderPassBeginInfo.clearValueCount = 2;
+	renderPassBeginInfo.clearValueCount = m_depthStencil.image ? 2 : 1;
 	renderPassBeginInfo.pClearValues = clearValues;
 
 	// Set target frame buffer
@@ -1020,12 +1022,30 @@ WError WRenderTarget::Begin() {
 	return WError(W_SUCCEEDED);
 }
 
-WError WRenderTarget::End() {
+WError WRenderTarget::End(bool bSubmit) {
 	vkCmdEndRenderPass(m_renderCmdBuffer);
 
 	VkResult err = vkEndCommandBuffer(m_renderCmdBuffer);
 	if (err)
 		return WError(W_ERRORUNK);
+
+	if (bSubmit) {
+		// Command buffer to be sumitted to the queue
+		VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+		submitInfo.pWaitDstStageMask = &submitPipelineStages;
+		submitInfo.waitSemaphoreCount = 0;
+		submitInfo.pWaitSemaphores = nullptr;
+		submitInfo.signalSemaphoreCount = 0;
+		submitInfo.pSignalSemaphores = nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &m_renderCmdBuffer;
+
+		// Submit to queue
+		err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		if (err)
+			return WError(W_ERRORUNK);
+	}
 
 	return WError(W_SUCCEEDED);
 }

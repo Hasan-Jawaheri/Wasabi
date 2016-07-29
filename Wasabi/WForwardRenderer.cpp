@@ -137,7 +137,7 @@ public:
 			"	vec3 h = normalize(lDir + camDir);\n"
 			"	float spec = clamp(dot(inWorldNorm, h), 0, 1);\n"
 			""
-			"	float xVal = (range-d)/range;\n"
+			"	float xVal = clamp((range-d)/range, 0, 1);\n"
 			"	return vec3(col * xVal * spec * nl * intensity);\n"
 			"}\n"
 			""
@@ -239,7 +239,7 @@ WError WForwardRenderer::Resize(unsigned int width, unsigned int height) {
 	return WRenderer::Resize(width, height);
 }
 
-WError WForwardRenderer::Render(WRenderTarget* rt) {
+void WForwardRenderer::Render(WRenderTarget* rt) {
 	// create the lights UBO data
 	int max_lights = (int)m_app->engineParams["maxLights"];
 	m_numLights = 0;
@@ -259,17 +259,11 @@ WError WForwardRenderer::Render(WRenderTarget* rt) {
 		}
 	}
 
-	WError err = rt->Begin();
-	if (!err)
-		return err;
-
 	m_app->ObjectManager->Render(rt);
 
 	m_app->SpriteManager->Render(rt);
 
 	m_app->TextComponent->Render(rt);
-
-	return rt->End();
 }
 
 void WForwardRenderer::Cleanup() {

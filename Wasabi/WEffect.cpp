@@ -124,7 +124,7 @@ WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	m_rasterizationState.polygonMode = VK_POLYGON_MODE_FILL; // Solid polygon mode
 	m_rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT; // Backface culling
-	m_rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	m_rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	m_rasterizationState.depthClampEnable = VK_FALSE;
 	m_rasterizationState.rasterizerDiscardEnable = VK_FALSE;
 	m_rasterizationState.depthBiasEnable = VK_FALSE;

@@ -58,6 +58,7 @@ void ApplyMousePivot(Wasabi* app, WCamera* cam, float& fYaw, float& fPitch, floa
 //#include "WHavokPhysics.h"
 class Kofta : public Wasabi {
 	float fYaw, fPitch, fDist;
+	WRenderTarget* rt;
 
 protected:
 	void SetupComponents() {
@@ -66,6 +67,7 @@ protected:
 		fYaw = 0;
 		fPitch = 30;
 		fDist = -15;
+		rt = nullptr;
 	}
 
 public:
@@ -86,7 +88,7 @@ public:
 			g->Scale(1.4);
 
 			o2->SetGeometry(g);
-			o2->SetName("lol");
+			o2->SetName("sphere");
 			//o3->SetGeometry(g);
 
 			g->RemoveReference();
@@ -95,7 +97,7 @@ public:
 		WGeometry* gPlain = new WGeometry(this);
 		gPlain->CreatePlain(15.0f, 0, 0);
 		o->SetGeometry(gPlain);
-		((WFRMaterial*)o->GetMaterial())->SetColor(WColor(0.2, 0.1, 0.15));
+		o->SetName("plain");
 
 		o->SetPosition(0, 0, 0);
 		o2->SetPosition(0, 0, -4);
@@ -112,9 +114,6 @@ public:
 		CameraManager->GetDefaultCamera()->SetPosition(0, 15, -15);
 		CameraManager->GetDefaultCamera()->Point(0, 0, 0);
 
-		WLight* sky = LightManager->GetDefaultLight();
-		sky->Hide();
-
 		WLight* l = new WLight(this);
 		l->SetPosition(-5, 2, 0);
 		l->Point(0, 0, 0);
@@ -122,26 +121,49 @@ public:
 		l->SetRange(10);
 		l->SetIntensity(4.0f);
 
+		WImage* rtImg = new WImage(this);
+		float* pixels = new float[640 * 480 * 3];
+		for (int i = 0; i < 640 * 480; i++) {
+			pixels[i * 3 + 0] = 1;
+			pixels[i * 3 + 1] = 0;
+			pixels[i * 3 + 2] = 0;
+		}
+		rtImg->CretaeFromPixelsArray(pixels, 640, 480, false, 3);
+		delete[] pixels;
+		rt = new WRenderTarget(this);
+		rt->SetName("Falla RT");
+		rt->Create(640, 480, rtImg);
+		((WFRMaterial*)o->GetMaterial())->Texture(rtImg);
+
 		return err;
 	}
 	bool Loop(float fDeltaTime) {
-		char title[128];
-		sprintf_s(title, 128, "Elapsed time: %.2f\nFPS: %.2f", Timer.GetElapsedTime() / 1000.0f, FPS);
 		int mx = InputComponent->MouseX();
 		int my = InputComponent->MouseY();
-		int width = TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
-		TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 1);
 
 		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, fDist, 0, 0, 0);
 
 		WVector3 pt;
 		if (WObject* o = ObjectManager->PickObject(mx, my, false, 0, 1, &pt)) {
-			ObjectManager->GetEntity("lol")->SetPosition(pt);
+			ObjectManager->GetEntity("sphere")->SetPosition(pt);
 			WVector2 out;
 			int x, y;
 			WUtil::Point3DToScreen2D(this, pt, &x, &y);
 			int g = 0;
 		}
+
+		if (rt) {
+			rt->Begin();
+			ObjectManager->GetEntity("plain")->Hide();
+			Renderer->Render(rt);
+			ObjectManager->GetEntity("plain")->Show();
+			rt->End();
+		}
+
+		char title[128];
+		sprintf_s(title, 128, "Elapsed time: %.2f\nFPS: %.2f", Timer.GetElapsedTime() / 1000.0f, FPS);
+		int width = TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
+		TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 1);
 
 		return true;
 	}

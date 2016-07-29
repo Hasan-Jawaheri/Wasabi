@@ -19,7 +19,7 @@ public:
 	WRenderer(Wasabi* const app);
 
 	virtual WError				Initiailize() = 0;
-	virtual WError				Render(class WRenderTarget* rt) = 0;
+	virtual void				Render(class WRenderTarget* rt) = 0;
 	virtual void				Cleanup() = 0;
 	virtual WError				Resize(unsigned int width, unsigned int height);
 
