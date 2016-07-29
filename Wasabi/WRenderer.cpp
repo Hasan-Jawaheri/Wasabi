@@ -66,16 +66,21 @@ void WRenderer::_Render() {
 		return;
 
 	m_renderTarget->UseFrameBuffer(currentBuffer);
-	Render(m_renderTarget);
+
+	WError werr = m_renderTarget->Begin();
+	if (werr) {
+		Render(m_renderTarget);
+		m_renderTarget->End(false);
+	}
 
 	// Command buffer to be sumitted to the queue
 	VkCommandBuffer cmdBuf = m_renderTarget->GetCommnadBuffer();
 	VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 	VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
 	submitInfo.pWaitDstStageMask = &submitPipelineStages;
-	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = &m_semaphores.presentComplete;
-	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &m_semaphores.renderComplete;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &cmdBuf;

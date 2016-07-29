@@ -127,18 +127,12 @@ WError WDeferredRenderer::Resize(unsigned int width, unsigned int height) {
 	return WRenderer::Resize(width, height);
 }
 
-WError WDeferredRenderer::Render(WRenderTarget* rt) {
-	WError err = rt->Begin();
-	if (!err)
-		return err;
-
+void WDeferredRenderer::Render(WRenderTarget* rt) {
 	m_app->ObjectManager->Render(rt);
 
 	m_app->SpriteManager->Render(rt);
 
 	m_app->TextComponent->Render(rt);
-
-	return rt->End();
 }
 
 void WDeferredRenderer::Cleanup() {

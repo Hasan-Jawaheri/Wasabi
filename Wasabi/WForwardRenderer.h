@@ -13,7 +13,7 @@ public:
 	WForwardRenderer(Wasabi* const app);
 
 	virtual WError				Initiailize();
-	virtual WError				Render(class WRenderTarget* rt);
+	virtual void				Render(class WRenderTarget* rt);
 	virtual void				Cleanup();
 	virtual WError				Resize(unsigned int width, unsigned int height);
 

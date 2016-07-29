@@ -80,7 +80,7 @@ public:
 
 	WError			UseFrameBuffer(unsigned int index);
 	WError			Begin();
-	WError			End();
+	WError			End(bool bSubmit = true);
 
 	void			SetClearColor(WColor col);
 	void			SetCamera(class WCamera* cam);
