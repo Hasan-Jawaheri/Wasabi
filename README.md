@@ -46,12 +46,12 @@ class MyApplication : public Wasabi {
 public:
   WError Setup() {
     // start the engine
-    WError err = StartEngine(640, 480);
-    if (!err) {
+    WError status = StartEngine(640, 480);
+    if (!status) {
       // Failed to start the engine...
-      return err;
+      return status;
     }
-    return err;
+    return status;
   }
   bool Loop(float fDeltaTime) {
     return true; // return true to continue to next frame
