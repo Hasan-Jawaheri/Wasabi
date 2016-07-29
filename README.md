@@ -38,22 +38,24 @@ To run Wasabi, you will need the following:
 
 With the above installed, Wasabi should compile with Visual Studio. For other compilers, you need to add the include path and library path of OpenAL and LunarG SDK. Those can be usually found in C:/VulkanSDK/<version>/include, C:/VulkanSDK/<version>/bin32, C:\Program Files (x86)\OpenAL 1.1 SDK\include, C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\ on Windows.
 
-## Starter Code Explained
+## Usage
 ```C++
 #include "Wasabi.h"
 
 class MyApplication : public Wasabi {
 public:
   WError Setup() {
+    // start the engine
     WError err = StartEngine(640, 480);
     if (!err) {
+      // an error occurred, report it and return it
       MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
       return err;
     }
     return err;
   }
   bool Loop(float fDeltaTime) {
-    return true;
+    return true; // return true to continue to next frame
   }
   void Cleanup() {
   }
@@ -71,6 +73,14 @@ MyApplication must implement 3 functions from Wasabi: Setup, Loop and Cleanup:
 * WError Setup(): All application setup code goes here. You will need to call StartEngine(width, height) here. StartEngine() creates the window and initializes the engine's resources. You shouldn't create any Wasabi objects (WObject, WGeometry, WImage, etc...) before calling StartEngine().
 * bool Loop(float fDeltaTime): This function is called every frame. This is where you update your application.
 * void Cleanup(): This is called before the engine exists so you can cleanup resources.
+
+## Tutorials
+
+WIP
+
+## Documentation
+
+WIP
 
 ## Contact
 
