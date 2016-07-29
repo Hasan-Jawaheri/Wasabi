@@ -48,8 +48,7 @@ public:
     // start the engine
     WError err = StartEngine(640, 480);
     if (!err) {
-      // an error occurred, report it and return it
-      MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
+      // Failed to start the engine...
       return err;
     }
     return err;
@@ -70,9 +69,9 @@ To start the engine, you need to implement the function WInitialize and make it 
 
 MyApplication must implement 3 functions from Wasabi: Setup, Loop and Cleanup:
 
-* WError Setup(): All application setup code goes here. You will need to call StartEngine(width, height) here. StartEngine() creates the window and initializes the engine's resources. You shouldn't create any Wasabi objects (WObject, WGeometry, WImage, etc...) before calling StartEngine().
-* bool Loop(float fDeltaTime): This function is called every frame. This is where you update your application.
-* void Cleanup(): This is called before the engine exists so you can cleanup resources.
+* Setup(): All application setup code goes here. You will need to call StartEngine(width, height) here. StartEngine() creates the window and initializes the engine's resources. You shouldn't create any Wasabi objects (WObject, WGeometry, WImage, etc...) before calling StartEngine().
+* Loop(): This function is called every frame. This is where you update your application.
+* Cleanup(): This is called before the engine exists so you can cleanup resources.
 
 ## Tutorials
 
