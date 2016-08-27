@@ -11,7 +11,7 @@ public:
 	WDeferredRenderer(Wasabi* const app);
 
 	virtual WError				Initiailize();
-	virtual void				Render(class WRenderTarget* rt);
+	virtual void				Render(class WRenderTarget* rt, unsigned int filter = -1);
 	virtual void				Cleanup();
 	virtual WError				Resize(unsigned int width, unsigned int height);
 

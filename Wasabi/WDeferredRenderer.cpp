@@ -127,12 +127,15 @@ WError WDeferredRenderer::Resize(unsigned int width, unsigned int height) {
 	return WRenderer::Resize(width, height);
 }
 
-void WDeferredRenderer::Render(WRenderTarget* rt) {
-	m_app->ObjectManager->Render(rt);
+void WDeferredRenderer::Render(WRenderTarget* rt, unsigned int filter) {
+	if (filter & RENDER_FILTER_OBJECTS)
+		m_app->ObjectManager->Render(rt);
 
-	m_app->SpriteManager->Render(rt);
+	if (filter & RENDER_FILTER_SPRITES)
+		m_app->SpriteManager->Render(rt);
 
-	m_app->TextComponent->Render(rt);
+	if (filter & RENDER_FILTER_TEXT)
+		m_app->TextComponent->Render(rt);
 }
 
 void WDeferredRenderer::Cleanup() {

@@ -71,7 +71,7 @@ MyApplication must implement 3 functions from Wasabi: Setup, Loop and Cleanup:
 
 * Setup(): All application setup code goes here. You will need to call StartEngine(width, height) here. StartEngine() creates the window and initializes the engine's resources. You shouldn't create any Wasabi objects (WObject, WGeometry, WImage, etc...) before calling StartEngine().
 * Loop(): This function is called every frame. This is where you update your application.
-* Cleanup(): This is called before the engine exists so you can cleanup resources.
+* Cleanup(): This is called before the engine exits so you can cleanup resources.
 
 ## Tutorials
 

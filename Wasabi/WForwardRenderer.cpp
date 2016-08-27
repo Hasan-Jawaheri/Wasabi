@@ -239,7 +239,7 @@ WError WForwardRenderer::Resize(unsigned int width, unsigned int height) {
 	return WRenderer::Resize(width, height);
 }
 
-void WForwardRenderer::Render(WRenderTarget* rt) {
+void WForwardRenderer::Render(WRenderTarget* rt, unsigned int filter) {
 	// create the lights UBO data
 	int max_lights = (int)m_app->engineParams["maxLights"];
 	m_numLights = 0;
@@ -259,11 +259,14 @@ void WForwardRenderer::Render(WRenderTarget* rt) {
 		}
 	}
 
-	m_app->ObjectManager->Render(rt);
+	if (filter & RENDER_FILTER_OBJECTS)
+		m_app->ObjectManager->Render(rt);
 
-	m_app->SpriteManager->Render(rt);
+	if (filter & RENDER_FILTER_SPRITES)
+		m_app->SpriteManager->Render(rt);
 
-	m_app->TextComponent->Render(rt);
+	if (filter & RENDER_FILTER_TEXT)
+		m_app->TextComponent->Render(rt);
 }
 
 void WForwardRenderer::Cleanup() {

@@ -7,6 +7,14 @@ desc.: Wasabi Engine renderer spec
 
 #include "Wasabi.h"
 
+enum W_RENDER_FILTER {
+	RENDER_FILTER_OBJECTS = 1,
+	RENDER_FILTER_SPRITES = 2,
+	RENDER_FILTER_TEXT = 4,
+	RENDER_FILTER_PARTICLES = 8,
+	RENDER_FILTER_TERRAIN = 16,
+};
+
 class WRenderer {
 	friend int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow);
 	friend class Wasabi;
@@ -19,7 +27,7 @@ public:
 	WRenderer(Wasabi* const app);
 
 	virtual WError				Initiailize() = 0;
-	virtual void				Render(class WRenderTarget* rt) = 0;
+	virtual void				Render(class WRenderTarget* rt, unsigned int filter = -1) = 0;
 	virtual void				Cleanup() = 0;
 	virtual WError				Resize(unsigned int width, unsigned int height);
 

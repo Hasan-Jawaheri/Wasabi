@@ -598,6 +598,9 @@ void WRenderTarget::_DestroyResources() {
 	m_depthStencil.view = VK_NULL_HANDLE;
 	m_depthStencil.image = VK_NULL_HANDLE;
 	m_depthStencil.mem = VK_NULL_HANDLE;
+
+	if (m_target)
+		W_SAFE_REMOVEREF(m_target);
 }
 
 WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* target, bool bDepth, VkFormat depthFormat) {
