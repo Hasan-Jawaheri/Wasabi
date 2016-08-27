@@ -130,7 +130,7 @@ public:
 			pixels[i * 3 + 2] = 0;
 			pixels[i * 3 + 3] = 255;
 		}
-		rtImg->CretaeFromPixelsArray(pixels, 640, 480, false, 4, VK_FORMAT_R8G8B8A8_UNORM, 1);
+		rtImg->CreateFromPixelsArray(pixels, 640, 480, false, 4, VK_FORMAT_R8G8B8A8_UNORM, 1);
 		delete[] pixels;
 		rt = new WRenderTarget(this);
 		rt->SetName("Falla RT");

@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="stb\stb_vorbis.c" />
+    <ClCompile Include="WAnimation.cpp" />
     <ClCompile Include="WDeferredRenderer.cpp" />
     <ClCompile Include="WHavokPhysics.cpp" />
     <ClCompile Include="WLight.cpp" />
@@ -204,6 +205,7 @@
     <ClInclude Include="stb\stb_truetype.h" />
     <ClInclude Include="stb\stb_voxel_render.h" />
     <ClInclude Include="stb\stretchy_buffer.h" />
+    <ClInclude Include="WAnimation.h" />
     <ClInclude Include="WDeferredRenderer.h" />
     <ClInclude Include="WHavokPhysics.h" />
     <ClInclude Include="WLight.h" />

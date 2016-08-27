@@ -52,6 +52,9 @@
     <Filter Include="Lights">
       <UniqueIdentifier>{24c1d5e9-7d65-45c7-9886-6f1724be9ca0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Animation">
+      <UniqueIdentifier>{1d7a8dd5-d0a7-49ac-921c-a29212c00dce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WSound.cpp">
@@ -129,6 +132,9 @@
     </ClCompile>
     <ClCompile Include="WUtilities.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WAnimation.cpp">
+      <Filter>Animation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -272,6 +278,9 @@
     </ClInclude>
     <ClInclude Include="WUtilities.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WAnimation.h">
+      <Filter>Animation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

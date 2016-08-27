@@ -67,6 +67,7 @@ public:
 	class WSpriteManager*		SpriteManager;
 	class WRenderTargetManager*	RenderTargetManager;
 	class WLightManager*		LightManager;
+	class WAnimationManager*	AnimationManager;
 
 	WTimer Timer;
 
@@ -144,6 +145,7 @@ public:
 #include "WSprite.h"
 #include "WSound.h"
 #include "WLight.h"
+#include "WAnimation.h"
 #ifdef _WIN32
 #include "WWC_Win32.h"
 #include "WIC_Win32.h"

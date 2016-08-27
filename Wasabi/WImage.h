@@ -9,7 +9,7 @@ public:
 	WImage(Wasabi* const app, unsigned int ID = 0);
 	~WImage();
 
-	WError			CretaeFromPixelsArray(
+	WError			CreateFromPixelsArray(
 						void*			pixels,
 						unsigned int	width,
 						unsigned int	height,
@@ -18,6 +18,7 @@ public:
 						VkFormat		fmt = VK_FORMAT_UNDEFINED,
 						size_t			comp_size = sizeof(float));
 	WError			Load(std::string filename, bool bDynamic = false);
+	WError			CopyFrom(WImage* const image);
 
 	WError			MapPixels(void** const pixels, bool bReadOnly = false);
 	void			UnmapPixels();
