@@ -98,6 +98,7 @@ Wasabi::Wasabi() {
 		{ "fontBmpNumChars", (void*)(96) }, // int
 		{ "textBatchSize", (void*)(256) }, // int
 		{ "geometryImmutable", (void*)(false) }, // bool
+		{ "numGeneratedMips", (void*)1 }, // int
 	};
 	m_swapChainInitialized = false;
 
@@ -117,6 +118,7 @@ Wasabi::Wasabi() {
 	SpriteManager = nullptr;
 	RenderTargetManager = nullptr;
 	LightManager = nullptr;
+	AnimationManager = nullptr;
 }
 Wasabi::~Wasabi() {
 	_DestroyResources();
@@ -146,6 +148,7 @@ void Wasabi::_DestroyResources() {
 	W_SAFE_DELETE(RenderTargetManager);
 	W_SAFE_DELETE(ImageManager);
 	W_SAFE_DELETE(LightManager);
+	W_SAFE_DELETE(AnimationManager);
 
 	if (m_swapChainInitialized)
 		m_swapChain.cleanup();
@@ -369,6 +372,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	SpriteManager = new WSpriteManager(this);
 	RenderTargetManager = new WRenderTargetManager(this);
 	LightManager = new WLightManager(this);
+	AnimationManager = new WAnimationManager(this);
 
 	if (!CameraManager->Load()) {
 		_DestroyResources();

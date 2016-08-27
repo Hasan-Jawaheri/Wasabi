@@ -63,7 +63,7 @@ WError WImageManager::Load() {
 				pixels[(y*size + x) * comp_size + 3] = 1;
 		}
 	}
-	WError werr = m_checker_image->CretaeFromPixelsArray(pixels, size, size, false, comp_size);
+	WError werr = m_checker_image->CreateFromPixelsArray(pixels, size, size, false, comp_size);
 	delete[] pixels;
 	if (!werr) {
 		vkFreeCommandBuffers(device, m_app->GetCommandPool(), 1, &m_copyCommandBuffer);
@@ -157,7 +157,7 @@ void WImage::_DestroyResources() {
 	m_view = VK_NULL_HANDLE;
 }
 
-WError WImage::CretaeFromPixelsArray(
+WError WImage::CreateFromPixelsArray(
 	void*			pixels,
 	unsigned int	width,
 	unsigned int	height,
@@ -228,7 +228,7 @@ WError WImage::CretaeFromPixelsArray(
 	// Create optimal tiled target image
 	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 	imageCreateInfo.format = format;
-	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.mipLevels = 1; // TODO: USE m_app->engineParams["numGeneratedMips"]
 	imageCreateInfo.arrayLayers = 1;
 	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -366,10 +366,25 @@ WError WImage::Load(std::string filename, bool bDynamic) {
 	}
 	free(data);
 
-	WError err = CretaeFromPixelsArray(pixels, w, h, bDynamic, n);
+	WError err = CreateFromPixelsArray(pixels, w, h, bDynamic, n);
 	delete[] pixels;
 
 	return err;
+}
+
+WError WImage::CopyFrom(WImage* const image) {
+	if (!image || !image->Valid() || !image->m_stagingBuffer)
+		return WError(W_INVALIDPARAM);
+
+	void* pixels;
+	WError res = image->MapPixels(&pixels, true);
+	if (!res)
+		return res;
+	res = CreateFromPixelsArray(pixels, image->m_width, image->m_height, true,
+								image->m_numComponents, image->m_format, image->m_componentSize);
+	image->UnmapPixels();
+
+	return res;
 }
 
 WError WImage::MapPixels(void** const pixels, bool bReadOnly) {
