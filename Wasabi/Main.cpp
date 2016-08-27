@@ -59,6 +59,7 @@ void ApplyMousePivot(Wasabi* app, WCamera* cam, float& fYaw, float& fPitch, floa
 class Kofta : public Wasabi {
 	float fYaw, fPitch, fDist;
 	WRenderTarget* rt;
+	WImage* rtImg;
 
 protected:
 	void SetupComponents() {
@@ -104,7 +105,7 @@ public:
 		o3->SetPosition(4, 4, 0);
 		o3->SetAngle(0, 0, 80);
 
-		TextComponent->CreateFont(1, "FORTE");
+		TextComponent->CreateFont(1, "arial");
 
 		WImage* img = new WImage(this);
 		((WFRMaterial*)o2->GetMaterial())->Texture(img);
@@ -121,14 +122,15 @@ public:
 		l->SetRange(10);
 		l->SetIntensity(4.0f);
 
-		WImage* rtImg = new WImage(this);
-		float* pixels = new float[640 * 480 * 3];
+		rtImg = new WImage(this);
+		char* pixels = new char[640 * 480 * 4];
 		for (int i = 0; i < 640 * 480; i++) {
-			pixels[i * 3 + 0] = 1;
+			pixels[i * 3 + 0] = 255;
 			pixels[i * 3 + 1] = 0;
 			pixels[i * 3 + 2] = 0;
+			pixels[i * 3 + 3] = 255;
 		}
-		rtImg->CretaeFromPixelsArray(pixels, 640, 480, false, 3);
+		rtImg->CretaeFromPixelsArray(pixels, 640, 480, false, 4, VK_FORMAT_R8G8B8A8_UNORM, 1);
 		delete[] pixels;
 		rt = new WRenderTarget(this);
 		rt->SetName("Falla RT");
@@ -155,7 +157,7 @@ public:
 		if (rt) {
 			rt->Begin();
 			ObjectManager->GetEntity("plain")->Hide();
-			Renderer->Render(rt);
+			Renderer->Render(rt, RENDER_FILTER_OBJECTS);
 			ObjectManager->GetEntity("plain")->Show();
 			rt->End();
 		}
