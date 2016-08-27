@@ -25,7 +25,7 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/tick.png" width="16" height="16"> Havok Physics
 
-<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.png" width="16" height="16"> Map Editor
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Map Editor
 
 ## Getting Started
 
