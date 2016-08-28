@@ -8,6 +8,8 @@
 #define W_ATTRIBUTE_TANGENT		W_VERTEX_ATTRIBUTE(std::string("tangent"), 3)
 #define W_ATTRIBUTE_NORMAL		W_VERTEX_ATTRIBUTE(std::string("normal"), 3)
 #define W_ATTRIBUTE_UV			W_VERTEX_ATTRIBUTE(std::string("uv"), 2)
+#define W_ATTRIBUTE_BONE_INDEX	W_VERTEX_ATTRIBUTE(std::string("bone_index"), 4)
+#define W_ATTRIBUTE_BONE_WEIGHT	W_VERTEX_ATTRIBUTE(std::string("bone_weight"), 4)
 
 struct W_VERTEX_ATTRIBUTE {
 	W_VERTEX_ATTRIBUTE() : size(0) {}
@@ -49,13 +51,20 @@ public:
 	WGeometry(Wasabi* const app, unsigned int ID = 0);
 	~WGeometry();
 
-	virtual W_VERTEX_DESCRIPTION GetVertexDescription() const {
-		return W_VERTEX_DESCRIPTION({
+	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int layout_index = 0) const {
+		if (layout_index >= 2)
+			layout_index = 0;
+		vector<W_VERTEX_DESCRIPTION> VD =
+		{   W_VERTEX_DESCRIPTION({
 			W_ATTRIBUTE_POSITION,
 			W_ATTRIBUTE_TANGENT,
 			W_ATTRIBUTE_NORMAL,
 			W_ATTRIBUTE_UV,
-		});
+		}), W_VERTEX_DESCRIPTION({
+			W_ATTRIBUTE_BONE_INDEX,
+			W_ATTRIBUTE_BONE_WEIGHT,
+		})};
+		return VD[layout_index];
 	}
 
 	WError				CreateFromData(	void* vb, unsigned int num_verts,

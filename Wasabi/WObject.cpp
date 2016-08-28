@@ -142,7 +142,7 @@ bool WObject::Valid() const {
 
 void WObject::Render(WRenderTarget* rt) {
 	if (m_geometry && m_material && m_geometry->Valid() && m_material->Valid() && !m_hidden) {
-		if (m_geometry->GetVertexDescription().GetSize() != m_material->GetEffect()->GetInputLayout().GetSize())
+		if (m_geometry->GetVertexDescription(0).GetSize() != m_material->GetEffect()->GetInputLayout(0).GetSize())
 			return;
 		WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();

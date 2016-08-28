@@ -21,6 +21,14 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() {
 		case 4: return VK_FORMAT_R32G32B32A32_SINT;
 		default: return VK_FORMAT_UNDEFINED;
 		}
+	} else if (type == W_TYPE_UINT) {
+		switch (num_elems) {
+		case 1: return VK_FORMAT_R32_UINT;
+		case 2: return VK_FORMAT_R32G32_UINT;
+		case 3: return VK_FORMAT_R32G32B32_UINT;
+		case 4: return VK_FORMAT_R32G32B32A32_UINT;
+		default: return VK_FORMAT_UNDEFINED;
+		}
 	}
 	return VK_FORMAT_UNDEFINED;
 }
@@ -152,7 +160,8 @@ bool WEffect::Valid() const {
 	// valid when at least one shader has input layout (vertex shader)
 	for (int i = 0; i < m_shaders.size(); i++)
 		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER &&
-			m_shaders[i]->m_desc.input_layout.GetSize() > 0 &&
+			m_shaders[i]->m_desc.input_layouts.size() > 0 &&
+			m_shaders[i]->m_desc.input_layouts[0].GetSize() > 0 &&
 			m_shaders[i]->Valid())
 			return true;
 	return false;
@@ -281,27 +290,38 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 		return WError(W_FAILEDTOCREATEPIPELINELAYOUT);
 	}
 
-	W_INPUT_LAYOUT* IL = nullptr;
-	for (int i = 0; i < m_shaders.size(); i++)
-		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER)
-			IL = &m_shaders[i]->m_desc.input_layout;
+	vector<W_INPUT_LAYOUT*> ILs; // all ILs for this effect
+	unsigned int num_attributes = 0;
+	for (int i = 0; i < m_shaders.size(); i++) {
+		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER) {
+			for (int j = 0; j < m_shaders[i]->m_desc.input_layouts.size(); j++) {
+				ILs.push_back(&m_shaders[i]->m_desc.input_layouts[j]);
+				num_attributes += m_shaders[i]->m_desc.input_layouts[j].attributes.size();
+			}
+		}
+	}
 
-	vector<VkVertexInputBindingDescription> bindingDesc (1);
+	vector<VkVertexInputBindingDescription> bindingDesc(ILs.size());
+	std::vector<VkVertexInputAttributeDescription> attribDesc(num_attributes);
+	unsigned int cur_attrib = 0, prev_size = 0;
 	// Binding description
-	bindingDesc[0].binding = 0; // VERTEX_BUFFER_BIND_ID;
-	bindingDesc[0].stride = IL->GetSize();
-	bindingDesc[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	for (int i = 0; i < ILs.size(); i++) {
+		bindingDesc[i].binding = i; // VERTEX_BUFFER_BIND_ID;
+		bindingDesc[i].stride = ILs[i]->GetSize();
+		bindingDesc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	std::vector<VkVertexInputAttributeDescription> attribDesc (IL->attributes.size());
-	// Attribute descriptions
-	// Describes memory layout and shader attribute locations
-	for (int i = 0; i < IL->attributes.size(); i++) {
-		attribDesc[i].binding = 0;
-		attribDesc[i].location = i;
-		attribDesc[i].format = IL->attributes[i].GetFormat();
-		attribDesc[i].offset = 0;
-		if (i > 0)
-			attribDesc[i].offset = attribDesc[i - 1].offset + IL->attributes[i-1].GetSize();
+		// Attribute descriptions
+		// Describes memory layout and shader attribute locations
+		for (int j = 0; j < ILs[i]->attributes.size(); j++) {
+			attribDesc[cur_attrib].binding = i;
+			attribDesc[cur_attrib].location = cur_attrib;
+			attribDesc[cur_attrib].format = ILs[i]->attributes[j].GetFormat();
+			attribDesc[cur_attrib].offset = 0;
+			if (cur_attrib > 0)
+				attribDesc[cur_attrib].offset = attribDesc[cur_attrib - 1].offset + prev_size;
+			prev_size = ILs[i]->attributes[j].GetSize();
+			cur_attrib++;
+		}
 	}
 
 	// Assign to vertex buffer
@@ -416,10 +436,16 @@ VkDescriptorSetLayout* WEffect::GetDescriptorSetLayout() {
 	return &m_descriptorSetLayout;
 }
 
-W_INPUT_LAYOUT WEffect::GetInputLayout() const {
+W_INPUT_LAYOUT WEffect::GetInputLayout(unsigned int layout_index) const {
 	W_INPUT_LAYOUT l;
-	for (int i = 0; i < m_shaders.size(); i++)
-		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER)
-			l = m_shaders[i]->m_desc.input_layout;
+	for (int i = 0; i < m_shaders.size(); i++) {
+		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER) {
+			if (m_shaders[i]->m_desc.input_layouts.size() > layout_index) {
+				l = m_shaders[i]->m_desc.input_layouts[layout_index];
+				break;
+			} else
+				layout_index -= m_shaders[i]->m_desc.input_layouts.size();
+		}
+	}
 	return l;
 }
