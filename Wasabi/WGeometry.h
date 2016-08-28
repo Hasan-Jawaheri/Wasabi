@@ -51,16 +51,19 @@ public:
 	WGeometry(Wasabi* const app, unsigned int ID = 0);
 	~WGeometry();
 
+	virtual unsigned int GetVertexBufferCount() const {
+		return 2; // one vertex buffer, one animation buffer
+	}
 	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int layout_index = 0) const {
 		if (layout_index >= 2)
 			layout_index = 0;
 		vector<W_VERTEX_DESCRIPTION> VD =
-		{   W_VERTEX_DESCRIPTION({
+		{   W_VERTEX_DESCRIPTION({ // VB
 			W_ATTRIBUTE_POSITION,
 			W_ATTRIBUTE_TANGENT,
 			W_ATTRIBUTE_NORMAL,
 			W_ATTRIBUTE_UV,
-		}), W_VERTEX_DESCRIPTION({
+		}), W_VERTEX_DESCRIPTION({ // AB
 			W_ATTRIBUTE_BONE_INDEX,
 			W_ATTRIBUTE_BONE_WEIGHT,
 		})};
@@ -78,14 +81,18 @@ public:
 	WError				CreateCylinder(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic = false);
 	WError				CopyFrom(WGeometry* const from, bool bDynamic = false);
 
+	WError				CreateAnimationData(void* animBuf);
+
 	WError				LoadFromWGM(std::string filename, bool bDynamic = false);
 	WError				SaveToWGM(std::string filename);
 	WError				LoadFromHXM(std::string filename, bool bDynamic = false);
 
 	WError				MapVertexBuffer(void** const vb, bool bReadOnly = false);
 	WError				MapIndexBuffer(DWORD** const ib, bool bReadOnly = false);
+	WError				MapAnimationBuffer(void** const ab, bool bReadOnly = false);
 	void				UnmapVertexBuffer();
 	void				UnmapIndexBuffer();
+	void				UnmapAnimationBuffer();
 
 	WError				Scale(float mulFactor);
 	WError				ScaleX(float mulFactor);
@@ -124,6 +131,12 @@ private:
 		W_BUFFER buffer, staging;
 		bool readOnlyMap;
 	} m_indices;
+
+	struct {
+		int count;
+		W_BUFFER buffer, staging;
+		bool readOnlyMap;
+	} m_animationbuf;
 
 	WVector3		m_maxPt;
 	WVector3		m_minPt;
