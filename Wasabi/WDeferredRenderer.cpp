@@ -13,12 +13,15 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
 			}),
 		};
-		m_desc.input_layout = W_INPUT_LAYOUT({
+		m_desc.input_layouts = {W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // normal
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // tangent
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
-		});
+		}), W_INPUT_LAYOUT({
+			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone index
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weight
+		})};
 		LoadCodeGLSL(
 			"#version 450\n"
 			""

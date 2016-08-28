@@ -11,6 +11,7 @@ enum W_SHADER_TYPE {
 enum W_SHADER_VARIABLE_TYPE {
 	W_TYPE_FLOAT = 0,
 	W_TYPE_INT = 1,
+	W_TYPE_UINT = 2,
 };
 
 enum W_SHADER_BOUND_RESOURCE_TYPE {
@@ -56,8 +57,8 @@ typedef struct W_INPUT_LAYOUT {
 
 typedef struct W_SHADER_DESC {
 	W_SHADER_TYPE type;
-	std::vector<W_BOUND_RESOURCE> bound_resources;
-	W_INPUT_LAYOUT input_layout;
+	std::vector<W_BOUND_RESOURCE> bound_resources; // UBOs and samplers
+	std::vector<W_INPUT_LAYOUT> input_layouts; // one layout for each vertex buffer that can be bound
 } W_SHADER_DESC;
 
 class WShader : public WBase {
@@ -123,7 +124,7 @@ public:
 	
 	VkPipelineLayout*		GetPipelineLayout();
 	VkDescriptorSetLayout*	GetDescriptorSetLayout();
-	W_INPUT_LAYOUT			GetInputLayout() const;
+	W_INPUT_LAYOUT			GetInputLayout(unsigned int layout_index = 0) const;
 
 	virtual bool			Valid() const;
 };

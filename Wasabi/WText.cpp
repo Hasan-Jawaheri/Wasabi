@@ -11,7 +11,7 @@ class TextGeometry : public WGeometry {
 public:
 	TextGeometry(Wasabi* const app) : WGeometry(app) {}
 
-	virtual W_VERTEX_DESCRIPTION GetVertexDescription() const {
+	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int index) const {
 		return W_VERTEX_DESCRIPTION({
 			W_VERTEX_ATTRIBUTE("pos2", 2),
 			W_ATTRIBUTE_UV,
@@ -25,10 +25,10 @@ public:
 
 	virtual void Load() {
 		m_desc.type = W_VERTEX_SHADER;
-		m_desc.input_layout = W_INPUT_LAYOUT({
+		m_desc.input_layouts = {W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
-		});
+		})};
 		LoadCodeGLSL(
 			"#version 450\n"
 			"#extension GL_ARB_separate_shader_objects : enable\n"
