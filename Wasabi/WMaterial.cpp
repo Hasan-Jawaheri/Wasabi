@@ -317,7 +317,7 @@ WError WMaterial::SetVariableData(std::string varName, void* data, int len) {
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
 }
 
-WError WMaterial::SetTexture(int binding_index, class WImage* img) {
+WError WMaterial::SetTexture(int binding_index, WImage* img) {
 	VkDevice device = m_app->GetVulkanDevice();
 	bool isFound = false;
 	for (int i = 0; i < m_sampler_info.size(); i++) {
@@ -337,6 +337,17 @@ WError WMaterial::SetTexture(int binding_index, class WImage* img) {
 		}
 	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
+}
+WError WMaterial::SetAnimationTexture(WImage* img) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	unsigned int binding_index = -1;
+	for (int i = 0; i < m_effect->m_shaders.size() && binding_index == -1; i++) {
+		if (m_effect->m_shaders[i]->m_desc.type == W_VERTEX_SHADER)
+			binding_index = m_effect->m_shaders[i]->m_desc.animation_texture_index;
+	}
+	return SetTexture(binding_index, img);
 }
 
 class WEffect* WMaterial::GetEffect() const {

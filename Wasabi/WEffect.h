@@ -59,6 +59,7 @@ typedef struct W_SHADER_DESC {
 	W_SHADER_TYPE type;
 	std::vector<W_BOUND_RESOURCE> bound_resources; // UBOs and samplers
 	std::vector<W_INPUT_LAYOUT> input_layouts; // one layout for each vertex buffer that can be bound
+	unsigned int animation_texture_index;
 } W_SHADER_DESC;
 
 class WShader : public WBase {
