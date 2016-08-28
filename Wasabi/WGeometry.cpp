@@ -1161,13 +1161,14 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	file.read((char*)&numV, 4);
 	file.read((char*)&numI, 4);
 
-	if (filesize == filesize + 11 + 44 * numV + sizeof(DWORD) * numI)
+	if (filesize >= 11 + 44 * numV + sizeof(DWORD) * numI)
 		file.read(&usedBuffers, 1);
 
 	if (topology != 4 /*D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST*/ ||
 		structSize != 44 || // wrong vertex format, cannot read it (3x position, 3x tangent, 3x normal, 2x uv)
 		!(usedBuffers & 1) || numI == 0 || numV == 0 || // no index/vertex buffers
-		(filesize != 11 + 44 * numV + sizeof(DWORD) * numI && filesize != 10 + 44 * numV + sizeof(DWORD) * numI)) {
+		(filesize != 11 + 44 * numV + sizeof(DWORD) * numI && filesize != 10 + 44 * numV + sizeof(DWORD) * numI
+		 && filesize != 11 + 44 * numV + sizeof(DWORD) * numI + (4*4+4*4) * numV)) {
 		file.close();
 		return WError(W_INVALIDFILEFORMAT);
 	}
