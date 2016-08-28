@@ -11,6 +11,9 @@ class TextGeometry : public WGeometry {
 public:
 	TextGeometry(Wasabi* const app) : WGeometry(app) {}
 
+	virtual unsigned int GetVertexBufferCount() const {
+		return 1;
+	}
 	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int index) const {
 		return W_VERTEX_DESCRIPTION({
 			W_VERTEX_ATTRIBUTE("pos2", 2),

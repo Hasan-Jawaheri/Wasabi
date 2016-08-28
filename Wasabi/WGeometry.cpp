@@ -124,6 +124,7 @@ VkResult WGeometryManager::_EndCopy() {
 WGeometry::WGeometry(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	ZeroMemory(&m_vertices, sizeof(m_vertices));
 	ZeroMemory(&m_indices, sizeof(m_indices));
+	ZeroMemory(&m_animationbuf, sizeof(m_animationbuf));
 	m_dynamic = false;
 	
 	app->GeometryManager->AddEntity(this);
@@ -145,7 +146,8 @@ bool WGeometry::Valid() const {
 
 void WGeometry::_DestroyResources() {
 	VkDevice device = m_app->GetVulkanDevice();
-	W_BUFFER* buffers[] = {&m_vertices.buffer, &m_vertices.staging, &m_indices.buffer, &m_indices.staging};
+	W_BUFFER* buffers[] = {&m_vertices.buffer, &m_vertices.staging, &m_indices.buffer, &m_indices.staging,
+							&m_animationbuf.buffer, &m_animationbuf.staging};
 	for (int i = 0; i < sizeof(buffers) / sizeof(W_BUFFER*); i++) {
 		if (buffers[i]->buf)
 			vkDestroyBuffer(device, buffers[i]->buf, nullptr);
@@ -160,8 +162,8 @@ void WGeometry::_CalcMinMax(void* vb, unsigned int num_verts) {
 	m_minPt = WVector3(FLT_MAX, FLT_MAX, FLT_MAX);
 	m_maxPt = WVector3(FLT_MIN, FLT_MIN, FLT_MIN);
 
-	int offset = GetVertexDescription().GetOffset("position");
-	int vsize = GetVertexDescription().GetSize();
+	int offset = GetVertexDescription(0).GetOffset("position");
+	int vsize = GetVertexDescription(0).GetSize();
 
 	if (offset == -1)
 		return; // no position attribute
@@ -182,9 +184,9 @@ void WGeometry::_CalcNormals(void* vb, unsigned int num_verts, void* ib, unsigne
 	if (num_indices % 3 != 0)
 		return; // must be a triangle list
 
-	int offset = GetVertexDescription().GetOffset("position");
-	int normal_offset = GetVertexDescription().GetOffset("position");
-	int vsize = GetVertexDescription().GetSize();
+	int offset = GetVertexDescription(0).GetOffset("position");
+	int normal_offset = GetVertexDescription(0).GetOffset("position");
+	int vsize = GetVertexDescription(0).GetSize();
 
 	int num_tris = num_indices / 3;
 	for (int i = 0; i < num_tris; i++) {
@@ -202,9 +204,9 @@ void WGeometry::_CalcNormals(void* vb, unsigned int num_verts, void* ib, unsigne
 }
 
 void WGeometry::_CalcTangents(void* vb, unsigned int num_verts) {
-	int norm_offset = GetVertexDescription().GetOffset("normal");
-	int tang_offset = GetVertexDescription().GetOffset("tangent");
-	int vsize = GetVertexDescription().GetSize();
+	int norm_offset = GetVertexDescription(0).GetOffset("normal");
+	int tang_offset = GetVertexDescription(0).GetOffset("tangent");
+	int vsize = GetVertexDescription(0).GetSize();
 
 	if (norm_offset == -1 || tang_offset == -1)
 		return; // no position attribute
@@ -243,14 +245,14 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	if (num_verts <= 0 || num_indices <= 0 || !vb || !ib)
 		return WError(W_INVALIDPARAM);
 
-	int vertexBufferSize = num_verts * GetVertexDescription().GetSize();
+	int vertexBufferSize = num_verts * GetVertexDescription(0).GetSize();
 	uint32_t indexBufferSize = num_indices * sizeof(uint32_t);
 
 	_DestroyResources();
 
-	if (bCalcNormals && GetVertexDescription().GetIndex("normal") >= 0)
+	if (bCalcNormals && GetVertexDescription(0).GetIndex("normal") >= 0)
 		_CalcNormals(vb, num_verts, ib, num_indices);
-	if (bCalcTangents && GetVertexDescription().GetIndex("tangent") >= 0)
+	if (bCalcTangents && GetVertexDescription(0).GetIndex("tangent") >= 0)
 		_CalcTangents(vb, num_verts);
 
 	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -400,6 +402,107 @@ destroy_resources:
 	m_vertices.count = num_verts;
 	m_dynamic = bDynamic;
 	_CalcMinMax(vb, num_verts);
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WGeometry::CreateAnimationData(void* ab) {
+	VkDevice device = m_app->GetVulkanDevice();
+	VkMemoryAllocateInfo memAlloc = {};
+	VkMemoryRequirements memReqs;
+	VkBufferCreateInfo animBufferInfo = {};
+	VkBufferCopy copyRegion = {};
+	void *data;
+	VkResult err;
+
+	if (!Valid() || GetVertexBufferCount() < 2)
+		return WError(W_NOTVALID);
+	if (!ab)
+		return WError(W_INVALIDPARAM);
+
+	int animBufferSize = m_vertices.count * GetVertexDescription(1).GetSize();
+
+	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+
+	// Animation buffer
+	animBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	animBufferInfo.size = animBufferSize;
+	// Buffer is used as the copy source
+	animBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	// Create a host-visible buffer to copy the vertex data to (staging buffer)
+	err = vkCreateBuffer(device, &animBufferInfo, nullptr, &m_animationbuf.staging.buf);
+	if (err)
+		goto destroy_resources;
+	vkGetBufferMemoryRequirements(device, m_animationbuf.staging.buf, &memReqs);
+	memAlloc.allocationSize = memReqs.size;
+	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memAlloc.memoryTypeIndex);
+	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_animationbuf.staging.mem);
+	if (err) {
+		vkDestroyBuffer(device, m_animationbuf.staging.buf, nullptr);
+		goto destroy_resources;
+	}
+
+	// Map and copy VB
+	err = vkMapMemory(device, m_animationbuf.staging.mem, 0, memAlloc.allocationSize, 0, &data);
+	if (err)
+		goto destroy_staging;
+	memcpy(data, ab, animBufferSize);
+	vkUnmapMemory(device, m_animationbuf.staging.buf);
+	err = vkBindBufferMemory(device, m_animationbuf.staging.buf, m_animationbuf.staging.mem, 0);
+	if (err)
+		goto destroy_staging;
+
+	// Create the destination buffer with device only visibility
+	// Buffer will be used as a vertex buffer
+	animBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	err = vkCreateBuffer(device, &animBufferInfo, nullptr, &m_animationbuf.buffer.buf);
+	if (err)
+		goto destroy_staging;
+	vkGetBufferMemoryRequirements(device, m_animationbuf.buffer.buf, &memReqs);
+	memAlloc.allocationSize = memReqs.size;
+	m_app->GetMemoryType(memReqs.memoryTypeBits,
+						 m_dynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+						 &memAlloc.memoryTypeIndex);
+	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_animationbuf.buffer.mem);
+	if (err)
+		goto destroy_staging;
+	err = vkBindBufferMemory(device, m_animationbuf.buffer.buf, m_animationbuf.buffer.mem, 0);
+	if (err)
+		goto destroy_staging;
+
+	err = m_app->GeometryManager->_BeginCopy();
+	if (err)
+		goto destroy_staging;
+
+	// Vertex buffer
+	copyRegion.size = animBufferSize;
+	vkCmdCopyBuffer(
+		m_app->GeometryManager->m_copyCommandBuffer,
+		m_animationbuf.staging.buf,
+		m_animationbuf.buffer.buf,
+		1,
+		&copyRegion);
+
+	err = m_app->GeometryManager->_EndCopy();
+	if (err)
+		goto destroy_staging;
+
+	// Destroy staging buffers
+destroy_staging:
+	// remove staging buffers if there's an error, geometry is immutable or if its dynamic
+	m_immutable = m_app->engineParams["geometryImmutable"];
+	if (err || m_immutable || m_dynamic) {
+		vkDestroyBuffer(device, m_animationbuf.staging.buf, nullptr);
+		vkFreeMemory(device, m_animationbuf.staging.mem, nullptr);
+		m_animationbuf.staging.buf = VK_NULL_HANDLE;
+		m_animationbuf.staging.mem = VK_NULL_HANDLE;
+	}
+
+destroy_resources:
+	if (err)
+		return WError(W_OUTOFMEMORY);
+
+	m_animationbuf.count = m_vertices.count;
 
 	return WError(W_SUCCEEDED);
 }
@@ -836,24 +939,24 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 
 	unsigned int num_verts = from->GetNumVertices();
 	unsigned int num_indices = from->GetNumIndices();
-	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription();
-	W_VERTEX_DESCRIPTION from_desc = from->GetVertexDescription();
+	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(0);
+	W_VERTEX_DESCRIPTION from_desc = from->GetVertexDescription(0);
 	void *vb, *fromvb, *fromib;
 
 	vb = malloc(num_verts *my_desc.GetSize());
 	if (!vb)
 		return WError(W_OUTOFMEMORY);
 
-	WError err = from->MapIndexBuffer((DWORD**)&fromib);
-	if (!err) {
+	WError ret = from->MapIndexBuffer((DWORD**)&fromib, true);
+	if (!ret) {
 		free(vb);
-		return err;
+		return ret;
 	}
-	err = from->MapVertexBuffer(&fromvb);
-	if (!err) {
+	ret = from->MapVertexBuffer(&fromvb, true);
+	if (!ret) {
 		from->UnmapIndexBuffer();
 		free(vb);
-		return err;
+		return ret;
 	}
 
 	ConvertVertices(fromvb, vb, num_verts, from_desc, my_desc);
@@ -865,10 +968,20 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 		bCalcTangents = true;
 
 	from->UnmapVertexBuffer();
-	err = CreateFromData(vb, num_verts, fromib, num_indices, bDynamic, bCalcNormals, bCalcTangents);
+	ret = CreateFromData(vb, num_verts, fromib, num_indices, bDynamic, bCalcNormals, bCalcTangents);
 	free(vb);
 	from->UnmapIndexBuffer();
-	return err;
+
+	if (ret && from->m_animationbuf.buffer.buf) {
+		void* fromab;
+		ret = from->MapAnimationBuffer(&fromab, true);
+		if (ret) {
+			ret = CreateAnimationData(fromab);
+			from->UnmapAnimationBuffer();
+		}
+	}
+
+	return ret;
 }
 
 WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
@@ -877,18 +990,30 @@ WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
 	if (!file.is_open())
 		return WError(W_FILENOTFOUND);
 
-	W_VERTEX_DESCRIPTION from_desc;
+	vector<W_VERTEX_DESCRIPTION> from_descs;
 	char temp[256];
-	unsigned int num_attributes;
-	file.read((char*)&num_attributes, sizeof(unsigned int));
-	from_desc.attributes.resize(num_attributes);
-	for (int i = 0; i < num_attributes; i++) {
-		file.read((char*)&from_desc.attributes[i].size, sizeof(unsigned char));
-		unsigned int namesize = from_desc.attributes[i].name.length();
-		file.read((char*)&namesize, sizeof(unsigned int));
-		file.read(temp, min(namesize, 255));
-		temp[min(namesize, 255)] = '\0';
-		from_desc.attributes[i].name = temp;
+	unsigned int num_vbs;
+	file.read((char*)&num_vbs, sizeof(unsigned int));
+	if (num_vbs == 0) {
+		file.close();
+		return WError(W_INVALIDFILEFORMAT);
+	}
+
+	from_descs.resize(num_vbs);
+	for (int d = 0; d < num_vbs; d++) {
+		W_VERTEX_DESCRIPTION desc;
+		unsigned int num_attributes;
+		file.read((char*)&num_attributes, sizeof(unsigned int));
+		desc.attributes.resize(num_attributes);
+		for (int i = 0; i < num_attributes; i++) {
+			file.read((char*)&desc.attributes[i].size, sizeof(unsigned char));
+			unsigned int namesize = desc.attributes[i].name.length();
+			file.read((char*)&namesize, sizeof(unsigned int));
+			file.read(temp, min(namesize, 255));
+			temp[min(namesize, 255)] = '\0';
+			desc.attributes[i].name = temp;
+		}
+		from_descs.push_back(desc);
 	}
 
 	unsigned int numV, numI;
@@ -896,7 +1021,7 @@ WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
 	file.read((char*)&numI, sizeof(unsigned int));
 
 	void *vb, *ib;
-	vb = W_SAFE_ALLOC(numV * from_desc.GetSize());
+	vb = W_SAFE_ALLOC(numV * from_descs[0].GetSize());
 	ib = W_SAFE_ALLOC(numI * sizeof(DWORD));
 	if (!ib || !vb) {
 		W_SAFE_FREE(vb);
@@ -904,36 +1029,41 @@ WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
 		return WError(W_OUTOFMEMORY);
 	}
 
-	file.read((char*)vb, numV * from_desc.GetSize());
+	file.read((char*)vb, numV * from_descs[0].GetSize());
 	file.read((char*)ib, numI * sizeof(DWORD));
 
-	WError err;
-	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription();
+	WError ret;
+	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(0);
 	void* convertedVB = calloc(numV, my_desc.GetSize());
 	if (!convertedVB) {
-		err = WError(W_OUTOFMEMORY);
+		ret = WError(W_OUTOFMEMORY);
 		W_SAFE_FREE(vb);
 	}  else {
-		ConvertVertices(vb, convertedVB, numV, from_desc, my_desc);
+		ConvertVertices(vb, convertedVB, numV, from_descs[0], my_desc);
 		W_SAFE_FREE(vb);
 
 		bool bCalcTangents = false, bCalcNormals = false;
-		if (my_desc.GetOffset("normal") >= 0 && from_desc.GetOffset("normal") == -1)
+		if (my_desc.GetOffset("normal") >= 0 && from_descs[0].GetOffset("normal") == -1)
 			bCalcNormals = true;
-		if (my_desc.GetOffset("tangent") >= 0 && from_desc.GetOffset("tangent") == -1)
+		if (my_desc.GetOffset("tangent") >= 0 && from_descs[0].GetOffset("tangent") == -1)
 			bCalcTangents = true;
 
-		WError err = CreateFromData(convertedVB, numV, ib, numI, bDynamic, bCalcNormals, bCalcTangents);
+		ret = CreateFromData(convertedVB, numV, ib, numI, bDynamic, bCalcNormals, bCalcTangents);
 		free(convertedVB);
 	}
 	W_SAFE_FREE(ib);
 
-	UnmapVertexBuffer();
-	UnmapIndexBuffer();
+	if (num_vbs > 1 && ret && GetVertexBufferCount() > 1 && from_descs[1].GetSize() == GetVertexDescription(1).GetSize()) {
+		void *ab;
+		ab = W_SAFE_ALLOC(numV * from_descs[1].GetSize());
+		file.read((char*)ab, numV * from_descs[1].GetSize());
+		ret = CreateAnimationData(ab);
+		W_SAFE_FREE(ab);
+	}
 
 	file.close();
 
-	return err;
+	return ret;
 }
 
 WError WGeometry::SaveToWGM(std::string filename) {
@@ -945,36 +1075,54 @@ WError WGeometry::SaveToWGM(std::string filename) {
 	if (!file.is_open())
 		return WError(W_FILENOTFOUND);
 
-	void *vb, *ib;
-	WError err = MapVertexBuffer(&vb, true);
-	if (!err) {
+	void *vb, *ib, *ab = nullptr;
+	WError ret = MapVertexBuffer(&vb, true);
+	if (!ret) {
 		file.close();
-		return err;
+		return ret;
 	}
-	err = MapIndexBuffer((DWORD**)&ib, true);
-	if (!err) {
+	ret = MapIndexBuffer((DWORD**)&ib, true);
+	if (!ret) {
 		UnmapVertexBuffer();
 		file.close();
-		return err;
+		return ret;
+	}
+	if (m_animationbuf.buffer.buf) {
+		ret = MapAnimationBuffer(&ab, true);
+		if (!ret) {
+			UnmapVertexBuffer();
+			UnmapIndexBuffer();
+			file.close();
+			return ret;
+		}
 	}
 
-	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription();
-	unsigned int num_attributes = my_desc.attributes.size();
-	file.write((char*)&num_attributes, sizeof(unsigned int));
-	for (int i = 0; i < num_attributes; i++) {
-		file.write((char*)&my_desc.attributes[i].size, sizeof(unsigned char));
-		unsigned int namesize = my_desc.attributes[i].name.length();
-		file.write((char*)&namesize, sizeof(unsigned int));
-		file.write(my_desc.attributes[i].name.c_str(), namesize);
+	unsigned int num_vbs = m_animationbuf.buffer.buf ? 2 : 1;
+	file.write((char*)&num_vbs, sizeof(unsigned int));
+	for (int d = 0; d < num_vbs; d++) {
+		W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(d);
+		unsigned int num_attributes = my_desc.attributes.size();
+		file.write((char*)&num_attributes, sizeof(unsigned int));
+		for (int i = 0; i < num_attributes; i++) {
+			file.write((char*)&my_desc.attributes[i].size, sizeof(unsigned char));
+			unsigned int namesize = my_desc.attributes[i].name.length();
+			file.write((char*)&namesize, sizeof(unsigned int));
+			file.write(my_desc.attributes[i].name.c_str(), namesize);
+		}
 	}
 
 	file.write((char*)&m_vertices.count, sizeof(unsigned int));
 	file.write((char*)&m_indices.count, sizeof(unsigned int));
-	file.write((char*)vb, m_vertices.count * my_desc.GetSize());
+	file.write((char*)vb, m_vertices.count * GetVertexDescription(0).GetSize());
 	file.write((char*)ib, m_indices.count * sizeof(DWORD));
+	if (ab && num_vbs > 1) {
+		file.write((char*)ab, m_animationbuf.count * GetVertexDescription(1).GetSize());
+	}
 
 	UnmapVertexBuffer();
 	UnmapIndexBuffer();
+	if (m_animationbuf.buffer.buf)
+		UnmapAnimationBuffer();
 
 	file.close();
 
@@ -1027,6 +1175,7 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	//allocate temporary vertex/index buffers
 	void* v = new char[numV * structSize];
 	DWORD* ind = new DWORD[numI];
+	void* a = nullptr;
 
 	if (!v || !ind) {
 		W_SAFE_DELETE_ARRAY(v);
@@ -1037,9 +1186,13 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	//read data
 	file.read((char*)v, numV * structSize);
 	file.read((char*)ind, numI * sizeof DWORD);
+	if (usedBuffers & 2) { // animation data
+		a = new char[numV * (4 * 4 + 4 * 4)];
+		file.read((char*)a, numV * (4 * 4 + 4 * 4));
+	}
 	file.close();
 
-	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription();
+	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(0);
 	void* newverts = (char*)calloc(numV, my_desc.GetSize());
 	if (!newverts) {
 		W_SAFE_DELETE_ARRAY(v);
@@ -1050,15 +1203,21 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	ConvertVertices(v, newverts, numV, hx_vtx_desc, my_desc);
 	W_SAFE_DELETE_ARRAY(v);
 
-	WError err = CreateFromData(newverts, numV, ind, numI, bDynamic);
+	WError ret = CreateFromData(newverts, numV, ind, numI, bDynamic);
 
 	//de-allocate the temporary buffers
 	free(newverts);
 	W_SAFE_DELETE_ARRAY(ind);
 
-	return err;
-}
+	if (a) {
+		if (GetVertexBufferCount() > 1 || GetVertexDescription(1).GetSize() == (4 * 4 + 4 * 4) && ret) {
+			ret = CreateAnimationData(a);
+		}
+		W_SAFE_DELETE_ARRAY(a);
+	}
 
+	return ret;
+}
 
 WError WGeometry::MapVertexBuffer(void** const vb, bool bReadOnly) {
 	if (!Valid() || (m_immutable && !m_dynamic))
@@ -1068,7 +1227,7 @@ WError WGeometry::MapVertexBuffer(void** const vb, bool bReadOnly) {
 
 	W_BUFFER* b = m_dynamic ? &m_vertices.buffer : &m_vertices.staging;
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription().GetSize();
+	size_t vtx_size = GetVertexDescription(0).GetSize();
 
 	VkResult err = vkMapMemory(device, b->mem, 0, m_vertices.count * vtx_size, 0, vb);
 	if (err)
@@ -1085,9 +1244,25 @@ WError WGeometry::MapIndexBuffer(DWORD** const ib, bool bReadOnly) {
 
 	W_BUFFER* b = m_dynamic ? &m_indices.buffer : &m_indices.staging;
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription().GetSize();
 
 	VkResult err = vkMapMemory(device, b->mem, 0, m_indices.count * sizeof(DWORD), 0, (void**)ib);
+	if (err)
+		return WError(W_NOTVALID);
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WGeometry::MapAnimationBuffer(void** const ab, bool bReadOnly) {
+	if (!m_animationbuf.buffer.buf || (m_immutable && !m_dynamic))
+		return WError(W_NOTVALID);
+
+	m_animationbuf.readOnlyMap = bReadOnly;
+
+	W_BUFFER* b = m_dynamic ? &m_animationbuf.buffer : &m_animationbuf.staging;
+	VkDevice device = m_app->GetVulkanDevice();
+	size_t vtx_size = GetVertexDescription(1).GetSize();
+
+	VkResult err = vkMapMemory(device, b->mem, 0, m_animationbuf.count * vtx_size, 0, ab);
 	if (err)
 		return WError(W_NOTVALID);
 
@@ -1108,7 +1283,7 @@ void WGeometry::UnmapVertexBuffer() {
 				return;
 
 			// Vertex buffer
-			copyRegion.size = m_vertices.count * GetVertexDescription().GetSize();
+			copyRegion.size = m_vertices.count * GetVertexDescription(0).GetSize();
 			vkCmdCopyBuffer(
 				m_app->GeometryManager->m_copyCommandBuffer,
 				m_vertices.staging.buf,
@@ -1148,13 +1323,40 @@ void WGeometry::UnmapIndexBuffer() {
 	}
 }
 
+void WGeometry::UnmapAnimationBuffer() {
+	VkDevice device = m_app->GetVulkanDevice();
+	if (m_dynamic) {
+		vkUnmapMemory(device, m_animationbuf.buffer.mem);
+	} else {
+		vkUnmapMemory(device, m_animationbuf.staging.mem);
+		if (!m_animationbuf.readOnlyMap) {
+			VkBufferCopy copyRegion = {};
+
+			VkResult err = m_app->GeometryManager->_BeginCopy();
+			if (err)
+				return;
+
+			// Vertex buffer
+			copyRegion.size = m_animationbuf.count * GetVertexDescription(1).GetSize();
+			vkCmdCopyBuffer(
+				m_app->GeometryManager->m_copyCommandBuffer,
+				m_animationbuf.staging.buf,
+				m_animationbuf.buffer.buf,
+				1,
+				&copyRegion);
+
+			m_app->GeometryManager->_EndCopy();
+		}
+	}
+}
+
 WError WGeometry::Scale(float mulFactor) {
 	if (!Valid() || (m_immutable && !m_dynamic))
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription().GetSize();
-	int offset = GetVertexDescription().GetOffset("position");
+	size_t vtx_size = GetVertexDescription(0).GetSize();
+	int offset = GetVertexDescription(0).GetOffset("position");
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1177,8 +1379,8 @@ WError WGeometry::ScaleX(float mulFactor) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription().GetSize();
-	int offset = GetVertexDescription().GetOffset("position");
+	size_t vtx_size = GetVertexDescription(0).GetSize();
+	int offset = GetVertexDescription(0).GetOffset("position");
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1201,8 +1403,8 @@ WError WGeometry::ScaleY(float mulFactor) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription().GetSize();
-	int offset = GetVertexDescription().GetOffset("position");
+	size_t vtx_size = GetVertexDescription(0).GetSize();
+	int offset = GetVertexDescription(0).GetOffset("position");
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1225,8 +1427,8 @@ WError WGeometry::ScaleZ(float mulFactor) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription().GetSize();
-	int offset = GetVertexDescription().GetOffset("position");
+	size_t vtx_size = GetVertexDescription(0).GetSize();
+	int offset = GetVertexDescription(0).GetOffset("position");
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1253,8 +1455,8 @@ WError WGeometry::ApplyOffset(WVector3 _offset) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription().GetSize();
-	int offset = GetVertexDescription().GetOffset("position");
+	size_t vtx_size = GetVertexDescription(0).GetSize();
+	int offset = GetVertexDescription(0).GetOffset("position");
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1277,8 +1479,8 @@ WError WGeometry::ApplyRotation(WMatrix mtx) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription().GetSize();
-	int offset = GetVertexDescription().GetOffset("position");
+	size_t vtx_size = GetVertexDescription(0).GetSize();
+	int offset = GetVertexDescription(0).GetOffset("position");
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1324,8 +1526,8 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 		return false;
 	}
 
-	unsigned int pos_offset = GetVertexDescription().GetOffset("position");
-	unsigned int vtx_size = GetVertexDescription().GetSize();
+	unsigned int pos_offset = GetVertexDescription(0).GetOffset("position");
+	unsigned int vtx_size = GetVertexDescription(0).GetSize();
 	for (UINT i = 0; i < m_indices.count / 3; i++) {
 		WVector3 v0;
 		WVector3 v1;
