@@ -1611,8 +1611,9 @@ WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles) {
 		num_triangles = m_indices.count / 3;
 
 	// Bind triangle vertices
-	VkDeviceSize offsets[1] = { 0 };
-	vkCmdBindVertexBuffers(renderCmdBuffer, 0, 1, &m_vertices.buffer.buf, offsets);
+	VkDeviceSize offsets[] = { 0, 0 };
+	VkBuffer bindings[] = { m_vertices.buffer.buf, m_animationbuf.buffer.buf };
+	vkCmdBindVertexBuffers(renderCmdBuffer, 0, m_animationbuf.buffer.buf ? 2 : 1, bindings, offsets);
 
 	// Bind triangle indices
 	vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buffer.buf, 0, VK_INDEX_TYPE_UINT32);
