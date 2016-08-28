@@ -146,9 +146,9 @@ void Wasabi::_DestroyResources() {
 	W_SAFE_DELETE(ShaderManager);
 	W_SAFE_DELETE(CameraManager);
 	W_SAFE_DELETE(RenderTargetManager);
+	W_SAFE_DELETE(AnimationManager);
 	W_SAFE_DELETE(ImageManager);
 	W_SAFE_DELETE(LightManager);
-	W_SAFE_DELETE(AnimationManager);
 
 	if (m_swapChainInitialized)
 		m_swapChain.cleanup();

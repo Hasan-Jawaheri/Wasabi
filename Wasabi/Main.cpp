@@ -74,10 +74,10 @@ protected:
 public:
 	WError Setup() {
 		this->maxFPS = 0;
-		WError err = StartEngine(640, 480);
-		if (!err) {
+		WError ret = StartEngine(640, 480);
+		if (!ret) {
 			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
-			return err;
+			return ret;
 		}
 
 		WObject* o = new WObject(this);
@@ -137,7 +137,7 @@ public:
 		rt->Create(640, 480, rtImg);
 		((WFRMaterial*)o->GetMaterial())->Texture(rtImg);
 
-		return err;
+		return ret;
 	}
 	bool Loop(float fDeltaTime) {
 		int mx = InputComponent->MouseX();
@@ -174,6 +174,55 @@ public:
 	}
 };
 
+class AnimationDemo : public Wasabi {
+	WObject* character;
+	WGeometry* geometry;
+	WImage* texture;
+	WSkeleton* animation;
+
+	float fYaw, fPitch, fDist;
+
+public:
+	AnimationDemo() {
+		fYaw = 0;
+		fPitch = 30;
+		fDist = -15;
+	}
+
+	WError Setup() {
+		this->maxFPS = 0;
+		WError ret = StartEngine(640, 480);
+		if (!ret) {
+			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
+			return ret;
+		}
+
+		geometry = new WGeometry(this);
+		geometry->LoadFromHXM("Media/dante.HXM");
+
+		texture = new WImage(this);
+		texture->Load("Media/dante.bmp");
+
+		character = new WObject(this);
+		character->SetGeometry(geometry);
+		((WFRMaterial*)character->GetMaterial())->Texture(texture);
+
+		animation = new WSkeleton(this);
+		animation->LoadFromWS("Media/dante.HXS");
+
+		character->SetAnimation(animation);
+
+		return ret;
+	}
+	bool Loop(float fDeltaTime) {
+		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, fDist, 0, 0, 0);
+		return true;
+	}
+	void Cleanup() {
+
+	}
+};
+
 Wasabi* WInitialize() {
-	return new Kofta();
+	return new AnimationDemo();
 }
