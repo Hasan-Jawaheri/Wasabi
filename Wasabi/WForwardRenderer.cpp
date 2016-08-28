@@ -19,7 +19,10 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"), // projection
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gWorld"), // world
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimationTextureWidth"), // width of the animation texture
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimation"), // whether or not animation is enabled
 			}),
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 		};
 		m_desc.animation_texture_index = 1;
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
@@ -43,7 +46,10 @@ public:
 			"	mat4 projectionMatrix;\n"
 			"	mat4 modelMatrix;\n"
 			"	mat4 viewMatrix;\n"
+			"	int animationTextureWidth;\n"
+			"	int is_animated;\n"
 			"} ubo;\n"
+			"layout(binding = 1) uniform sampler2D samplerAnimation;\n"
 			""
 			"layout(location = 0) out vec2 outUV;\n"
 			"layout(location = 1) out vec3 outWorldPos;\n"
@@ -67,17 +73,17 @@ public:
 		int maxLights = (int)m_app->engineParams["maxLights"];
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
-			W_BOUND_RESOURCE(W_TYPE_UBO, 2, {
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
+			W_BOUND_RESOURCE(W_TYPE_UBO, 3, {
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4, "color"),
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "isTextured"),
 			}),
-			W_BOUND_RESOURCE(W_TYPE_UBO, 3, { // TODO: make a shared UBO
+			W_BOUND_RESOURCE(W_TYPE_UBO, 4, { // TODO: make a shared UBO
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "numLights"),
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "pad"),
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, (sizeof(LightStruct) / 4) * maxLights, "lights"),
 			}),
-			W_BOUND_RESOURCE(W_TYPE_UBO, 4,{
+			W_BOUND_RESOURCE(W_TYPE_UBO,5,{
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "gCamPos"),
 			}),
 		};
@@ -94,16 +100,16 @@ public:
 			"	int type;\n"
 			"};\n"
 			""
-			"layout(binding = 1) uniform sampler2D samplerColor;\n"
-			"layout(binding = 2) uniform UBO {\n"
+			"layout(binding = 2) uniform sampler2D samplerColor;\n"
+			"layout(binding = 3) uniform UBO {\n"
 			"	vec4 color;\n"
 			"	int isTextured;\n"
 			"} ubo;\n"
-			"layout(binding = 3) uniform LUBO {\n"
+			"layout(binding = 4) uniform LUBO {\n"
 			"	int numLights;\n"
 			"	Light lights[" + std::to_string(maxLights) + "];\n"
 			"} lubo;\n"
-			"layout(binding = 4) uniform CAM {\n"
+			"layout(binding = 5) uniform CAM {\n"
 			"	vec3 gCamPos;\n"
 			"} cam;\n"
 			""
@@ -309,7 +315,7 @@ WError WFRMaterial::Bind(WRenderTarget* rt) {
 WError WFRMaterial::Texture(class WImage* img) {
 	int isTextured = 1;
 	SetVariableInt("isTextured", isTextured);
-	return SetTexture(1, img);
+	return SetTexture(2, img);
 }
 
 WError WFRMaterial::SetColor(WColor col) {
