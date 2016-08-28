@@ -13,9 +13,11 @@ public:
 
 	WError					SetGeometry(class WGeometry* geometry);
 	WError					SetMaterial(class WMaterial* material);
+	WError					SetAnimation(class WAnimation* animation);
 
 	class WGeometry*		GetGeometry() const;
 	class WMaterial*		GetMaterial() const;
+	class WAnimation*		GetAnimation() const;
 
 	void					Show();
 	void					Hide();
@@ -40,6 +42,7 @@ public:
 private:
 	class WGeometry* m_geometry;
 	class WMaterial* m_material;
+	class WAnimation* m_animation;
 
 	bool			m_bAltered;
 	bool			m_hidden;

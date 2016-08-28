@@ -114,6 +114,7 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_geometry = nullptr;
 	m_material = app->Renderer->CreateDefaultMaterial();
+	m_animation = nullptr;
 
 	m_hidden = false;
 	m_bAltered = true;
@@ -128,6 +129,7 @@ WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 WObject::~WObject() {
 	W_SAFE_REMOVEREF(m_geometry);
 	W_SAFE_REMOVEREF(m_material);
+	W_SAFE_REMOVEREF(m_animation);
 
 	m_app->ObjectManager->RemoveEntity(this);
 }
@@ -160,6 +162,13 @@ void WObject::Render(WRenderTarget* rt) {
 		m_material->SetVariableMatrix("gProjection", cam->GetProjectionMatrix());
 		m_material->SetVariableMatrix("gView", cam->GetViewMatrix());
 		m_material->SetVariableVector3("gCamPos", cam->GetPosition());
+		if (m_animation && m_animation->Valid()) {
+			WImage* animTex = m_animation->GetTexture();
+			m_material->SetVariableInt("gAnimation", 1);
+			m_material->SetVariableInt("gAnimationTextureWidth", animTex->GetWidth());
+			m_material->SetAnimationTexture(animTex);
+		} else
+			m_material->SetVariableInt("gAnimation", 0);
 
 		WError err;
 		err = m_material->Bind(rt);
@@ -191,12 +200,28 @@ WError WObject::SetMaterial(class WMaterial* material) {
 	return WError(W_SUCCEEDED);
 }
 
+WError WObject::SetAnimation(class WAnimation* animation) {
+	if (m_animation)
+		m_animation->RemoveReference();
+
+	m_animation = animation;
+	if (animation) {
+		m_animation->AddReference();
+	}
+
+	return WError(W_SUCCEEDED);
+}
+
 WGeometry* WObject::GetGeometry() const {
 	return m_geometry;
 }
 
 WMaterial* WObject::GetMaterial() const {
 	return m_material;
+}
+
+WAnimation* WObject::GetAnimation() const {
+	return m_animation;
 }
 
 bool WObject::Hidden() const {

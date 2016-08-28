@@ -46,6 +46,7 @@ public:
 	WError			SetVariableData(std::string varName, void* data, int len);
 
 	WError			SetTexture(int binding_index, class WImage* img);
+	WError			SetAnimationTexture(class WImage* img);
 
 	class WEffect*	GetEffect() const;
 
