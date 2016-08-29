@@ -197,6 +197,8 @@ public:
 			return ret;
 		}
 
+		LightManager->GetDefaultLight()->Point(0, -1, -1);
+
 		geometry = new WGeometry(this);
 		geometry->LoadFromHXM("Media/dante.HXM");
 
@@ -211,11 +213,13 @@ public:
 		animation->LoadFromWS("Media/dante.HXS");
 
 		character->SetAnimation(animation);
+		animation->SetPlaySpeed(30.0f);
+		animation->Loop();
 
 		return ret;
 	}
 	bool Loop(float fDeltaTime) {
-		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, fDist, 0, 0, 0);
+		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, fDist, 0, 2.5, 0);
 		return true;
 	}
 	void Cleanup() {

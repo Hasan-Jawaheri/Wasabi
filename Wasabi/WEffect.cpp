@@ -303,7 +303,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 
 	vector<VkVertexInputBindingDescription> bindingDesc(ILs.size());
 	std::vector<VkVertexInputAttributeDescription> attribDesc(num_attributes);
-	unsigned int cur_attrib = 0, prev_size = 0;
+	unsigned int cur_attrib = 0;
 	// Binding description
 	for (int i = 0; i < ILs.size(); i++) {
 		bindingDesc[i].binding = i; // VERTEX_BUFFER_BIND_ID;
@@ -312,12 +312,13 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 
 		// Attribute descriptions
 		// Describes memory layout and shader attribute locations
+		unsigned int prev_size = 0;
 		for (int j = 0; j < ILs[i]->attributes.size(); j++) {
 			attribDesc[cur_attrib].binding = i;
 			attribDesc[cur_attrib].location = cur_attrib;
 			attribDesc[cur_attrib].format = ILs[i]->attributes[j].GetFormat();
 			attribDesc[cur_attrib].offset = 0;
-			if (cur_attrib > 0)
+			if (j > 0)
 				attribDesc[cur_attrib].offset = attribDesc[cur_attrib - 1].offset + prev_size;
 			prev_size = ILs[i]->attributes[j].GetSize();
 			cur_attrib++;

@@ -17,6 +17,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 				continue;
 
 			if (deltaTime >= 0.00001f) {
+				app->AnimationManager->Update(deltaTime);
 				if (!app->Loop(deltaTime))
 					break;
 				if (app->curState)
