@@ -204,6 +204,7 @@ WAnimation::WAnimation(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	SetName(name);
 
 	m_bFramesOwner = true;
+	m_totalTime = 0.0f;
 
 	//register the object
 	m_app->AnimationManager->AddEntity(this);
@@ -251,36 +252,44 @@ void WAnimation::m_UpdateFirstFrame(unsigned int subAnimation) {
 }
 
 void WAnimation::Update(float fDeltaTime) {
-	for (unsigned int anim = 0; anim < m_subAnimations.size(); anim++) {
+	for (int anim = 0; anim < m_subAnimations.size(); anim++) {
 		W_SUB_ANIMATION* curSubAnimation = (W_SUB_ANIMATION*)m_subAnimations[anim];
 		if (curSubAnimation->bPlaying)
-			curSubAnimation->fCurrentTime += fDeltaTime * curSubAnimation->fSpeed;
+			curSubAnimation->fCurrentTime += 0.5f;//curSubAnimation->fCurrentTime += fDeltaTime * curSubAnimation->fSpeed;
+		m_app->TextComponent->RenderText(std::to_string(curSubAnimation->fCurrentTime), 10, 50, 32);
 
-		//if we passed the end time provided, don't search for next frame because we're done already
-		if (curSubAnimation->fCurrentTime < curSubAnimation->fPlayEndTime) {
-			float fTotalTime = 0.0f;
-			bool bContinue = true;
-			for (unsigned int i = 0; i < m_frames.size(); i++) {
-				fTotalTime += ((W_FRAME*)(m_frames[i]))->fTime;
-				if (curSubAnimation->fCurrentTime < fTotalTime) {
-					curSubAnimation->curFrame = i;
-					curSubAnimation->nextFrame = i + 1;
-					//if its the last frame, loop the next to the first
-					if (fTotalTime > curSubAnimation->fPlayEndTime - 0.001f || curSubAnimation->nextFrame == m_frames.size())
-						curSubAnimation->nextFrame = curSubAnimation->firstFrame;
-					bContinue = false;
-					break;
+		while (true) {
+			//if we passed the end time provided, don't search for next frame because we're done already
+			if (curSubAnimation->fCurrentTime < curSubAnimation->fPlayEndTime) {
+				float fTotalTime = 0.0f;
+				bool bContinue = true;
+				for (unsigned int i = 0; i < m_frames.size(); i++) {
+					fTotalTime += ((W_FRAME*)(m_frames[i]))->fTime;
+					if (curSubAnimation->fCurrentTime < fTotalTime) {
+						curSubAnimation->curFrame = i;
+						curSubAnimation->nextFrame = i + 1;
+						//if its the last frame, loop the next to the first
+						if (fTotalTime > curSubAnimation->fPlayEndTime - 0.001f || curSubAnimation->nextFrame == m_frames.size())
+							curSubAnimation->nextFrame = curSubAnimation->firstFrame;
+						bContinue = false;
+						break;
+					}
 				}
+				if (!bContinue)
+					break; // done with this animation for this iteration
 			}
-			if (!bContinue)
-				continue;
-		}
 
-		//passed the total time, loop or not?
-		if (curSubAnimation->bLoop)
-			SetCurrentTime(curSubAnimation->fPlayStartTime, anim);
-		else
-			Stop(anim);
+			//passed the total time, loop or not?
+			if (curSubAnimation->bLoop) {
+				float fEndTime = min(curSubAnimation->fPlayEndTime, m_totalTime);
+				float fOverflow = curSubAnimation->fCurrentTime - fEndTime;
+				SetCurrentTime(curSubAnimation->fPlayStartTime, anim);
+				curSubAnimation->fCurrentTime += fOverflow;
+			} else {
+				Stop(anim);
+				break; // done with this animation
+			}
+		}
 	}
 }
 void WAnimation::AddSubAnimation() {
@@ -556,6 +565,7 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 	_WSkeletalFrame* f = new _WSkeletalFrame();
 	f->fTime = fTime;
 	WAnimation::m_frames.push_back(f);
+	m_totalTime += fTime;
 
 	f->baseBone = new WBone();
 	unsigned int index = 0;
@@ -715,9 +725,9 @@ void WSkeleton::Update(float fDeltaTime) {
 					}
 
 					//encode the matrix (decoded in the shader to save a texture fetch in the VS)
-					finalMatrix._14 = finalMatrix._41;
-					finalMatrix._24 = finalMatrix._42;
-					finalMatrix._34 = finalMatrix._43;
+					finalMatrix(0, 3) = finalMatrix(3, 0);
+					finalMatrix(1, 3) = finalMatrix(3, 1);
+					finalMatrix(2, 3) = finalMatrix(3, 2);
 					memcpy(&((char*)texData)[boneIndex * sizeof WMatrix], &finalMatrix, sizeof WMatrix - sizeof(float) * 4);
 				}
 
@@ -751,6 +761,39 @@ void WSkeleton::Update(float fDeltaTime) {
 					WMatrix curFrameMtxF = curFrameBone->GetInvBindingPose() * curFrameMtx;
 					WMatrix nextFrameMtxF = nextFrameBone->GetInvBindingPose() * nextFrameMtx;
 					WMatrix finalMatrix = curFrameMtxF * (1.0f - fLerpValue) + nextFrameMtxF * fLerpValue;
+					static int num = 0;
+					if (i == 0 && num < 3) {
+						num++;
+						fstream file;
+#if (defined _DEBUG || defined DEBUG)
+						file.open("d" + std::to_string(num)+".txt", ios::out);
+#else
+						file.open("r" + std::to_string(num) + ".txt", ios::out);
+#endif
+						file << fLerpValue << "\n";
+						WMatrix m1;
+						for (int j = 0; j < 4 * 4; j++)
+							m1.operator[](j) = j+1;
+						WMatrix m2 = m1 * 0.5f;
+						for (int j = 0; j < 4; j++) {
+							char str[256];
+							sprintf_s(str, 256, "%.3f, %.3f, %.3f, %.3f", m1(j, 0), m1(j, 1), m1(j, 2), m1(j, 3));
+							file << str << "\n";
+						}
+						file << "\n";
+						for (int j = 0; j < 4; j++) {
+							char str[256];
+							sprintf_s(str, 256, "%.3f, %.3f, %.3f, %.3f", m2(j, 0), m2(j, 1), m2(j, 2), m2(j, 3));
+							file << str << "\n";
+						}
+						file << "\n";
+						for (int j = 0; j < 4; j++) {
+							char str[256];
+							sprintf_s(str, 256, "%.3f, %.3f, %.3f, %.3f", finalMatrix(j, 0), finalMatrix(j, 1), finalMatrix(j, 2), finalMatrix(j, 3));
+							file << str << "\n";
+						}
+						file.close();
+					}
 
 					if (m_bindings.size()) {
 						WMatrix bindMtx = curFrameMtx * (1.0f - fLerpValue) + nextFrameMtx * fLerpValue;
@@ -762,9 +805,9 @@ void WSkeleton::Update(float fDeltaTime) {
 					}
 
 					//encode the matrix (decoded in the shader to save a texture fetch in the VS)
-					finalMatrix._14 = finalMatrix._41;
-					finalMatrix._24 = finalMatrix._42;
-					finalMatrix._34 = finalMatrix._43;
+					finalMatrix(0, 3) = finalMatrix(3, 0);
+					finalMatrix(1, 3) = finalMatrix(3, 1);
+					finalMatrix(2, 3) = finalMatrix(3, 2);
 					memcpy(&((char*)texData)[boneIndex * sizeof WMatrix], &finalMatrix, sizeof WMatrix - sizeof(float) * 4);
 				}
 			}
@@ -842,6 +885,7 @@ WError WSkeleton::LoadFromWS(std::string Filename) {
 		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
 			W_SAFE_DELETE(WAnimation::m_frames[i]);
 	m_frames.clear();
+	m_totalTime = 0.0f;
 	//delete all subanimations - start a fresh object with only 1
 	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
 		delete m_subAnimations[i];
@@ -964,6 +1008,7 @@ WError WSkeleton::LoadFromWS(basic_filebuf<char>* buff, unsigned int pos) {
 		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
 			W_SAFE_DELETE(WAnimation::m_frames[i]);
 	m_frames.clear();
+	m_totalTime = 0.0f;
 	//delete all subanimations - start a fresh object with only 1
 	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
 		delete m_subAnimations[i];
@@ -1015,6 +1060,7 @@ WError	WSkeleton::CopyFrom(const WAnimation* const from) {
 		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
 			W_SAFE_DELETE(WAnimation::m_frames[i]);
 	m_frames.clear();
+	m_totalTime = 0.0f;
 	//delete all subanimations - start a fresh object with only 1
 	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
 		delete m_subAnimations[i];
@@ -1046,6 +1092,7 @@ WError WSkeleton::UseAnimationFrames(const WAnimation* const anim) {
 		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
 			W_SAFE_DELETE(WAnimation::m_frames[i]);
 	m_frames.clear();
+	m_totalTime = 0.0f;
 	//delete all subanimations - start a fresh object with only 1
 	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
 		delete m_subAnimations[i];
@@ -1056,8 +1103,10 @@ WError WSkeleton::UseAnimationFrames(const WAnimation* const anim) {
 
 	WSkeleton* fromS = (WSkeleton*)anim;
 	m_bindingScale = fromS->m_bindingScale;
-	for (unsigned int i = 0; i < fromS->WAnimation::m_frames.size(); i++)
+	for (unsigned int i = 0; i < fromS->WAnimation::m_frames.size(); i++) {
 		WAnimation::m_frames.push_back(fromS->WAnimation::m_frames[i]);
+		m_totalTime += fromS->WAnimation::m_frames[i]->fTime;
+	}
 	m_boneTex = new WImage(m_app);
 	int oldMips = (int)m_app->engineParams["numGeneratedMips"];
 	WError err = m_boneTex->CopyFrom(fromS->m_boneTex);

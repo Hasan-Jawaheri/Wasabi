@@ -72,9 +72,9 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 						WVector3 pt;
 						bool b = temp->Intersect(subsetPos, subsetDir, &pt, &p.uv, &p.face);
 						WMatrix m = m_entities[j][i]->GetWorldMatrix();
-						p.pos.x = (pt.x * m._11) + (pt.y * m._21) + (pt.z * m._31) + (1 * m._41);
-						p.pos.y = (pt.x * m._12) + (pt.y * m._22) + (pt.z * m._32) + (1 * m._42);
-						p.pos.z = (pt.x * m._13) + (pt.y * m._23) + (pt.z * m._33) + (1 * m._43);
+						p.pos.x = (pt.x * m(0, 0)) + (pt.y * m(1, 0)) + (pt.z * m(2, 0)) + (1 * m(3, 0));
+						p.pos.y = (pt.x * m(0, 1)) + (pt.y * m(1, 1)) + (pt.z * m(2, 1)) + (1 * m(3, 1));
+						p.pos.z = (pt.x * m(0, 2)) + (pt.y * m(1, 2)) + (pt.z * m(2, 2)) + (1 * m(3, 2));
 
 						if (b) {
 							if (bAnyHit) {

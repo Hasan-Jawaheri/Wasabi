@@ -3,7 +3,6 @@
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow) {
 	Wasabi* app = WInitialize();
-	app->maxFPS = 60.0f;
 
 	if (app->Setup()) {
 		unsigned int numFrames = 0;
@@ -17,7 +16,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 				continue;
 
 			if (deltaTime >= 0.00001f) {
-				app->AnimationManager->Update(deltaTime);
 				if (!app->Loop(deltaTime))
 					break;
 				if (app->curState)
@@ -26,6 +24,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 					app->PhysicsComponent->Step(deltaTime);
 			}
 
+			app->AnimationManager->Update(deltaTime);
 			app->Renderer->_Render();
 
 			numFrames++;
@@ -120,6 +119,8 @@ Wasabi::Wasabi() {
 	RenderTargetManager = nullptr;
 	LightManager = nullptr;
 	AnimationManager = nullptr;
+
+	maxFPS = 60.0f;
 }
 Wasabi::~Wasabi() {
 	_DestroyResources();

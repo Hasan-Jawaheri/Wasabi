@@ -244,51 +244,51 @@ void WCamera::UpdateInternals() {
 			0,  0, 1.0/2.0, 1.0 / 2.0,
 			0,  0,       0,         1
 		);*/
-		m_ProjM._22 *= -1; // flip Y-axis in the render
+		m_ProjM(1, 1) *= -1; // flip Y-axis in the render
 
 		// Create the m_frustum matrix from the view matrix and updated projection matrix.
 		WMatrix matrix = m_ViewM * m_ProjM;
 
 		// Calculate near plane of m_frustum.
-		m_frustumPlanes[0].a = matrix._14 + matrix._13;
-		m_frustumPlanes[0].b = matrix._24 + matrix._23;
-		m_frustumPlanes[0].c = matrix._34 + matrix._33;
-		m_frustumPlanes[0].d = matrix._44 + matrix._43;
+		m_frustumPlanes[0].a = matrix(0, 3) + matrix(0, 2);
+		m_frustumPlanes[0].b = matrix(1, 3) + matrix(1, 2);
+		m_frustumPlanes[0].c = matrix(2, 3) + matrix(2, 2);
+		m_frustumPlanes[0].d = matrix(3, 3) + matrix(3, 2);
 		m_frustumPlanes[0] = WNormalizePlane(m_frustumPlanes[0]);
 
 		// Calculate far plane of m_frustum.
-		m_frustumPlanes[1].a = matrix._14 - matrix._13;
-		m_frustumPlanes[1].b = matrix._24 - matrix._23;
-		m_frustumPlanes[1].c = matrix._34 - matrix._33;
-		m_frustumPlanes[1].d = matrix._44 - matrix._43;
+		m_frustumPlanes[1].a = matrix(0, 3) - matrix(0, 2);
+		m_frustumPlanes[1].b = matrix(1, 3) - matrix(1, 2);
+		m_frustumPlanes[1].c = matrix(2, 3) - matrix(2, 2);
+		m_frustumPlanes[1].d = matrix(3, 3) - matrix(3, 2);
 		m_frustumPlanes[1] = WNormalizePlane(m_frustumPlanes[1]);
 
 		// Calculate left plane of m_frustum.
-		m_frustumPlanes[2].a = matrix._14 + matrix._11;
-		m_frustumPlanes[2].b = matrix._24 + matrix._21;
-		m_frustumPlanes[2].c = matrix._34 + matrix._31;
-		m_frustumPlanes[2].d = matrix._44 + matrix._41;
+		m_frustumPlanes[2].a = matrix(0, 3) + matrix(0, 0);
+		m_frustumPlanes[2].b = matrix(1, 3) + matrix(1, 0);
+		m_frustumPlanes[2].c = matrix(2, 3) + matrix(2, 0);
+		m_frustumPlanes[2].d = matrix(3, 3) + matrix(3, 0);
 		m_frustumPlanes[2] = WNormalizePlane(m_frustumPlanes[2]);
 
 		// Calculate right plane of m_frustum.
-		m_frustumPlanes[3].a = matrix._14 - matrix._11;
-		m_frustumPlanes[3].b = matrix._24 - matrix._21;
-		m_frustumPlanes[3].c = matrix._34 - matrix._31;
-		m_frustumPlanes[3].d = matrix._44 - matrix._41;
+		m_frustumPlanes[3].a = matrix(0, 3) - matrix(0, 0);
+		m_frustumPlanes[3].b = matrix(1, 3) - matrix(1, 0);
+		m_frustumPlanes[3].c = matrix(2, 3) - matrix(2, 0);
+		m_frustumPlanes[3].d = matrix(3, 3) - matrix(3, 0);
 		m_frustumPlanes[3] = WNormalizePlane(m_frustumPlanes[3]);
 
 		// Calculate top plane of m_frustum.
-		m_frustumPlanes[4].a = matrix._14 - matrix._12;
-		m_frustumPlanes[4].b = matrix._24 - matrix._22;
-		m_frustumPlanes[4].c = matrix._34 - matrix._32;
-		m_frustumPlanes[4].d = matrix._44 - matrix._42;
+		m_frustumPlanes[4].a = matrix(0, 3) - matrix(0, 1);
+		m_frustumPlanes[4].b = matrix(1, 3) - matrix(1, 1);
+		m_frustumPlanes[4].c = matrix(2, 3) - matrix(2, 1);
+		m_frustumPlanes[4].d = matrix(3, 3) - matrix(3, 1);
 		m_frustumPlanes[4] = WNormalizePlane(m_frustumPlanes[4]);
 
 		// Calculate bottom plane of m_frustum.
-		m_frustumPlanes[5].a = matrix._14 + matrix._12;
-		m_frustumPlanes[5].b = matrix._24 + matrix._22;
-		m_frustumPlanes[5].c = matrix._34 + matrix._32;
-		m_frustumPlanes[5].d = matrix._44 + matrix._42;
+		m_frustumPlanes[5].a = matrix(0, 3) + matrix(0, 1);
+		m_frustumPlanes[5].b = matrix(1, 3) + matrix(1, 1);
+		m_frustumPlanes[5].c = matrix(2, 3) + matrix(2, 1);
+		m_frustumPlanes[5].d = matrix(3, 3) + matrix(3, 1);
 		m_frustumPlanes[5] = WNormalizePlane(m_frustumPlanes[5]);
 	}
 }

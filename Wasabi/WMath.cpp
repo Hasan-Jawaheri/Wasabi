@@ -2,17 +2,29 @@
 #include <memory>
 
 WMatrix::WMatrix(void) {
-	_11 = _22 = _33 = _44 = 1.0f;
-	_12 = _13 = _14 = _21 = _23 = _24 = _31 = _32 = _34 = _41 = _42 = _43 = 0.0f;
+	for (int i = 0; i < 16; i++)
+		mat[i] = i % 4 == i / 4 ? 1.0f : 0.0f;
 }
 WMatrix::WMatrix(float f11, float f12, float f13, float f14,
 	float f21, float f22, float f23, float f24,
 	float f31, float f32, float f33, float f34,
-	float f41, float f42, float f43, float f44) :
-	_11(f11), _12(f12), _13(f13), _14(f14),
-	_21(f21), _22(f22), _23(f23), _24(f24),
-	_31(f31), _32(f32), _33(f33), _34(f34),
-	_41(f41), _42(f42), _43(f43), _44(f44) {
+	float f41, float f42, float f43, float f44) {
+	mat[0]  = f11;
+	mat[1]  = f12;
+	mat[2]  = f13;
+	mat[3]  = f14;
+	mat[4]  = f21;
+	mat[5]  = f22;
+	mat[6]  = f23;
+	mat[7]  = f24;
+	mat[8]  = f31;
+	mat[9]  = f32;
+	mat[10] = f33;
+	mat[11] = f34;
+	mat[12] = f41;
+	mat[13] = f42;
+	mat[14] = f43;
+	mat[15] = f44;
 }
 const WMatrix WMatrix::operator+ (const WMatrix m) const {
 	WMatrix out = *this;
@@ -52,9 +64,11 @@ const WMatrix WMatrix::operator/ (const WMatrix m) const {
 }
 const WMatrix WMatrix::operator* (const float f) const {
 	WMatrix out = *this;
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++)
+	for (unsigned int i = 0; i < 4; i++) {
+		for (unsigned int j = 0; j < 4; j++) {
 			out(i, j) *= f;
+		}
+	}
 	return out;
 }
 const WMatrix WMatrix::operator/ (const float f) const {
@@ -105,34 +119,23 @@ void WMatrix::operator/= (const float f) {
 			(*this)(i, j) /= f;
 }
 float& WMatrix::operator() (const unsigned int row, const unsigned int col) {
-	return (*this)[row * 4 + col];
+	return mat[row * 4 + col];
 }
 const float WMatrix::operator() (const unsigned int row, const unsigned int col) const {
-	return (*this)[row * 4 + col];
+	return mat[row * 4 + col];
 }
 float& WMatrix::operator[] (const unsigned int index) {
-	return *((float*)(this) + index);
+	return mat[index];
 }
 const float WMatrix::operator[] (const unsigned int index) const {
-	return *((float*)(this) + index);
+	return mat[index];
 }
 
 const WMatrix WMatrixTranspose(const WMatrix m) {
-	WMatrix out = m;
-
-	out._12 = m._21;
-	out._21 = m._12;
-	out._13 = m._31;
-	out._31 = m._13;
-	out._14 = m._41;
-	out._41 = m._14;
-	out._23 = m._32;
-	out._32 = m._23;
-	out._24 = m._42;
-	out._42 = m._24;
-	out._34 = m._43;
-	out._43 = m._34;
-
+	WMatrix out;
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			out(i, j) = m(j, i);
 	return out;
 }
 const WMatrix WMatrixInverse(const WMatrix m) {
@@ -256,10 +259,10 @@ const WVector4 WVec4Lerp(const WVector4 v1, const WVector4 v2, const float fLerp
 }
 const WVector4 WVec4Transform(const WVector4 v, const WMatrix m) {
 	WVector4 out;
-	out.x = v.x * m._11 + v.y * m._21 + v.z * m._31 + v.w * m._41;
-	out.y = v.x * m._12 + v.y * m._22 + v.z * m._32 + v.w * m._42;
-	out.z = v.x * m._13 + v.y * m._23 + v.z * m._33 + v.w * m._43;
-	out.w = v.x * m._14 + v.y * m._24 + v.z * m._34 + v.w * m._44;
+	out.x = v.x * m(0, 0) + v.y * m(1, 0) + v.z * m(2, 0) + v.w * m(3, 0);
+	out.y = v.x * m(0, 1) + v.y * m(1, 1) + v.z * m(2, 1) + v.w * m(3, 1);
+	out.z = v.x * m(0, 2) + v.y * m(1, 2) + v.z * m(2, 2) + v.w * m(3, 2);
+	out.w = v.x * m(0, 3) + v.y * m(1, 3) + v.z * m(2, 3) + v.w * m(3, 3);
 	return out;
 }
 
@@ -296,30 +299,30 @@ const WMatrix WRotationMatrixAxis(const WVector3 axis, const float fAngle) {
 }
 const WMatrix WScalingMatrix(const float fX, const float fY, const float fZ) {
 	WMatrix out = WMatrix();
-	out._11 = fX;
-	out._22 = fY;
-	out._33 = fZ;
+	out(0, 0) = fX;
+	out(1, 1) = fY;
+	out(2, 2) = fZ;
 	return out;
 }
 const WMatrix WScalingMatrix(const WVector3 scale) {
 	WMatrix out = WMatrix();
-	out._11 = scale.x;
-	out._22 = scale.y;
-	out._33 = scale.z;
+	out(0, 0) = scale.x;
+	out(1, 1) = scale.y;
+	out(2, 2) = scale.z;
 	return out;
 }
 const WMatrix WTranslationMatrix(const float fX, const float fY, const float fZ) {
 	WMatrix out = WMatrix();
-	out._41 = fX;
-	out._42 = fY;
-	out._43 = fZ;
+	out(3, 0) = fX;
+	out(3, 1) = fY;
+	out(3, 2) = fZ;
 	return out;
 }
 const WMatrix WTranslationMatrix(const WVector3 pos) {
 	WMatrix out = WMatrix();
-	out._41 = pos.x;
-	out._42 = pos.y;
-	out._43 = pos.z;
+	out(3, 0) = pos.x;
+	out(3, 1) = pos.y;
+	out(3, 2) = pos.z;
 	return out;
 }
 const WMatrix WPerspectiveProjMatrix(const float w, const float h,
