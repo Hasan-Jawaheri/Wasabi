@@ -255,8 +255,7 @@ void WAnimation::Update(float fDeltaTime) {
 	for (int anim = 0; anim < m_subAnimations.size(); anim++) {
 		W_SUB_ANIMATION* curSubAnimation = (W_SUB_ANIMATION*)m_subAnimations[anim];
 		if (curSubAnimation->bPlaying)
-			curSubAnimation->fCurrentTime += 0.5f;//curSubAnimation->fCurrentTime += fDeltaTime * curSubAnimation->fSpeed;
-		m_app->TextComponent->RenderText(std::to_string(curSubAnimation->fCurrentTime), 10, 50, 32);
+			curSubAnimation->fCurrentTime += fDeltaTime * curSubAnimation->fSpeed;
 
 		while (true) {
 			//if we passed the end time provided, don't search for next frame because we're done already
@@ -761,39 +760,6 @@ void WSkeleton::Update(float fDeltaTime) {
 					WMatrix curFrameMtxF = curFrameBone->GetInvBindingPose() * curFrameMtx;
 					WMatrix nextFrameMtxF = nextFrameBone->GetInvBindingPose() * nextFrameMtx;
 					WMatrix finalMatrix = curFrameMtxF * (1.0f - fLerpValue) + nextFrameMtxF * fLerpValue;
-					static int num = 0;
-					if (i == 0 && num < 3) {
-						num++;
-						fstream file;
-#if (defined _DEBUG || defined DEBUG)
-						file.open("d" + std::to_string(num)+".txt", ios::out);
-#else
-						file.open("r" + std::to_string(num) + ".txt", ios::out);
-#endif
-						file << fLerpValue << "\n";
-						WMatrix m1;
-						for (int j = 0; j < 4 * 4; j++)
-							m1.operator[](j) = j+1;
-						WMatrix m2 = m1 * 0.5f;
-						for (int j = 0; j < 4; j++) {
-							char str[256];
-							sprintf_s(str, 256, "%.3f, %.3f, %.3f, %.3f", m1(j, 0), m1(j, 1), m1(j, 2), m1(j, 3));
-							file << str << "\n";
-						}
-						file << "\n";
-						for (int j = 0; j < 4; j++) {
-							char str[256];
-							sprintf_s(str, 256, "%.3f, %.3f, %.3f, %.3f", m2(j, 0), m2(j, 1), m2(j, 2), m2(j, 3));
-							file << str << "\n";
-						}
-						file << "\n";
-						for (int j = 0; j < 4; j++) {
-							char str[256];
-							sprintf_s(str, 256, "%.3f, %.3f, %.3f, %.3f", finalMatrix(j, 0), finalMatrix(j, 1), finalMatrix(j, 2), finalMatrix(j, 3));
-							file << str << "\n";
-						}
-						file.close();
-					}
 
 					if (m_bindings.size()) {
 						WMatrix bindMtx = curFrameMtx * (1.0f - fLerpValue) + nextFrameMtx * fLerpValue;
