@@ -152,6 +152,7 @@ protected:
 	void m_UpdateFirstFrame(unsigned int subAnimation);
 
 	bool m_bFramesOwner;
+	float m_totalTime;
 	vector<W_FRAME*> m_frames;
 	vector<W_SUB_ANIMATION*> m_subAnimations;
 };

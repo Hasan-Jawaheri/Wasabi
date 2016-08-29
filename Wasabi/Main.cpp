@@ -190,7 +190,7 @@ public:
 	}
 
 	WError Setup() {
-		this->maxFPS = 0;
+		this->maxFPS = 60;
 		WError ret = StartEngine(640, 480);
 		if (!ret) {
 			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
@@ -213,7 +213,7 @@ public:
 		animation->LoadFromWS("Media/dante.HXS");
 
 		character->SetAnimation(animation);
-		animation->SetPlaySpeed(30.0f);
+		animation->SetPlaySpeed(10.0f);
 		animation->Loop();
 
 		return ret;

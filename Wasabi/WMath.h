@@ -477,10 +477,7 @@ public:
 
 class WMatrix {
 public:
-	float _11, _12, _13, _14;
-	float _21, _22, _23, _24;
-	float _31, _32, _33, _34;
-	float _41, _42, _43, _44;
+	float mat[16];
 
 	WMatrix(void);
 	WMatrix(float f11, float f12, float f13, float f14,
@@ -489,10 +486,10 @@ public:
 		float f41, float f42, float f43, float f44);
 
 	operator float* (void) {
-		return (float*)&_11;
+		return (float*)&mat;
 	}
 	operator const float* (void) {
-		return (const float*)&_11;
+		return (const float*)&mat;
 	}
 
 	const WMatrix operator+ (const WMatrix m) const;
