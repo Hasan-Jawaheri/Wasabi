@@ -8,24 +8,26 @@ desc.: Wasabi Engine text component
 
 #include "Wasabi.h"
 
+typedef struct W_RENDERING_TEXT {
+	std::string str;
+	WColor col;
+	float fHeight;
+	int x, y;
+} W_RENDERING_TEXT;
+
 typedef struct W_FONT_OBJECT {
 	unsigned int ID;
 	std::string name;
 	void* cdata;
 	int num_chars;
 	int char_height;
+	class WGeometry* textGeometry;
+	class WMaterial* textMaterial;
 	class WImage* img;
+	vector<W_RENDERING_TEXT> texts;
 } W_FONT_OBJECT;
 
 class WTextComponent {
-	typedef struct W_RENDERING_TEXT {
-		std::string str;
-		W_FONT_OBJECT font;
-		WColor col;
-		float fHeight;
-		int x, y;
-	} W_RENDERING_TEXT;
-
 public:
 	WTextComponent(Wasabi* app);
 	~WTextComponent();
@@ -49,9 +51,7 @@ protected:
 	Wasabi* m_app;
 	std::vector<std::string> m_directories;
 	std::map<unsigned int, W_FONT_OBJECT> m_fonts;
-	vector<W_RENDERING_TEXT> m_texts;
 	unsigned int m_curFont;
 	WColor m_curColor;
-	class WGeometry* m_textGeometry;
-	class WMaterial* m_textMaterial;
+	class WEffect* m_textEffect;
 };

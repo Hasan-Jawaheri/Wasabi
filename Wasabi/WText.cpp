@@ -5,6 +5,7 @@
 
 struct TextVertex {
 	WVector2 pos, uv;
+	WColor col;
 };
 
 class TextGeometry : public WGeometry {
@@ -18,6 +19,7 @@ public:
 		return W_VERTEX_DESCRIPTION({
 			W_VERTEX_ATTRIBUTE("pos2", 2),
 			W_ATTRIBUTE_UV,
+			W_VERTEX_ATTRIBUTE("color", 4),
 		});
 	}
 };
@@ -31,6 +33,7 @@ public:
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // color
 		})};
 		LoadCodeGLSL(
 			"#version 450\n"
@@ -39,10 +42,13 @@ public:
 			""
 			"layout(location = 0) in  vec2 inPos;\n"
 			"layout(location = 1) in  vec2 inUV;\n"
+			"layout(location = 2) in  vec4 inCol;\n"
 			"layout(location = 0) out vec2 outUV;\n"
+			"layout(location = 1) out vec4 outCol;\n"
 			""
 			"void main() {\n"
 			"	outUV = inUV;\n"
+			"	outCol = inCol;\n"
 			"	gl_Position = vec4(inPos.xy, 0.0, 1.0);\n"
 			"}\n"
 		);
@@ -56,70 +62,61 @@ public:
 	virtual void Load() {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4, "color"),
-				}),
-			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 0),
 		};
 		LoadCodeGLSL(
 			"#version 450\n"
 			"#extension GL_ARB_separate_shader_objects : enable\n"
 			"#extension GL_ARB_shading_language_420pack : enable\n"
 			""
-			"layout(binding = 0) uniform UBO {\n"
-			"	vec4 color;\n"
-			"} ubo;\n"
-			"layout(binding = 1) uniform sampler2D sampler;\n"
+			"layout(binding = 0) uniform sampler2D sampler;\n"
 			"layout(location = 0) in vec2 inUV;\n"
+			"layout(location = 1) in vec4 inCol;\n"
 			"layout(location = 0) out vec4 outFragColor;\n"
 			""
 			"void main() {\n"
 			"	float c = texture(sampler, inUV).r;\n"
-			"	outFragColor = vec4(c) * ubo.color;\n"
+			"	outFragColor = vec4(c) * inCol;\n"
 			"}\n"
 		);
 	}
 };
 
 WTextComponent::WTextComponent(Wasabi* app) : m_app(app) {
-	m_curFont;
+	m_curFont = -1;
 	m_curColor = WColor(0.1f, 0.6f, 0.2f, 1.0f);
 
-	m_textGeometry = nullptr;
-	m_textMaterial = nullptr;
+	m_textEffect = nullptr;
 }
 
 WTextComponent::~WTextComponent() {
 	for (std::map<unsigned int, W_FONT_OBJECT>::iterator i = m_fonts.begin(); i != m_fonts.end(); i++) {
 		delete[] i->second.cdata;
 		i->second.img->RemoveReference();
+		W_SAFE_REMOVEREF(i->second.textGeometry);
+		W_SAFE_REMOVEREF(i->second.textMaterial);
 	}
-	W_SAFE_REMOVEREF(m_textGeometry);
-	W_SAFE_REMOVEREF(m_textMaterial);
+	W_SAFE_REMOVEREF(m_textEffect);
 }
 
 WError WTextComponent::Initialize() {
-	WError err = CreateFont(0, "Arial");
-	if (!err)
-		return err;
-
 	WShader* vs = new TextVS(m_app);
 	vs->Load();
 	WShader* ps = new TextPS(m_app);
 	ps->Load();
-	WEffect* textFX = new WEffect(m_app);
-	textFX->SetName("textFX");
-	err = textFX->BindShader(vs);
-	if (!err) {
+	m_textEffect = new WEffect(m_app);
+	m_textEffect->SetName("textFX");
+	WError ret = m_textEffect->BindShader(vs);
+	if (!ret) {
 		vs->RemoveReference();
 		ps->RemoveReference();
-		return err;
+		return ret;
 	}
-	err = textFX->BindShader(ps);
-	if (!err) {
+	ret = m_textEffect->BindShader(ps);
+	if (!ret) {
 		vs->RemoveReference();
 		ps->RemoveReference();
-		return err;
+		return ret;
 	}
 
 	VkPipelineColorBlendAttachmentState bs;
@@ -132,7 +129,7 @@ WError WTextComponent::Initialize() {
 	bs.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	bs.alphaBlendOp = VK_BLEND_OP_ADD;
 	bs.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	textFX->SetBlendingState(bs);
+	m_textEffect->SetBlendingState(bs);
 
 	VkPipelineDepthStencilStateCreateInfo dss = {};
 	dss.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -141,47 +138,15 @@ WError WTextComponent::Initialize() {
 	dss.depthBoundsTestEnable = VK_FALSE;
 	dss.stencilTestEnable = VK_FALSE;
 	dss.front = dss.back;
-	textFX->SetDepthStencilState(dss);
+	m_textEffect->SetDepthStencilState(dss);
 
-	err = textFX->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
+	ret = m_textEffect->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
 	vs->RemoveReference();
 	ps->RemoveReference();
-	if (!err)
-		return err;
-	m_textMaterial = new WMaterial(m_app);
-	err = m_textMaterial->SetEffect(textFX);
-	textFX->RemoveReference();
-	if (!err) {
-		W_SAFE_REMOVEREF(m_textMaterial);
-		return err;
-	}
 
-	unsigned int num_verts = (unsigned int)m_app->engineParams["textBatchSize"] * 4;
-	unsigned int num_indices = (unsigned int)m_app->engineParams["textBatchSize"] * 6;
-	TextVertex* vb = new TextVertex[num_verts];
-	DWORD* ib = new DWORD[num_indices];
-
-	for (int i = 0; i < num_indices / 6; i++) {
-		// tri 1
-		ib[i * 6 + 0] = i * 4 + 0;
-		ib[i * 6 + 1] = i * 4 + 1;
-		ib[i * 6 + 2] = i * 4 + 2;
-		// tri 2
-		ib[i * 6 + 3] = i * 4 + 1;
-		ib[i * 6 + 4] = i * 4 + 3;
-		ib[i * 6 + 5] = i * 4 + 2;
-	}
-
-	m_textGeometry = new TextGeometry(m_app);
-	err = m_textGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
-	delete[] vb;
-	delete[] ib;
-
-	if (!err) {
-		W_SAFE_REMOVEREF(m_textMaterial);
-		W_SAFE_REMOVEREF(m_textGeometry);
-		return err;
-	}
+	if (ret)
+		ret = CreateFont(0, "Arial");
+	m_curFont = 0;
 
 	return WError(W_SUCCEEDED);
 }
@@ -251,6 +216,44 @@ WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
 		return err;
 	}
 
+	f.textMaterial = new WMaterial(m_app);
+	err = f.textMaterial->SetEffect(m_textEffect);
+	if (!err) {
+		delete[] f.cdata;
+		f.img->RemoveReference();
+		W_SAFE_REMOVEREF(f.textMaterial);
+		return err;
+	}
+
+	unsigned int num_verts = (unsigned int)m_app->engineParams["textBatchSize"] * 4;
+	unsigned int num_indices = (unsigned int)m_app->engineParams["textBatchSize"] * 6;
+	TextVertex* vb = new TextVertex[num_verts];
+	DWORD* ib = new DWORD[num_indices];
+
+	for (int i = 0; i < num_indices / 6; i++) {
+		// tri 1
+		ib[i * 6 + 0] = i * 4 + 0;
+		ib[i * 6 + 1] = i * 4 + 1;
+		ib[i * 6 + 2] = i * 4 + 2;
+		// tri 2
+		ib[i * 6 + 3] = i * 4 + 1;
+		ib[i * 6 + 4] = i * 4 + 3;
+		ib[i * 6 + 5] = i * 4 + 2;
+	}
+
+	f.textGeometry = new TextGeometry(m_app);
+	err = f.textGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
+	delete[] vb;
+	delete[] ib;
+
+	if (!err) {
+		delete[] f.cdata;
+		f.img->RemoveReference();
+		W_SAFE_REMOVEREF(f.textMaterial);
+		W_SAFE_REMOVEREF(f.textGeometry);
+		return err;
+	}
+
 	m_fonts.insert(std::pair<unsigned int, W_FONT_OBJECT>(ID, f));
 
 	return WError(W_SUCCEEDED);
@@ -261,6 +264,8 @@ WError WTextComponent::DestroyFont(unsigned int ID) {
 	if (obj != m_fonts.end()) {
 		delete[] obj->second.cdata;
 		obj->second.img->RemoveReference();
+		obj->second.textGeometry->RemoveReference();
+		obj->second.textMaterial->RemoveReference();
 		m_fonts.erase(ID);
 		return WError(W_SUCCEEDED);
 	}
@@ -301,10 +306,9 @@ WError WTextComponent::RenderText(std::string text, int x, int y, float fHeight,
 		t.str = text;
 		t.col = col;
 		t.fHeight = fHeight;
-		t.font = obj->second;
 		t.x = x;
 		t.y = y;
-		m_texts.push_back(t);
+		obj->second.texts.push_back(t);
 		return WError(W_SUCCEEDED);
 	}
 
@@ -314,53 +318,67 @@ WError WTextComponent::RenderText(std::string text, int x, int y, float fHeight,
 void WTextComponent::Render(WRenderTarget* rt) {
 	float scrWidth = m_app->WindowComponent->GetWindowWidth();
 	float scrHeight = m_app->WindowComponent->GetWindowHeight();
-	for (auto text : m_texts) {
-		TextVertex* vb;
+
+	for (int f = 0; f < m_fonts.size(); f++) {
+		W_FONT_OBJECT* font = &m_fonts[f];
+		TextVertex* vb = nullptr;
 		int curvert = 0;
-		m_textGeometry->MapVertexBuffer((void**)&vb);
-		float x = text.x * 2.0f / scrWidth - 1.0f;
-		float y = text.y * 2.0f / scrHeight - 1.0f;
-		float fScale = text.fHeight / (float)text.font.char_height;
-		float fMapSize = text.font.img->GetWidth();
-		float maxCharHeight = 0.0f;
-		for (int i = 0; i < text.str.length(); i++) {
-			if (text.str[i] == '\n')
-				continue;
-			stbtt_bakedchar *cd = &((stbtt_bakedchar*)text.font.cdata)[(uint32_t)text.str[i] - 32];
-			maxCharHeight = max(maxCharHeight, cd->y1 - cd->y0);
+		if (font->texts.size()) {
+			font->textMaterial->SetTexture(0, font->img);
+			font->textMaterial->Bind(rt);
+			font->textGeometry->MapVertexBuffer((void**)&vb);
 		}
-		maxCharHeight = (maxCharHeight * fScale) * 2.0f / scrHeight;
-		for (int i = 0; i < text.str.length(); i++) {
-			char c = text.str[i];
-			if (c == '\n') {
-				x = text.x * 2.0f / scrWidth - 1.0f;
-				y += maxCharHeight + 10 / scrHeight;
-				continue;
+		for (auto text : font->texts) {
+			float x = text.x * 2.0f / scrWidth - 1.0f;
+			float y = text.y * 2.0f / scrHeight - 1.0f;
+			float fScale = text.fHeight / (float)font->char_height;
+			float fMapSize = font->img->GetWidth();
+			float maxCharHeight = 0.0f;
+			float maxyoff = -FLT_MAX, minyoff = FLT_MAX;
+			for (int i = 0; i < text.str.length(); i++) {
+				if (text.str[i] == '\n')
+					continue;
+				stbtt_bakedchar *cd = &((stbtt_bakedchar*)font->cdata)[(uint32_t)text.str[i] - 32];
+				minyoff = min(minyoff, cd->yoff);
+				maxyoff = max(maxyoff, cd->yoff);
 			}
-			stbtt_bakedchar *cd = &((stbtt_bakedchar*)text.font.cdata)[(uint32_t)c - 32];
+			maxCharHeight = (text.fHeight * fScale) * 2.0f / scrHeight;
+			for (int i = 0; i < text.str.length(); i++) {
+				char c = text.str[i];
+				if (c == '\n') {
+					x = text.x * 2.0f / scrWidth - 1.0f;
+					y += maxCharHeight + 0.0f / scrHeight;
+					continue;
+				}
+				stbtt_bakedchar *cd = &((stbtt_bakedchar*)font->cdata)[(uint32_t)c - 32];
 
-			float cw = ((cd->x1 - cd->x0) * fScale) * 2.0f / scrWidth;
-			float ch = ((cd->y1 - cd->y0) * fScale) * 2.0f / scrHeight;
+				float cw = ((cd->x1 - cd->x0) * fScale) * 2.0f / scrWidth;
+				float ch = ((cd->y1 - cd->y0) * fScale) * 2.0f / scrHeight;
+				float yo = ((cd->yoff - minyoff) * fScale) * 2.0f / scrHeight;
 
-			vb[curvert + 0].pos = WVector2(x, y + maxCharHeight - ch);
-			vb[curvert + 0].uv = WVector2(cd->x0, cd->y0) / fMapSize;
-			vb[curvert + 1].pos = WVector2(x + cw, y + maxCharHeight - ch);
-			vb[curvert + 1].uv = WVector2(cd->x1, cd->y0) / fMapSize;
-			vb[curvert + 2].pos = WVector2(x, y + maxCharHeight);
-			vb[curvert + 2].uv = WVector2(cd->x0, cd->y1) / fMapSize;
-			vb[curvert + 3].pos = WVector2(x + cw, y + maxCharHeight);
-			vb[curvert + 3].uv = WVector2(cd->x1, cd->y1) / fMapSize;
-			curvert += 4;
+				vb[curvert + 0].pos = WVector2(x, y + yo);
+				vb[curvert + 0].uv = WVector2(cd->x0, cd->y0) / fMapSize;
+				vb[curvert + 0].col = text.col;
+				vb[curvert + 1].pos = WVector2(x + cw, y + yo);
+				vb[curvert + 1].uv = WVector2(cd->x1, cd->y0) / fMapSize;
+				vb[curvert + 1].col = text.col;
+				vb[curvert + 2].pos = WVector2(x, y + ch + yo);
+				vb[curvert + 2].uv = WVector2(cd->x0, cd->y1) / fMapSize;
+				vb[curvert + 2].col = text.col;
+				vb[curvert + 3].pos = WVector2(x + cw, y + ch + yo);
+				vb[curvert + 3].uv = WVector2(cd->x1, cd->y1) / fMapSize;
+				vb[curvert + 3].col = text.col;
+				curvert += 4;
 
-			x += (cd->xadvance * fScale) * 2.0f / scrWidth;
+				x += (cd->xadvance * fScale) * 2.0f / scrWidth;
+			}
 		}
-		m_textGeometry->UnmapVertexBuffer();
-		m_textMaterial->SetVariableFloatArray("color", (float*)&text.col, 4);
-		m_textMaterial->SetTexture(1, text.font.img);
-		m_textMaterial->Bind(rt);
-		m_textGeometry->Draw(rt, (curvert / 4) * 2);
+		if (font->texts.size()) {
+			font->textGeometry->UnmapVertexBuffer();
+			font->textGeometry->Draw(rt, (curvert / 4) * 2);
+			font->texts.clear();
+		}
 	}
-	m_texts.clear();
 }
 
 unsigned int WTextComponent::GetTextWidth(std::string text, float fHeight, unsigned int fontID) {
