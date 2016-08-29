@@ -97,7 +97,7 @@ public:
 			g->RemoveReference();
 		}
 
-		/*WGeometry* gPlain = new WGeometry(this);
+		WGeometry* gPlain = new WGeometry(this);
 		gPlain->CreatePlain(15.0f, 0, 0);
 		o->SetGeometry(gPlain);
 		o->SetName("plain");
@@ -137,7 +137,7 @@ public:
 		rt = new WRenderTarget(this);
 		rt->SetName("Falla RT");
 		rt->Create(640, 480, rtImg);
-		((WFRMaterial*)o->GetMaterial())->Texture(rtImg);*/
+		((WFRMaterial*)o->GetMaterial())->Texture(rtImg);
 
 		return ret;
 	}
@@ -167,7 +167,7 @@ public:
 		char title[128];
 		sprintf_s(title, 128, "Elapsed time: %.2f\nFPS: %.2f", Timer.GetElapsedTime() / 1000.0f, FPS);
 		int width = TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
-		//TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 1);
+		TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 1);
 
 		return true;
 	}
@@ -199,37 +199,29 @@ public:
 			return ret;
 		}
 
-		//LightManager->GetDefaultLight()->Point(0, -1, -1);
+		LightManager->GetDefaultLight()->Point(0, -1, -1);
 
 		geometry = new WGeometry(this);
 		geometry->LoadFromHXM("Media/dante.HXM");
 
-		//texture = new WImage(this);
-		//texture->Load("Media/dante.bmp");
+		texture = new WImage(this);
+		texture->Load("Media/dante.bmp");
 
 		character = new WObject(this);
 		character->SetGeometry(geometry);
-		/*((WFRMaterial*)character->GetMaterial())->Texture(texture);
+		((WFRMaterial*)character->GetMaterial())->Texture(texture);
 
 		animation = new WSkeleton(this);
 		animation->LoadFromWS("Media/dante.HXS");
 
 		character->SetAnimation(animation);
 		animation->SetPlaySpeed(10.0f);
-		animation->Loop();*/
-		TextComponent->CreateFont(1, "arial");
+		animation->Loop();
 
 		return ret;
 	}
 	bool Loop(float fDeltaTime) {
-		int mx = InputComponent->MouseX();
-		int my = InputComponent->MouseY();
 		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, fDist, 0, 2.5, 0);
-		char title[128];
-		sprintf_s(title, 128, "Elapsed time: %.2f\nFPS: %.2f\nHI", Timer.GetElapsedTime() / 1000.0f, FPS);
-		int width = TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
-		TextComponent->RenderText(title, mx - width / 2, my - 64, 32, 1, WColor(1, 0, 0));
-		TextComponent->RenderText(title, mx - width / 2, my + 64, 32, 0, WColor(0, 0.2, 1, 0.5));
 		return true;
 	}
 	void Cleanup() {
