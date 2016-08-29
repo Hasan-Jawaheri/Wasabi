@@ -266,7 +266,7 @@ void WAnimation::Update(float fDeltaTime) {
 					curSubAnimation->curFrame = i;
 					curSubAnimation->nextFrame = i + 1;
 					//if its the last frame, loop the next to the first
-					if (fTotalTime > curSubAnimation->fPlayEndTime - 0.001f)
+					if (fTotalTime > curSubAnimation->fPlayEndTime - 0.001f || curSubAnimation->nextFrame == m_frames.size())
 						curSubAnimation->nextFrame = curSubAnimation->firstFrame;
 					bContinue = false;
 					break;
