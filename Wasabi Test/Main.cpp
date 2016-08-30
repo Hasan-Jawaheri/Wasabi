@@ -75,7 +75,7 @@ public:
 		rt = nullptr;
 	}
 	WError Setup() {
-		this->maxFPS = 0;
+		this->maxFPS = 60;
 		WError ret = StartEngine(640, 480);
 		if (!ret) {
 			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
@@ -271,7 +271,9 @@ public:
 				float px = (((float)x / (float)(nx - 1)) - 0.5f) * width;
 				float pz = (((float)z / (float)(nz - 1)) - 0.5f) * depth;
 				WInstance* inst = character->CreateInstance();
-				inst->SetPosition(px, 0, pz);
+				if (inst) {
+					inst->SetPosition(px, 0, pz);
+				}
 			}
 		}
 
@@ -291,5 +293,5 @@ public:
 };
 
 Wasabi* WInitialize() {
-	return new InstancingDemo();
+	return new Kofta();
 }
