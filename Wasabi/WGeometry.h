@@ -112,6 +112,7 @@ public:
 	WVector3			GetMaxPoint() const;
 	unsigned int		GetNumVertices() const;
 	unsigned int		GetNumIndices() const;
+	bool				IsRigged() const;
 
 	virtual bool		Valid() const;
 
