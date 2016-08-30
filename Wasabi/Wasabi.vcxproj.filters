@@ -120,7 +120,6 @@
     <ClCompile Include="WHavokPhysics.cpp">
       <Filter>Physics\Havok</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="WRenderer.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>

@@ -4,7 +4,7 @@
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow) {
 	Wasabi* app = WInitialize();
 
-	if (app->Setup()) {
+	if (app && app->Setup()) {
 		unsigned int numFrames = 0;
 		auto fpsTimer = std::chrono::high_resolution_clock::now();
 		float maxFPSReached = app->maxFPS > 0.001f ? app->maxFPS : 60.0f;
