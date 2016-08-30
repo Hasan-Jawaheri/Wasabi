@@ -58,67 +58,9 @@ std::string WGeometryManager::GetTypeName(void) const {
 }
 
 WGeometryManager::WGeometryManager(class Wasabi* const app) : WManager<WGeometry>(app) {
-	m_copyCommandBuffer = VK_NULL_HANDLE;
 }
 
 WGeometryManager::~WGeometryManager() {
-	VkDevice device = m_app->GetVulkanDevice();
-	if (m_copyCommandBuffer)
-		vkFreeCommandBuffers(device, m_app->GetCommandPool(), 1, &m_copyCommandBuffer);
-	m_copyCommandBuffer = VK_NULL_HANDLE;
-}
-
-WError WGeometryManager::Load() {
-	VkDevice device = m_app->GetVulkanDevice();
-	VkCommandBufferAllocateInfo cmdBufInfo = {};
-
-	// Buffer copies are done on the queue, so we need a command buffer for them
-	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmdBufInfo.commandPool = m_app->GetCommandPool();
-	cmdBufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	cmdBufInfo.commandBufferCount = 1;
-
-	VkResult err = vkAllocateCommandBuffers(device, &cmdBufInfo, &m_copyCommandBuffer);
-	if (err)
-		return WError(W_OUTOFMEMORY);
-
-	return WError(W_SUCCEEDED);
-}
-
-VkResult WGeometryManager::_BeginCopy() {
-	VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
-	cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	cmdBufferBeginInfo.pNext = NULL;
-
-	VkResult err = vkResetCommandBuffer(m_copyCommandBuffer, 0);
-	if (err)
-		return err;
-
-	// Put buffer region copies into command buffer
-	// Note that the staging buffer must not be deleted before the copies 
-	// have been submitted and executed
-	return vkBeginCommandBuffer(m_copyCommandBuffer, &cmdBufferBeginInfo);
-}
-
-VkResult WGeometryManager::_EndCopy() {
-	VkSubmitInfo copySubmitInfo = {};
-	VkResult err = vkEndCommandBuffer(m_copyCommandBuffer);
-	if (err)
-		return err;
-
-	// Submit copies to the queue
-	copySubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	copySubmitInfo.commandBufferCount = 1;
-	copySubmitInfo.pCommandBuffers = &m_copyCommandBuffer;
-
-	err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &copySubmitInfo, VK_NULL_HANDLE);
-	if (err)
-		return err;
-	err = vkQueueWaitIdle(m_app->Renderer->GetQueue());
-	if (err)
-		return err;
-
-	return VK_SUCCESS;
 }
 
 WGeometry::WGeometry(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
@@ -148,14 +90,8 @@ void WGeometry::_DestroyResources() {
 	VkDevice device = m_app->GetVulkanDevice();
 	W_BUFFER* buffers[] = {&m_vertices.buffer, &m_vertices.staging, &m_indices.buffer, &m_indices.staging,
 							&m_animationbuf.buffer, &m_animationbuf.staging};
-	for (int i = 0; i < sizeof(buffers) / sizeof(W_BUFFER*); i++) {
-		if (buffers[i]->buf)
-			vkDestroyBuffer(device, buffers[i]->buf, nullptr);
-		buffers[i]->buf = VK_NULL_HANDLE;
-		if (buffers[i]->mem)
-			vkFreeMemory(device, buffers[i]->mem, nullptr);
-		buffers[i]->mem = VK_NULL_HANDLE;
-	}
+	for (int i = 0; i < sizeof(buffers) / sizeof(W_BUFFER*); i++)
+		buffers[i]->Destroy(device);
 }
 
 void WGeometry::_CalcMinMax(void* vb, unsigned int num_verts) {
@@ -354,14 +290,14 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	if (err)
 		goto destroy_staging;
 
-	err = m_app->GeometryManager->_BeginCopy();
+	err = m_app->BeginCommandBuffer();
 	if (err)
 		goto destroy_staging;
 
 	// Vertex buffer
 	copyRegion.size = vertexBufferSize;
 	vkCmdCopyBuffer(
-		m_app->GeometryManager->m_copyCommandBuffer,
+		m_app->GetCommandBuffer(),
 		m_vertices.staging.buf,
 		m_vertices.buffer.buf,
 		1,
@@ -369,13 +305,13 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	// Index buffer
 	copyRegion.size = indexBufferSize;
 	vkCmdCopyBuffer(
-		m_app->GeometryManager->m_copyCommandBuffer,
+		m_app->GetCommandBuffer(),
 		m_indices.staging.buf,
 		m_indices.buffer.buf,
 		1,
 		&copyRegion);
 
-	err = m_app->GeometryManager->_EndCopy();
+	err = m_app->EndCommandBuffer();
 	if (err)
 		goto destroy_staging;
 
@@ -470,20 +406,20 @@ WError WGeometry::CreateAnimationData(void* ab) {
 	if (err)
 		goto destroy_staging;
 
-	err = m_app->GeometryManager->_BeginCopy();
+	err = m_app->BeginCommandBuffer();
 	if (err)
 		goto destroy_staging;
 
 	// Vertex buffer
 	copyRegion.size = animBufferSize;
 	vkCmdCopyBuffer(
-		m_app->GeometryManager->m_copyCommandBuffer,
+		m_app->GetCommandBuffer(),
 		m_animationbuf.staging.buf,
 		m_animationbuf.buffer.buf,
 		1,
 		&copyRegion);
 
-	err = m_app->GeometryManager->_EndCopy();
+	err = m_app->EndCommandBuffer();
 	if (err)
 		goto destroy_staging;
 
@@ -1279,20 +1215,20 @@ void WGeometry::UnmapVertexBuffer() {
 		if (!m_vertices.readOnlyMap) {
 			VkBufferCopy copyRegion = {};
 
-			VkResult err = m_app->GeometryManager->_BeginCopy();
+			VkResult err = m_app->BeginCommandBuffer();
 			if (err)
 				return;
 
 			// Vertex buffer
 			copyRegion.size = m_vertices.count * GetVertexDescription(0).GetSize();
 			vkCmdCopyBuffer(
-				m_app->GeometryManager->m_copyCommandBuffer,
+				m_app->GetCommandBuffer(),
 				m_vertices.staging.buf,
 				m_vertices.buffer.buf,
 				1,
 				&copyRegion);
 
-			m_app->GeometryManager->_EndCopy();
+			m_app->EndCommandBuffer();
 		}
 	}
 }
@@ -1306,20 +1242,20 @@ void WGeometry::UnmapIndexBuffer() {
 		if (!m_indices.readOnlyMap) {
 			VkBufferCopy copyRegion = {};
 
-			VkResult err = m_app->GeometryManager->_BeginCopy();
+			VkResult err = m_app->BeginCommandBuffer();
 			if (err)
 				return;
 
 			// Index buffer
 			copyRegion.size = m_indices.count * sizeof(DWORD);
 			vkCmdCopyBuffer(
-				m_app->GeometryManager->m_copyCommandBuffer,
+				m_app->GetCommandBuffer(),
 				m_indices.staging.buf,
 				m_indices.buffer.buf,
 				1,
 				&copyRegion);
 
-			m_app->GeometryManager->_EndCopy();
+			m_app->EndCommandBuffer();
 		}
 	}
 }
@@ -1333,20 +1269,20 @@ void WGeometry::UnmapAnimationBuffer() {
 		if (!m_animationbuf.readOnlyMap) {
 			VkBufferCopy copyRegion = {};
 
-			VkResult err = m_app->GeometryManager->_BeginCopy();
+			VkResult err = m_app->BeginCommandBuffer();
 			if (err)
 				return;
 
 			// Vertex buffer
 			copyRegion.size = m_animationbuf.count * GetVertexDescription(1).GetSize();
 			vkCmdCopyBuffer(
-				m_app->GeometryManager->m_copyCommandBuffer,
+				m_app->GetCommandBuffer(),
 				m_animationbuf.staging.buf,
 				m_animationbuf.buffer.buf,
 				1,
 				&copyRegion);
 
-			m_app->GeometryManager->_EndCopy();
+			m_app->EndCommandBuffer();
 		}
 	}
 }
@@ -1603,7 +1539,7 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 	return true;
 }
 
-WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles) {
+WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles, unsigned int num_instances) {
 	VkCommandBuffer renderCmdBuffer = rt->GetCommnadBuffer();
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
@@ -1622,7 +1558,7 @@ WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles) {
 	vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buffer.buf, 0, VK_INDEX_TYPE_UINT32);
 
 	// Draw indexed triangle
-	vkCmdDrawIndexed(renderCmdBuffer, num_triangles * 3, 1, 0, 0, 1);
+	vkCmdDrawIndexed(renderCmdBuffer, num_triangles * 3, num_instances, 0, 0, 0);
 
 	return WError(W_SUCCEEDED);
 }

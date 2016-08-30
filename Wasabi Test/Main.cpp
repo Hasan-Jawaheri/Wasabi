@@ -1,4 +1,3 @@
-#define VK_USE_PLATFORM_WIN32_KHR
 #include "Wasabi.h"
 #include "WForwardRenderer.h"
 
@@ -230,6 +229,67 @@ public:
 	}
 };
 
+class InstancingDemo : public Wasabi {
+	WObject* character;
+	WGeometry* geometry;
+	WImage* texture;
+
+	float fYaw, fPitch, fDist;
+
+public:
+	InstancingDemo() : Wasabi() {
+		fYaw = 0;
+		fPitch = 30;
+		fDist = -15;
+	}
+
+	WError Setup() {
+		this->maxFPS = 60;
+		WError ret = StartEngine(640, 480);
+		if (!ret) {
+			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
+			return ret;
+		}
+
+		LightManager->GetDefaultLight()->Point(0, -1, -1);
+
+		geometry = new WGeometry(this);
+		geometry->LoadFromHXM("Media/dante.HXM");
+
+		texture = new WImage(this);
+		texture->Load("Media/dante.bmp");
+
+		character = new WObject(this);
+		character->SetGeometry(geometry);
+		((WFRMaterial*)character->GetMaterial())->Texture(texture);
+
+		int nx = 20, nz = 20;
+		float width = 60, depth = 40;
+		character->InitInstancing(nx * nz);
+		for (int x = 0; x < nx; x++) {
+			for (int z = 0; z < nz; z++) {
+				float px = (((float)x / (float)(nx - 1)) - 0.5f) * width;
+				float pz = (((float)z / (float)(nz - 1)) - 0.5f) * depth;
+				WInstance* inst = character->CreateInstance();
+				inst->SetPosition(px, 0, pz);
+			}
+		}
+
+		return ret;
+	}
+	bool Loop(float fDeltaTime) {
+		ApplyMousePivot(this, CameraManager->GetDefaultCamera(), fYaw, fPitch, fDist, 0, 2.5, 0);
+
+		char title[128];
+		sprintf_s(title, 128, "FPS: %.2f", FPS);
+		TextComponent->RenderText(title, 5, 5, 32);
+		return true;
+	}
+	void Cleanup() {
+
+	}
+};
+
 Wasabi* WInitialize() {
-	return new AnimationDemo();
+	return new InstancingDemo();
 }

@@ -2,6 +2,32 @@
 
 #include "Wasabi.h"
 
+class WInstance : public WOrientation {
+	friend class WObject;
+
+public:
+	WInstance();
+	~WInstance();
+
+	void				Scale(float x, float y, float z);
+	void				Scale(WVector3 scale);
+	void				ScaleX(float scale);
+	void				ScaleY(float scale);
+	void				ScaleZ(float scale);
+	WVector3			GetScale() const;
+	float				GetScaleX() const;
+	float				GetScaleY() const;
+	float				GetScaleZ() const;
+	WMatrix				GetWorldMatrix();
+	bool				UpdateLocals();
+	void				OnStateChange(STATE_CHANGE_TYPE type);
+
+private:
+	WVector3 m_scale;
+	bool m_bAltered;
+	WMatrix m_worldM;
+};
+
 class WObject : public WBase, public WOrientation {
 	virtual std::string GetTypeName() const;
 
@@ -18,6 +44,12 @@ public:
 	class WGeometry*		GetGeometry() const;
 	class WMaterial*		GetMaterial() const;
 	class WAnimation*		GetAnimation() const;
+
+	WError					InitInstancing(unsigned int maxInstances);
+	WInstance*				CreateInstance();
+	WInstance*				GetInstance(unsigned int index) const;
+	void					DeleteInstance(WInstance* instance);
+	void					DeleteInstance(unsigned int index);
 
 	void					Show();
 	void					Hide();
@@ -40,21 +72,30 @@ public:
 	virtual bool			Valid() const;
 
 private:
-	class WGeometry* m_geometry;
-	class WMaterial* m_material;
-	class WAnimation* m_animation;
+	class WGeometry*	m_geometry;
+	class WMaterial*	m_material;
+	class WAnimation*	m_animation;
+	
+	bool				m_bAltered;
+	bool				m_hidden;
+	bool				m_bFrustumCull;
+	WMatrix				m_WorldM;
+	float				m_fScaleX, m_fScaleY, m_fScaleZ;
+	struct W_BUFFER		m_instanceBuf, m_instanceStaging;
+	unsigned int		m_maxInstances;
+	bool				m_instancesDirty;
+	vector<WInstance*>	m_instanceV;
 
-	bool			m_bAltered;
-	bool			m_hidden;
-	bool			m_bFrustumCull;
-	WMatrix			m_WorldM;
-	float			m_fScaleX, m_fScaleY, m_fScaleZ;
+	void _UpdateInstanceBuffer();
 };
 
 class WObjectManager : public WManager<WObject> {
 	friend class WObject;
 
 	virtual std::string GetTypeName() const;
+
+	struct W_BUFFER		m_dummyBuf;
+	VkBuffer*			GetDummyBuffer();
 
 public:
 	WObjectManager(class Wasabi* const app);
@@ -63,4 +104,5 @@ public:
 						WVector3* pt = nullptr, WVector2* uv = nullptr, unsigned int* faceIndex = nullptr) const;
 
 	void Render(class WRenderTarget* rt);
+	WError Load();
 };

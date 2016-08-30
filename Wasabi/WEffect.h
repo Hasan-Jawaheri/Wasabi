@@ -19,6 +19,11 @@ enum W_SHADER_BOUND_RESOURCE_TYPE {
 	W_TYPE_SAMPLER = 1,
 };
 
+enum W_VERTEX_INPUT_RATE {
+	W_INPUT_RATE_PER_VERTEX = 0,
+	W_INPUT_RATE_PER_INSTANCE = 1,
+};
+
 typedef struct W_SHADER_VARIABLE_INFO {
 	W_SHADER_VARIABLE_INFO(W_SHADER_VARIABLE_TYPE _type, int _num_elems, std::string _name = "")
 		: type(_type), num_elems(_num_elems), name(_name) {}
@@ -45,12 +50,13 @@ typedef struct W_BOUND_RESOURCE {
 } W_BOUND_RESOURCE;
 
 typedef struct W_INPUT_LAYOUT {
-	W_INPUT_LAYOUT(std::vector<W_SHADER_VARIABLE_INFO> a)
-		: attributes(a) {
+	W_INPUT_LAYOUT(std::vector<W_SHADER_VARIABLE_INFO> a, W_VERTEX_INPUT_RATE r = W_INPUT_RATE_PER_VERTEX)
+		: attributes(a), input_rate(r) {
 	}
 	W_INPUT_LAYOUT() : attributes({}) {}
 
 	std::vector<W_SHADER_VARIABLE_INFO> attributes;
+	W_VERTEX_INPUT_RATE input_rate;
 
 	size_t GetSize();
 } W_INPUT_LAYOUT;

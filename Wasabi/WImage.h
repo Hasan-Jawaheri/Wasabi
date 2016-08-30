@@ -53,10 +53,6 @@ class WImageManager : public WManager<WImage> {
 	virtual std::string GetTypeName() const;
 
 	WImage* m_checker_image;
-	VkCommandBuffer m_copyCommandBuffer;
-
-	VkResult _BeginCopy();
-	VkResult _EndCopy();
 
 public:
 	WImageManager(class Wasabi* const app);
@@ -118,15 +114,8 @@ class WRenderTargetManager : public WManager<WRenderTarget> {
 
 	virtual std::string GetTypeName() const;
 
-	VkCommandBuffer m_commandBuffer;
-
-	VkResult _BeginSetLayout();
-	VkResult _EndSetLayout();
-
 public:
 	WRenderTargetManager(class Wasabi* const app);
 	~WRenderTargetManager();
-
-	WError Load();
 };
 

@@ -106,7 +106,7 @@ public:
 								  WVector3* pt = nullptr, WVector2* uv = nullptr,
 								  unsigned int* triangleIndex = nullptr);
 
-	WError				Draw(class WRenderTarget* rt, unsigned int num_triangles = -1);
+	WError				Draw(class WRenderTarget* rt, unsigned int num_triangles = -1, unsigned int num_instances = 1);
 
 	WVector3			GetMinPoint() const;
 	WVector3			GetMaxPoint() const;
@@ -117,10 +117,6 @@ public:
 	virtual bool		Valid() const;
 
 private:
-	struct W_BUFFER {
-		VkBuffer buf;
-		VkDeviceMemory mem;
-	};
 	struct {
 		int count;
 		W_BUFFER buffer, staging;
@@ -151,19 +147,10 @@ private:
 };
 
 class WGeometryManager : public WManager<WGeometry> {
-	friend class WGeometry;
-
 	virtual std::string GetTypeName(void) const;
-
-	VkCommandBuffer m_copyCommandBuffer;
-
-	VkResult _BeginCopy();
-	VkResult _EndCopy();
 
 public:
 	WGeometryManager(class Wasabi* const app);
 	~WGeometryManager();
-
-	WError Load();
 };
 
