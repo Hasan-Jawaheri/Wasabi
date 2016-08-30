@@ -21,6 +21,7 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimationTextureWidth"), // width of the animation texture
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimation"), // whether or not animation is enabled
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gInstancing"), // whether or not instancing is enabled
 			}),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 		};
@@ -33,7 +34,12 @@ public:
 		}), W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone indices
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weights
-		})};
+		}), W_INPUT_LAYOUT({
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // first row
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // second row
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // third row
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // fourth row
+		}, W_INPUT_RATE_PER_INSTANCE)};
 		LoadCodeGLSL(
 			"#version 450\n"
 			""
@@ -46,6 +52,10 @@ public:
 			"layout(location = 3) in vec2 inUV;\n"
 			"layout(location = 4) in uvec4 boneIndex;\n"
 			"layout(location = 5) in vec4 boneWeight;\n"
+			"layout(location = 6) in vec4 instance1;\n"
+			"layout(location = 7) in vec4 instance2;\n"
+			"layout(location = 8) in vec4 instance3;\n"
+			"layout(location = 9) in vec4 instance4;\n"
 			""
 			"layout(binding = 0) uniform UBO {\n"
 			"	mat4 projectionMatrix;\n"
@@ -59,6 +69,15 @@ public:
 			"layout(location = 0) out vec2 outUV;\n"
 			"layout(location = 1) out vec3 outWorldPos;\n"
 			"layout(location = 2) out vec3 outWorldNorm;\n"
+			""
+			"mat4 LoadInstanceMatrix() {\n"
+			"	mat4x4 m;\n"
+			"	m[0] = instance1;\n"
+			"	m[1] = instance2;\n"
+			"	m[2] = instance3;\n"
+			"	m[3] = instance4;\n"
+			"	return m;\n"
+			"}"
 			""
 			"mat4 LoadBoneMatrix(uint boneID)\n"
 			"{\n"
@@ -85,6 +104,7 @@ public:
 			"void main() {\n"
 			"	outUV = inUV;\n"
 			"	mat4x4 animMtx = mat4x4(1.0);\n"
+			"	mat4x4 instMtx = LoadInstanceMatrix();"
 			"	if (ubo.is_animated == 1)\n"
 			"	{\n"
 			"		if (boneWeight.x > 0.001f)\n"
@@ -108,8 +128,9 @@ public:
 			"			}\n"
 			"		}\n"
 			"	}\n"
-			"	vec4 localPos = animMtx * vec4(inPos.xyz, 1.0);\n"
-			"	outWorldPos = (ubo.modelMatrix * localPos).xyz;\n"
+			"	vec4 localPos1 = animMtx * vec4(inPos.xyz, 1.0);\n"
+			"	vec4 localPos2 = instMtx * vec4(localPos1.xyz, 1.0);\n"
+			"	outWorldPos = (ubo.modelMatrix * localPos2).xyz;\n"
 			"	outWorldNorm = (ubo.modelMatrix * vec4(inNorm.xyz, 0.0)).xyz;\n"
 			"	gl_Position = ubo.projectionMatrix * ubo.viewMatrix * vec4(outWorldPos, 1.0);\n"
 			"}\n"

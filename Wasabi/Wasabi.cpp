@@ -120,6 +120,8 @@ Wasabi::Wasabi() {
 	LightManager = nullptr;
 	AnimationManager = nullptr;
 
+	m_copyCommandBuffer = VK_NULL_HANDLE;
+
 	maxFPS = 60.0f;
 }
 Wasabi::~Wasabi() {
@@ -155,6 +157,10 @@ void Wasabi::_DestroyResources() {
 	if (m_swapChainInitialized)
 		m_swapChain.cleanup();
 	m_swapChainInitialized = false;
+
+	if (m_copyCommandBuffer)
+		vkFreeCommandBuffers(m_vkDevice, m_cmdPool, 1, &m_copyCommandBuffer);
+	m_copyCommandBuffer = VK_NULL_HANDLE;
 
 	if (m_cmdPool)
 		vkDestroyCommandPool(m_vkDevice, m_cmdPool, nullptr);
@@ -364,6 +370,19 @@ WError Wasabi::StartEngine(int width, int height) {
 		return WError(W_OUTOFMEMORY);
 	}
 
+	VkCommandBufferAllocateInfo cmdBufInfo = {};
+	// Buffer copies are done on the queue, so we need a command buffer for them
+	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdBufInfo.commandPool = m_cmdPool;
+	cmdBufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	cmdBufInfo.commandBufferCount = 1;
+
+	err = vkAllocateCommandBuffers(m_vkDevice, &cmdBufInfo, &m_copyCommandBuffer);
+	if (err) {
+		_DestroyResources();
+		return WError(W_OUTOFMEMORY);
+	}
+
 	ObjectManager = new WObjectManager(this);
 	GeometryManager = new WGeometryManager(this);
 	EffectManager = new WEffectManager(this);
@@ -380,10 +399,6 @@ WError Wasabi::StartEngine(int width, int height) {
 		_DestroyResources();
 		return WError(W_ERRORUNK);
 	}
-	if (!RenderTargetManager->Load()) {
-		_DestroyResources();
-		return WError(W_ERRORUNK);
-	}
 
 	werr = Renderer->_Initialize();
 	if (!werr) {
@@ -391,7 +406,7 @@ WError Wasabi::StartEngine(int width, int height) {
 		return werr;
 	}
 
-	if (!GeometryManager->Load()) {
+	if (!ObjectManager->Load()) {
 		_DestroyResources();
 		return WError(W_ERRORUNK);
 	}
@@ -459,6 +474,46 @@ VulkanSwapChain* Wasabi::GetSwapChain() {
 
 VkCommandPool Wasabi::GetCommandPool() const {
 	return m_cmdPool;
+}
+
+VkResult Wasabi::BeginCommandBuffer() {
+	VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
+	cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	cmdBufferBeginInfo.pNext = NULL;
+
+	VkResult err = vkResetCommandBuffer(m_copyCommandBuffer, 0);
+	if (err)
+		return err;
+
+	// Put buffer region copies into command buffer
+	// Note that the staging buffer must not be deleted before the copies 
+	// have been submitted and executed
+	return vkBeginCommandBuffer(m_copyCommandBuffer, &cmdBufferBeginInfo);
+}
+
+VkResult Wasabi::EndCommandBuffer() {
+	VkSubmitInfo copySubmitInfo = {};
+	VkResult err = vkEndCommandBuffer(m_copyCommandBuffer);
+	if (err)
+		return err;
+
+	// Submit copies to the queue
+	copySubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	copySubmitInfo.commandBufferCount = 1;
+	copySubmitInfo.pCommandBuffers = &m_copyCommandBuffer;
+
+	err = vkQueueSubmit(Renderer->GetQueue(), 1, &copySubmitInfo, VK_NULL_HANDLE);
+	if (err)
+		return err;
+	err = vkQueueWaitIdle(Renderer->GetQueue());
+	if (err)
+		return err;
+
+	return VK_SUCCESS;
+}
+
+VkCommandBuffer Wasabi::GetCommandBuffer() const {
+	return m_copyCommandBuffer;
 }
 
 int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {

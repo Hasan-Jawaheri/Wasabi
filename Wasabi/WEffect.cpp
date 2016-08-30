@@ -308,7 +308,10 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	for (int i = 0; i < ILs.size(); i++) {
 		bindingDesc[i].binding = i; // VERTEX_BUFFER_BIND_ID;
 		bindingDesc[i].stride = ILs[i]->GetSize();
-		bindingDesc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		if (ILs[i]->input_rate == W_INPUT_RATE_PER_VERTEX)
+			bindingDesc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		else if (ILs[i]->input_rate == W_INPUT_RATE_PER_INSTANCE)
+			bindingDesc[i].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
 		// Attribute descriptions
 		// Describes memory layout and shader attribute locations

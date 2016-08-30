@@ -5,6 +5,13 @@ desc.: Wasabi Engine main header file
 *********************************************************************/
 #pragma once
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#ifndef VK_USE_PLATFORM_WIN32_KHR
+#define VK_USE_PLATFORM_WIN32_KHR
+#endif
+#else
+static const std::string slash = "/";
+#endif
 #include "vulkan/vulkan.h"
 #pragma comment (lib, "vulkan-1.lib")
 #include "vulkanswapchain.hpp"
@@ -46,6 +53,18 @@ using std::array;
 #endif
 
 typedef unsigned int uint;
+
+struct W_BUFFER {
+	VkBuffer buf;
+	VkDeviceMemory mem;
+
+	W_BUFFER() : buf(VK_NULL_HANDLE), mem(VK_NULL_HANDLE) {}
+	void Destroy(VkDevice device) {
+		if (buf)
+			vkDestroyBuffer(device, buf, nullptr);
+		buf = VK_NULL_HANDLE;
+	}
+};
 
 class Wasabi {
 public:
@@ -95,6 +114,10 @@ public:
 	VkCommandPool		GetCommandPool() const;
 	void				GetMemoryType(uint32_t typeBits, VkFlags properties, uint32_t * typeIndex) const;
 
+	VkResult			BeginCommandBuffer();
+	VkResult			EndCommandBuffer();
+	VkCommandBuffer		GetCommandBuffer() const;
+
 protected:
 	virtual int			SelectGPU(std::vector<VkPhysicalDevice> devices);
 	virtual void		SetupComponents();
@@ -110,6 +133,7 @@ private:
 	VkPhysicalDeviceFeatures			m_deviceFeatures;
 	VkPhysicalDeviceMemoryProperties	m_deviceMemoryProperties;
 	VkCommandPool						m_cmdPool;
+	VkCommandBuffer						m_copyCommandBuffer;
 
 	void								_DestroyResources();
 };
@@ -136,8 +160,8 @@ public:
 #include "WPhysicsComponent.h"
 #include "WText.h"
 #include "WRenderer.h"
-#include "WObject.h"
 #include "WGeometry.h"
+#include "WObject.h"
 #include "WEffect.h"
 #include "WMaterial.h"
 #include "WCamera.h"
