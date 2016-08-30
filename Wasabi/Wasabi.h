@@ -154,4 +154,6 @@ public:
 #include "WIC_Linux.h"
 #endif
 
+#pragma comment(lib, "Wasabi.lib")
+
 Wasabi* WInitialize();

@@ -1,3 +1,4 @@
+#define VK_USE_PLATFORM_WIN32_KHR
 #include "Wasabi.h"
 #include "WForwardRenderer.h"
 
@@ -203,7 +204,6 @@ public:
 
 		geometry = new WGeometry(this);
 		geometry->LoadFromHXM("Media/dante.HXM");
-		geometry->CreateCube(5.0f);
 
 		texture = new WImage(this);
 		texture->Load("Media/dante.bmp");
@@ -216,7 +216,7 @@ public:
 		animation->LoadFromWS("Media/dante.HXS");
 
 		character->SetAnimation(animation);
-		animation->SetPlaySpeed(10.0f);
+		animation->SetPlaySpeed(20.0f);
 		animation->Loop();
 
 		return ret;

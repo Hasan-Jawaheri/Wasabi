@@ -18,34 +18,37 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1889E258-3135-46CF-BF68-60C8439971CE}</ProjectGuid>
+    <ProjectGuid>{2AD344E7-EEDD-4C60-B4AA-8FFB65C5FA49}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Wasabi</RootNamespace>
+    <RootNamespace>WasabiTest</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -71,29 +74,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;C:\Program Files (x86)\Havok 710r1\Source;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;C:\Program Files %28x86%29\Havok 710r1\Lib\win32_net_9-0\debug_multithreaded_dll;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(VC_SourcePath)\stb\;$(SourcePath)</SourcePath>
-    <TargetExt>.lib</TargetExt>
+    <IncludePath>$(VK_SDK_PATH)\include\;C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(ProjectDir)\..\Wasabi\;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;$(ProjectDir)\..\Debug\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64;$(LibraryPath)</LibraryPath>
-    <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;C:\Program Files %28x86%29\Havok 710r1\Source;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;C:\Program Files (x86)\Havok 710r1\Lib\win32_net_9-0\release_multithreaded_dll;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(VC_IncludePath)\stb\;$(SourcePath)</SourcePath>
-    <TargetExt>.lib</TargetExt>
+    <IncludePath>$(VK_SDK_PATH)\include\;C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(ProjectDir)\..\Wasabi\;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;$(ProjectDir)\..\Release\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32;$(LibraryPath)</LibraryPath>
-    <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -101,24 +94,22 @@
       </PrecompiledHeader>
       <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level1</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>
-      </SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -133,7 +124,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -141,20 +132,18 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level1</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>
-      </SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -163,84 +152,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="stb\stb_vorbis.c" />
-    <ClCompile Include="WAnimation.cpp" />
-    <ClCompile Include="WDeferredRenderer.cpp" />
-    <ClCompile Include="WHavokPhysics.cpp" />
-    <ClCompile Include="WLight.cpp" />
-    <ClCompile Include="WRenderer.cpp" />
-    <ClCompile Include="WSprite.cpp" />
-    <ClCompile Include="WText.cpp" />
-    <ClCompile Include="WCamera.cpp" />
-    <ClCompile Include="WEffect.cpp" />
-    <ClCompile Include="WMaterial.cpp" />
-    <ClCompile Include="WObject.cpp" />
-    <ClCompile Include="WGeometry.cpp" />
-    <ClCompile Include="WImage.cpp" />
-    <ClCompile Include="vulkantools.cpp" />
-    <ClCompile Include="Wasabi.cpp" />
-    <ClCompile Include="WBase.cpp" />
-    <ClCompile Include="WError.cpp" />
-    <ClCompile Include="WForwardRenderer.cpp" />
-    <ClCompile Include="WIC_Win32.cpp" />
-    <ClCompile Include="WMath.cpp" />
-    <ClCompile Include="WOrientation.cpp" />
-    <ClCompile Include="WSound.cpp" />
-    <ClCompile Include="WTimer.cpp" />
-    <ClCompile Include="WUtilities.cpp" />
-    <ClCompile Include="WWC_Win32.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stb\stb.h" />
-    <ClInclude Include="stb\stb_connected_components.h" />
-    <ClInclude Include="stb\stb_c_lexer.h" />
-    <ClInclude Include="stb\stb_divide.h" />
-    <ClInclude Include="stb\stb_dxt.h" />
-    <ClInclude Include="stb\stb_easy_font.h" />
-    <ClInclude Include="stb\stb_herringbone_wang_tile.h" />
-    <ClInclude Include="stb\stb_image.h" />
-    <ClInclude Include="stb\stb_image_resize.h" />
-    <ClInclude Include="stb\stb_image_write.h" />
-    <ClInclude Include="stb\stb_leakcheck.h" />
-    <ClInclude Include="stb\stb_perlin.h" />
-    <ClInclude Include="stb\stb_rect_pack.h" />
-    <ClInclude Include="stb\stb_textedit.h" />
-    <ClInclude Include="stb\stb_tilemap_editor.h" />
-    <ClInclude Include="stb\stb_truetype.h" />
-    <ClInclude Include="stb\stb_voxel_render.h" />
-    <ClInclude Include="stb\stretchy_buffer.h" />
-    <ClInclude Include="WAnimation.h" />
-    <ClInclude Include="WDeferredRenderer.h" />
-    <ClInclude Include="WHavokPhysics.h" />
-    <ClInclude Include="WLight.h" />
-    <ClInclude Include="WPhysicsComponent.h" />
-    <ClInclude Include="WSprite.h" />
-    <ClInclude Include="WText.h" />
-    <ClInclude Include="WCamera.h" />
-    <ClInclude Include="WEffect.h" />
-    <ClInclude Include="WMaterial.h" />
-    <ClInclude Include="WObject.h" />
-    <ClInclude Include="vulkanswapchain.hpp" />
-    <ClInclude Include="vulkantools.h" />
-    <ClInclude Include="Wasabi.h" />
-    <ClInclude Include="WBase.h" />
-    <ClInclude Include="WError.h" />
-    <ClInclude Include="WForwardRenderer.h" />
-    <ClInclude Include="WGeometry.h" />
-    <ClInclude Include="WIC_Win32.h" />
-    <ClInclude Include="WImage.h" />
-    <ClInclude Include="WInputComponent.h" />
-    <ClInclude Include="WRenderer.h" />
-    <ClInclude Include="WUtilities.h" />
-    <ClInclude Include="WWC_Win32.h" />
-    <ClInclude Include="WWindowComponent.h" />
-    <ClInclude Include="WManager.h" />
-    <ClInclude Include="WMath.h" />
-    <ClInclude Include="WOrientation.h" />
-    <ClInclude Include="WSound.h" />
-    <ClInclude Include="WTimer.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

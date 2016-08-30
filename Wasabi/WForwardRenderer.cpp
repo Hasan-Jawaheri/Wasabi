@@ -30,7 +30,7 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // tangent
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // normal
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
-		}),W_INPUT_LAYOUT({
+		}), W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone indices
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weights
 		})};
