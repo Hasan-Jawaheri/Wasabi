@@ -1614,7 +1614,9 @@ WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles) {
 	// Bind triangle vertices
 	VkDeviceSize offsets[] = { 0, 0 };
 	VkBuffer bindings[] = { m_vertices.buffer.buf, m_animationbuf.buffer.buf };
-	vkCmdBindVertexBuffers(renderCmdBuffer, 0, m_animationbuf.buffer.buf ? 2 : 1, bindings, offsets);
+	if (m_animationbuf.buffer.buf == VK_NULL_HANDLE)
+		bindings[1] = m_vertices.buffer.buf;
+	vkCmdBindVertexBuffers(renderCmdBuffer, 0, 2, bindings, offsets);
 
 	// Bind triangle indices
 	vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buffer.buf, 0, VK_INDEX_TYPE_UINT32);
@@ -1639,4 +1641,8 @@ unsigned int WGeometry::GetNumVertices() const {
 
 unsigned int WGeometry::GetNumIndices() const {
 	return m_indices.count;
+}
+
+bool WGeometry::IsRigged() const {
+	return m_animationbuf.buffer.buf != VK_NULL_HANDLE;
 }

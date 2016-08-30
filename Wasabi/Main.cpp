@@ -203,6 +203,7 @@ public:
 
 		geometry = new WGeometry(this);
 		geometry->LoadFromHXM("Media/dante.HXM");
+		geometry->CreateCube(5.0f);
 
 		texture = new WImage(this);
 		texture->Load("Media/dante.bmp");

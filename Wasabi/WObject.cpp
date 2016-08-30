@@ -162,7 +162,7 @@ void WObject::Render(WRenderTarget* rt) {
 		m_material->SetVariableMatrix("gProjection", cam->GetProjectionMatrix());
 		m_material->SetVariableMatrix("gView", cam->GetViewMatrix());
 		m_material->SetVariableVector3("gCamPos", cam->GetPosition());
-		if (m_animation && m_animation->Valid()) {
+		if (m_animation && m_animation->Valid() && m_geometry->IsRigged()) {
 			WImage* animTex = m_animation->GetTexture();
 			m_material->SetVariableInt("gAnimation", 1);
 			m_material->SetVariableInt("gAnimationTextureWidth", animTex->GetWidth());
