@@ -75,7 +75,7 @@ public:
 		rt = nullptr;
 	}
 	WError Setup() {
-		this->maxFPS = 60;
+		this->maxFPS = 0;
 		WError ret = StartEngine(640, 480);
 		if (!ret) {
 			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
@@ -293,5 +293,5 @@ public:
 };
 
 Wasabi* WInitialize() {
-	return new Kofta();
+	return new InstancingDemo();
 }
