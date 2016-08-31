@@ -1,5 +1,5 @@
 # Wasabi
-Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game Engine.
+Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game Engine. Wasabi is designed to allow C++ programmers to write games and graphics applications easily without having to worry about the details of the tedious graphics APIs (Vulkan, Direct3D, OpenGL, etc...).
 
 ## Current Features
 [tick]: 
