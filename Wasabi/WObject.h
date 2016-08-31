@@ -81,7 +81,7 @@ private:
 	bool				m_bFrustumCull;
 	WMatrix				m_WorldM;
 	float				m_fScaleX, m_fScaleY, m_fScaleZ;
-	struct W_BUFFER		m_instanceBuf, m_instanceStaging;
+	struct W_BUFFER		m_instanceBuf;
 	unsigned int		m_maxInstances;
 	bool				m_instancesDirty;
 	vector<WInstance*>	m_instanceV;

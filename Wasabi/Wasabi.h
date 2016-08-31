@@ -139,18 +139,18 @@ private:
 
 class WGameState {
 protected:
-	Wasabi* const app;
+	Wasabi* const m_app;
 
 public:
-	WGameState(Wasabi* const a) : app(a) {}
+	WGameState(Wasabi* const a) : m_app(a) {}
 	~WGameState(void) {}
 
-	virtual void Load(void) {}
+	virtual void Load() {}
 	virtual void Update(float fDeltaTime) {}
 	virtual void OnKeydown(char c) {}
 	virtual void OnKeyup(char c) {}
 	virtual void OnInput(char c) {}
-	virtual void Cleanup(void) {}
+	virtual void Cleanup() {}
 };
 
 #include "WUtilities.h"

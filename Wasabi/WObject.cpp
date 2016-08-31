@@ -277,7 +277,6 @@ WObject::~WObject() {
 
 	VkDevice device = m_app->GetVulkanDevice();
 	m_instanceBuf.Destroy(device);
-	m_instanceStaging.Destroy(device);
 	for (int i = 0; i < m_instanceV.size(); i++)
 		delete m_instanceV[i];
 	m_instanceV.clear();
@@ -329,6 +328,10 @@ void WObject::Render(WRenderTarget* rt) {
 		else
 			m_material->SetVariableInt("gInstancing", 0);
 
+		WError err;
+		// bind the pipeline
+		err = m_material->Bind(rt);
+
 		// bind the instance buffer, if its not available bind a dummy one.
 		VkDeviceSize offsets[] = { 0 };
 		if (m_instanceBuf.buf)
@@ -336,8 +339,7 @@ void WObject::Render(WRenderTarget* rt) {
 		else
 			vkCmdBindVertexBuffers(rt->GetCommnadBuffer(), 2, 1, m_app->ObjectManager->GetDummyBuffer(), offsets);
 
-		WError err;
-		err = m_material->Bind(rt);
+		// bind the rest of the buffers and draw
 		err = m_geometry->Draw(rt, -1, max(m_instanceV.size(), 1));
 	}
 }
@@ -388,7 +390,6 @@ WError WObject::InitInstancing(unsigned int maxInstances) {
 	VkResult err;
 
 	m_instanceBuf.Destroy(device);
-	m_instanceStaging.Destroy(device);
 	for (int i = 0; i < m_instanceV.size(); i++)
 		delete m_instanceV[i];
 	m_instanceV.clear();
@@ -400,69 +401,23 @@ WError WObject::InitInstancing(unsigned int maxInstances) {
 	// Instance buffer
 	instanceBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	instanceBufferInfo.size = instanceBufferSize;
-	// Buffer is used as the copy source
-	instanceBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-	// Create a host-visible buffer to copy the instance data to (staging buffer)
-	err = vkCreateBuffer(device, &instanceBufferInfo, nullptr, &m_instanceStaging.buf);
-	if (err)
-		goto destroy_resources;
-	vkGetBufferMemoryRequirements(device, m_instanceStaging.buf, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_instanceStaging.mem);
-	if (err) {
-		vkDestroyBuffer(device, m_instanceStaging.buf, nullptr);
-		goto destroy_resources;
-	}
-
-	// Bind memory
-	err = vkBindBufferMemory(device, m_instanceStaging.buf, m_instanceStaging.mem, 0);
-	if (err)
-		goto destroy_staging;
-
-	// Create the destination buffer with device only visibility
-	// Buffer will be used as a vertex buffer
 	instanceBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 	err = vkCreateBuffer(device, &instanceBufferInfo, nullptr, &m_instanceBuf.buf);
 	if (err)
-		goto destroy_staging;
+		goto destroy_resources;
 	vkGetBufferMemoryRequirements(device, m_instanceBuf.buf, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
-	m_app->GetMemoryType(memReqs.memoryTypeBits,
-						 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-						 &memAlloc.memoryTypeIndex);
+	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memAlloc.memoryTypeIndex);
 	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_instanceBuf.mem);
 	if (err)
-		goto destroy_staging;
+		goto destroy_resources;
 	err = vkBindBufferMemory(device, m_instanceBuf.buf, m_instanceBuf.mem, 0);
 	if (err)
-		goto destroy_staging;
-
-	err = m_app->BeginCommandBuffer();
-	if (err)
-		goto destroy_staging;
-
-	// Instance buffer
-	copyRegion.size = instanceBufferSize;;
-	vkCmdCopyBuffer(
-		m_app->GetCommandBuffer(),
-		m_instanceStaging.buf,
-		m_instanceBuf.buf,
-		1,
-		&copyRegion);
-
-	err = m_app->EndCommandBuffer();
-	if (err)
-		goto destroy_staging;
-
-	// Destroy staging buffers
-destroy_staging:
-	m_instanceStaging.Destroy(device);
+		goto destroy_resources;
 
 destroy_resources:
 	if (err) {
 		m_instanceBuf.Destroy(device);
-		m_instanceStaging.Destroy(device);
 		return WError(W_OUTOFMEMORY);
 	}
 
