@@ -32,12 +32,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 			auto tEnd = std::chrono::high_resolution_clock::now();
 			auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
 			deltaTime = (float)tDiff / 1000.0f;
-
-			if (std::chrono::duration<double, std::milli>(tEnd - fpsTimer).count() / 1000.0f > 0.5f) {
-				app->FPS = 1.0f / deltaTime;
-				fpsTimer = std::chrono::high_resolution_clock::now();
-			}
 			maxFPSReached = max(maxFPSReached, 1.0f / deltaTime);
+
+			// update FPS
+			if (std::chrono::duration<double, std::milli>(tEnd - fpsTimer).count() / 1000.0f > 0.5f) {
+				app->FPS = (float)numFrames / 0.5f;
+				fpsTimer = std::chrono::high_resolution_clock::now();
+				numFrames = 0;
+			}
 
 			if (app->maxFPS > 0.001) {
 				float maxDeltaTime = 1.0f / app->maxFPS; // delta time at max FPS
