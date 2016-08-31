@@ -10,7 +10,6 @@ desc.: Wasabi Engine main header file
 #define VK_USE_PLATFORM_WIN32_KHR
 #endif
 #else
-static const std::string slash = "/";
 #endif
 #include "vulkan/vulkan.h"
 #pragma comment (lib, "vulkan-1.lib")
