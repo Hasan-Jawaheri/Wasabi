@@ -111,7 +111,7 @@ public:
 
 		WImage* img = new WImage(this);
 		((WFRMaterial*)o2->GetMaterial())->Texture(img);
-		img->Load("textures/dummy.bmp", true);
+		img->Load("Media/dummy.bmp", true);
 		img->RemoveReference();
 
 		CameraManager->GetDefaultCamera()->SetPosition(0, 15, -15);
