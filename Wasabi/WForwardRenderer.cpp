@@ -20,12 +20,15 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gWorld"), // world
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimationTextureWidth"), // width of the animation texture
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gInstanceTextureWidth"), // width of the instance texture
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimation"), // whether or not animation is enabled
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gInstancing"), // whether or not instancing is enabled
 			}),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
 		};
 		m_desc.animation_texture_index = 1;
+		m_desc.instancing_texture_index = 2;
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // tangent
@@ -34,12 +37,7 @@ public:
 		}), W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone indices
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weights
-		}), W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // first row
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // second row
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // third row
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // fourth row
-		}, W_INPUT_RATE_PER_INSTANCE)};
+		})};
 		LoadCodeGLSL(
 			"#version 450\n"
 			""
@@ -52,33 +50,46 @@ public:
 			"layout(location = 3) in vec2 inUV;\n"
 			"layout(location = 4) in uvec4 boneIndex;\n"
 			"layout(location = 5) in vec4 boneWeight;\n"
-			"layout(location = 6) in vec4 instance1;\n"
-			"layout(location = 7) in vec4 instance2;\n"
-			"layout(location = 8) in vec4 instance3;\n"
-			"layout(location = 9) in vec4 instance4;\n"
 			""
 			"layout(binding = 0) uniform UBO {\n"
 			"	mat4 projectionMatrix;\n"
 			"	mat4 modelMatrix;\n"
 			"	mat4 viewMatrix;\n"
 			"	int animationTextureWidth;\n"
+			"	int instanceTextureWidth;\n"
 			"	int is_animated;\n"
 			"	int is_instanced;\n"
 			"} ubo;\n"
 			"layout(binding = 1) uniform sampler2D samplerAnimation;\n"
+			"layout(binding = 2) uniform sampler2D samplerInstancing;\n"
 			""
 			"layout(location = 0) out vec2 outUV;\n"
 			"layout(location = 1) out vec3 outWorldPos;\n"
 			"layout(location = 2) out vec3 outWorldNorm;\n"
 			""
 			"mat4x4 LoadInstanceMatrix() {\n"
-			"	mat4x4 m;\n"
-		"		m[0] = instance1;\n"
-		"		m[1] = instance2;\n"
-		"		m[2] = instance3;\n"
-		"		m[3] = instance4;\n"
-			"	return m * ubo.is_instanced + mat4x4(1.0) * (1-ubo.is_instanced);\n"
-			"}"
+			"	if (ubo.is_instanced == 1) {\n"
+			"		uint baseIndex = 4 * gl_InstanceIndex;\n"
+			""
+			"		uint baseU = baseIndex % ubo.instanceTextureWidth;\n"
+			"		uint baseV = baseIndex / ubo.instanceTextureWidth;\n"
+			""
+			"		vec4 m1 = texelFetch(samplerInstancing, ivec2(baseU + 0, baseV), 0);\n"
+			"		vec4 m2 = texelFetch(samplerInstancing, ivec2(baseU + 1, baseV), 0);\n"
+			"		vec4 m3 = texelFetch(samplerInstancing, ivec2(baseU + 2, baseV), 0);\n"
+			"		vec4 m4 = vec4(m1.w, m2.w, m3.w, 1.0f);\n"
+			"		m1.w = 0.0f;\n"
+			"		m2.w = 0.0f;\n"
+			"		m3.w = 0.0f;\n"
+			"		mat4x4 m = mat4x4(1.0);\n"
+			"		m[0] = m1;\n"
+			"		m[1] = m2;\n"
+			"		m[2] = m3;\n"
+			"		m[3] = m4;\n"
+			"		return m;\n"
+			"	} else\n"
+			"		return mat4x4(1.0);\n"
+			"}\n"
 			""
 			"mat4x4 LoadBoneMatrix(uint boneID)\n"
 			"{\n"
@@ -140,17 +151,17 @@ public:
 		int maxLights = (int)m_app->engineParams["maxLights"];
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
-			W_BOUND_RESOURCE(W_TYPE_UBO, 3, {
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 3),
+			W_BOUND_RESOURCE(W_TYPE_UBO, 4, {
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4, "color"),
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "isTextured"),
 			}),
-			W_BOUND_RESOURCE(W_TYPE_UBO, 4, { // TODO: make a shared UBO
+			W_BOUND_RESOURCE(W_TYPE_UBO, 5, { // TODO: make a shared UBO
 				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "numLights"),
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "pad"),
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, (sizeof(LightStruct) / 4) * maxLights, "lights"),
 			}),
-			W_BOUND_RESOURCE(W_TYPE_UBO,5,{
+			W_BOUND_RESOURCE(W_TYPE_UBO, 6,{
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "gCamPos"),
 			}),
 		};
@@ -167,16 +178,16 @@ public:
 			"	int type;\n"
 			"};\n"
 			""
-			"layout(binding = 2) uniform sampler2D samplerColor;\n"
-			"layout(binding = 3) uniform UBO {\n"
+			"layout(binding = 3) uniform sampler2D samplerColor;\n"
+			"layout(binding = 4) uniform UBO {\n"
 			"	vec4 color;\n"
 			"	int isTextured;\n"
 			"} ubo;\n"
-			"layout(binding = 4) uniform LUBO {\n"
+			"layout(binding = 5) uniform LUBO {\n"
 			"	int numLights;\n"
 			"	Light lights[" + std::to_string(maxLights) + "];\n"
 			"} lubo;\n"
-			"layout(binding = 5) uniform CAM {\n"
+			"layout(binding = 6) uniform CAM {\n"
 			"	vec3 gCamPos;\n"
 			"} cam;\n"
 			""
@@ -370,19 +381,19 @@ WFRMaterial::WFRMaterial(Wasabi* const app, unsigned int ID) : WMaterial(app, ID
 
 }
 
-WError WFRMaterial::Bind(WRenderTarget* rt) {
+WError WFRMaterial::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
 	//TODO: remove this and make shared UBO
 	int nLights = ((WForwardRenderer*)m_app->Renderer)->m_numLights;
 	SetVariableInt("numLights", nLights);
 	SetVariableData("lights", ((WForwardRenderer*)m_app->Renderer)->m_lights, nLights * sizeof(LightStruct));
 
-	return WMaterial::Bind(rt);
+	return WMaterial::Bind(rt, num_vertex_buffers);
 }
 
 WError WFRMaterial::Texture(class WImage* img) {
 	int isTextured = 1;
 	SetVariableInt("isTextured", isTextured);
-	return SetTexture(2, img);
+	return SetTexture(3, img);
 }
 
 WError WFRMaterial::SetColor(WColor col) {

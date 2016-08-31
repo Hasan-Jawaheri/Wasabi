@@ -585,6 +585,7 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 				   sizeof WMatrix - 4 * sizeof(float));
 		m_boneTex = new WImage(m_app);
 		int oldMips = (int)m_app->engineParams["numGeneratedMips"];
+		m_app->engineParams["numGeneratedMips"] = (void*)1;
 		err = m_boneTex->CreateFromPixelsArray(texData, texWidth, texWidth, true);
 		m_app->engineParams["numGeneratedMips"] = (void*)oldMips;
 		W_SAFE_DELETE_ARRAY(texData);

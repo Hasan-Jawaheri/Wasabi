@@ -81,8 +81,7 @@ private:
 	bool				m_bFrustumCull;
 	WMatrix				m_WorldM;
 	float				m_fScaleX, m_fScaleY, m_fScaleZ;
-	struct W_BUFFER		m_instanceBuf;
-	unsigned int		m_maxInstances;
+	class WImage*		m_instanceTexture;
 	bool				m_instancesDirty;
 	vector<WInstance*>	m_instanceV;
 
@@ -93,9 +92,6 @@ class WObjectManager : public WManager<WObject> {
 	friend class WObject;
 
 	virtual std::string GetTypeName() const;
-
-	struct W_BUFFER		m_dummyBuf;
-	VkBuffer*			GetDummyBuffer();
 
 public:
 	WObjectManager(class Wasabi* const app);

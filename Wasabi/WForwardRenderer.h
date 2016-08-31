@@ -25,7 +25,7 @@ class WFRMaterial : public WMaterial {
 public:
 	WFRMaterial(Wasabi* const app, unsigned int ID = 0);
 
-	virtual WError Bind(class WRenderTarget* rt);
+	virtual WError Bind(class WRenderTarget* rt, unsigned int num_vertex_buffers = -1);
 
 	WError Texture(class WImage* img);
 	WError SetColor(WColor col);

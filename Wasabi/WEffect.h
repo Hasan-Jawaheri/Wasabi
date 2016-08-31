@@ -62,10 +62,11 @@ typedef struct W_INPUT_LAYOUT {
 } W_INPUT_LAYOUT;
 
 typedef struct W_SHADER_DESC {
+	W_SHADER_DESC() : animation_texture_index(-1), instancing_texture_index(-1) {}
 	W_SHADER_TYPE type;
 	std::vector<W_BOUND_RESOURCE> bound_resources; // UBOs and samplers
 	std::vector<W_INPUT_LAYOUT> input_layouts; // one layout for each vertex buffer that can be bound
-	unsigned int animation_texture_index;
+	unsigned int animation_texture_index, instancing_texture_index;
 } W_SHADER_DESC;
 
 class WShader : public WBase {
@@ -104,9 +105,9 @@ class WEffect : public WBase {
 	friend class WMaterial;
 	virtual std::string GetTypeName() const;
 
+	std::vector<VkPipeline>				m_pipelines;
 	std::vector<WShader*>				m_shaders;
 	VkPrimitiveTopology					m_topology;
-	VkPipeline							m_pipeline;
 	VkPipelineLayout					m_pipelineLayout;
 	VkDescriptorSetLayout				m_descriptorSetLayout;
 
@@ -115,6 +116,7 @@ class WEffect : public WBase {
 	VkPipelineRasterizationStateCreateInfo m_rasterizationState;
 
 	void _DestroyPipeline();
+	bool _ValidShaders() const;
 
 public:
 	WEffect(class Wasabi* const app, unsigned int ID = 0);
@@ -127,7 +129,7 @@ public:
 	void					SetDepthStencilState(VkPipelineDepthStencilStateCreateInfo state);
 	void					SetRasterizationState(VkPipelineRasterizationStateCreateInfo state);
 	WError					BuildPipeline(class WRenderTarget* rt);
-	WError					Bind(class WRenderTarget* rt);
+	WError					Bind(class WRenderTarget* rt, unsigned int num_vertex_buffers = -1);
 	
 	VkPipelineLayout*		GetPipelineLayout();
 	VkDescriptorSetLayout*	GetDescriptorSetLayout();

@@ -1,6 +1,21 @@
 #include "Wasabi.h"
 #include "WForwardRenderer.h"
 
+class WasabiTester : public Wasabi {
+	float fYaw, fPitch, fDist;
+	WVector3 vPos;
+
+	void ApplyMousePivot();
+
+public:
+	WasabiTester();
+	WError Setup();
+	bool Loop(float fDeltaTime);
+	void Cleanup();
+	void SetCameraPosition(WVector3 pos);
+	void SetZoom(float d);
+};
+
 class Kofta : public WGameState {
 	WObject *o, *o2, *o3;
 	WLight* l;
@@ -12,8 +27,7 @@ public:
 		rt = nullptr;
 	}
 
-	WError Setup() {
-
+	virtual void Load() {
 		o = new WObject(m_app);
 		o2 = new WObject(m_app, 2);
 		o3 = new WObject(m_app);
@@ -69,7 +83,8 @@ public:
 		rt->Create(640, 480, rtImg);
 		((WFRMaterial*)o->GetMaterial())->Texture(rtImg);
 	}
-	bool Loop(float fDeltaTime) {
+
+	virtual void Update(float fDeltaTime) {
 		int mx = m_app->InputComponent->MouseX();
 		int my = m_app->InputComponent->MouseY();
 
@@ -94,9 +109,8 @@ public:
 		sprintf_s(title, 128, "Elapsed time: %.2f\nFPS: %.2f", m_app->Timer.GetElapsedTime() / 1000.0f, m_app->FPS);
 		int width = m_app->TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
 		m_app->TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 1);
-
-		return true;
 	}
+
 	void Cleanup() {
 		o->RemoveReference();
 		o2->RemoveReference();
@@ -169,8 +183,9 @@ public:
 		int instancing = 2;
 
 		if (instancing) {
-			int nx = 100, nz = 100;
-			float width = 300, depth = 200;
+			int nx = 20, nz = 80;
+			float width = 3 * nx, depth = nz;
+			((WasabiTester*)m_app)->SetZoom(-depth * 1.2f);
 			if (instancing == 2)
 				character->InitInstancing(nx * nz);
 			for (int x = 0; x < nx; x++) {
@@ -206,101 +221,100 @@ public:
 	}
 };
 
-class WasabiTester : public Wasabi {
-	float fYaw, fPitch, fDist;
-	WVector3 vPos;
 
-	void ApplyMousePivot() {
-		WCamera* cam = CameraManager->GetDefaultCamera();
-		static bool bMouseHidden = false;
-		static int lx, ly;
-		if (InputComponent->MouseClick(MOUSE_LEFT)) {
-			if (!bMouseHidden) {
-				ShowCursor(FALSE);
-				bMouseHidden = true;
+void WasabiTester::ApplyMousePivot() {
+	WCamera* cam = CameraManager->GetDefaultCamera();
+	static bool bMouseHidden = false;
+	static int lx, ly;
+	if (InputComponent->MouseClick(MOUSE_LEFT)) {
+		if (!bMouseHidden) {
+			ShowCursor(FALSE);
+			bMouseHidden = true;
 
-				lx = InputComponent->MouseX(MOUSEPOS_DESKTOP, 0);
-				ly = InputComponent->MouseY(MOUSEPOS_DESKTOP, 0);
+			lx = InputComponent->MouseX(MOUSEPOS_DESKTOP, 0);
+			ly = InputComponent->MouseY(MOUSEPOS_DESKTOP, 0);
 
-				POINT pt = { 640 / 2, 480 / 2 };
-				ClientToScreen(((WWC_Win32*)WindowComponent)->GetWindow(), &pt);
-				SetCursorPos(pt.x, pt.y);
-			}
-
-			int mx = InputComponent->MouseX(MOUSEPOS_VIEWPORT, 0);
-			int my = InputComponent->MouseY(MOUSEPOS_VIEWPORT, 0);
-
-			int dx = mx - 640 / 2;
-			int dy = my - 480 / 2;
-
-			if (abs(dx) < 2)
-				dx = 0;
-			if (abs(dy) < 2)
-				dy = 0;
-
-			fYaw += (float)dx / 2.0f;
-			fPitch += (float)dy / 2.0f;
-
-			if (dx || dy)
-				InputComponent->SetMousePosition(640 / 2, 480 / 2);
-		} else {
-			if (bMouseHidden) {
-				ShowCursor(TRUE);
-				bMouseHidden = false;
-
-				SetCursorPos(lx, ly);
-			}
+			POINT pt = { 640 / 2, 480 / 2 };
+			ClientToScreen(((WWC_Win32*)WindowComponent)->GetWindow(), &pt);
+			SetCursorPos(pt.x, pt.y);
 		}
 
-		float fMouseZ = InputComponent->MouseZ();
-		fDist += (fMouseZ / 120.0f) * (abs(fDist) / 10.0f);
-		InputComponent->SetMouseZ(0);
-		fDist = min(-1, fDist);
+		int mx = InputComponent->MouseX(MOUSEPOS_VIEWPORT, 0);
+		int my = InputComponent->MouseY(MOUSEPOS_VIEWPORT, 0);
 
-		cam->SetPosition(vPos);
-		cam->SetAngle(0, 0, 0);
-		cam->Yaw(fYaw);
-		cam->Pitch(fPitch);
-		cam->Move(fDist);
-	}
+		int dx = mx - 640 / 2;
+		int dy = my - 480 / 2;
 
-public:
-	WasabiTester() : Wasabi() {
-		fYaw = 0;
-		fPitch = 30;
-		fDist = -15;
-	}
+		if (abs(dx) < 2)
+			dx = 0;
+		if (abs(dy) < 2)
+			dy = 0;
 
-	WError Setup() {
-		this->maxFPS = 0;
-		WError ret = StartEngine(640, 480);
-		if (!ret) {
-			MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
-			return ret;
+		fYaw += (float)dx / 2.0f;
+		fPitch += (float)dy / 2.0f;
+
+		if (dx || dy)
+			InputComponent->SetMousePosition(640 / 2, 480 / 2);
+	} else {
+		if (bMouseHidden) {
+			ShowCursor(TRUE);
+			bMouseHidden = false;
+
+			SetCursorPos(lx, ly);
 		}
+	}
 
-		LightManager->GetDefaultLight()->Point(0, -1, -1);
+	float fMouseZ = InputComponent->MouseZ();
+	fDist += (fMouseZ / 120.0f) * (abs(fDist) / 10.0f);
+	InputComponent->SetMouseZ(0);
+	fDist = min(-1, fDist);
 
-		SwitchState(new InstancingDemo(this));
+	cam->SetPosition(vPos);
+	cam->SetAngle(0, 0, 0);
+	cam->Yaw(fYaw);
+	cam->Pitch(fPitch);
+	cam->Move(fDist);
+}
 
+WasabiTester::WasabiTester() : Wasabi() {
+	fYaw = 0;
+	fPitch = 30;
+	fDist = -15;
+}
+
+WError WasabiTester::Setup() {
+	this->maxFPS = 0;
+	WError ret = StartEngine(640, 480);
+	if (!ret) {
+		MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
 		return ret;
 	}
-	bool Loop(float fDeltaTime) {
-		ApplyMousePivot();
 
-		char title[128];
-		sprintf_s(title, 128, "FPS: %.2f", FPS);
-		TextComponent->RenderText(title, 5, 5, 32);
-		return true;
-	}
-	void Cleanup() {
-		SwitchState(nullptr);
-	}
+	LightManager->GetDefaultLight()->Point(0, -1, -1);
 
-	void SetCameraPosition(WVector3 pos) {
-		vPos = pos;
-	}
-};
+	SwitchState(new InstancingDemo(this));
+
+	return ret;
+}
+bool WasabiTester::Loop(float fDeltaTime) {
+	ApplyMousePivot();
+
+	char title[128];
+	sprintf_s(title, 128, "FPS: %.2f", FPS);
+	TextComponent->RenderText(title, 5, 5, 32);
+
+	return true;
+}
+void WasabiTester::Cleanup() {
+	SwitchState(nullptr);
+}
+
+void WasabiTester::SetCameraPosition(WVector3 pos) {
+	vPos = pos;
+}
+void WasabiTester::SetZoom(float d) {
+	fDist = d;
+}
 
 Wasabi* WInitialize() {
 	return new WasabiTester();

@@ -16,44 +16,7 @@ void WObjectManager::Render(WRenderTarget* rt) {
 }
 
 WError WObjectManager::Load() {
-	VkDevice device = m_app->GetVulkanDevice();
-	VkMemoryAllocateInfo memAlloc = {};
-	VkMemoryRequirements memReqs;
-	VkBufferCreateInfo dummyBufferInfo = {};
-	VkBufferCopy copyRegion = {};
-	void *data;
-	VkResult err;
-
-	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-
-	// Instance buffer
-	dummyBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	dummyBufferInfo.size = 1;
-	dummyBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	err = vkCreateBuffer(device, &dummyBufferInfo, nullptr, &m_dummyBuf.buf);
-	if (err)
-		goto destroy_resources;
-	vkGetBufferMemoryRequirements(device, m_dummyBuf.buf, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	m_app->GetMemoryType(memReqs.memoryTypeBits,
-						 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-						 &memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_dummyBuf.mem);
-	if (err)
-		goto destroy_resources;
-	err = vkBindBufferMemory(device, m_dummyBuf.buf, m_dummyBuf.mem, 0);
-
-destroy_resources:
-	if (err) {
-		m_dummyBuf.Destroy(device);
-		return WError(W_OUTOFMEMORY);
-	}
-
 	return WError(W_SUCCEEDED);
-}
-
-VkBuffer* WObjectManager::GetDummyBuffer() {
-	return &m_dummyBuf.buf;
 }
 
 WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iObjStartID, unsigned int iObjEndID,
@@ -253,7 +216,7 @@ void WInstance::OnStateChange(STATE_CHANGE_TYPE type) {
 	m_bAltered = true;
 }
 
-WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_instanceV(0) {
 	m_geometry = nullptr;
 	m_material = app->Renderer->CreateDefaultMaterial();
 	m_animation = nullptr;
@@ -265,7 +228,7 @@ WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_WorldM = WMatrix();
 	m_fScaleX = m_fScaleY = m_fScaleZ = 100.0f;
 
-	m_maxInstances = 0;
+	m_instanceTexture = nullptr;
 
 	app->ObjectManager->AddEntity(this);
 }
@@ -276,7 +239,7 @@ WObject::~WObject() {
 	W_SAFE_REMOVEREF(m_animation);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	m_instanceBuf.Destroy(device);
+	W_SAFE_REMOVEREF(m_instanceTexture);
 	for (int i = 0; i < m_instanceV.size(); i++)
 		delete m_instanceV[i];
 	m_instanceV.clear();
@@ -315,32 +278,27 @@ void WObject::Render(WRenderTarget* rt) {
 		m_material->SetVariableMatrix("gView", cam->GetViewMatrix());
 		m_material->SetVariableVector3("gCamPos", cam->GetPosition());
 		// animation variables
-		if (m_animation && m_animation->Valid() && m_geometry->IsRigged()) {
+		bool is_animated = m_animation && m_animation->Valid() && m_geometry->IsRigged();
+		bool is_instanced = m_instanceV.size() > 0;
+		m_material->SetVariableInt("gAnimation", is_animated ? 1 : 0);
+		m_material->SetVariableInt("gInstancing", is_instanced ? 1 : 0);
+		if (is_animated) {
 			WImage* animTex = m_animation->GetTexture();
-			m_material->SetVariableInt("gAnimation", 1);
 			m_material->SetVariableInt("gAnimationTextureWidth", animTex->GetWidth());
 			m_material->SetAnimationTexture(animTex);
-		} else
-			m_material->SetVariableInt("gAnimation", 0);
+		}
 		// instancing variables
-		if (m_instanceV.size())
-			m_material->SetVariableInt("gInstancing", 1);
-		else
-			m_material->SetVariableInt("gInstancing", 0);
+		if (is_instanced) {
+			m_material->SetVariableInt("gInstanceTextureWidth", m_instanceTexture->GetWidth());
+			m_material->SetInstancingTexture(m_instanceTexture);
+		}
 
 		WError err;
 		// bind the pipeline
-		err = m_material->Bind(rt);
-
-		// bind the instance buffer, if its not available bind a dummy one.
-		VkDeviceSize offsets[] = { 0 };
-		if (m_instanceBuf.buf)
-			vkCmdBindVertexBuffers(rt->GetCommnadBuffer(), 2, 1, &m_instanceBuf.buf, offsets);
-		else
-			vkCmdBindVertexBuffers(rt->GetCommnadBuffer(), 2, 1, m_app->ObjectManager->GetDummyBuffer(), offsets);
+		err = m_material->Bind(rt, is_animated ? 2 : 1);
 
 		// bind the rest of the buffers and draw
-		err = m_geometry->Draw(rt, -1, max(m_instanceV.size(), 1));
+		err = m_geometry->Draw(rt, -1, max(m_instanceV.size(), 1), is_animated);
 	}
 }
 
@@ -381,54 +339,33 @@ WError WObject::SetAnimation(class WAnimation* animation) {
 }
 
 WError WObject::InitInstancing(unsigned int maxInstances) {
-	VkDevice device = m_app->GetVulkanDevice();
-	VkMemoryAllocateInfo memAlloc = {};
-	VkMemoryRequirements memReqs;
-	VkBufferCreateInfo instanceBufferInfo = {};
-	VkBufferCopy copyRegion = {};
-	void *data;
-	VkResult err;
-
-	m_instanceBuf.Destroy(device);
+	W_SAFE_REMOVEREF(m_instanceTexture);
 	for (int i = 0; i < m_instanceV.size(); i++)
 		delete m_instanceV[i];
 	m_instanceV.clear();
 
-	int instanceBufferSize = maxInstances * sizeof(WMatrix);
+	float fExactWidth = sqrtf(maxInstances * 4);
+	unsigned int texWidth = 2;
+	while (fExactWidth > texWidth)
+		texWidth *= 2;
 
-	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	float* texData = new float[texWidth * texWidth * 4];
+	m_instanceTexture = new WImage(m_app);
+	WError ret = m_instanceTexture->CreateFromPixelsArray(texData, texWidth, texWidth, true);
+	W_SAFE_DELETE_ARRAY(texData);
 
-	// Instance buffer
-	instanceBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	instanceBufferInfo.size = instanceBufferSize;
-	instanceBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-	err = vkCreateBuffer(device, &instanceBufferInfo, nullptr, &m_instanceBuf.buf);
-	if (err)
-		goto destroy_resources;
-	vkGetBufferMemoryRequirements(device, m_instanceBuf.buf, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_instanceBuf.mem);
-	if (err)
-		goto destroy_resources;
-	err = vkBindBufferMemory(device, m_instanceBuf.buf, m_instanceBuf.mem, 0);
-	if (err)
-		goto destroy_resources;
-
-destroy_resources:
-	if (err) {
-		m_instanceBuf.Destroy(device);
-		return WError(W_OUTOFMEMORY);
+	if (!ret) {
+		W_SAFE_REMOVEREF(m_instanceTexture);
+		return ret;
 	}
 
-	m_maxInstances = 0;
 	m_instancesDirty = true;
 
 	return WError(W_SUCCEEDED);
 }
 
 WInstance* WObject::CreateInstance() {
-	if (m_instanceBuf.buf == VK_NULL_HANDLE)
+	if (!m_instanceTexture)
 		return NULL;
 
 	WInstance* inst = new WInstance();
@@ -462,19 +399,20 @@ void WObject::DeleteInstance(unsigned int index) {
 }
 
 void WObject::_UpdateInstanceBuffer() {
-	if (m_instanceBuf.buf && m_instanceV.size()) { //update the instance buffer
+	if (m_instanceTexture && m_instanceV.size()) { //update the instance buffer
 		bool bReconstruct = m_instancesDirty;
 		for (unsigned int i = 0; i < m_instanceV.size(); i++)
 			if (m_instanceV[i]->UpdateLocals())
 				bReconstruct = true;
 		if (bReconstruct) {
 			void* pData;
-			VkResult err = vkMapMemory(m_app->GetVulkanDevice(), m_instanceBuf.mem,
-									   0, m_maxInstances * sizeof(WMatrix), 0, &pData);
-			if (err == VK_SUCCESS) {
-				for (unsigned int i = 0; i < m_instanceV.size(); i++)
-					memcpy(&((char*)pData)[i * sizeof WMatrix], m_instanceV[i]->m_worldM, sizeof WMatrix);
-				vkUnmapMemory(m_app->GetVulkanDevice(), m_instanceBuf.mem);
+			WError ret = m_instanceTexture->MapPixels(&pData);
+			if (ret) {
+				for (unsigned int i = 0; i < m_instanceV.size(); i++) {
+					WMatrix m = m_instanceV[i]->m_worldM;
+					memcpy(&((char*)pData)[i * sizeof WMatrix], &m, sizeof WMatrix - sizeof(float));
+				}
+				m_instanceTexture->UnmapPixels();
 			}
 		}
 		m_instancesDirty = false;

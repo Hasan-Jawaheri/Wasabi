@@ -1539,7 +1539,7 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 	return true;
 }
 
-WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles, unsigned int num_instances) {
+WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles, unsigned int num_instances, bool bind_animation) {
 	VkCommandBuffer renderCmdBuffer = rt->GetCommnadBuffer();
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
@@ -1552,7 +1552,7 @@ WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles, unsigned i
 	VkBuffer bindings[] = { m_vertices.buffer.buf, m_animationbuf.buffer.buf };
 	if (m_animationbuf.buffer.buf == VK_NULL_HANDLE)
 		bindings[1] = m_vertices.buffer.buf;
-	vkCmdBindVertexBuffers(renderCmdBuffer, 0, 2, bindings, offsets);
+	vkCmdBindVertexBuffers(renderCmdBuffer, 0, bind_animation ? 2 : 1, bindings, offsets);
 
 	// Bind triangle indices
 	vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buffer.buf, 0, VK_INDEX_TYPE_UINT32);
