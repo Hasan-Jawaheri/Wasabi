@@ -87,6 +87,18 @@ WIP
 
 WIP
 
+## Contribution
+
+WIP
+
 ## Contact
 
 Please let me know about any issues, dead links, suggestions or any comments. My email is hasan.aljawaheri [at] gmail [dot] com
+
+## Acknowledgments
+
+Thanks [nothings](https://github.com/nothings) for the [stb](https://github.com/nothings/stb) library which Wasabi uses for font rendering.
+
+## License
+
+GNU Public license, feel free to go wild with this.
