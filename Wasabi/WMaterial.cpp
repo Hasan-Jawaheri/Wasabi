@@ -222,7 +222,7 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WMaterial::Bind(WRenderTarget* rt) {
+WError WMaterial::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
@@ -253,7 +253,7 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 
 	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *m_effect->GetPipelineLayout(), 0, 1, &m_descriptorSet, 0, NULL);
 
-	return m_effect->Bind(rt);
+	return m_effect->Bind(rt, num_vertex_buffers);
 }
 
 WError WMaterial::SetVariableFloat(std::string varName, float fVal) {
@@ -338,6 +338,7 @@ WError WMaterial::SetTexture(int binding_index, WImage* img) {
 	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
 }
+
 WError WMaterial::SetAnimationTexture(WImage* img) {
 	if (!Valid())
 		return WError(W_NOTVALID);
@@ -346,6 +347,18 @@ WError WMaterial::SetAnimationTexture(WImage* img) {
 	for (int i = 0; i < m_effect->m_shaders.size() && binding_index == -1; i++) {
 		if (m_effect->m_shaders[i]->m_desc.type == W_VERTEX_SHADER)
 			binding_index = m_effect->m_shaders[i]->m_desc.animation_texture_index;
+	}
+	return SetTexture(binding_index, img);
+}
+
+WError WMaterial::SetInstancingTexture(WImage* img) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	unsigned int binding_index = -1;
+	for (int i = 0; i < m_effect->m_shaders.size() && binding_index == -1; i++) {
+		if (m_effect->m_shaders[i]->m_desc.type == W_VERTEX_SHADER)
+			binding_index = m_effect->m_shaders[i]->m_desc.instancing_texture_index;
 	}
 	return SetTexture(binding_index, img);
 }

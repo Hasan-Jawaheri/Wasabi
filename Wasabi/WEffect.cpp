@@ -109,7 +109,6 @@ WEffectManager::WEffectManager(class Wasabi* const app) : WManager<WEffect>(app)
 WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-	m_pipeline = VK_NULL_HANDLE;
 	m_pipelineLayout = VK_NULL_HANDLE;
 	m_descriptorSetLayout = VK_NULL_HANDLE;
 
@@ -156,7 +155,7 @@ std::string WEffect::GetTypeName() const {
 	return "Effect";
 }
 
-bool WEffect::Valid() const {
+bool WEffect::_ValidShaders() const {
 	// valid when at least one shader has input layout (vertex shader)
 	for (int i = 0; i < m_shaders.size(); i++)
 		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER &&
@@ -165,6 +164,10 @@ bool WEffect::Valid() const {
 			m_shaders[i]->Valid())
 			return true;
 	return false;
+}
+
+bool WEffect::Valid() const {
+	return _ValidShaders() && m_pipelines.size() > 0;
 }
 
 WError WEffect::BindShader(WShader* shader) {
@@ -206,13 +209,13 @@ void WEffect::_DestroyPipeline() {
 
 	if (m_pipelineLayout)
 		vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
-	if (m_pipeline)
-		vkDestroyPipeline(device, m_pipeline, nullptr);
 	if (m_descriptorSetLayout)
 		vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
+	for (int i = 0; i < m_pipelines.size(); i++)
+		vkDestroyPipeline(device, m_pipelines[i], nullptr);
+	m_pipelines.clear();
 
 	m_descriptorSetLayout = VK_NULL_HANDLE;
-	m_pipeline = VK_NULL_HANDLE;
 	m_pipelineLayout = VK_NULL_HANDLE;
 }
 
@@ -231,11 +234,10 @@ void WEffect::SetRasterizationState(VkPipelineRasterizationStateCreateInfo state
 WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	VkDevice device = m_app->GetVulkanDevice();
 
-	if (!Valid())
+	if (!_ValidShaders())
 		return WError(W_NOTVALID);
 
 	_DestroyPipeline();
-
 
 	//
 	// Create descriptor set layout
@@ -290,56 +292,8 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 		return WError(W_FAILEDTOCREATEPIPELINELAYOUT);
 	}
 
-	vector<W_INPUT_LAYOUT*> ILs; // all ILs for this effect
-	unsigned int num_attributes = 0;
-	for (int i = 0; i < m_shaders.size(); i++) {
-		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER) {
-			for (int j = 0; j < m_shaders[i]->m_desc.input_layouts.size(); j++) {
-				ILs.push_back(&m_shaders[i]->m_desc.input_layouts[j]);
-				num_attributes += m_shaders[i]->m_desc.input_layouts[j].attributes.size();
-			}
-		}
-	}
-
-	vector<VkVertexInputBindingDescription> bindingDesc(ILs.size());
-	std::vector<VkVertexInputAttributeDescription> attribDesc(num_attributes);
-	unsigned int cur_attrib = 0;
-	// Binding description
-	for (int i = 0; i < ILs.size(); i++) {
-		bindingDesc[i].binding = i; // VERTEX_BUFFER_BIND_ID;
-		bindingDesc[i].stride = ILs[i]->GetSize();
-		if (ILs[i]->input_rate == W_INPUT_RATE_PER_VERTEX)
-			bindingDesc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		else if (ILs[i]->input_rate == W_INPUT_RATE_PER_INSTANCE)
-			bindingDesc[i].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
-
-		// Attribute descriptions
-		// Describes memory layout and shader attribute locations
-		unsigned int prev_size = 0;
-		for (int j = 0; j < ILs[i]->attributes.size(); j++) {
-			attribDesc[cur_attrib].binding = i;
-			attribDesc[cur_attrib].location = cur_attrib;
-			attribDesc[cur_attrib].format = ILs[i]->attributes[j].GetFormat();
-			attribDesc[cur_attrib].offset = 0;
-			if (j > 0)
-				attribDesc[cur_attrib].offset = attribDesc[cur_attrib - 1].offset + prev_size;
-			prev_size = ILs[i]->attributes[j].GetSize();
-			cur_attrib++;
-		}
-	}
-
-	// Assign to vertex buffer
-	VkPipelineVertexInputStateCreateInfo inputState;
-	inputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	inputState.pNext = NULL;
-	inputState.flags = VK_FLAGS_NONE;
-	inputState.vertexBindingDescriptionCount = bindingDesc.size();
-	inputState.pVertexBindingDescriptions = bindingDesc.data();
-	inputState.vertexAttributeDescriptionCount = attribDesc.size();
-	inputState.pVertexAttributeDescriptions = attribDesc.data();
-
 	//IA state
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState;
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
 	inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
@@ -394,7 +348,6 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	// The layout used for this pipeline
 	pipelineCreateInfo.layout = m_pipelineLayout;
 
-	pipelineCreateInfo.pVertexInputState = &inputState;
 	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
 	pipelineCreateInfo.stageCount = shaderStages.size();
 	pipelineCreateInfo.pStages = shaderStages.data();
@@ -406,20 +359,92 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	pipelineCreateInfo.renderPass = rt->GetRenderPass();
 	pipelineCreateInfo.pDynamicState = &dynamicState;
 
-	// Create rendering pipeline
-	err = vkCreateGraphicsPipelines(device, rt->GetPipelineCache(), 1, &pipelineCreateInfo, nullptr, &m_pipeline);
+	// Create rendering pipelines, one for each VB count (starting from 0)
+	std::vector<VkGraphicsPipelineCreateInfo> pipelineCreateInfos;
+
+	vector<W_INPUT_LAYOUT*> ILs; // all ILs for this effect
+	unsigned int num_attributes = 0;
+	for (int i = 0; i < m_shaders.size(); i++) {
+		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER) {
+			for (int j = 0; j < m_shaders[i]->m_desc.input_layouts.size(); j++) {
+				ILs.push_back(&m_shaders[i]->m_desc.input_layouts[j]);
+				num_attributes += m_shaders[i]->m_desc.input_layouts[j].attributes.size();
+			}
+		}
+	}
+
+	std::vector<VkVertexInputBindingDescription> bindingDesc(ILs.size());
+	std::vector<VkVertexInputAttributeDescription> attribDesc(num_attributes);
+
+	unsigned int cur_attrib = 0;
+	// Binding description
+	for (int i = 0; i < ILs.size(); i++) {
+		bindingDesc[i].binding = i; // VERTEX_BUFFER_BIND_ID;
+		bindingDesc[i].stride = ILs[i]->GetSize();
+		if (ILs[i]->input_rate == W_INPUT_RATE_PER_VERTEX)
+			bindingDesc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		else if (ILs[i]->input_rate == W_INPUT_RATE_PER_INSTANCE)
+			bindingDesc[i].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+
+		// Attribute descriptions
+		// Describes memory layout and shader attribute locations
+		unsigned int prev_size = 0;
+		for (int j = 0; j < ILs[i]->attributes.size(); j++) {
+			attribDesc[cur_attrib].binding = i;
+			attribDesc[cur_attrib].location = cur_attrib;
+			attribDesc[cur_attrib].format = ILs[i]->attributes[j].GetFormat();
+			attribDesc[cur_attrib].offset = 0;
+			if (j > 0)
+				attribDesc[cur_attrib].offset = attribDesc[cur_attrib - 1].offset + prev_size;
+			prev_size = ILs[i]->attributes[j].GetSize();
+			cur_attrib++;
+		}
+	}
+
+	// Assign to vertex buffer
+	std::vector<VkPipelineVertexInputStateCreateInfo> inputStates(ILs.size() + 1);
+	VkPipelineVertexInputStateCreateInfo inputState;
+	inputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	inputState.pNext = NULL;
+	inputState.flags = VK_FLAGS_NONE;
+	inputState.vertexBindingDescriptionCount = 0;
+	inputState.pVertexBindingDescriptions = bindingDesc.data();
+	inputState.vertexAttributeDescriptionCount = 0;
+	inputState.pVertexAttributeDescriptions = attribDesc.data();
+	inputStates[0] = inputState;
+	for (int i = 1; i < ILs.size() + 1; i++) {
+		VkPipelineVertexInputStateCreateInfo newstate = inputStates[i - 1];
+		newstate.vertexBindingDescriptionCount++;
+		newstate.vertexAttributeDescriptionCount += ILs[i-1]->attributes.size();
+		inputStates[i] = newstate;
+	}
+	for (int i = 0; i < inputStates.size(); i++) {
+		pipelineCreateInfo.pVertexInputState = &inputStates[i];
+		if (i > 0)
+			pipelineCreateInfo.basePipelineIndex = 0;
+		pipelineCreateInfos.push_back(pipelineCreateInfo);
+	}
+
+	m_pipelines.resize(pipelineCreateInfos.size()); // one with 0 VBs, 1 VB, 2 VBs, ..., ILs.size() VBs
+	err = vkCreateGraphicsPipelines(device, rt->GetPipelineCache(), m_pipelines.size(),
+									pipelineCreateInfos.data(), nullptr, m_pipelines.data());
 	if (err) {
 		vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
 		vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
 		m_pipelineLayout = VK_NULL_HANDLE;
 		m_descriptorSetLayout = VK_NULL_HANDLE;
+		for (int i = 0; i < m_pipelines.size(); i++) {
+			if (m_pipelines[i] != VK_NULL_HANDLE)
+				vkDestroyPipeline(device, m_pipelines[i], nullptr);
+		}
+		m_pipelines.clear();
 		return WError(W_FAILEDTOCREATEPIPELINE);
 	}
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WEffect::Bind(WRenderTarget* rt) {
+WError WEffect::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
@@ -427,7 +452,8 @@ WError WEffect::Bind(WRenderTarget* rt) {
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+	unsigned int pipeline = min(num_vertex_buffers, m_pipelines.size()-1);
+	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[pipeline]);
 
 	return WError(W_SUCCEEDED);
 }

@@ -32,7 +32,7 @@ public:
 	~WMaterial();
 
 	WError			SetEffect(class WEffect* const effect);
-	virtual WError	Bind(class WRenderTarget* rt);
+	virtual WError	Bind(class WRenderTarget* rt, unsigned int num_vertex_buffers = -1);
 
 	WError			SetVariableFloat(std::string varName, float fVal);
 	WError			SetVariableFloatArray(std::string varName, float* fArr, int num_elements);
@@ -47,6 +47,7 @@ public:
 
 	WError			SetTexture(int binding_index, class WImage* img);
 	WError			SetAnimationTexture(class WImage* img);
+	WError			SetInstancingTexture(class WImage* img);
 
 	class WEffect*	GetEffect() const;
 

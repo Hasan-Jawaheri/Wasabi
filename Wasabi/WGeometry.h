@@ -106,7 +106,8 @@ public:
 								  WVector3* pt = nullptr, WVector2* uv = nullptr,
 								  unsigned int* triangleIndex = nullptr);
 
-	WError				Draw(class WRenderTarget* rt, unsigned int num_triangles = -1, unsigned int num_instances = 1);
+	WError				Draw(class WRenderTarget* rt, unsigned int num_triangles = -1,
+							 unsigned int num_instances = 1, bool bind_animation = true);
 
 	WVector3			GetMinPoint() const;
 	WVector3			GetMaxPoint() const;
