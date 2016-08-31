@@ -239,7 +239,7 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	if (err)
 		goto destroy_staging;
 	memcpy(data, vb, vertexBufferSize);
-	vkUnmapMemory(device, m_vertices.staging.buf);
+	vkUnmapMemory(device, m_vertices.staging.mem);
 	err = vkBindBufferMemory(device, m_vertices.staging.buf, m_vertices.staging.mem, 0);
 	if (err)
 		goto destroy_staging;
@@ -383,7 +383,7 @@ WError WGeometry::CreateAnimationData(void* ab) {
 	if (err)
 		goto destroy_staging;
 	memcpy(data, ab, animBufferSize);
-	vkUnmapMemory(device, m_animationbuf.staging.buf);
+	vkUnmapMemory(device, m_animationbuf.staging.mem);
 	err = vkBindBufferMemory(device, m_animationbuf.staging.buf, m_animationbuf.staging.mem, 0);
 	if (err)
 		goto destroy_staging;
