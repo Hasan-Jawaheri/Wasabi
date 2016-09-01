@@ -1,4 +1,11 @@
 #include "WSprite.h"
+#include "../Core/Core.h"
+#include "../Renderers/WRenderer.h"
+#include "../Images/WImage.h"
+#include "../Materials/WEffect.h"
+#include "../Materials/WMaterial.h"
+#include "../Geometries/WGeometry.h"
+#include "../Windows/WWindowComponent.h"
 
 struct SpriteVertex {
 	WVector2 pos, uv;

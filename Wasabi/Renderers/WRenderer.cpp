@@ -1,4 +1,6 @@
 #include "WRenderer.h"
+#include "../Images/WRenderTarget.h"
+#include "../Windows/WWindowComponent.h"
 
 WRenderer::WRenderer(Wasabi* const app) : m_app(app) {
 	m_resizing = false;

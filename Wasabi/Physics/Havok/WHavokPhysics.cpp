@@ -1,4 +1,5 @@
 #include "WHavokPhysics.h"
+#include "../../Objects/WObject.h"
 
 #if 0
 

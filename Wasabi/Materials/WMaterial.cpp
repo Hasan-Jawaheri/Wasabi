@@ -1,4 +1,8 @@
 #include "WMaterial.h"
+#include "WEffect.h"
+#include "../Images/WImage.h"
+#include "../Images/WRenderTarget.h"
+#include "../Renderers/WRenderer.h"
 
 std::string WMaterialManager::GetTypeName() const {
 	return "Material";

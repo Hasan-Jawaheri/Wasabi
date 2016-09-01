@@ -75,9 +75,6 @@
     <ClCompile Include="Animations\WAnimation.cpp">
       <Filter>Animations</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Wasabi.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Core\WBase.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -147,6 +144,15 @@
     <ClCompile Include="Input\Windows\WIC_Win32.cpp">
       <Filter>Input\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="Animations\WSkeletalAnimation.cpp">
+      <Filter>Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="Images\WRenderTarget.cpp">
+      <Filter>Images</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Core.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb\stb.h">
@@ -205,9 +211,6 @@
     </ClInclude>
     <ClInclude Include="Animations\WAnimation.h">
       <Filter>Animations</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Common.h">
-      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\WBase.h">
       <Filter>Core</Filter>
@@ -293,6 +296,15 @@
     </ClInclude>
     <ClInclude Include="Input\Windows\WIC_Win32.h">
       <Filter>Input\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Animations\WSkeletalAnimation.h">
+      <Filter>Animations</Filter>
+    </ClInclude>
+    <ClInclude Include="Images\WRenderTarget.h">
+      <Filter>Images</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Core.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,5 +1,20 @@
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 #include "../Renderers/WForwardRenderer.h"
+#include "../Windows/Windows/WWC_Win32.h"
+#include "../Input/Windows/WIC_Win32.h"
+#include "../Objects/WObject.h"
+#include "../Geometries/WGeometry.h"
+#include "../Materials/WEffect.h"
+#include "../Materials/WEffect.h"
+#include "../Cameras/WCamera.h"
+#include "../Images/WImage.h"
+#include "../Images/WRenderTarget.h"
+#include "../Sprites/WSprite.h"
+#include "../Lights/WLight.h"
+#include "../Animations/WAnimation.h"
+#include "../Physics/WPhysicsComponent.h"
+#include "../Sounds/WSound.h"
+#include "../Texts/WText.h"
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow) {
 	Wasabi* app = WInitialize();

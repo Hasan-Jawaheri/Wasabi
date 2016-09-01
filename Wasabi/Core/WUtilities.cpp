@@ -1,4 +1,9 @@
 #include "WUtilities.h"
+#include "../Core/Core.h"
+#include "../Cameras/WCamera.h"
+#include "../Renderers/WRenderer.h"
+#include "../Images/WRenderTarget.h"
+#include "../Windows/WWindowComponent.h"
 
 bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, int* _x, int* _y) {
 	WCamera* cam = app->Renderer->GetDefaultRenderTarget()->GetCamera();

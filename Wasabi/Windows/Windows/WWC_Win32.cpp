@@ -1,6 +1,7 @@
 #ifdef _WIN32
 
 #include "WWC_Win32.h"
+#include "../../Input/Windows/WIC_Win32.h"
 
 LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);
 

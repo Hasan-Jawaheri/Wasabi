@@ -189,13 +189,13 @@ public:
 	WRigidBody(class Wasabi* const app, unsigned int ID = 0);
 	~WRigidBody();
 
-	WError					BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* geometries,
+	WError					BuildFromGeometries(W_RIGIDBODYTYPE type, class WGeometry* const* geometries,
 												unsigned int numGeometries, bool bFixed = false, bool bSimplify = true,
 												void* mopp = nullptr, unsigned int moppsize = 0);
 	void					Destroy();
 
-	void					BindObject(WObject* const object);
-	void					UnbindObject(WObject* const object);
+	void					BindObject(class WObject* const object);
+	void					UnbindObject(class WObject* const object);
 	void					UnbindObject(unsigned int ID);
 
 	void					Enable();
@@ -240,7 +240,7 @@ private:
 	bool				m_physics;
 	bool				m_simpleMesh;
 
-	vector<WObject*>	m_objectV;
+	vector<class WObject*> m_objectV;
 };
 
 class WRigidBodyManager : public WManager<WRigidBody> {

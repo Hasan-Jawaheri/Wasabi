@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 class WInstance : public WOrientation {
 	friend class WObject;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 enum W_LIGHT_TYPE {
 	W_LIGHT_DIRECTIONAL = 0,
@@ -30,7 +30,7 @@ public:
 	void			Show();
 	void			Hide();
 	bool			Hidden() const;
-	bool			InCameraView(WCamera* cam) const;
+	bool			InCameraView(class WCamera* cam) const;
 
 	WMatrix			GetWorldMatrix();
 	bool			UpdateLocals();

@@ -6,7 +6,7 @@ desc.: Wasabi Engine text component
 
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 typedef struct W_RENDERING_TEXT {
 	std::string str;
@@ -29,7 +29,7 @@ typedef struct W_FONT_OBJECT {
 
 class WTextComponent {
 public:
-	WTextComponent(Wasabi* app);
+	WTextComponent(class Wasabi* app);
 	~WTextComponent();
 
 	void AddFontDirectory(std::string dir);
@@ -48,7 +48,7 @@ public:
 	unsigned int GetTextWidth(std::string text, float fHeight, unsigned int fontID = -1);
 
 protected:
-	Wasabi* m_app;
+	class Wasabi* m_app;
 	std::vector<std::string> m_directories;
 	std::map<unsigned int, W_FONT_OBJECT> m_fonts;
 	unsigned int m_curFont;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 class WSprite : public WBase {
 	virtual std::string GetTypeName() const;
@@ -18,7 +18,7 @@ public:
 	WSprite(Wasabi* const app, unsigned int ID = 0);
 	~WSprite();
 
-	void			SetImage(WImage* img);
+	void			SetImage(class WImage* img);
 	void			SetPosition(float x, float y);
 	void			SetPosition(WVector2 pos);
 	void			Move(float units);

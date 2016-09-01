@@ -6,7 +6,7 @@ desc.: Wasabi Engine physics implementation spec
 
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 typedef struct W_RAYCAST_OUTPUT {
 	float fDist;
@@ -15,7 +15,7 @@ typedef struct W_RAYCAST_OUTPUT {
 
 class WPhysicsComponent {
 public:
-	WPhysicsComponent(Wasabi* app) : m_app(app) {}
+	WPhysicsComponent(class Wasabi* app) : m_app(app) {}
 
 	virtual WError		Initialize() = 0;
 	virtual void		Cleanup() = 0;
@@ -27,6 +27,6 @@ public:
 	virtual bool		RayCast(WVector3 from, WVector3 to, W_RAYCAST_OUTPUT* out) = 0;
 
 protected:
-	Wasabi* m_app;
+	class Wasabi* m_app;
 };
 

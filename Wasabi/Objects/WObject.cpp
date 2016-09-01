@@ -1,4 +1,15 @@
 #include "WObject.h"
+#include "../Core/Core.h"
+#include "../Core/WUtilities.h"
+#include "../Images/WImage.h"
+#include "../Images/WRenderTarget.h"
+#include "../Cameras/WCamera.h"
+#include "../Renderers/WRenderer.h"
+#include "../Materials/WMaterial.h"
+#include "../Materials/WEffect.h"
+#include "../Geometries/WGeometry.h"
+#include "../Windows/WWindowComponent.h"
+#include "../Animations/WAnimation.h"
 
 std::string WObjectManager::GetTypeName() const {
 	return "Object";

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 enum W_PROJECTIONTYPE { PROJECTION_PERSPECTIVE = 0, PROJECTION_ORTHOGONAL = 1 };
 

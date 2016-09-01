@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../Wasabi.h"
-#include "../Core/WBase.h"
-#include "../Core/WMath.h"
+#include "../Core/Core.h"
 
 #define W_ATTRIBUTE_POSITION	W_VERTEX_ATTRIBUTE(std::string("position"), 3)
 #define W_ATTRIBUTE_TANGENT		W_VERTEX_ATTRIBUTE(std::string("tangent"), 3)
