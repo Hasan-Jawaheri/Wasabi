@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Renderer">
-      <UniqueIdentifier>{e7c387e5-5a0d-425c-ad2b-351a2dbdb74f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Windows">
       <UniqueIdentifier>{7b2dcfa4-377f-4a07-836b-95460cd05ee0}</UniqueIdentifier>
     </Filter>
@@ -12,9 +9,6 @@
     </Filter>
     <Filter Include="Core">
       <UniqueIdentifier>{45741f0c-4b58-4ca6-a3e8-0e594b29f530}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\tools">
-      <UniqueIdentifier>{27f60485-6dcf-45f7-9949-d2bd4e576f74}</UniqueIdentifier>
     </Filter>
     <Filter Include="Images">
       <UniqueIdentifier>{2e2ab278-0f95-4b95-b828-7f89a0693445}</UniqueIdentifier>
@@ -27,9 +21,6 @@
     </Filter>
     <Filter Include="stb">
       <UniqueIdentifier>{0fdb462f-c3a1-4b37-af15-cfe38d0c9df3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Text">
-      <UniqueIdentifier>{d76a3483-ef7b-49ee-b854-abc5491f883f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sprites">
       <UniqueIdentifier>{bcd88de3-4dd1-47c9-802d-bd82fa78f54f}</UniqueIdentifier>
@@ -52,154 +43,112 @@
     <Filter Include="Lights">
       <UniqueIdentifier>{24c1d5e9-7d65-45c7-9886-6f1724be9ca0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Animation">
-      <UniqueIdentifier>{1d7a8dd5-d0a7-49ac-921c-a29212c00dce}</UniqueIdentifier>
+    <Filter Include="Texts">
+      <UniqueIdentifier>{d76a3483-ef7b-49ee-b854-abc5491f883f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animations">
+      <UniqueIdentifier>{6c5a4778-0fd1-4aa6-b192-d0527989c875}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\VkTools">
+      <UniqueIdentifier>{27f60485-6dcf-45f7-9949-d2bd4e576f74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows\Windows">
+      <UniqueIdentifier>{33580878-f911-4126-aae9-537735df9024}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows\Linux">
+      <UniqueIdentifier>{2a9d2efe-c5f3-4bda-95b2-748498166b97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers">
+      <UniqueIdentifier>{e7c387e5-5a0d-425c-ad2b-351a2dbdb74f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input\Windows">
+      <UniqueIdentifier>{2da2d2d8-d202-4275-8c8d-d9a1f8416ef3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input\Linux">
+      <UniqueIdentifier>{7e743119-b200-4647-a30e-d5bdf0c67de8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WSound.cpp">
-      <Filter>Sounds</Filter>
-    </ClCompile>
-    <ClCompile Include="WWC_Win32.cpp">
-      <Filter>Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="WIC_Win32.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="Wasabi.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="WError.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="WBase.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="WOrientation.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="WMath.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="WTimer.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="WForwardRenderer.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="vulkantools.cpp">
-      <Filter>Core\tools</Filter>
-    </ClCompile>
-    <ClCompile Include="WGeometry.cpp">
-      <Filter>Geometries</Filter>
-    </ClCompile>
-    <ClCompile Include="WObject.cpp">
-      <Filter>Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="WEffect.cpp">
-      <Filter>Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="WMaterial.cpp">
-      <Filter>Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="WCamera.cpp">
-      <Filter>Cameras</Filter>
-    </ClCompile>
     <ClCompile Include="stb\stb_vorbis.c">
       <Filter>stb</Filter>
     </ClCompile>
-    <ClCompile Include="WImage.cpp">
-      <Filter>Images</Filter>
+    <ClCompile Include="Animations\WAnimation.cpp">
+      <Filter>Animations</Filter>
     </ClCompile>
-    <ClCompile Include="WText.cpp">
-      <Filter>Text</Filter>
-    </ClCompile>
-    <ClCompile Include="WSprite.cpp">
-      <Filter>Sprites</Filter>
-    </ClCompile>
-    <ClCompile Include="WHavokPhysics.cpp">
-      <Filter>Physics\Havok</Filter>
-    </ClCompile>
-    <ClCompile Include="WRenderer.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="WLight.cpp">
-      <Filter>Lights</Filter>
-    </ClCompile>
-    <ClCompile Include="WDeferredRenderer.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="WUtilities.cpp">
+    <ClCompile Include="Core\Wasabi.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="WAnimation.cpp">
-      <Filter>Animation</Filter>
+    <ClCompile Include="Core\WBase.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\WError.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\WMath.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\WOrientation.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\WTimer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\WUtilities.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\VkTools\vulkantools.cpp">
+      <Filter>Core\VkTools</Filter>
+    </ClCompile>
+    <ClCompile Include="Cameras\WCamera.cpp">
+      <Filter>Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometries\WGeometry.cpp">
+      <Filter>Geometries</Filter>
+    </ClCompile>
+    <ClCompile Include="Images\WImage.cpp">
+      <Filter>Images</Filter>
+    </ClCompile>
+    <ClCompile Include="Lights\WLight.cpp">
+      <Filter>Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\WMaterial.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\WEffect.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\WObject.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Havok\WHavokPhysics.cpp">
+      <Filter>Physics\Havok</Filter>
+    </ClCompile>
+    <ClCompile Include="Sounds\WSound.cpp">
+      <Filter>Sounds</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprites\WSprite.cpp">
+      <Filter>Sprites</Filter>
+    </ClCompile>
+    <ClCompile Include="Texts\WText.cpp">
+      <Filter>Texts</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\Windows\WWC_Win32.cpp">
+      <Filter>Windows\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\WForwardRenderer.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\WRenderer.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\WDeferredRenderer.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\Windows\WIC_Win32.cpp">
+      <Filter>Input\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WRenderer.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="WSound.h">
-      <Filter>Sounds</Filter>
-    </ClInclude>
-    <ClInclude Include="WWC_Win32.h">
-      <Filter>Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="WWindowComponent.h">
-      <Filter>Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="WInputComponent.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="WIC_Win32.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="Wasabi.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="WBase.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="WError.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="WManager.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="WMath.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="WOrientation.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="WTimer.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="WForwardRenderer.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkantools.h">
-      <Filter>Core\tools</Filter>
-    </ClInclude>
-    <ClInclude Include="vulkanswapchain.hpp">
-      <Filter>Core\tools</Filter>
-    </ClInclude>
-    <ClInclude Include="WGeometry.h">
-      <Filter>Geometries</Filter>
-    </ClInclude>
-    <ClInclude Include="WObject.h">
-      <Filter>Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="WEffect.h">
-      <Filter>Materials</Filter>
-    </ClInclude>
-    <ClInclude Include="WMaterial.h">
-      <Filter>Materials</Filter>
-    </ClInclude>
-    <ClInclude Include="WCamera.h">
-      <Filter>Cameras</Filter>
-    </ClInclude>
     <ClInclude Include="stb\stb.h">
       <Filter>stb</Filter>
     </ClInclude>
@@ -254,32 +203,96 @@
     <ClInclude Include="stb\stretchy_buffer.h">
       <Filter>stb</Filter>
     </ClInclude>
-    <ClInclude Include="WImage.h">
-      <Filter>Images</Filter>
+    <ClInclude Include="Animations\WAnimation.h">
+      <Filter>Animations</Filter>
     </ClInclude>
-    <ClInclude Include="WText.h">
-      <Filter>Text</Filter>
-    </ClInclude>
-    <ClInclude Include="WSprite.h">
-      <Filter>Sprites</Filter>
-    </ClInclude>
-    <ClInclude Include="WHavokPhysics.h">
-      <Filter>Physics\Havok</Filter>
-    </ClInclude>
-    <ClInclude Include="WPhysicsComponent.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="WLight.h">
-      <Filter>Lights</Filter>
-    </ClInclude>
-    <ClInclude Include="WDeferredRenderer.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="WUtilities.h">
+    <ClInclude Include="Core\Common.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="WAnimation.h">
-      <Filter>Animation</Filter>
+    <ClInclude Include="Core\WBase.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\WError.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\WManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\WMath.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\WOrientation.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\WTimer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\WUtilities.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\VkTools\vulkanswapchain.hpp">
+      <Filter>Core\VkTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\VkTools\vulkantools.h">
+      <Filter>Core\VkTools</Filter>
+    </ClInclude>
+    <ClInclude Include="Cameras\WCamera.h">
+      <Filter>Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometries\WGeometry.h">
+      <Filter>Geometries</Filter>
+    </ClInclude>
+    <ClInclude Include="Images\WImage.h">
+      <Filter>Images</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\WInputComponent.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Lights\WLight.h">
+      <Filter>Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\WEffect.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\WMaterial.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\WObject.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\WPhysicsComponent.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Havok\WHavokPhysics.h">
+      <Filter>Physics\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="Sounds\WSound.h">
+      <Filter>Sounds</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprites\WSprite.h">
+      <Filter>Sprites</Filter>
+    </ClInclude>
+    <ClInclude Include="Texts\WText.h">
+      <Filter>Texts</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\WWindowComponent.h">
+      <Filter>Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\Windows\WWC_Win32.h">
+      <Filter>Windows\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Wasabi.h" />
+    <ClInclude Include="Renderers\WForwardRenderer.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\WRenderer.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\WDeferredRenderer.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\Windows\WIC_Win32.h">
+      <Filter>Input\Windows</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
