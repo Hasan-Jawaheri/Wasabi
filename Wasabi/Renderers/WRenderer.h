@@ -5,7 +5,7 @@ desc.: Wasabi Engine renderer spec
 *********************************************************************/
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 enum W_RENDER_FILTER {
 	RENDER_FILTER_OBJECTS = 1,
@@ -24,7 +24,7 @@ class WRenderer {
 	void _Cleanup();
 
 public:
-	WRenderer(Wasabi* const app);
+	WRenderer(class Wasabi* const app);
 
 	virtual WError				Initiailize() = 0;
 	virtual void				Render(class WRenderTarget* rt, unsigned int filter = -1) = 0;
@@ -38,7 +38,7 @@ public:
 	class WRenderTarget*		GetDefaultRenderTarget() const;
 
 protected:
-	Wasabi*						m_app;
+	class Wasabi*				m_app;
 
 	VkDevice					m_device;
 	VkQueue						m_queue;

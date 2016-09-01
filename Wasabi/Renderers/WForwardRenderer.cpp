@@ -1,4 +1,13 @@
 #include "WForwardRenderer.h"
+#include "../Core/Core.h"
+#include "../Materials/WEffect.h"
+#include "../Materials/WMaterial.h"
+#include "../Lights/WLight.h"
+#include "../Images/WImage.h"
+#include "../Images/WRenderTarget.h"
+#include "../Objects/WObject.h"
+#include "../Sprites/WSprite.h"
+#include "../Texts/WText.h"
 
 struct LightStruct {
 	WVector4 color;

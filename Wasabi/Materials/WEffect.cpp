@@ -1,4 +1,5 @@
 #include "WEffect.h"
+#include "../Images/WRenderTarget.h"
 
 size_t W_SHADER_VARIABLE_INFO::GetSize() {
 	return 4 * num_elems;

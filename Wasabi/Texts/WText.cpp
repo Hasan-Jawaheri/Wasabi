@@ -1,4 +1,11 @@
 #include "WText.h"
+#include "../Core/Core.h"
+#include "../Renderers/WRenderer.h"
+#include "../Images/WImage.h"
+#include "../Materials/WEffect.h"
+#include "../Materials/WMaterial.h"
+#include "../Geometries/WGeometry.h"
+#include "../Windows/WWindowComponent.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "../stb/stb_truetype.h"

@@ -1,4 +1,12 @@
 #include "WDeferredRenderer.h"
+#include "../Core/Core.h"
+#include "../Materials/WEffect.h"
+#include "../Materials/WMaterial.h"
+#include "../Lights/WLight.h"
+#include "../Images/WImage.h"
+#include "../Objects/WObject.h"
+#include "../Sprites/WSprite.h"
+#include "../Texts/WText.h"
 
 class DeferredRendererVS : public WShader {
 public:

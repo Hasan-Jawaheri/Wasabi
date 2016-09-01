@@ -1,4 +1,5 @@
 #include "WGeometry.h"
+#include "../Images/WRenderTarget.h"
 
 static void ConvertVertices(void* vbFrom, void* vbTo, unsigned int num_verts,
 							W_VERTEX_DESCRIPTION vtx_from, W_VERTEX_DESCRIPTION vtx_to) {

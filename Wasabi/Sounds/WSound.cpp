@@ -15,7 +15,7 @@ T BytesTo(BYTE* bytes, bool bLittleEndian = false) {
 	return ret;
 };
 
-WSoundComponent::WSoundComponent(Wasabi* app) {
+WSoundComponent::WSoundComponent(Wasabi* const app) {
 	m_app = app;
 	m_oalDevice = nullptr;
 	m_oalContext = nullptr;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 class WMaterial : public WBase {
 	virtual std::string GetTypeName() const;
@@ -28,7 +28,7 @@ class WMaterial : public WBase {
 	void _DestroyResources();
 
 public:
-	WMaterial(Wasabi* const app, unsigned int ID = 0);
+	WMaterial(class Wasabi* const app, unsigned int ID = 0);
 	~WMaterial();
 
 	WError			SetEffect(class WEffect* const effect);

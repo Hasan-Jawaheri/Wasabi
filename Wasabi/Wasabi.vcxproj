@@ -165,9 +165,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp" />
+    <ClCompile Include="Animations\WSkeletalAnimation.cpp" />
     <ClCompile Include="Cameras\WCamera.cpp" />
     <ClCompile Include="Core\VkTools\vulkantools.cpp" />
-    <ClCompile Include="Core\Wasabi.cpp" />
+    <ClCompile Include="Core\Core.cpp" />
     <ClCompile Include="Core\WBase.cpp" />
     <ClCompile Include="Core\WError.cpp" />
     <ClCompile Include="Core\WMath.cpp" />
@@ -176,6 +177,7 @@
     <ClCompile Include="Core\WUtilities.cpp" />
     <ClCompile Include="Geometries\WGeometry.cpp" />
     <ClCompile Include="Images\WImage.cpp" />
+    <ClCompile Include="Images\WRenderTarget.cpp" />
     <ClCompile Include="Input\Windows\WIC_Win32.cpp" />
     <ClCompile Include="Lights\WLight.cpp" />
     <ClCompile Include="Materials\WEffect.cpp" />
@@ -193,8 +195,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations\WAnimation.h" />
+    <ClInclude Include="Animations\WSkeletalAnimation.h" />
     <ClInclude Include="Cameras\WCamera.h" />
-    <ClInclude Include="Core\Common.h" />
+    <ClInclude Include="Core\Core.h" />
     <ClInclude Include="Core\VkTools\vulkanswapchain.hpp" />
     <ClInclude Include="Core\VkTools\vulkantools.h" />
     <ClInclude Include="Core\WBase.h" />
@@ -206,6 +209,7 @@
     <ClInclude Include="Core\WUtilities.h" />
     <ClInclude Include="Geometries\WGeometry.h" />
     <ClInclude Include="Images\WImage.h" />
+    <ClInclude Include="Images\WRenderTarget.h" />
     <ClInclude Include="Input\Windows\WIC_Win32.h" />
     <ClInclude Include="Input\WInputComponent.h" />
     <ClInclude Include="Lights\WLight.h" />

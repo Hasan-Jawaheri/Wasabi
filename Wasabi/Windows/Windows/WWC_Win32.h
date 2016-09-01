@@ -7,7 +7,7 @@ desc.: Wasabi Engine window manager for win32
 #pragma once
 
 #ifdef _WIN32
-#include "../../Wasabi.h"
+#include "../WWindowComponent.h"
 
 class WWC_Win32 : public WWindowComponent {
 	friend LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);

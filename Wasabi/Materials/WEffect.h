@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 enum W_SHADER_TYPE {
 	W_VERTEX_SHADER = VK_SHADER_STAGE_VERTEX_BIT,

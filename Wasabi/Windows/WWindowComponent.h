@@ -6,11 +6,11 @@ desc.: Wasabi Engine window manager spec
 
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
 
 class WWindowComponent {
 public:
-	WWindowComponent(Wasabi* app) : m_app(app) {}
+	WWindowComponent(class Wasabi* app) : m_app(app) {}
 
 	virtual WError Initialize(int width, int height) = 0;
 	virtual bool Loop() = 0;
@@ -34,5 +34,5 @@ public:
 	virtual void SetWindowMaximumSize(int maxX, int maxY) {}
 
 protected:
-	Wasabi* m_app;
+	class Wasabi* m_app;
 };

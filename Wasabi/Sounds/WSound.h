@@ -6,10 +6,7 @@ desc.: Wasabi Engine OpenAL wrapper
 
 #pragma once
 
-#include "../Wasabi.h"
-#include "../Core/WBase.h"
-#include "../Core/WMath.h"
-#include "../Core/WOrientation.h"
+#include "../Core/Core.h"
 
 #include <al.h>				//openAL sound header
 #include <alc.h>			//openAL sound header
@@ -26,7 +23,7 @@ class WSoundComponent {
 	friend class WSound;
 
 public:
-	WSoundComponent(Wasabi* app);
+	WSoundComponent(class Wasabi* const app);
 	~WSoundComponent();
 
 	ALCdevice*				GetALSoundDevice() const;
@@ -38,19 +35,19 @@ public:
 
 	void					SetPosition(float x, float y, float z);
 	void					SetPosition(WVector3 pos);
-	void					SetPosition(WOrientation* pos);
+	void					SetPosition(class WOrientation* pos);
 	void					SetVelocity(float x, float y, float z);
 	void					SetVelocity(WVector3 vel);
 	void					SetOrientation(WVector3 look, WVector3 up);
-	void					SetOrientation(WOrientation* ori);
-	void					SetToOrientationDevice(WOrientation* ori);
+	void					SetOrientation(class WOrientation* ori);
+	void					SetToOrientationDevice(class WOrientation* ori);
 
 	WSound*					GetSoundHandle(uint ID) const;
 	WSound*					GetSoundHandleByIndex(uint index) const;
 	uint					GetSoundsCount() const;
 
 protected:
-	Wasabi* m_app;
+	class Wasabi*			m_app;
 
 private:
 	ALCdevice*				m_oalDevice;
@@ -103,8 +100,8 @@ public:
 	void					SetVelocity(float x, float y, float z);
 	void					SetVelocity(WVector3 vel);
 	void					SetDirection(WVector3 look);
-	void					SetDirection(WOrientation* look);
-	void					SetToOrientationDevice(WOrientation* oriDev);
+	void					SetDirection(class WOrientation* look);
+	void					SetToOrientationDevice(class WOrientation* oriDev);
 
 private:
 	bool					m_valid;

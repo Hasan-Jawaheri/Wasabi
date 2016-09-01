@@ -1,6 +1,8 @@
 #pragma once
 
-#include "../Wasabi.h"
+#include "../Core/Core.h"
+#include "WRenderer.h"
+#include "../Materials/WMaterial.h"
 
 class WDeferredRenderer : public WRenderer {
 	VkSampler					m_sampler;

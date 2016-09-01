@@ -6,13 +6,13 @@ desc.: Wasabi Engine windows input component
 
 #pragma once
 
-#include "../../Wasabi.h"
+#include "../WInputComponent.h"
 
 class WIC_Win32 : public WInputComponent {
 	friend LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);
 
 public:
-	WIC_Win32(Wasabi* const app);
+	WIC_Win32(class Wasabi* const app);
 
 	virtual bool			MouseClick(W_MOUSEBUTTON button) const;
 	virtual int				MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint vpID = 0) const;
