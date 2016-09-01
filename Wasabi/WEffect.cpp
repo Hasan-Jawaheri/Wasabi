@@ -418,11 +418,19 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 		newstate.vertexAttributeDescriptionCount += ILs[i-1]->attributes.size();
 		inputStates[i] = newstate;
 	}
-	for (int i = 0; i < inputStates.size(); i++) {
-		pipelineCreateInfo.pVertexInputState = &inputStates[i];
-		if (i > 0)
-			pipelineCreateInfo.basePipelineIndex = 0;
+	if (inputStates.size() == 1) { // 0 ILs, make one pipeline without buffers
+		pipelineCreateInfo.pVertexInputState = &inputStates[0];
 		pipelineCreateInfos.push_back(pipelineCreateInfo);
+	} else { // 1 or more ILs available, make a pipeline for each and dont make a 0-buffer pipeline
+		for (int i = 1; i < inputStates.size(); i++) {
+			pipelineCreateInfo.pVertexInputState = &inputStates[i];
+			if (i > 1) {
+				pipelineCreateInfo.basePipelineIndex = 0; // 0th index in pipelineCreateInfos
+				pipelineCreateInfo.flags |= VK_PIPELINE_CREATE_DERIVATIVE_BIT;
+			} else
+				pipelineCreateInfo.flags |= VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
+			pipelineCreateInfos.push_back(pipelineCreateInfo);
+		}
 	}
 
 	m_pipelines.resize(pipelineCreateInfos.size()); // one with 0 VBs, 1 VB, 2 VBs, ..., ILs.size() VBs
@@ -452,7 +460,7 @@ WError WEffect::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	unsigned int pipeline = min(num_vertex_buffers, m_pipelines.size()-1);
+	unsigned int pipeline = min(num_vertex_buffers == 0 ? 0 : num_vertex_buffers - 1, m_pipelines.size()-1);
 	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[pipeline]);
 
 	return WError(W_SUCCEEDED);
