@@ -1,5 +1,5 @@
-#include "Wasabi.h"
-#include "WForwardRenderer.h"
+#include <Wasabi.h>
+#include <Renderers/WForwardRenderer.h>
 
 class WasabiTester : public Wasabi {
 	float fYaw, fPitch, fDist;

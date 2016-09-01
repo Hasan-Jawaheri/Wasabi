@@ -1,0 +1,118 @@
+============================
+10000 objects
+============================
+  HasX11 Engine:
+    No Instancing:      14.0
+    Instancing:         16.0
+    Performance gain:   14%
+
+  Wasabi:
+    No Instancing:      8.0 / 8.0
+    Instancing:         10.0
+    Texture instancing: 10.0 / 14.0
+    Performance gain:   25%
+
+============================
+5000 objects
+============================
+
+  HasX11 Engine:
+    No instancing:      20.0
+    Instancing:         30.0
+    Performance gain:   50%
+
+  Wasabi:
+    No instancing:      12.0 / 16.0
+    Instancing:         
+    Texture instancing: 20.0 / 26.0
+    Performance gain:   66%
+
+============================
+1600 objects
+============================
+
+  HasX11 Engine:
+    No instancing:      36.0
+    Instancing:         58.0
+    Performance gain:   61%
+
+  Wasabi:
+    No instancing:      40.0 / 42.0
+    Instancing:         56.0
+    Texture instancing: 60.0 / 78.0
+    Performance gain:   50%
+
+============================
+800 objects
+============================
+
+  HasX11 Engine:
+    No Instancing:      58.0
+    Instancing:         162.0
+    Performance gain:   179%
+
+  Wasabi:
+    No Instancing:      64.0 / 84.0
+    Instancing:         
+    Texture instancing: 118.0 / 152.0
+    Performance gain:   84%
+
+============================
+400 objects
+============================
+
+  HasX11 Engine:
+    No Instancing:      148.0
+    Instancing:         304.0
+    Performance gain:   105%
+
+  Wasabi:
+    No Instancing:      156.0 / 166.0
+    Instancing:         210.0
+    Texture instancing: 230.0 / 296.0
+    Performance gain:   47%
+
+============================
+300 objects
+============================
+
+  HasX11 Engine:
+    No Instancing:      162.0
+    Instancing:         324.0
+    Performance gain:   100%
+
+  Wasabi:
+    No Instancing:      168.0
+    Instancing:         
+    Texture instancing: 296.0
+    Performance gain:   76%
+
+============================
+200 objects
+============================
+
+  HasX11 Engine:
+    No Instancing:      218.0
+    Instancing:         426.0
+    Performance gain:   95%
+
+  Wasabi:
+    No Instancing:      250.0
+    Instancing:         
+    Texture instancing: 426.0
+    Performance gain:   70%
+
+============================
+100 objects
+============================
+
+  HasX11 Engine:
+    No Instancing:      546.0
+    Instancing:         860.0
+    Performance gain:   57%
+
+  Wasabi:
+    No Instancing:      600.0
+    Instancing:         760.0
+    Texture instancing: 758.0
+    Performance gain:   26%

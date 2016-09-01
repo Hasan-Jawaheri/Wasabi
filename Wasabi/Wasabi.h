@@ -13,8 +13,8 @@ desc.: Wasabi Engine main header file
 #endif
 #include "vulkan/vulkan.h"
 #pragma comment (lib, "vulkan-1.lib")
-#include "vulkanswapchain.hpp"
-#include "vulkantools.h"
+#include "Core/VkTools/vulkanswapchain.hpp"
+#include "Core/VkTools/vulkantools.h"
 
 #include <string>
 #include <fstream>
@@ -24,12 +24,12 @@ desc.: Wasabi Engine main header file
 #include <array>
 #include <chrono>
 
-#include "WError.h"
-#include "WManager.h"
-#include "WBase.h"
-#include "WOrientation.h"
-#include "WTimer.h"
-#include "WMath.h"
+#include "Core/WError.h"
+#include "Core/WManager.h"
+#include "Core/WBase.h"
+#include "Core/WOrientation.h"
+#include "Core/WTimer.h"
+#include "Core/WMath.h"
 
 using namespace std;
 using std::ios;
@@ -153,28 +153,28 @@ public:
 	virtual void Cleanup() {}
 };
 
-#include "WUtilities.h"
-#include "WWindowComponent.h"
-#include "WInputComponent.h"
-#include "WPhysicsComponent.h"
-#include "WText.h"
-#include "WRenderer.h"
-#include "WGeometry.h"
-#include "WObject.h"
-#include "WEffect.h"
-#include "WMaterial.h"
-#include "WCamera.h"
-#include "WImage.h"
-#include "WSprite.h"
-#include "WSound.h"
-#include "WLight.h"
-#include "WAnimation.h"
+#include "Core/WUtilities.h"
+#include "Windows/WWindowComponent.h"
+#include "Input/WInputComponent.h"
+#include "Physics/WPhysicsComponent.h"
+#include "Texts/WText.h"
+#include "Renderers/WRenderer.h"
+#include "Geometries/WGeometry.h"
+#include "Objects/WObject.h"
+#include "Materials/WEffect.h"
+#include "Materials/WMaterial.h"
+#include "Cameras/WCamera.h"
+#include "Images/WImage.h"
+#include "Sprites/WSprite.h"
+#include "Sounds/WSound.h"
+#include "Lights/WLight.h"
+#include "Animations/WAnimation.h"
 #ifdef _WIN32
-#include "WWC_Win32.h"
-#include "WIC_Win32.h"
+#include "Windows/Windows/WWC_Win32.h"
+#include "Input/Windows/WIC_Win32.h"
 #elif defined(__linux__)
-#include "WWC_Linux.h"
-#include "WIC_Linux.h"
+#include "Windows/Linux/WWC_Linux.h"
+#include "Input/Linux/WIC_Linux.h"
 #endif
 
 #pragma comment(lib, "Wasabi.lib")
