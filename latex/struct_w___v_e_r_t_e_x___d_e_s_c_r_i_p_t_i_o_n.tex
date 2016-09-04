@@ -1,0 +1,98 @@
+\hypertarget{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n}{}\section{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON Struct Reference}
+\label{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n}\index{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}}
+
+
+{\ttfamily \#include $<$W\+Geometry.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON} (std\+::vector$<$ \hyperlink{struct_w___v_e_r_t_e_x___a_t_t_r_i_b_u_t_e}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE} $>$ attribs=\{\})\hypertarget{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a333f0377b3556311a11edda7c4e18a8b}{}\label{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a333f0377b3556311a11edda7c4e18a8b}
+
+\item 
+size\+\_\+t \hyperlink{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a7c06d9c07ee2fdd4d47c06592e79158e}{Get\+Size} () const 
+\item 
+size\+\_\+t \hyperlink{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a06aea062550c1ce607bc3dbffebaa74f}{Get\+Offset} (unsigned int attrib\+\_\+index) const 
+\item 
+size\+\_\+t \hyperlink{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a541b178fbbf15c4166c51d59f377994d}{Get\+Offset} (std\+::string attrib\+\_\+name) const 
+\item 
+unsigned int \hyperlink{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a981ce484b325b9cb8380076d8b21dbd8}{Get\+Index} (std\+::string attrib\+\_\+name) const 
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ \hyperlink{struct_w___v_e_r_t_e_x___a_t_t_r_i_b_u_t_e}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE} $>$ \hyperlink{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a559e7d9127c860535a58ba6217fb7fd5}{attributes}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Represents the description of a vertex. A vertex is described by a list of its attributes. 
+
+\subsection{Member Function Documentation}
+\index{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}!Get\+Index@{Get\+Index}}
+\index{Get\+Index@{Get\+Index}!W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}}
+\subsubsection[{\texorpdfstring{Get\+Index(std\+::string attrib\+\_\+name) const }{GetIndex(std::string attrib_name) const }}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+O\+N\+::\+Get\+Index (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{attrib\+\_\+name}
+\end{DoxyParamCaption}
+) const}\hypertarget{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a981ce484b325b9cb8380076d8b21dbd8}{}\label{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a981ce484b325b9cb8380076d8b21dbd8}
+Find the index of an attribute given its name. 
+\begin{DoxyParams}{Parameters}
+{\em attrib\+\_\+name} & Attribute name to look for \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Index of the attribute whose name is attrib\+\_\+name, -\/1 if it cannot be found 
+\end{DoxyReturn}
+\index{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}!Get\+Offset@{Get\+Offset}}
+\index{Get\+Offset@{Get\+Offset}!W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}}
+\subsubsection[{\texorpdfstring{Get\+Offset(unsigned int attrib\+\_\+index) const }{GetOffset(unsigned int attrib_index) const }}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+O\+N\+::\+Get\+Offset (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{attrib\+\_\+index}
+\end{DoxyParamCaption}
+) const}\hypertarget{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a06aea062550c1ce607bc3dbffebaa74f}{}\label{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a06aea062550c1ce607bc3dbffebaa74f}
+Retrieves the offset (in bytes) to a certain attribute. 
+\begin{DoxyParams}{Parameters}
+{\em attrib\+\_\+index} & Index of the attribute to get its offset \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The offset of the attribute at attrib\+\_\+index 
+\end{DoxyReturn}
+\index{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}!Get\+Offset@{Get\+Offset}}
+\index{Get\+Offset@{Get\+Offset}!W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}}
+\subsubsection[{\texorpdfstring{Get\+Offset(std\+::string attrib\+\_\+name) const }{GetOffset(std::string attrib_name) const }}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+O\+N\+::\+Get\+Offset (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{attrib\+\_\+name}
+\end{DoxyParamCaption}
+) const}\hypertarget{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a541b178fbbf15c4166c51d59f377994d}{}\label{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a541b178fbbf15c4166c51d59f377994d}
+Retrieves the offset (in bytes) to a certain attribute. 
+\begin{DoxyParams}{Parameters}
+{\em attrib\+\_\+name} & Name of the attribute to get its offset \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The offset of the attribute at attrib\+\_\+index 
+\end{DoxyReturn}
+\index{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}!Get\+Size@{Get\+Size}}
+\index{Get\+Size@{Get\+Size}!W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}}
+\subsubsection[{\texorpdfstring{Get\+Size() const }{GetSize() const }}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+O\+N\+::\+Get\+Size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a7c06d9c07ee2fdd4d47c06592e79158e}{}\label{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a7c06d9c07ee2fdd4d47c06592e79158e}
+Retrieves the size (in bytes) of a vertex of this description. \begin{DoxyReturn}{Returns}
+Size (in bytes) of a vertex of this description 
+\end{DoxyReturn}
+
+
+\subsection{Member Data Documentation}
+\index{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}!attributes@{attributes}}
+\index{attributes@{attributes}!W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON@{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}}
+\subsubsection[{\texorpdfstring{attributes}{attributes}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<${\bf W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE}$>$ W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+O\+N\+::attributes}\hypertarget{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a559e7d9127c860535a58ba6217fb7fd5}{}\label{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n_a559e7d9127c860535a58ba6217fb7fd5}
+A list of attributes for the vertex 
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Geometries/\hyperlink{_w_geometry_8h}{W\+Geometry.\+h}\item 
+Wasabi/\+Geometries/W\+Geometry.\+cpp\end{DoxyCompactItemize}

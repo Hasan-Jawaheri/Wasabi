@@ -1,6 +1,6 @@
 #include "WOrientation.h"
 
-WOrientation::WOrientation(void) {
+WOrientation::WOrientation() {
 	//default values
 	m_pos = WVector3(0.0f, 0.0f, 0.0f);
 	m_right = WVector3(1.0f, 0.0f, 0.0f);
@@ -9,7 +9,7 @@ WOrientation::WOrientation(void) {
 
 	m_bBind = false;
 }
-WOrientation::~WOrientation(void) {
+WOrientation::~WOrientation() {
 }
 void WOrientation::SetPosition(float x, float y, float z) {
 	m_pos = WVector3(x, y, z);
@@ -182,23 +182,23 @@ void WOrientation::Fly(float units) {
 
 	OnStateChange(CHANGE_MOTION);
 }
-float WOrientation::GetPositionX(void) const {
+float WOrientation::GetPositionX() const {
 	return m_pos.x;
 }
-float WOrientation::GetPositionY(void) const {
+float WOrientation::GetPositionY() const {
 	return m_pos.y;
 }
-float WOrientation::GetPositionZ(void) const {
+float WOrientation::GetPositionZ() const {
 	return m_pos.z;
 }
-WVector3 WOrientation::GetPosition(void) const {
+WVector3 WOrientation::GetPosition() const {
 	return m_pos;
 }
-float WOrientation::GetAngleX(void) const {
-	WVector3 xVec(0.0f, 0.0f, 1.0f); //origin axis
+float WOrientation::GetAngleX() const {
+	WVector3 zVec(0.0f, 0.0f, 1.0f); //origin axis
 	WVector3 _2dLook(0.0f, m_look.y, m_look.z);
 
-	float dot = WVec3Dot(xVec, _2dLook); //get angle between the vectors
+	float dot = WVec3Dot(zVec, _2dLook); //get angle between the vectors
 	float u = 1.0f;
 	float v = sqrt(float(_2dLook.x*_2dLook.x + _2dLook.y*_2dLook.y + _2dLook.z*_2dLook.z));
 
@@ -212,7 +212,7 @@ float WOrientation::GetAngleX(void) const {
 	//return result in degrees
 	return W_RADTODEG(result);
 }
-float WOrientation::GetAngleY(void) const {
+float WOrientation::GetAngleY() const {
 	WVector3 yVec(0.0f, 0.0f, 1.0f); //origin axis
 	WVector3 _2dLook(m_look.x, 0.0f, m_look.z);
 
@@ -230,11 +230,11 @@ float WOrientation::GetAngleY(void) const {
 	//return result in degrees
 	return W_RADTODEG(result);
 }
-float WOrientation::GetAngleZ(void) const {
-	WVector3 zVec(0.0f, 1.0f, 0.0f); //origin axis
+float WOrientation::GetAngleZ() const {
+	WVector3 yVec(0.0f, 1.0f, 0.0f); //origin axis
 	WVector3 _2dLook(m_up.x, m_up.y, 0.0f);
 
-	float dot = WVec3Dot(zVec, _2dLook); //get angle between the vectors
+	float dot = WVec3Dot(yVec, _2dLook); //get angle between the vectors
 	float u = 1.0f;
 	float v = sqrt(float(_2dLook.x*_2dLook.x + _2dLook.y*_2dLook.y + _2dLook.z*_2dLook.z));
 
@@ -248,7 +248,7 @@ float WOrientation::GetAngleZ(void) const {
 	//return result in degrees
 	return W_RADTODEG(result);
 }
-WVector3 WOrientation::GetAngle(void) const {
+WVector3 WOrientation::GetAngle() const {
 	//return the angles as a WVector3
 	WVector3 ang;
 
@@ -258,26 +258,26 @@ WVector3 WOrientation::GetAngle(void) const {
 
 	return ang;
 }
-WVector3 WOrientation::GetUVector(void) const {
+WVector3 WOrientation::GetUVector() const {
 	return m_up;
 }
-WVector3 WOrientation::GetLVector(void) const {
+WVector3 WOrientation::GetLVector() const {
 	return m_look;
 }
-WVector3 WOrientation::GetRVector(void) const {
+WVector3 WOrientation::GetRVector() const {
 	return m_right;
 }
 void WOrientation::SetBindingMatrix(WMatrix mtx) {
 	m_bBind = true;
 	m_bindMtx = mtx;
 }
-void WOrientation::RemoveBinding(void) {
+void WOrientation::RemoveBinding() {
 	m_bBind = false;
 }
-WMatrix WOrientation::GetBindingMatrix(void) const {
+WMatrix WOrientation::GetBindingMatrix() const {
 	return m_bindMtx;
 }
-bool WOrientation::IsBound(void) const {
+bool WOrientation::IsBound() const {
 	return m_bBind;
 }
 void WOrientation::OnStateChange(STATE_CHANGE_TYPE type) {

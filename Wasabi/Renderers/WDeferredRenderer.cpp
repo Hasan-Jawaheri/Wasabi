@@ -1,5 +1,5 @@
 #include "WDeferredRenderer.h"
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 #include "../Materials/WEffect.h"
 #include "../Materials/WMaterial.h"
 #include "../Lights/WLight.h"

@@ -1,0 +1,95 @@
+\hypertarget{class_w_renderer}{}\section{W\+Renderer Class Reference}
+\label{class_w_renderer}\index{W\+Renderer@{W\+Renderer}}
+Inheritance diagram for W\+Renderer\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_w_renderer}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Renderer} (class \hyperlink{class_wasabi}{Wasabi} $\ast$const app)\hypertarget{class_w_renderer_a0058086266c668315984d03b150e80ad}{}\label{class_w_renderer_a0058086266c668315984d03b150e80ad}
+
+\item 
+virtual \hyperlink{class_w_error}{W\+Error} {\bfseries Initiailize} ()=0\hypertarget{class_w_renderer_ab6595c2f3cbabb322d7e189c8cb5a649}{}\label{class_w_renderer_ab6595c2f3cbabb322d7e189c8cb5a649}
+
+\item 
+virtual void {\bfseries Render} (class \hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$rt, unsigned int filter=-\/1)=0\hypertarget{class_w_renderer_af4c7b8549a4f688cfd5f0c5604845052}{}\label{class_w_renderer_af4c7b8549a4f688cfd5f0c5604845052}
+
+\item 
+virtual void {\bfseries Cleanup} ()=0\hypertarget{class_w_renderer_aae1e6146c3d77c98b3283913ec094318}{}\label{class_w_renderer_aae1e6146c3d77c98b3283913ec094318}
+
+\item 
+virtual \hyperlink{class_w_error}{W\+Error} {\bfseries Resize} (unsigned int width, unsigned int height)\hypertarget{class_w_renderer_af4a25acc15b0d53b7d3ee18c69561793}{}\label{class_w_renderer_af4a25acc15b0d53b7d3ee18c69561793}
+
+\item 
+virtual class \hyperlink{class_w_material}{W\+Material} $\ast$ {\bfseries Create\+Default\+Material} ()=0\hypertarget{class_w_renderer_ad9b930c45f30ca70438e8d6e41417ead}{}\label{class_w_renderer_ad9b930c45f30ca70438e8d6e41417ead}
+
+\item 
+virtual Vk\+Sampler {\bfseries Get\+Default\+Sampler} () const  =0\hypertarget{class_w_renderer_a503d5eb3ea9822b57bd9039374bf98db}{}\label{class_w_renderer_a503d5eb3ea9822b57bd9039374bf98db}
+
+\item 
+Vk\+Queue {\bfseries Get\+Queue} () const \hypertarget{class_w_renderer_a64128aa71ecea0a3098d39c03d2f07ba}{}\label{class_w_renderer_a64128aa71ecea0a3098d39c03d2f07ba}
+
+\item 
+class \hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$ {\bfseries Get\+Default\+Render\+Target} () const \hypertarget{class_w_renderer_a95b12ab212008a191e328d85dc6fbf15}{}\label{class_w_renderer_a95b12ab212008a191e328d85dc6fbf15}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_wasabi}{Wasabi} $\ast$ {\bfseries m\+\_\+app}\hypertarget{class_w_renderer_ad8e38cb218a41107827983eae756bc0d}{}\label{class_w_renderer_ad8e38cb218a41107827983eae756bc0d}
+
+\item 
+Vk\+Device {\bfseries m\+\_\+device}\hypertarget{class_w_renderer_a9ded5e9d4b590436819577e3c3bdc04f}{}\label{class_w_renderer_a9ded5e9d4b590436819577e3c3bdc04f}
+
+\item 
+Vk\+Queue {\bfseries m\+\_\+queue}\hypertarget{class_w_renderer_a650926342e781e8f89e20161f2701fb7}{}\label{class_w_renderer_a650926342e781e8f89e20161f2701fb7}
+
+\item 
+Vulkan\+Swap\+Chain $\ast$ {\bfseries m\+\_\+swap\+Chain}\hypertarget{class_w_renderer_a2d5cad7799d4155501b47a4bafba6ca6}{}\label{class_w_renderer_a2d5cad7799d4155501b47a4bafba6ca6}
+
+\item 
+\hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$ {\bfseries m\+\_\+render\+Target}\hypertarget{class_w_renderer_a92bd84778cf6054f0ee5d0dbbc7cb78c}{}\label{class_w_renderer_a92bd84778cf6054f0ee5d0dbbc7cb78c}
+
+\item 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+struct \{\\
+\>VkSemaphore {\bfseries presentComplete}\\
+\>VkSemaphore {\bfseries renderComplete}\\
+\} {\bfseries m\_semaphores}\hypertarget{class_w_renderer_abb89b6d172796e9b2cdbc2038572c09e}{}\label{class_w_renderer_abb89b6d172796e9b2cdbc2038572c09e}
+\\
+
+\end{tabbing}\item 
+Vk\+Format {\bfseries m\+\_\+depth\+Format}\hypertarget{class_w_renderer_a096e989659820834d161474b7bd82179}{}\label{class_w_renderer_a096e989659820834d161474b7bd82179}
+
+\item 
+Vk\+Format {\bfseries m\+\_\+color\+Format}\hypertarget{class_w_renderer_a4278ba8532bba8d42411b78c4f6e5475}{}\label{class_w_renderer_a4278ba8532bba8d42411b78c4f6e5475}
+
+\item 
+uint32\+\_\+t {\bfseries m\+\_\+width}\hypertarget{class_w_renderer_aa0e93b3e94a7d4281e3509585ec9ad64}{}\label{class_w_renderer_aa0e93b3e94a7d4281e3509585ec9ad64}
+
+\item 
+uint32\+\_\+t {\bfseries m\+\_\+height}\hypertarget{class_w_renderer_a65a01e8c541266896bf8e69056822431}{}\label{class_w_renderer_a65a01e8c541266896bf8e69056822431}
+
+\item 
+bool {\bfseries m\+\_\+resizing}\hypertarget{class_w_renderer_a0335d8da66f197638829056f89daac37}{}\label{class_w_renderer_a0335d8da66f197638829056f89daac37}
+
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+class {\bfseries Wasabi}\hypertarget{class_w_renderer_a0c8bd63565774772e7ab86a1bdeb6e69}{}\label{class_w_renderer_a0c8bd63565774772e7ab86a1bdeb6e69}
+
+\item 
+int A\+P\+I\+E\+N\+T\+RY {\bfseries Win\+Main} (H\+I\+N\+S\+T\+A\+N\+CE h\+Instance, H\+I\+N\+S\+T\+A\+N\+CE h\+Prev\+Instance, L\+P\+S\+TR cmd\+Line, int cmd\+Show)\hypertarget{class_w_renderer_a09086b520e174cf7af5b8763227eaac6}{}\label{class_w_renderer_a09086b520e174cf7af5b8763227eaac6}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Renderers/W\+Renderer.\+h\item 
+Wasabi/\+Renderers/W\+Renderer.\+cpp\end{DoxyCompactItemize}

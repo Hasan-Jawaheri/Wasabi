@@ -198,7 +198,7 @@ class FBXLoader : public Wasabi {
 				for (UINT i = 0; i < b->GetNumChildren(); i++)
 					boneStack.push_back(b->GetChild(i));
 			}
-			anim.frames[i]->SaveToWS(file.rdbuf(), file.tellp());
+			anim.frames[i]->SaveToWA(file.rdbuf(), file.tellp());
 		}
 		printf("done\n");
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 
 enum W_SHADER_TYPE {
 	W_VERTEX_SHADER = VK_SHADER_STAGE_VERTEX_BIT,

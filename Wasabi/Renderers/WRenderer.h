@@ -5,7 +5,7 @@ desc.: Wasabi Engine renderer spec
 *********************************************************************/
 #pragma once
 
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 
 enum W_RENDER_FILTER {
 	RENDER_FILTER_OBJECTS = 1,

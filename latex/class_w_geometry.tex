@@ -1,0 +1,799 @@
+\hypertarget{class_w_geometry}{}\section{W\+Geometry Class Reference}
+\label{class_w_geometry}\index{W\+Geometry@{W\+Geometry}}
+
+
+{\ttfamily \#include $<$W\+Geometry.\+h$>$}
+
+Inheritance diagram for W\+Geometry\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_w_geometry}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Geometry} (\hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_geometry_a5bd75d5b0a5d557a09fd6565ea709fa1}{}\label{class_w_geometry_a5bd75d5b0a5d557a09fd6565ea709fa1}
+
+\item 
+virtual unsigned int \hyperlink{class_w_geometry_a4eab34844955ef4583d393c3304d250c}{Get\+Vertex\+Buffer\+Count} () const 
+\item 
+virtual \hyperlink{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON} \hyperlink{class_w_geometry_a84409cef0ba8228b571f4f69cdfd6131}{Get\+Vertex\+Description} (unsigned int layout\+\_\+index=0) const 
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_ae9c73db37d16327132921df70669c6a4}{Create\+From\+Data} (void $\ast$vb, unsigned int num\+\_\+verts, void $\ast$ib, unsigned int num\+\_\+indices, bool b\+Dynamic=false, bool b\+Calc\+Normals=false, bool b\+Calc\+Tangents=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a72d2e175081e0c3545497c621b8e4c95}{Create\+Cube} (float f\+Size, bool b\+Dynamic=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a26ded3a7e2db75d132857d608e914bb0}{Create\+Box} (\hyperlink{class_w_vector3}{W\+Vector3} dimensions, bool b\+Dynamic=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_adeb899c32ca3f634dfccf7ba9780a3b3}{Create\+Plain} (float f\+Size, int xsegs, int zsegs, bool b\+Dynamic=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a2a1d9a7ca9310f4e024250c33ace1dec}{Create\+Sphere} (float Radius, unsigned int V\+Res, unsigned int U\+Res, bool b\+Dynamic=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a650d1bb17b2347329430925cc5e4aa86}{Create\+Cone} (float f\+Radius, float f\+Height, unsigned int hsegs, unsigned int csegs, bool b\+Dynamic=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a312684c5e5f15629065c0e64fb8d121d}{Create\+Cylinder} (float f\+Radius, float f\+Height, unsigned int hsegs, unsigned int csegs, bool b\+Dynamic=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_afa735adb0739f6d54f467957168cfe38}{Copy\+From} (\hyperlink{class_w_geometry}{W\+Geometry} $\ast$const from, bool b\+Dynamic=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a38749309af4f87d44d120bd978a12d90}{Create\+Animation\+Data} (void $\ast$anim\+Buf)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_afdffc9bd3c60a54d0d7875d7bf794ec2}{Load\+From\+W\+GM} (std\+::string filename, bool b\+Dynamic=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{Save\+To\+W\+GM} (std\+::string filename)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a973bc874b7c22956f6dde88526e424bd}{Load\+From\+H\+XM} (std\+::string filename, bool b\+Dynamic=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_aa6618d489cf8fb3bbd8339ca16a620f1}{Map\+Vertex\+Buffer} (void $\ast$$\ast$const vb, bool b\+Read\+Only=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a257228fd6ef4ca9c3ef7e86367be373d}{Map\+Index\+Buffer} (D\+W\+O\+RD $\ast$$\ast$const ib, bool b\+Read\+Only=false)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_ada2184692d09980547e6161226ccd51a}{Map\+Animation\+Buffer} (void $\ast$$\ast$const ab, bool b\+Read\+Only=false)
+\item 
+void \hyperlink{class_w_geometry_a39cf160839dcc25a35abc37bff873e8d}{Unmap\+Vertex\+Buffer} ()
+\item 
+void \hyperlink{class_w_geometry_ab543762e369709e5779694544f088286}{Unmap\+Index\+Buffer} ()
+\item 
+void \hyperlink{class_w_geometry_a33d5aa6e31d8d94baf37924c6dec51c9}{Unmap\+Animation\+Buffer} ()
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a83dd8a5914b6d5f8a204569885e3de63}{Scale} (float mul\+Factor)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a4a7b0d5cbf2b708c9088b09286243871}{ScaleX} (float mul\+Factor)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a4f55df8af86e43abd9e1a636d738ab9f}{ScaleY} (float mul\+Factor)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a02aa684a0c9c53ae48a1e986686fff5b}{ScaleZ} (float mul\+Factor)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a6d39140a33e39efad863c5804191ea3a}{Apply\+Offset} (float x, float y, float z)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_aebdd5369d14cdea3b2d213bfe8712ab9}{Apply\+Offset} (\hyperlink{class_w_vector3}{W\+Vector3} offset)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_a4aed0389d4630cf9e511cdcf757ea0a5}{Apply\+Transformation} (\hyperlink{class_w_matrix}{W\+Matrix} mtx)
+\item 
+bool \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{Intersect} (\hyperlink{class_w_vector3}{W\+Vector3} p1, \hyperlink{class_w_vector3}{W\+Vector3} p2, \hyperlink{class_w_vector3}{W\+Vector3} $\ast$pt=nullptr, \hyperlink{class_w_vector2}{W\+Vector2} $\ast$uv=nullptr, unsigned int $\ast$triangle\+Index=nullptr)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_geometry_abf8e134f4345d4d998f9def43883f896}{Draw} (class \hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$rt, unsigned int num\+\_\+triangles=-\/1, unsigned int num\+\_\+instances=1, bool bind\+\_\+animation=true)
+\item 
+\hyperlink{class_w_vector3}{W\+Vector3} \hyperlink{class_w_geometry_ab653f03a8e45a8474854e0dac3492d22}{Get\+Min\+Point} () const 
+\item 
+\hyperlink{class_w_vector3}{W\+Vector3} \hyperlink{class_w_geometry_a664b638b12cf086bf0774e4a6cb8a269}{Get\+Max\+Point} () const 
+\item 
+unsigned int \hyperlink{class_w_geometry_a174c95642aeff57b8baf47834d4b1ad7}{Get\+Num\+Vertices} () const 
+\item 
+unsigned int \hyperlink{class_w_geometry_a1aa307f3449402a1ff4aa82c73eeb502}{Get\+Num\+Indices} () const 
+\item 
+bool \hyperlink{class_w_geometry_a80d7625563854a50bd7de6aa7fdd9b3d}{Is\+Rigged} () const 
+\item 
+virtual bool \hyperlink{class_w_geometry_a41dcdf044d27efa83ff631c4921f9008}{Valid} () const 
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+A \hyperlink{class_w_geometry}{W\+Geometry} is a flexible way to represent any geometry that is needed for rendering or any general computation or usage. \hyperlink{class_w_geometry}{W\+Geometry} can be derived such that one can modify the composition of the geometry (the attributes).
+
+A geometry can be made immutable, making it use less memory, at the cost of having several functions not work (functions that require access to the geometry\textquotesingle{}s vertex data).
+
+\hyperlink{class_w_geometry}{W\+Geometry} can hold several vertex buffers. By default, \hyperlink{class_wasabi}{Wasabi} uses the first buffer to render (with indices) and uses the second buffer (if available) for animation data. 
+
+\subsection{Member Function Documentation}
+\index{W\+Geometry@{W\+Geometry}!Apply\+Offset@{Apply\+Offset}}
+\index{Apply\+Offset@{Apply\+Offset}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Apply\+Offset(float x, float y, float z)}{ApplyOffset(float x, float y, float z)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Apply\+Offset (
+\begin{DoxyParamCaption}
+\item[{float}]{x, }
+\item[{float}]{y, }
+\item[{float}]{z}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a6d39140a33e39efad863c5804191ea3a}{}\label{class_w_geometry_a6d39140a33e39efad863c5804191ea3a}
+Applies an offset to all vertices in the geometry. The geometry must be valid and must have an attribute in its geometry buffer named \char`\"{}position\char`\"{}. The geometry must be dynamic and not immutable. 
+\begin{DoxyParams}{Parameters}
+{\em x} & x offset to apply \\
+\hline
+{\em y} & y offset to apply \\
+\hline
+{\em z} & z offset to apply \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Apply\+Offset@{Apply\+Offset}}
+\index{Apply\+Offset@{Apply\+Offset}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Apply\+Offset(\+W\+Vector3 offset)}{ApplyOffset(WVector3 offset)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Apply\+Offset (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{offset}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_aebdd5369d14cdea3b2d213bfe8712ab9}{}\label{class_w_geometry_aebdd5369d14cdea3b2d213bfe8712ab9}
+Applies an offset to all vertices in the geometry. The geometry must be valid and must have an attribute in its geometry buffer named \char`\"{}position\char`\"{}. The geometry must be dynamic and not immutable. 
+\begin{DoxyParams}{Parameters}
+{\em offset} & Offset to apply \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Apply\+Transformation@{Apply\+Transformation}}
+\index{Apply\+Transformation@{Apply\+Transformation}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Apply\+Transformation(\+W\+Matrix mtx)}{ApplyTransformation(WMatrix mtx)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Apply\+Transformation (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Matrix}}]{mtx}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a4aed0389d4630cf9e511cdcf757ea0a5}{}\label{class_w_geometry_a4aed0389d4630cf9e511cdcf757ea0a5}
+Applies a transformation matrix to all vertices in the geometry. The geometry must be valid and must have an attribute in its geometry buffer named \char`\"{}position\char`\"{}. The geometry must be dynamic and not immutable. 
+\begin{DoxyParams}{Parameters}
+{\em mtx} & Transformation matrix to apply \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Copy\+From@{Copy\+From}}
+\index{Copy\+From@{Copy\+From}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Copy\+From(\+W\+Geometry $\ast$const from, bool b\+Dynamic=false)}{CopyFrom(WGeometry *const from, bool bDynamic=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Copy\+From (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Geometry} $\ast$const}]{from, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_afa735adb0739f6d54f467957168cfe38}{}\label{class_w_geometry_afa735adb0739f6d54f467957168cfe38}
+Copy another (non-\/immutable) geometry.
+
+If this function is called while the engine parameter \char`\"{}geometry\+Immutable\char`\"{} (see \hyperlink{class_wasabi_ab3d3e87ba206b4184b504c1666ff6dc3}{Wasabi\+::engine\+Params}) is set to true, then the geometry will be made immutable, regardless of the b\+Dynamic parameter. Immutable geometry cannot have the following function calls work\+: \hyperlink{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{Save\+To\+W\+G\+M()}, all map and unmap functions, all scaling functions, all offset functions and \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{Intersect()}. Immutable geometry cannot be copied. Immutable geometry uses less memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em from} & Geometry to copy \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Create\+Animation\+Data@{Create\+Animation\+Data}}
+\index{Create\+Animation\+Data@{Create\+Animation\+Data}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Create\+Animation\+Data(void $\ast$anim\+Buf)}{CreateAnimationData(void *animBuf)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Create\+Animation\+Data (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{anim\+Buf}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a38749309af4f87d44d120bd978a12d90}{}\label{class_w_geometry_a38749309af4f87d44d120bd978a12d90}
+Creates animation data vertex buffer. The geometry must have \hyperlink{class_w_geometry_a4eab34844955ef4583d393c3304d250c}{Get\+Vertex\+Buffer\+Count()} $>$ 1. The buffer will be dynamic if the first vertex buffer (created from a Load$\ast$, \hyperlink{class_w_geometry_ae9c73db37d16327132921df70669c6a4}{Create\+From\+Data()} or \hyperlink{class_w_geometry_afa735adb0739f6d54f467957168cfe38}{Copy\+From()} call) was dynamic, false otherwise. If the geometry of this object is immutable, the the animation buffer will also be.
+
+
+\begin{DoxyParams}{Parameters}
+{\em anim\+Buf} & A pointer to the memory to create the animation buffer from, which must be a valid contiguous memory of size \hyperlink{class_w_geometry_a174c95642aeff57b8baf47834d4b1ad7}{Get\+Num\+Vertices()}$\ast$\+Get\+Vertex\+Description(1).Get\+Size() \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Create\+Box@{Create\+Box}}
+\index{Create\+Box@{Create\+Box}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Create\+Box(\+W\+Vector3 dimensions, bool b\+Dynamic=false)}{CreateBox(WVector3 dimensions, bool bDynamic=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Create\+Box (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{dimensions, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a26ded3a7e2db75d132857d608e914bb0}{}\label{class_w_geometry_a26ded3a7e2db75d132857d608e914bb0}
+Creates a box geometry.
+
+If this function is called while the engine parameter \char`\"{}geometry\+Immutable\char`\"{} (see \hyperlink{class_wasabi_ab3d3e87ba206b4184b504c1666ff6dc3}{Wasabi\+::engine\+Params}) is set to true, then the geometry will be made immutable, regardless of the b\+Dynamic parameter. Immutable geometry cannot have the following function calls work\+: \hyperlink{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{Save\+To\+W\+G\+M()}, all map and unmap functions, all scaling functions, all offset functions and \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{Intersect()}. Immutable geometry cannot be copied. Immutable geometry uses less memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em dimensions} & Dimensions of the box \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Create\+Cone@{Create\+Cone}}
+\index{Create\+Cone@{Create\+Cone}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Create\+Cone(float f\+Radius, float f\+Height, unsigned int hsegs, unsigned int csegs, bool b\+Dynamic=false)}{CreateCone(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Create\+Cone (
+\begin{DoxyParamCaption}
+\item[{float}]{f\+Radius, }
+\item[{float}]{f\+Height, }
+\item[{unsigned int}]{hsegs, }
+\item[{unsigned int}]{csegs, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a650d1bb17b2347329430925cc5e4aa86}{}\label{class_w_geometry_a650d1bb17b2347329430925cc5e4aa86}
+Creates a cone geometry, with csegs segments at the bottom circle and hsegs segments along the cone\textquotesingle{}s height.
+
+If this function is called while the engine parameter \char`\"{}geometry\+Immutable\char`\"{} (see \hyperlink{class_wasabi_ab3d3e87ba206b4184b504c1666ff6dc3}{Wasabi\+::engine\+Params}) is set to true, then the geometry will be made immutable, regardless of the b\+Dynamic parameter. Immutable geometry cannot have the following function calls work\+: \hyperlink{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{Save\+To\+W\+G\+M()}, all map and unmap functions, all scaling functions, all offset functions and \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{Intersect()}. Immutable geometry cannot be copied. Immutable geometry uses less memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em f\+Radius} & Radius of the bottom circle \\
+\hline
+{\em f\+Height} & Height of the cone \\
+\hline
+{\em hsegs} & Number of segments along the height, minimum is 0 \\
+\hline
+{\em csegs} & Number of segments at the bottom circle, minimum is 3 \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Create\+Cube@{Create\+Cube}}
+\index{Create\+Cube@{Create\+Cube}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Create\+Cube(float f\+Size, bool b\+Dynamic=false)}{CreateCube(float fSize, bool bDynamic=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Create\+Cube (
+\begin{DoxyParamCaption}
+\item[{float}]{f\+Size, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a72d2e175081e0c3545497c621b8e4c95}{}\label{class_w_geometry_a72d2e175081e0c3545497c621b8e4c95}
+Creates a cube geometry.
+
+If this function is called while the engine parameter \char`\"{}geometry\+Immutable\char`\"{} (see \hyperlink{class_wasabi_ab3d3e87ba206b4184b504c1666ff6dc3}{Wasabi\+::engine\+Params}) is set to true, then the geometry will be made immutable, regardless of the b\+Dynamic parameter. Immutable geometry cannot have the following function calls work\+: \hyperlink{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{Save\+To\+W\+G\+M()}, all map and unmap functions, all scaling functions, all offset functions and \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{Intersect()}. Immutable geometry cannot be copied. Immutable geometry uses less memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em f\+Size} & Dimension of the cube \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Create\+Cylinder@{Create\+Cylinder}}
+\index{Create\+Cylinder@{Create\+Cylinder}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Create\+Cylinder(float f\+Radius, float f\+Height, unsigned int hsegs, unsigned int csegs, bool b\+Dynamic=false)}{CreateCylinder(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Create\+Cylinder (
+\begin{DoxyParamCaption}
+\item[{float}]{f\+Radius, }
+\item[{float}]{f\+Height, }
+\item[{unsigned int}]{hsegs, }
+\item[{unsigned int}]{csegs, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a312684c5e5f15629065c0e64fb8d121d}{}\label{class_w_geometry_a312684c5e5f15629065c0e64fb8d121d}
+Creates a cylinder geometry, with csegs segments at the bottom and top circles and hsegs segments along the cylinder\textquotesingle{}s height.
+
+If this function is called while the engine parameter \char`\"{}geometry\+Immutable\char`\"{} (see \hyperlink{class_wasabi_ab3d3e87ba206b4184b504c1666ff6dc3}{Wasabi\+::engine\+Params}) is set to true, then the geometry will be made immutable, regardless of the b\+Dynamic parameter. Immutable geometry cannot have the following function calls work\+: \hyperlink{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{Save\+To\+W\+G\+M()}, all map and unmap functions, all scaling functions, all offset functions and \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{Intersect()}. Immutable geometry cannot be copied. Immutable geometry uses less memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em f\+Radius} & Radius of the cylinder \\
+\hline
+{\em f\+Height} & Height of the cylinder \\
+\hline
+{\em hsegs} & Number of segments along the height, minimum is 0 \\
+\hline
+{\em csegs} & Number of segments at the bottom and top circles, minimum is 3 \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Create\+From\+Data@{Create\+From\+Data}}
+\index{Create\+From\+Data@{Create\+From\+Data}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Create\+From\+Data(void $\ast$vb, unsigned int num\+\_\+verts, void $\ast$ib, unsigned int num\+\_\+indices, bool b\+Dynamic=false, bool b\+Calc\+Normals=false, bool b\+Calc\+Tangents=false)}{CreateFromData(void *vb, unsigned int num_verts, void *ib, unsigned int num_indices, bool bDynamic=false, bool bCalcNormals=false, bool bCalcTangents=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Create\+From\+Data (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{vb, }
+\item[{unsigned int}]{num\+\_\+verts, }
+\item[{void $\ast$}]{ib, }
+\item[{unsigned int}]{num\+\_\+indices, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}, }
+\item[{bool}]{b\+Calc\+Normals = {\ttfamily false}, }
+\item[{bool}]{b\+Calc\+Tangents = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_ae9c73db37d16327132921df70669c6a4}{}\label{class_w_geometry_ae9c73db37d16327132921df70669c6a4}
+Creates a geometry from buffers in memory. The buffers must be formatted such that they match what \hyperlink{class_w_geometry_a84409cef0ba8228b571f4f69cdfd6131}{Get\+Vertex\+Description()} returns. This function fills up only the first (0th) vertex buffer that is accompanied with an index buffer for rendering use.
+
+If this function is called while the engine parameter \char`\"{}geometry\+Immutable\char`\"{} (see \hyperlink{class_wasabi_ab3d3e87ba206b4184b504c1666ff6dc3}{Wasabi\+::engine\+Params}) is set to true, then the geometry will be made immutable, regardless of the b\+Dynamic parameter. Immutable geometry cannot have the following function calls work\+: \hyperlink{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{Save\+To\+W\+G\+M()}, all map and unmap functions, all scaling functions, all offset functions and \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{Intersect()}. Immutable geometry cannot be copied. Immutable geometry uses less memory.
+
+Examples\+: Create a triangle\+: 
+\begin{DoxyCode}
+\hyperlink{struct_w_default_vertex}{WDefaultVertex} vertices[] = \{
+  \hyperlink{struct_w_default_vertex}{WDefaultVertex}(-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+                 0.0f, 0.0f, -1.0f, 0.0f, 1.0f),
+  \hyperlink{struct_w_default_vertex}{WDefaultVertex}(-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+                 0.0f, 0.0f, -1.0f, 0.0f, 0.0f),
+  \hyperlink{struct_w_default_vertex}{WDefaultVertex}(0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+                 0.0f, 0.0f, -1.0f, 1.0f, 0.0f)
+\};
+DWORD indices[] = \{0, 1, 2\};
+WGeomery* geometry = \textcolor{keyword}{new} \hyperlink{class_w_geometry}{WGeometry}(\textcolor{keyword}{this});
+geometry->CreateFromData(vertices, 3, indices, 3);
+\end{DoxyCode}
+
+
+
+\begin{DoxyParams}{Parameters}
+{\em vb} & A pointer to the memory containing the vertex data, which must be a valid contiguous memory of size num\+\_\+verts$\ast$\+Get\+Vertex\+Description(0).Get\+Size() \\
+\hline
+{\em num\+\_\+verts} & Number of vertices in vb \\
+\hline
+{\em ib} & A pointer to the memory containing the index data, which must be a valid contiguous memory of size num\+\_\+indices$\ast$sizeof(D\+W\+O\+RD) \\
+\hline
+{\em num\+\_\+indices} & Number of indices in ab \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+{\em b\+Calc\+Normals} & Setting this to true will cause this function to automatically calculate normals (if there is an attribute named \char`\"{}normal\char`\"{} in Get\+Vertex\+Description(0)) for the geometry (hard-\/normals) \\
+\hline
+{\em b\+Calc\+Tangents} & Setting this to true will cause this function to automatically calculate tangents (if there is an attribute named \char`\"{}tangent\char`\"{} in Get\+Vertex\+Description(0)) for the geometry \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Create\+Plain@{Create\+Plain}}
+\index{Create\+Plain@{Create\+Plain}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Create\+Plain(float f\+Size, int xsegs, int zsegs, bool b\+Dynamic=false)}{CreatePlain(float fSize, int xsegs, int zsegs, bool bDynamic=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Create\+Plain (
+\begin{DoxyParamCaption}
+\item[{float}]{f\+Size, }
+\item[{int}]{xsegs, }
+\item[{int}]{zsegs, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_adeb899c32ca3f634dfccf7ba9780a3b3}{}\label{class_w_geometry_adeb899c32ca3f634dfccf7ba9780a3b3}
+Creates a plain geometry that is segmented. The plain will be split into (xsegs+1)$\ast$(zsegs+1) squares, which will have 2 triangles each.
+
+If this function is called while the engine parameter \char`\"{}geometry\+Immutable\char`\"{} (see \hyperlink{class_wasabi_ab3d3e87ba206b4184b504c1666ff6dc3}{Wasabi\+::engine\+Params}) is set to true, then the geometry will be made immutable, regardless of the b\+Dynamic parameter. Immutable geometry cannot have the following function calls work\+: \hyperlink{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{Save\+To\+W\+G\+M()}, all map and unmap functions, all scaling functions, all offset functions and \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{Intersect()}. Immutable geometry cannot be copied. Immutable geometry uses less memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em f\+Size} & Size (dimension) of the plain \\
+\hline
+{\em xsegs} & Number of segments on the X axis, minimum is 0 \\
+\hline
+{\em zsegs} & Number of segments on the Z axis, minimum is 0 \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Create\+Sphere@{Create\+Sphere}}
+\index{Create\+Sphere@{Create\+Sphere}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Create\+Sphere(float Radius, unsigned int V\+Res, unsigned int U\+Res, bool b\+Dynamic=false)}{CreateSphere(float Radius, unsigned int VRes, unsigned int URes, bool bDynamic=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Create\+Sphere (
+\begin{DoxyParamCaption}
+\item[{float}]{Radius, }
+\item[{unsigned int}]{V\+Res, }
+\item[{unsigned int}]{U\+Res, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a2a1d9a7ca9310f4e024250c33ace1dec}{}\label{class_w_geometry_a2a1d9a7ca9310f4e024250c33ace1dec}
+Creates a sphere geometry, with V\+Res vertical segments and U\+Res horizontal segments.
+
+If this function is called while the engine parameter \char`\"{}geometry\+Immutable\char`\"{} (see \hyperlink{class_wasabi_ab3d3e87ba206b4184b504c1666ff6dc3}{Wasabi\+::engine\+Params}) is set to true, then the geometry will be made immutable, regardless of the b\+Dynamic parameter. Immutable geometry cannot have the following function calls work\+: \hyperlink{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{Save\+To\+W\+G\+M()}, all map and unmap functions, all scaling functions, all offset functions and \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{Intersect()}. Immutable geometry cannot be copied. Immutable geometry uses less memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em Radius} & Radius of the sphere \\
+\hline
+{\em V\+Res} & Vertical resolution, or number of vertical splits, minimum is 3 \\
+\hline
+{\em U\+Res} & Horizontal resolution, or number of horizontal splits, minimum is 2 \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Draw@{Draw}}
+\index{Draw@{Draw}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Draw(class W\+Render\+Target $\ast$rt, unsigned int num\+\_\+triangles=-\/1, unsigned int num\+\_\+instances=1, bool bind\+\_\+animation=true)}{Draw(class WRenderTarget *rt, unsigned int num_triangles=-1, unsigned int num_instances=1, bool bind_animation=true)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Draw (
+\begin{DoxyParamCaption}
+\item[{class {\bf W\+Render\+Target} $\ast$}]{rt, }
+\item[{unsigned int}]{num\+\_\+triangles = {\ttfamily -\/1}, }
+\item[{unsigned int}]{num\+\_\+instances = {\ttfamily 1}, }
+\item[{bool}]{bind\+\_\+animation = {\ttfamily true}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_abf8e134f4345d4d998f9def43883f896}{}\label{class_w_geometry_abf8e134f4345d4d998f9def43883f896}
+Draw the geometry to the render target. This function will bind the geometry buffer to vertex buffer slot 0 in Vulkan, and will bind the animation buffer (if available and requested) to slot 1. 
+\begin{DoxyParams}{Parameters}
+{\em rt} & Render target to draw to \\
+\hline
+{\em num\+\_\+triangles} & Number of triangles to draw, -\/1 for all \\
+\hline
+{\em num\+\_\+instances} & Number of instances to draw \\
+\hline
+{\em bind\+\_\+animation} & true to bind the animation buffer (if not available, the geometry buffer will be bound twice), false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\mbox{[}description\mbox{]} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Get\+Max\+Point@{Get\+Max\+Point}}
+\index{Get\+Max\+Point@{Get\+Max\+Point}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Get\+Max\+Point() const }{GetMaxPoint() const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Vector3} W\+Geometry\+::\+Get\+Max\+Point (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_geometry_a664b638b12cf086bf0774e4a6cb8a269}{}\label{class_w_geometry_a664b638b12cf086bf0774e4a6cb8a269}
+Retrieves the point that represents the maximum boundary of the geometry. \begin{DoxyReturn}{Returns}
+The maximum boundary for the geometry 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Get\+Min\+Point@{Get\+Min\+Point}}
+\index{Get\+Min\+Point@{Get\+Min\+Point}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Get\+Min\+Point() const }{GetMinPoint() const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Vector3} W\+Geometry\+::\+Get\+Min\+Point (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_geometry_ab653f03a8e45a8474854e0dac3492d22}{}\label{class_w_geometry_ab653f03a8e45a8474854e0dac3492d22}
+Retrieves the point that represents the minimum boundary of the geometry. \begin{DoxyReturn}{Returns}
+The minimum boundary for the geometry 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Get\+Num\+Indices@{Get\+Num\+Indices}}
+\index{Get\+Num\+Indices@{Get\+Num\+Indices}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Get\+Num\+Indices() const }{GetNumIndices() const }}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int W\+Geometry\+::\+Get\+Num\+Indices (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_geometry_a1aa307f3449402a1ff4aa82c73eeb502}{}\label{class_w_geometry_a1aa307f3449402a1ff4aa82c73eeb502}
+Retrieves the number of indices in the geometry. \begin{DoxyReturn}{Returns}
+Number of indices 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Get\+Num\+Vertices@{Get\+Num\+Vertices}}
+\index{Get\+Num\+Vertices@{Get\+Num\+Vertices}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Get\+Num\+Vertices() const }{GetNumVertices() const }}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int W\+Geometry\+::\+Get\+Num\+Vertices (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_geometry_a174c95642aeff57b8baf47834d4b1ad7}{}\label{class_w_geometry_a174c95642aeff57b8baf47834d4b1ad7}
+Retrieves the number of vertices in the geometry. \begin{DoxyReturn}{Returns}
+Number of vertices 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Get\+Vertex\+Buffer\+Count@{Get\+Vertex\+Buffer\+Count}}
+\index{Get\+Vertex\+Buffer\+Count@{Get\+Vertex\+Buffer\+Count}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Get\+Vertex\+Buffer\+Count() const }{GetVertexBufferCount() const }}]{\setlength{\rightskip}{0pt plus 5cm}virtual unsigned int W\+Geometry\+::\+Get\+Vertex\+Buffer\+Count (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_w_geometry_a4eab34844955ef4583d393c3304d250c}{}\label{class_w_geometry_a4eab34844955ef4583d393c3304d250c}
+This function should return the number of vertex descriptions that \hyperlink{class_w_geometry_a84409cef0ba8228b571f4f69cdfd6131}{Get\+Vertex\+Description()} can return, which represents the number of vertex buffers this geometry class can hold. \begin{DoxyReturn}{Returns}
+The number of vertex buffers this geometry can hold 
+\end{DoxyReturn}
+
+
+Reimplemented in \hyperlink{class_text_geometry_a0d6f019bc0034edcfdb51fe743e3b681}{Text\+Geometry}, and \hyperlink{class_sprite_geometry_a3c2a4c34292f6643f4bc7f375fe7ae68}{Sprite\+Geometry}.
+
+\index{W\+Geometry@{W\+Geometry}!Get\+Vertex\+Description@{Get\+Vertex\+Description}}
+\index{Get\+Vertex\+Description@{Get\+Vertex\+Description}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Get\+Vertex\+Description(unsigned int layout\+\_\+index=0) const }{GetVertexDescription(unsigned int layout_index=0) const }}]{\setlength{\rightskip}{0pt plus 5cm}virtual {\bf W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON} W\+Geometry\+::\+Get\+Vertex\+Description (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{layout\+\_\+index = {\ttfamily 0}}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_w_geometry_a84409cef0ba8228b571f4f69cdfd6131}{}\label{class_w_geometry_a84409cef0ba8228b571f4f69cdfd6131}
+Retrieves the vertex description of a vertex buffer. Should return valid descriptions for all {\itshape layout\+\_\+index} values between 0 and \hyperlink{class_w_geometry_a4eab34844955ef4583d393c3304d250c}{Get\+Vertex\+Buffer\+Count()}-\/1. 
+\begin{DoxyParams}{Parameters}
+{\em layout\+\_\+index} & Index of the vertex buffer \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The description of a vertex in the layout\+\_\+index \textquotesingle{}th vertex buffer 
+\end{DoxyReturn}
+
+
+Reimplemented in \hyperlink{class_text_geometry_a048ec440054230443d89317dd09d2731}{Text\+Geometry}, and \hyperlink{class_sprite_geometry_a84172139912969ed1d36f48506f5918a}{Sprite\+Geometry}.
+
+\index{W\+Geometry@{W\+Geometry}!Intersect@{Intersect}}
+\index{Intersect@{Intersect}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Intersect(\+W\+Vector3 p1, W\+Vector3 p2, W\+Vector3 $\ast$pt=nullptr, W\+Vector2 $\ast$uv=nullptr, unsigned int $\ast$triangle\+Index=nullptr)}{Intersect(WVector3 p1, WVector3 p2, WVector3 *pt=nullptr, WVector2 *uv=nullptr, unsigned int *triangleIndex=nullptr)}}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Geometry\+::\+Intersect (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{p1, }
+\item[{{\bf W\+Vector3}}]{p2, }
+\item[{{\bf W\+Vector3} $\ast$}]{pt = {\ttfamily nullptr}, }
+\item[{{\bf W\+Vector2} $\ast$}]{uv = {\ttfamily nullptr}, }
+\item[{unsigned int $\ast$}]{triangle\+Index = {\ttfamily nullptr}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{}\label{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}
+Checks if a ray intersects the geometry. The geometry must be valid and must have an attribute in its geometry buffer named \char`\"{}position\char`\"{}. The geometry must be dynamic and not immutable. 
+\begin{DoxyParams}{Parameters}
+{\em p1} & Origin of the ray \\
+\hline
+{\em p2} & A vector that points in the same direction as the ray \\
+\hline
+{\em pt} & A pointer to a 3D vector to be populated with the point of intersection, if any \\
+\hline
+{\em uv} & A pointer to a 2D vector to be populated with the UV coordinates at the intersection point, if any. If the vertices don\textquotesingle{}t have a an attribute named uv (with at least two components) then this will be the UV coordinates local to the triangle intersected \\
+\hline
+{\em triangle\+Index} & A pointer to an integer to be populated with the index of the triangle that was intersected, if any \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if there was an intersection, false otherwise 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Is\+Rigged@{Is\+Rigged}}
+\index{Is\+Rigged@{Is\+Rigged}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Is\+Rigged() const }{IsRigged() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Geometry\+::\+Is\+Rigged (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_geometry_a80d7625563854a50bd7de6aa7fdd9b3d}{}\label{class_w_geometry_a80d7625563854a50bd7de6aa7fdd9b3d}
+Checks if the geometry has an animation vertex buffer. \begin{DoxyReturn}{Returns}
+true if the geometry has animation data, false otherwise 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Load\+From\+H\+XM@{Load\+From\+H\+XM}}
+\index{Load\+From\+H\+XM@{Load\+From\+H\+XM}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Load\+From\+H\+X\+M(std\+::string filename, bool b\+Dynamic=false)}{LoadFromHXM(std::string filename, bool bDynamic=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Load\+From\+H\+XM (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{filename, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a973bc874b7c22956f6dde88526e424bd}{}\label{class_w_geometry_a973bc874b7c22956f6dde88526e424bd}
+Load a geometry from an H\+XM file. The geometry in the H\+XM file may be of a different format, in which case this function will try to fill in the attributes that the two formats share, discarding the rest. If no normal or tangent data are found in the file, but are available in this geometry\textquotesingle{}s description, the function will attempt to fill them in automatically. 
+\begin{DoxyParams}{Parameters}
+{\em filename} & Name of the file to load \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Load\+From\+W\+GM@{Load\+From\+W\+GM}}
+\index{Load\+From\+W\+GM@{Load\+From\+W\+GM}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Load\+From\+W\+G\+M(std\+::string filename, bool b\+Dynamic=false)}{LoadFromWGM(std::string filename, bool bDynamic=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Load\+From\+W\+GM (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{filename, }
+\item[{bool}]{b\+Dynamic = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_afdffc9bd3c60a54d0d7875d7bf794ec2}{}\label{class_w_geometry_afdffc9bd3c60a54d0d7875d7bf794ec2}
+Load a geometry from a W\+GM file. The geometry in the W\+GM file may be of a different format, in which case this function will try to fill in the attributes that the two formats share, discarding the rest. If no normal or tangent data are found in the file, but are available in this geometry\textquotesingle{}s description, the function will attempt to fill them in automatically. The function will also attempt to load animation data, if available. However, animation data will only be loaded if it matches exactly with this geometry\textquotesingle{}s animation vertex buffer structure. 
+\begin{DoxyParams}{Parameters}
+{\em filename} & Name of the file to load \\
+\hline
+{\em b\+Dynamic} & true if the geometry will require frequent modifications, false otherwise \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Map\+Animation\+Buffer@{Map\+Animation\+Buffer}}
+\index{Map\+Animation\+Buffer@{Map\+Animation\+Buffer}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Map\+Animation\+Buffer(void $\ast$$\ast$const ab, bool b\+Read\+Only=false)}{MapAnimationBuffer(void **const ab, bool bReadOnly=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Map\+Animation\+Buffer (
+\begin{DoxyParamCaption}
+\item[{void $\ast$$\ast$const}]{ab, }
+\item[{bool}]{b\+Read\+Only = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_ada2184692d09980547e6161226ccd51a}{}\label{class_w_geometry_ada2184692d09980547e6161226ccd51a}
+Map the animation buffer of this geometry. This will fail if there is no animation data, the geometry is dynamic or if the geometry is immutable. 
+\begin{DoxyParams}{Parameters}
+{\em ab} & The address of a pointer to have it point to the mapped memory of the animation vertices \\
+\hline
+{\em b\+Read\+Only} & Set to true if you intend to only read from the animation vertex array, false if you want to modify the animation vertices \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Map\+Index\+Buffer@{Map\+Index\+Buffer}}
+\index{Map\+Index\+Buffer@{Map\+Index\+Buffer}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Map\+Index\+Buffer(\+D\+W\+O\+R\+D $\ast$$\ast$const ib, bool b\+Read\+Only=false)}{MapIndexBuffer(DWORD **const ib, bool bReadOnly=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Map\+Index\+Buffer (
+\begin{DoxyParamCaption}
+\item[{D\+W\+O\+RD $\ast$$\ast$const}]{ib, }
+\item[{bool}]{b\+Read\+Only = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a257228fd6ef4ca9c3ef7e86367be373d}{}\label{class_w_geometry_a257228fd6ef4ca9c3ef7e86367be373d}
+Map the index buffer of this geometry. This will fail if there is no geometry, the geometry is dynamic or if the geometry is immutable.
+
+Examples\+: Flip this first triangle 
+\begin{DoxyCode}
+\textcolor{comment}{// Assuming geometry is valid and dynamic}
+DWORD* indices;
+geometry->MapIndexBuffer(&indices);
+DWORD temp = indices[0];
+indices[0] = indices[2];
+indices[2] = temp;
+geometry->UnmapIndexBuffer();
+\end{DoxyCode}
+
+
+
+\begin{DoxyParams}{Parameters}
+{\em ib} & The address of a pointer to have it point to the mapped memory of the indices \\
+\hline
+{\em b\+Read\+Only} & Set to true if you intend to only read from the index array, false if you want to modify the indices \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Map\+Vertex\+Buffer@{Map\+Vertex\+Buffer}}
+\index{Map\+Vertex\+Buffer@{Map\+Vertex\+Buffer}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Map\+Vertex\+Buffer(void $\ast$$\ast$const vb, bool b\+Read\+Only=false)}{MapVertexBuffer(void **const vb, bool bReadOnly=false)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Map\+Vertex\+Buffer (
+\begin{DoxyParamCaption}
+\item[{void $\ast$$\ast$const}]{vb, }
+\item[{bool}]{b\+Read\+Only = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_aa6618d489cf8fb3bbd8339ca16a620f1}{}\label{class_w_geometry_aa6618d489cf8fb3bbd8339ca16a620f1}
+Map the vertex buffer of this geometry. This will fail if there is no geometry, the geometry is dynamic or if the geometry is immutable.
+
+Examples\+: Move the first vertex a bit 
+\begin{DoxyCode}
+\textcolor{comment}{// Assuming geometry is valid and dynamic}
+\hyperlink{struct_w_default_vertex}{WDefaultVertex}* vertices;
+geometry->MapVertexBuffer((\textcolor{keywordtype}{void}**)&vertices);
+vertices[0].\hyperlink{struct_w_default_vertex_afdcf7f42cc5581df2f6952aaf839e8bb}{pos}.\hyperlink{class_w_vector3_a79d057d696196227f92c35331efb9da7}{x} += 5;
+geometry->UnmapVertexBuffer();
+\end{DoxyCode}
+
+
+
+\begin{DoxyParams}{Parameters}
+{\em vb} & The address of a pointer to have it point to the mapped memory of the vertices \\
+\hline
+{\em b\+Read\+Only} & Set to true if you intend to only read from the vertex array, false if you want to modify the vertices \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Save\+To\+W\+GM@{Save\+To\+W\+GM}}
+\index{Save\+To\+W\+GM@{Save\+To\+W\+GM}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Save\+To\+W\+G\+M(std\+::string filename)}{SaveToWGM(std::string filename)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Save\+To\+W\+GM (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{filename}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}{}\label{class_w_geometry_a3e8135b72f0dc4b5f88204a070032c37}
+Saves this geometry\textquotesingle{}s data in a W\+GM file. The data will be saved in the same format of this geometry. Animation data will also be stored. 
+\begin{DoxyParams}{Parameters}
+{\em filename} & Name of the file \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Scale@{Scale}}
+\index{Scale@{Scale}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Scale(float mul\+Factor)}{Scale(float mulFactor)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+Scale (
+\begin{DoxyParamCaption}
+\item[{float}]{mul\+Factor}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a83dd8a5914b6d5f8a204569885e3de63}{}\label{class_w_geometry_a83dd8a5914b6d5f8a204569885e3de63}
+Scale the geometry. The geometry must be valid and must have an attribute in its geometry buffer named \char`\"{}position\char`\"{}. The geometry must be dynamic and not immutable. 
+\begin{DoxyParams}{Parameters}
+{\em mul\+Factor} & Scale factor \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!ScaleX@{ScaleX}}
+\index{ScaleX@{ScaleX}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Scale\+X(float mul\+Factor)}{ScaleX(float mulFactor)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+ScaleX (
+\begin{DoxyParamCaption}
+\item[{float}]{mul\+Factor}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a4a7b0d5cbf2b708c9088b09286243871}{}\label{class_w_geometry_a4a7b0d5cbf2b708c9088b09286243871}
+Scale the geometry on the X axis. The geometry must be valid and must have an attribute in its geometry buffer named \char`\"{}position\char`\"{}. The geometry must be dynamic and not immutable. 
+\begin{DoxyParams}{Parameters}
+{\em mul\+Factor} & X scale factor \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!ScaleY@{ScaleY}}
+\index{ScaleY@{ScaleY}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Scale\+Y(float mul\+Factor)}{ScaleY(float mulFactor)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+ScaleY (
+\begin{DoxyParamCaption}
+\item[{float}]{mul\+Factor}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a4f55df8af86e43abd9e1a636d738ab9f}{}\label{class_w_geometry_a4f55df8af86e43abd9e1a636d738ab9f}
+Scale the geometry on the Y axis. The geometry must be valid and must have an attribute in its geometry buffer named \char`\"{}position\char`\"{}. The geometry must be dynamic and not immutable. 
+\begin{DoxyParams}{Parameters}
+{\em mul\+Factor} & Y scale factor \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!ScaleZ@{ScaleZ}}
+\index{ScaleZ@{ScaleZ}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Scale\+Z(float mul\+Factor)}{ScaleZ(float mulFactor)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Geometry\+::\+ScaleZ (
+\begin{DoxyParamCaption}
+\item[{float}]{mul\+Factor}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a02aa684a0c9c53ae48a1e986686fff5b}{}\label{class_w_geometry_a02aa684a0c9c53ae48a1e986686fff5b}
+Scale the geometry on the Z axis. The geometry must be valid and must have an attribute in its geometry buffer named \char`\"{}position\char`\"{}. The geometry must be dynamic and not immutable. 
+\begin{DoxyParams}{Parameters}
+{\em mul\+Factor} & Z scale factor \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Geometry@{W\+Geometry}!Unmap\+Animation\+Buffer@{Unmap\+Animation\+Buffer}}
+\index{Unmap\+Animation\+Buffer@{Unmap\+Animation\+Buffer}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Unmap\+Animation\+Buffer()}{UnmapAnimationBuffer()}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Geometry\+::\+Unmap\+Animation\+Buffer (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a33d5aa6e31d8d94baf37924c6dec51c9}{}\label{class_w_geometry_a33d5aa6e31d8d94baf37924c6dec51c9}
+Unmap animation vertices from a previous \hyperlink{class_w_geometry_ada2184692d09980547e6161226ccd51a}{Map\+Animation\+Buffer()} call. If \hyperlink{class_w_geometry_ada2184692d09980547e6161226ccd51a}{Map\+Animation\+Buffer()} was called with b\+Read\+Only == false, the this will apply the changes to the animation data. \index{W\+Geometry@{W\+Geometry}!Unmap\+Index\+Buffer@{Unmap\+Index\+Buffer}}
+\index{Unmap\+Index\+Buffer@{Unmap\+Index\+Buffer}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Unmap\+Index\+Buffer()}{UnmapIndexBuffer()}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Geometry\+::\+Unmap\+Index\+Buffer (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_ab543762e369709e5779694544f088286}{}\label{class_w_geometry_ab543762e369709e5779694544f088286}
+Unmap indices from a previous \hyperlink{class_w_geometry_a257228fd6ef4ca9c3ef7e86367be373d}{Map\+Index\+Buffer()} call. If \hyperlink{class_w_geometry_a257228fd6ef4ca9c3ef7e86367be373d}{Map\+Index\+Buffer()} was called with b\+Read\+Only == false, the this will apply the changes to the geometry. \index{W\+Geometry@{W\+Geometry}!Unmap\+Vertex\+Buffer@{Unmap\+Vertex\+Buffer}}
+\index{Unmap\+Vertex\+Buffer@{Unmap\+Vertex\+Buffer}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Unmap\+Vertex\+Buffer()}{UnmapVertexBuffer()}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Geometry\+::\+Unmap\+Vertex\+Buffer (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_geometry_a39cf160839dcc25a35abc37bff873e8d}{}\label{class_w_geometry_a39cf160839dcc25a35abc37bff873e8d}
+Unmap vertices from a previous \hyperlink{class_w_geometry_aa6618d489cf8fb3bbd8339ca16a620f1}{Map\+Vertex\+Buffer()} call. If \hyperlink{class_w_geometry_aa6618d489cf8fb3bbd8339ca16a620f1}{Map\+Vertex\+Buffer()} was called with b\+Read\+Only == false, the this will apply the changes to the geometry. \index{W\+Geometry@{W\+Geometry}!Valid@{Valid}}
+\index{Valid@{Valid}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{Valid() const }{Valid() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Geometry\+::\+Valid (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_geometry_a41dcdf044d27efa83ff631c4921f9008}{}\label{class_w_geometry_a41dcdf044d27efa83ff631c4921f9008}
+Checks the validity of the geometry. A geometry is valid if it has a vertex and an index buffer. \begin{DoxyReturn}{Returns}
+true if the geometry is valid, false otherwise 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_base_a76ac973ba9a43e182f6a6a4869d69725}{W\+Base}.
+
+
+
+\subsection{Member Data Documentation}
+\index{W\+Geometry@{W\+Geometry}!buffer@{buffer}}
+\index{buffer@{buffer}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{buffer}{buffer}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+\_\+\+B\+U\+F\+F\+ER} W\+Geometry\+::buffer}\hypertarget{class_w_geometry_a471c54efc2d9f3eca8de35f677deeede}{}\label{class_w_geometry_a471c54efc2d9f3eca8de35f677deeede}
+Vertex buffer
+
+Index buffer
+
+Animation vertex buffer \index{W\+Geometry@{W\+Geometry}!count@{count}}
+\index{count@{count}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{count}{count}}]{\setlength{\rightskip}{0pt plus 5cm}int W\+Geometry\+::count}\hypertarget{class_w_geometry_a54ddd29ae6e2a476dcd1fbc4afe76116}{}\label{class_w_geometry_a54ddd29ae6e2a476dcd1fbc4afe76116}
+Number of vertices
+
+Number of indices \index{W\+Geometry@{W\+Geometry}!read\+Only\+Map@{read\+Only\+Map}}
+\index{read\+Only\+Map@{read\+Only\+Map}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{read\+Only\+Map}{readOnlyMap}}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Geometry\+::read\+Only\+Map}\hypertarget{class_w_geometry_acfbe406adf9413c67cf08a2d60061c5d}{}\label{class_w_geometry_acfbe406adf9413c67cf08a2d60061c5d}
+Set to true if the last vertex map operation was read only
+
+Set to true if the last index map operation was read only
+
+Set to true if the last animation vertex map operation was read only \index{W\+Geometry@{W\+Geometry}!staging@{staging}}
+\index{staging@{staging}!W\+Geometry@{W\+Geometry}}
+\subsubsection[{\texorpdfstring{staging}{staging}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+\_\+\+B\+U\+F\+F\+ER} W\+Geometry\+::staging}\hypertarget{class_w_geometry_a270b11468a7492990fe3df154b981be5}{}\label{class_w_geometry_a270b11468a7492990fe3df154b981be5}
+Staging vertex buffer, used for dynamic access
+
+Staging index buffer, used for dynamic access
+
+Staging animation vertex buffer, used for dynamic access 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Geometries/\hyperlink{_w_geometry_8h}{W\+Geometry.\+h}\item 
+Wasabi/\+Geometries/W\+Geometry.\+cpp\end{DoxyCompactItemize}

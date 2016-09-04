@@ -1,64 +1,90 @@
-/*********************************************************************
-******************* W A S A B I   E N G I N E ************************
-copyright (c) 2016 by Hassan Al-Jawaheri
-desc.: Wasabi Engine error reporter
-*********************************************************************/
+/** @file WError.h
+ *  @brief Error codes implementation
+ *
+ *  A WError is a convenient way of reporting errors, providing tools for
+ *  debugging.
+ *
+ *  @author Hasan Al-Jawaheri (hbj)
+ *  @bug No known bugs.
+ */
 
 #pragma once
 
-/*********************************************************************
-Errors
-*********************************************************************/
+#include <string>
+using std::string;
+
+/**
+ * List of all Wasabi error codes.
+ */
 enum W_ERROR {
-	W_EXIT = 0,
+	/** Unkown error occurred */
+	W_ERRORUNK = 0,
+	/** Succeeded */
 	W_SUCCEEDED = 1,
+	/** Failed to create the main window */
 	W_WINDOWNOTCREATED = 2,
+	/** Failed to register the windows window class */
 	W_CLASSREGISTERFAILED = 3,
+	/** Failed to create a Vulkan device */
 	W_UNABLETOCREATEDEVICE = 4,
-	W_UNABLETOGETRENDERTARGET = 5,
-	W_UNABLETOGETBACKBUFFER = 6,
-	W_UNABLETOCREATEIMAGE = 7,
-	W_UNABLETOCREATEBUFFER = 8,
-	W_ERRORUNK = 9,
-	W_SHADERCOMPILEERROR = 10,
-	W_UNABLETOLOADSHADER = 11,
-	W_NOTVALID = 12,
-	W_LOADFAILURE = 13,
-	W_UNABLETOCREATEVERTEXLAYOUT = 14,
-	W_IMAGENOTVALID = 15,
-	W_FILENOTFOUND = 16,
-	W_UNABLETOCREATEMESH = 17,
-	W_UNABLETOCREATESWAPCHAIN = 18,
-	W_FAILEDTOCREATEDXGIFACTORY = 19,
-	W_INVALIDSUBSET = 20,
-	W_INVALIDPARAM = 21,
-	W_UNABLETOMAPBUFFER = 22,
-	W_WINDOWMINIMIZED = 23,
-	W_NOHEADERFOUND = 24,
-	W_CORRUPTEDHEADER = 25,
-	W_INVALIDPTR = 26,
-	W_VERTICESORINDICESCOUNTINVALID = 27,
-	W_UNABLETOCREATEAMESHBUFFER = 28,
-	W_UNABLETOCREATED2DFACTORY = 29,
-	W_UNABLETOCREATESOUNDDEVICE = 30,
-	W_UNABLETOCREATESOUNDBUFFER = 31,
-	W_PHYSICSNOTINITIALIZED = 32,
-	W_INVALIDFILEFORMAT = 33,
-	W_FAILEDTOCREATEINSTANCE = 33,
-	W_FAILEDTOLISTDEVICES = 34,
-	W_HARDWARENOTSUPPORTED = 35,
-	W_OUTOFMEMORY = 36,
-	W_FAILEDTOCREATEPIPELINE = 37,
-	W_FAILEDTOCREATEDESCRIPTORSETLAYOUT = 38,
-	W_FAILEDTOCREATEPIPELINELAYOUT = 39,
-	W_NORENDERTARGET = 40,
+	/** Failed to create the Vulkan image view */
+	W_UNABLETOCREATEIMAGE = 5,
+	/** Failed to crate a buffer */
+	W_UNABLETOCREATEBUFFER = 6,
+	/** The object being used is not valid */
+	W_NOTVALID = 7,
+	/** The specified file cannot be found on the system */
+	W_FILENOTFOUND = 8,
+	/** Failed to create the swap chain */
+	W_UNABLETOCREATESWAPCHAIN = 9,
+	/** At least one invalid parameter was passed to the function */
+	W_INVALIDPARAM = 10,
+	/** Failed to map the memory buffer */
+	W_UNABLETOMAPBUFFER = 11,
+	/** The physics component hasn't been initialized */
+	W_PHYSICSNOTINITIALIZED = 12,
+	/** The file format is not valid */
+	W_INVALIDFILEFORMAT = 13,
+	/** Failed to create the Vulkan instance */
+	W_FAILEDTOCREATEINSTANCE = 14,
+	/** Failed to enumerate Vulkan devices */
+	W_FAILEDTOLISTDEVICES = 15,
+	/** The hardware doesn't have the minimum requirements to run the engine */
+	W_HARDWARENOTSUPPORTED = 16,
+	/** System is out of memory */
+	W_OUTOFMEMORY = 17,
+	/** Failed to create the Vulkan graphics or compute pipeline */
+	W_FAILEDTOCREATEPIPELINE = 18,
+	/** Failed to create the Vulkan descriptor set layout */
+	W_FAILEDTOCREATEDESCRIPTORSETLAYOUT = 19,
+	/** Failed to create the Vulkan pipeline layout */
+	W_FAILEDTOCREATEPIPELINELAYOUT = 20,
+	/** The render target is invalid for this use */
+	W_NORENDERTARGET = 21,
 };
 
+/**
+ * @ingroup engineclass
+ *
+ * This class represents a general purpose error code.
+ */
 class WError {
 public:
+	/** The carried error code */
 	W_ERROR m_error;
+
 	WError();
 	WError(W_ERROR err);
 
+	/**
+	 * Retrieves the string corresponding to the carried error.
+	 * @return A string corresponding to m_error
+	 */
+	std::string AsString() const;
+
+	/**
+	 * Evaluates this error code to a boolean.
+	 * @return return true if m_error == W_SUCCEEDED, false otherwise
+	 */
 	operator bool();
 };

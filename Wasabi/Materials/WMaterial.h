@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 
 class WMaterial : public WBase {
 	virtual std::string GetTypeName() const;

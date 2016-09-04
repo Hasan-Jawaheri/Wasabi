@@ -6,7 +6,7 @@ desc.: Wasabi Engine text component
 
 #pragma once
 
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 
 typedef struct W_RENDERING_TEXT {
 	std::string str;

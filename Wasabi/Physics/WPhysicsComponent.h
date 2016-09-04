@@ -6,7 +6,7 @@ desc.: Wasabi Engine physics implementation spec
 
 #pragma once
 
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 
 typedef struct W_RAYCAST_OUTPUT {
 	float fDist;

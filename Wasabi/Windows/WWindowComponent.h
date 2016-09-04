@@ -6,7 +6,7 @@ desc.: Wasabi Engine window manager spec
 
 #pragma once
 
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 
 class WWindowComponent {
 public:

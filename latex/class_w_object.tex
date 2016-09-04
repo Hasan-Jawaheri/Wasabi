@@ -1,0 +1,142 @@
+\hypertarget{class_w_object}{}\section{W\+Object Class Reference}
+\label{class_w_object}\index{W\+Object@{W\+Object}}
+Inheritance diagram for W\+Object\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_w_object}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Object} (\hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_object_ae01d22761e4282b9f3d3ebf23d64f4b8}{}\label{class_w_object_ae01d22761e4282b9f3d3ebf23d64f4b8}
+
+\item 
+void {\bfseries Render} (class \hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$rt)\hypertarget{class_w_object_a315a4d624c6e6c5fef996e1dd87abe33}{}\label{class_w_object_a315a4d624c6e6c5fef996e1dd87abe33}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Set\+Geometry} (class \hyperlink{class_w_geometry}{W\+Geometry} $\ast$geometry)\hypertarget{class_w_object_a473a8002f7bb6581ecb38937ff1df10e}{}\label{class_w_object_a473a8002f7bb6581ecb38937ff1df10e}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Set\+Material} (class \hyperlink{class_w_material}{W\+Material} $\ast$material)\hypertarget{class_w_object_add4eb131afa0b55fbb4d5695eee7569c}{}\label{class_w_object_add4eb131afa0b55fbb4d5695eee7569c}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Set\+Animation} (class \hyperlink{class_w_animation}{W\+Animation} $\ast$animation)\hypertarget{class_w_object_aa78d1b389d67bc5a9ee9fd64d559e64a}{}\label{class_w_object_aa78d1b389d67bc5a9ee9fd64d559e64a}
+
+\item 
+class \hyperlink{class_w_geometry}{W\+Geometry} $\ast$ {\bfseries Get\+Geometry} () const \hypertarget{class_w_object_a21ff26282c4c6e76b9e93749a53e8a67}{}\label{class_w_object_a21ff26282c4c6e76b9e93749a53e8a67}
+
+\item 
+class \hyperlink{class_w_material}{W\+Material} $\ast$ {\bfseries Get\+Material} () const \hypertarget{class_w_object_a4832d77d13177c26165833be034db5b3}{}\label{class_w_object_a4832d77d13177c26165833be034db5b3}
+
+\item 
+class \hyperlink{class_w_animation}{W\+Animation} $\ast$ {\bfseries Get\+Animation} () const \hypertarget{class_w_object_a1fd40c0623b666c46a5d5a4508dec979}{}\label{class_w_object_a1fd40c0623b666c46a5d5a4508dec979}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Init\+Instancing} (unsigned int max\+Instances)\hypertarget{class_w_object_a3eb6c8b80c1cc3ca3149be1647f3abb4}{}\label{class_w_object_a3eb6c8b80c1cc3ca3149be1647f3abb4}
+
+\item 
+\hyperlink{class_w_instance}{W\+Instance} $\ast$ {\bfseries Create\+Instance} ()\hypertarget{class_w_object_acb0daac5850075a54b012703bab0b589}{}\label{class_w_object_acb0daac5850075a54b012703bab0b589}
+
+\item 
+\hyperlink{class_w_instance}{W\+Instance} $\ast$ {\bfseries Get\+Instance} (unsigned int index) const \hypertarget{class_w_object_a144ebe9b2effa5355d3e5c243d871ced}{}\label{class_w_object_a144ebe9b2effa5355d3e5c243d871ced}
+
+\item 
+void {\bfseries Delete\+Instance} (\hyperlink{class_w_instance}{W\+Instance} $\ast$instance)\hypertarget{class_w_object_ad408d0bc44bbcc7deabfd979caad3edd}{}\label{class_w_object_ad408d0bc44bbcc7deabfd979caad3edd}
+
+\item 
+void {\bfseries Delete\+Instance} (unsigned int index)\hypertarget{class_w_object_a8f7264e7168585f60d82f6183fa35e5e}{}\label{class_w_object_a8f7264e7168585f60d82f6183fa35e5e}
+
+\item 
+void {\bfseries Show} ()\hypertarget{class_w_object_a2f1ca8ef071fb6c259502555d6b5a47c}{}\label{class_w_object_a2f1ca8ef071fb6c259502555d6b5a47c}
+
+\item 
+void {\bfseries Hide} ()\hypertarget{class_w_object_a72a9f879a85cf26d72548ffc8835ad67}{}\label{class_w_object_a72a9f879a85cf26d72548ffc8835ad67}
+
+\item 
+bool {\bfseries Hidden} () const \hypertarget{class_w_object_a83f2fef49f037cac8a26f966174ecdcc}{}\label{class_w_object_a83f2fef49f037cac8a26f966174ecdcc}
+
+\item 
+void {\bfseries Enable\+Frustum\+Culling} ()\hypertarget{class_w_object_a50ad933e853950919c8742bf12bc90e8}{}\label{class_w_object_a50ad933e853950919c8742bf12bc90e8}
+
+\item 
+void {\bfseries Disable\+Frustum\+Culling} ()\hypertarget{class_w_object_a15a2fef8f1ebf38e8aeee70eabbf79b8}{}\label{class_w_object_a15a2fef8f1ebf38e8aeee70eabbf79b8}
+
+\item 
+void {\bfseries Scale} (float x, float y, float z)\hypertarget{class_w_object_a1dcebfccb9dda3a0eb0f08594834eca7}{}\label{class_w_object_a1dcebfccb9dda3a0eb0f08594834eca7}
+
+\item 
+void {\bfseries Scale} (\hyperlink{class_w_vector3}{W\+Vector3} scale)\hypertarget{class_w_object_ad4632595db1f1f661e0abb0d72e452b0}{}\label{class_w_object_ad4632595db1f1f661e0abb0d72e452b0}
+
+\item 
+void {\bfseries ScaleX} (float scale)\hypertarget{class_w_object_a53bf6f7cadd2ffe1b59cf1231305f31c}{}\label{class_w_object_a53bf6f7cadd2ffe1b59cf1231305f31c}
+
+\item 
+void {\bfseries ScaleY} (float scale)\hypertarget{class_w_object_a12dde8e7596a2ce595c509abe86606bd}{}\label{class_w_object_a12dde8e7596a2ce595c509abe86606bd}
+
+\item 
+void {\bfseries ScaleZ} (float scale)\hypertarget{class_w_object_a9b63d725ee1feb40dcc4facafdcb63fc}{}\label{class_w_object_a9b63d725ee1feb40dcc4facafdcb63fc}
+
+\item 
+\hyperlink{class_w_vector3}{W\+Vector3} {\bfseries Get\+Scale} () const \hypertarget{class_w_object_a1229c3548ecc1b1b64c48afaee85c5ad}{}\label{class_w_object_a1229c3548ecc1b1b64c48afaee85c5ad}
+
+\item 
+float {\bfseries Get\+ScaleX} () const \hypertarget{class_w_object_ade99923c893f2daf6d650e15a09f527b}{}\label{class_w_object_ade99923c893f2daf6d650e15a09f527b}
+
+\item 
+float {\bfseries Get\+ScaleY} () const \hypertarget{class_w_object_a9954b5dca076b1af9348e60c15310931}{}\label{class_w_object_a9954b5dca076b1af9348e60c15310931}
+
+\item 
+float {\bfseries Get\+ScaleZ} () const \hypertarget{class_w_object_a7e9c4970b7af1731370c7de335ff1c9d}{}\label{class_w_object_a7e9c4970b7af1731370c7de335ff1c9d}
+
+\item 
+\hyperlink{class_w_matrix}{W\+Matrix} {\bfseries Get\+World\+Matrix} ()\hypertarget{class_w_object_a95a5b7ec4028d109ee8aef1c53334d15}{}\label{class_w_object_a95a5b7ec4028d109ee8aef1c53334d15}
+
+\item 
+bool {\bfseries Update\+Locals} (\hyperlink{class_w_vector3}{W\+Vector3} offset=\hyperlink{class_w_vector3}{W\+Vector3}(0, 0, 0))\hypertarget{class_w_object_a5fa9d24d946c66ebd96d5291aaf1a273}{}\label{class_w_object_a5fa9d24d946c66ebd96d5291aaf1a273}
+
+\item 
+virtual void \hyperlink{class_w_object_a0e939f965dea9e524014c0dfc771d30f}{On\+State\+Change} (\hyperlink{_w_orientation_8h_afe94de0a48bbd7b343ab18bc318cef28}{S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+PE} type)
+\item 
+virtual bool \hyperlink{class_w_object_a99b053864c7797f538f15728fc7f8a2c}{Valid} () const 
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\index{W\+Object@{W\+Object}!On\+State\+Change@{On\+State\+Change}}
+\index{On\+State\+Change@{On\+State\+Change}!W\+Object@{W\+Object}}
+\subsubsection[{\texorpdfstring{On\+State\+Change(\+S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+P\+E type)}{OnStateChange(STATE_CHANGE_TYPE type)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Object\+::\+On\+State\+Change (
+\begin{DoxyParamCaption}
+\item[{{\bf S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+PE}}]{type}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_object_a0e939f965dea9e524014c0dfc771d30f}{}\label{class_w_object_a0e939f965dea9e524014c0dfc771d30f}
+A callback called by this class when the entity changes its position or orientation. 
+\begin{DoxyParams}{Parameters}
+{\em type} & Orientation change type \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{class_w_orientation_aa765b7dcd772bbcc511c2c9317e7693c}{W\+Orientation}.
+
+\index{W\+Object@{W\+Object}!Valid@{Valid}}
+\index{Valid@{Valid}!W\+Object@{W\+Object}}
+\subsubsection[{\texorpdfstring{Valid() const }{Valid() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Object\+::\+Valid (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_object_a99b053864c7797f538f15728fc7f8a2c}{}\label{class_w_object_a99b053864c7797f538f15728fc7f8a2c}
+Must be implemented by the child. This function should report the validity status of the object, in whatever sense of \char`\"{}validity\char`\"{} it chooses. \begin{DoxyReturn}{Returns}
+true if the object is \char`\"{}valid\char`\"{}, false otherwise 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_base_a76ac973ba9a43e182f6a6a4869d69725}{W\+Base}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Objects/W\+Object.\+h\item 
+Wasabi/\+Objects/W\+Object.\+cpp\end{DoxyCompactItemize}

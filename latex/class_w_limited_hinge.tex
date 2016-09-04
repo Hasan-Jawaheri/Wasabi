@@ -1,0 +1,64 @@
+\hypertarget{class_w_limited_hinge}{}\section{W\+Limited\+Hinge Class Reference}
+\label{class_w_limited_hinge}\index{W\+Limited\+Hinge@{W\+Limited\+Hinge}}
+Inheritance diagram for W\+Limited\+Hinge\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_w_limited_hinge}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Limited\+Hinge} (class \hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_limited_hinge_afb877862b34866ea9c5eb752d0b5ac76}{}\label{class_w_limited_hinge_afb877862b34866ea9c5eb752d0b5ac76}
+
+\item 
+void {\bfseries Build} (const \hyperlink{class_w_rigid_body}{W\+Rigid\+Body} $\ast$const rb1, const \hyperlink{class_w_rigid_body}{W\+Rigid\+Body} $\ast$const rb2, bool breakable=false)\hypertarget{class_w_limited_hinge_a1459654753eb6d47c1b88f49598e4edd}{}\label{class_w_limited_hinge_a1459654753eb6d47c1b88f49598e4edd}
+
+\item 
+void {\bfseries Set\+Position\+World} (float x, float y, float z, float axisX, float axisY, float axisZ)\hypertarget{class_w_limited_hinge_a236904087d888f79a180456560c1fd1d}{}\label{class_w_limited_hinge_a236904087d888f79a180456560c1fd1d}
+
+\item 
+void {\bfseries Set\+Position\+World} (\hyperlink{class_w_vector3}{W\+Vector3} position, \hyperlink{class_w_vector3}{W\+Vector3} axis)\hypertarget{class_w_limited_hinge_a7281548f7929429985999207b10f2bf5}{}\label{class_w_limited_hinge_a7281548f7929429985999207b10f2bf5}
+
+\item 
+void {\bfseries Set\+Position\+Local} (float x1, float y1, float z1, float x2, float y2, float z2, float axis\+X1, float axis\+Y1, float axis\+Z1, float axis\+X2, float axis\+Y2, float axis\+Z2, float axis\+X1perp, float axis\+Y1perp, float axis\+Z1perp, float axis\+X2perp, float axis\+Y2perp, float axis\+Z2perp)\hypertarget{class_w_limited_hinge_ab99476cc864800f8cce746a31576296f}{}\label{class_w_limited_hinge_ab99476cc864800f8cce746a31576296f}
+
+\item 
+void {\bfseries Set\+Position\+Local} (\hyperlink{class_w_vector3}{W\+Vector3} position1, \hyperlink{class_w_vector3}{W\+Vector3} position2, \hyperlink{class_w_vector3}{W\+Vector3} axis1, \hyperlink{class_w_vector3}{W\+Vector3} axis2, \hyperlink{class_w_vector3}{W\+Vector3} axis1perp, \hyperlink{class_w_vector3}{W\+Vector3} axis2perp)\hypertarget{class_w_limited_hinge_a28c5c36b031cab8ce38c920ab73c04e3}{}\label{class_w_limited_hinge_a28c5c36b031cab8ce38c920ab73c04e3}
+
+\item 
+void {\bfseries Set\+Maximum\+Angle} (float angle)\hypertarget{class_w_limited_hinge_a46782450f40d6a23b24eb43ba095c912}{}\label{class_w_limited_hinge_a46782450f40d6a23b24eb43ba095c912}
+
+\item 
+void {\bfseries Set\+Minimum\+Angle} (float angle)\hypertarget{class_w_limited_hinge_a5259add02a20a4f8fa0f758cc7bf2e76}{}\label{class_w_limited_hinge_a5259add02a20a4f8fa0f758cc7bf2e76}
+
+\item 
+void {\bfseries Set\+Tau\+Factor} (float factor)\hypertarget{class_w_limited_hinge_a75d6917491789b4929828ed719f40f0f}{}\label{class_w_limited_hinge_a75d6917491789b4929828ed719f40f0f}
+
+\item 
+void {\bfseries Set\+Max\+Friction\+Torque} (float torque)\hypertarget{class_w_limited_hinge_aa304dee708fe9be400088d3f9acedbc2}{}\label{class_w_limited_hinge_aa304dee708fe9be400088d3f9acedbc2}
+
+\item 
+void {\bfseries Set\+Motor} (void(\+\_\+\+\_\+cdecl $\ast$cb)(const class hkp\+Callback\+Constraint\+Motor \&motor, const class hkp\+Constraint\+Motor\+Input $\ast$input, class hkp\+Constraint\+Motor\+Output $\ast$output), float f\+Min\+Force, float f\+Max\+Force)\hypertarget{class_w_limited_hinge_a4c05bb7a53ef80e5505afc613599eb81}{}\label{class_w_limited_hinge_a4c05bb7a53ef80e5505afc613599eb81}
+
+\item 
+void {\bfseries Enable\+Motor} ()\hypertarget{class_w_limited_hinge_af57eda17cf2afa143a2d9b65cafa13d2}{}\label{class_w_limited_hinge_af57eda17cf2afa143a2d9b65cafa13d2}
+
+\item 
+void {\bfseries Disable\+Motor} ()\hypertarget{class_w_limited_hinge_a0d72d1dd34ee5431e8c799d83a9d40fc}{}\label{class_w_limited_hinge_a0d72d1dd34ee5431e8c799d83a9d40fc}
+
+\item 
+void {\bfseries Set\+Motor\+Target\+Angle} (float ang)\hypertarget{class_w_limited_hinge_a28d71d70cd50bed09540a77e3f50cc29}{}\label{class_w_limited_hinge_a28d71d70cd50bed09540a77e3f50cc29}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+hkp\+Limited\+Hinge\+Constraint\+Data $\ast$ {\bfseries m\+\_\+lhc}\hypertarget{class_w_limited_hinge_a6f25ed08c2f11e3146aee6ddada72695}{}\label{class_w_limited_hinge_a6f25ed08c2f11e3146aee6ddada72695}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Physics/\+Havok/W\+Havok\+Physics.\+h\end{DoxyCompactItemize}

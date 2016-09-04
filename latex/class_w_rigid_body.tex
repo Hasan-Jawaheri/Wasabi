@@ -1,0 +1,132 @@
+\hypertarget{class_w_rigid_body}{}\section{W\+Rigid\+Body Class Reference}
+\label{class_w_rigid_body}\index{W\+Rigid\+Body@{W\+Rigid\+Body}}
+Inheritance diagram for W\+Rigid\+Body\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_w_rigid_body}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Rigid\+Body} (class \hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_rigid_body_ad9fd0ffdd357be29048efd0937c65254}{}\label{class_w_rigid_body_ad9fd0ffdd357be29048efd0937c65254}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Build\+From\+Geometries} (W\+\_\+\+R\+I\+G\+I\+D\+B\+O\+D\+Y\+T\+Y\+PE type, class \hyperlink{class_w_geometry}{W\+Geometry} $\ast$const $\ast$geometries, unsigned int num\+Geometries, bool b\+Fixed=false, bool b\+Simplify=true, void $\ast$mopp=nullptr, unsigned int moppsize=0)\hypertarget{class_w_rigid_body_a26ec9548b70eae38000cbd46433436e8}{}\label{class_w_rigid_body_a26ec9548b70eae38000cbd46433436e8}
+
+\item 
+void {\bfseries Destroy} ()\hypertarget{class_w_rigid_body_a3f5bb1770cd9df627e66c30cba9f85b1}{}\label{class_w_rigid_body_a3f5bb1770cd9df627e66c30cba9f85b1}
+
+\item 
+void {\bfseries Bind\+Object} (class \hyperlink{class_w_object}{W\+Object} $\ast$const object)\hypertarget{class_w_rigid_body_a9ed6688fadeb0538db49882a970a395a}{}\label{class_w_rigid_body_a9ed6688fadeb0538db49882a970a395a}
+
+\item 
+void {\bfseries Unbind\+Object} (class \hyperlink{class_w_object}{W\+Object} $\ast$const object)\hypertarget{class_w_rigid_body_a51018196521bc094d583a570020b3c36}{}\label{class_w_rigid_body_a51018196521bc094d583a570020b3c36}
+
+\item 
+void {\bfseries Unbind\+Object} (unsigned int ID)\hypertarget{class_w_rigid_body_a44fe578cf70ffe73a98efa488ca24b54}{}\label{class_w_rigid_body_a44fe578cf70ffe73a98efa488ca24b54}
+
+\item 
+void {\bfseries Enable} ()\hypertarget{class_w_rigid_body_a9a947480d513aa261650773394a5d179}{}\label{class_w_rigid_body_a9a947480d513aa261650773394a5d179}
+
+\item 
+void {\bfseries Disable} ()\hypertarget{class_w_rigid_body_aeea79e57a067aa62c4f4d8a8ca1c88fb}{}\label{class_w_rigid_body_aeea79e57a067aa62c4f4d8a8ca1c88fb}
+
+\item 
+bool {\bfseries Enabled} () const \hypertarget{class_w_rigid_body_a9f723946568b16f259a038e337f0bd4e}{}\label{class_w_rigid_body_a9f723946568b16f259a038e337f0bd4e}
+
+\item 
+void {\bfseries Set\+Linear\+Velocity} (float velX, float velY, float velZ)\hypertarget{class_w_rigid_body_a9c4d2b560b0c7feac74ad4c4172892e1}{}\label{class_w_rigid_body_a9c4d2b560b0c7feac74ad4c4172892e1}
+
+\item 
+void {\bfseries Set\+Angular\+Velocity} (float velX, float velY, float velZ)\hypertarget{class_w_rigid_body_aaa3b08e7fca02c97c9cd728b88a68350}{}\label{class_w_rigid_body_aaa3b08e7fca02c97c9cd728b88a68350}
+
+\item 
+void {\bfseries Set\+Linear\+Damping} (float power)\hypertarget{class_w_rigid_body_a0490705cdaabc8173780ce91fb876869}{}\label{class_w_rigid_body_a0490705cdaabc8173780ce91fb876869}
+
+\item 
+void {\bfseries Set\+Angular\+Damping} (float power)\hypertarget{class_w_rigid_body_a3893ea128174aa9e3158b6d17af1de1e}{}\label{class_w_rigid_body_a3893ea128174aa9e3158b6d17af1de1e}
+
+\item 
+void {\bfseries Set\+Max\+Linear\+Velocity} (float f\+Scalar\+Velocity)\hypertarget{class_w_rigid_body_a30476647faf9aa2e35624b6068a1bc29}{}\label{class_w_rigid_body_a30476647faf9aa2e35624b6068a1bc29}
+
+\item 
+void {\bfseries Set\+Max\+Angular\+Velocity} (float f\+Scalar\+Velocity)\hypertarget{class_w_rigid_body_a83fb17135a260ea1b7c17ac02d60afe7}{}\label{class_w_rigid_body_a83fb17135a260ea1b7c17ac02d60afe7}
+
+\item 
+void {\bfseries Set\+Motion\+Type} (W\+\_\+\+M\+O\+T\+I\+O\+N\+T\+Y\+PE type)\hypertarget{class_w_rigid_body_a407218f44b65951dc342c78941a7c01f}{}\label{class_w_rigid_body_a407218f44b65951dc342c78941a7c01f}
+
+\item 
+void {\bfseries Set\+Bouncing\+Power} (float bouncing)\hypertarget{class_w_rigid_body_abe9df999d5d75fb3ab532e42850f5f44}{}\label{class_w_rigid_body_abe9df999d5d75fb3ab532e42850f5f44}
+
+\item 
+void {\bfseries Set\+Mass} (float mass)\hypertarget{class_w_rigid_body_a336d37085aa66a45596a14c965a0d600}{}\label{class_w_rigid_body_a336d37085aa66a45596a14c965a0d600}
+
+\item 
+void {\bfseries Set\+Mass\+Center} (float x, float y, float z)\hypertarget{class_w_rigid_body_a0ba6bdef1009af5e2b9a727c2f2c61bd}{}\label{class_w_rigid_body_a0ba6bdef1009af5e2b9a727c2f2c61bd}
+
+\item 
+void {\bfseries Set\+Friction} (float friction)\hypertarget{class_w_rigid_body_a838f02a36008f35a147559cbc13f70df}{}\label{class_w_rigid_body_a838f02a36008f35a147559cbc13f70df}
+
+\item 
+void {\bfseries Set\+Collision\+Quality} (W\+\_\+\+C\+O\+L\+L\+I\+S\+I\+O\+N\+Q\+U\+A\+L\+I\+TY quality)\hypertarget{class_w_rigid_body_a59ae32965717783503f6e48f8f517ac9}{}\label{class_w_rigid_body_a59ae32965717783503f6e48f8f517ac9}
+
+\item 
+void {\bfseries Update\+Locals} ()\hypertarget{class_w_rigid_body_a9b141522ff4411f1ac37d305d9c0be03}{}\label{class_w_rigid_body_a9b141522ff4411f1ac37d305d9c0be03}
+
+\item 
+\hyperlink{class_w_matrix}{W\+Matrix} {\bfseries Get\+World\+Matrix} ()\hypertarget{class_w_rigid_body_ab3cc8c79271698d419366ae46eb6eb29}{}\label{class_w_rigid_body_ab3cc8c79271698d419366ae46eb6eb29}
+
+\item 
+hk\+Quaternion {\bfseries Get\+Rotation\+Quat} ()\hypertarget{class_w_rigid_body_aed8c098ac5ccf28bb54ebf7b36ac7ebd}{}\label{class_w_rigid_body_aed8c098ac5ccf28bb54ebf7b36ac7ebd}
+
+\item 
+W\+\_\+\+R\+I\+G\+I\+D\+B\+O\+D\+Y\+T\+Y\+PE {\bfseries Get\+Type} () const \hypertarget{class_w_rigid_body_af0049bed9390a0dc83531b3d1787746b}{}\label{class_w_rigid_body_af0049bed9390a0dc83531b3d1787746b}
+
+\item 
+hkp\+Rigid\+Body $\ast$ {\bfseries Get\+Rigid\+Body} () const \hypertarget{class_w_rigid_body_af946a0a31d324c53dcd6aa987dbf1ff1}{}\label{class_w_rigid_body_af946a0a31d324c53dcd6aa987dbf1ff1}
+
+\item 
+bool \hyperlink{class_w_rigid_body_a895e5c8c2f9664e87cfed33fd29af8fa}{Valid} () const 
+\item 
+void \hyperlink{class_w_rigid_body_aaf4060f7a9dd7bf4f413f5c7af26381a}{On\+State\+Change} (\hyperlink{_w_orientation_8h_afe94de0a48bbd7b343ab18bc318cef28}{S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+PE} type)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\index{W\+Rigid\+Body@{W\+Rigid\+Body}!On\+State\+Change@{On\+State\+Change}}
+\index{On\+State\+Change@{On\+State\+Change}!W\+Rigid\+Body@{W\+Rigid\+Body}}
+\subsubsection[{\texorpdfstring{On\+State\+Change(\+S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+P\+E type)}{OnStateChange(STATE_CHANGE_TYPE type)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Rigid\+Body\+::\+On\+State\+Change (
+\begin{DoxyParamCaption}
+\item[{{\bf S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+PE}}]{type}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_rigid_body_aaf4060f7a9dd7bf4f413f5c7af26381a}{}\label{class_w_rigid_body_aaf4060f7a9dd7bf4f413f5c7af26381a}
+A callback called by this class when the entity changes its position or orientation. 
+\begin{DoxyParams}{Parameters}
+{\em type} & Orientation change type \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{class_w_orientation_aa765b7dcd772bbcc511c2c9317e7693c}{W\+Orientation}.
+
+\index{W\+Rigid\+Body@{W\+Rigid\+Body}!Valid@{Valid}}
+\index{Valid@{Valid}!W\+Rigid\+Body@{W\+Rigid\+Body}}
+\subsubsection[{\texorpdfstring{Valid() const }{Valid() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Rigid\+Body\+::\+Valid (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_rigid_body_a895e5c8c2f9664e87cfed33fd29af8fa}{}\label{class_w_rigid_body_a895e5c8c2f9664e87cfed33fd29af8fa}
+Must be implemented by the child. This function should report the validity status of the object, in whatever sense of \char`\"{}validity\char`\"{} it chooses. \begin{DoxyReturn}{Returns}
+true if the object is \char`\"{}valid\char`\"{}, false otherwise 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_base_a76ac973ba9a43e182f6a6a4869d69725}{W\+Base}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Physics/\+Havok/W\+Havok\+Physics.\+h\end{DoxyCompactItemize}

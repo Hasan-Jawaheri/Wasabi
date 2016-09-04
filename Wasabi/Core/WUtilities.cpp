@@ -1,5 +1,5 @@
 #include "WUtilities.h"
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 #include "../Cameras/WCamera.h"
 #include "../Renderers/WRenderer.h"
 #include "../Images/WRenderTarget.h"

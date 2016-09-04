@@ -128,6 +128,7 @@ WError WImage::CreateFromPixelsArray(
 		default:
 			return WError(W_INVALIDPARAM);
 		}
+		comp_size = 4;
 	}
 
 	_DestroyResources();

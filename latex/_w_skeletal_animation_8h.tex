@@ -1,0 +1,36 @@
+\hypertarget{_w_skeletal_animation_8h}{}\section{Wasabi/\+Animations/\+W\+Skeletal\+Animation.h File Reference}
+\label{_w_skeletal_animation_8h}\index{Wasabi/\+Animations/\+W\+Skeletal\+Animation.\+h@{Wasabi/\+Animations/\+W\+Skeletal\+Animation.\+h}}
+
+
+Skeletal animation implementation.  
+
+
+{\ttfamily \#include \char`\"{}../\+Core/\+W\+Core.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}W\+Animation.\+h\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_w_bone}{W\+Bone}
+\item 
+struct \hyperlink{struct_w___s_k_e_l_e_t_a_l___s_u_b___a_n_i_m_a_t_i_o_n}{W\+\_\+\+S\+K\+E\+L\+E\+T\+A\+L\+\_\+\+S\+U\+B\+\_\+\+A\+N\+I\+M\+A\+T\+I\+ON}
+\item 
+class \hyperlink{class_w_skeleton}{W\+Skeleton}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Skeletal animation implementation. 
+
+Skeletal animation is implemented as follows\+:
+\begin{DoxyItemize}
+\item \hyperlink{class_w_skeleton}{W\+Skeleton} class is responsible for loading skeleton data from a .WA file
+\item A skeleton contains information about the bones of an animation, while a geometry (\hyperlink{class_w_geometry}{W\+Geometry}) should contain animation data in the form of a vertex buffer (defined by \hyperlink{struct_w_default_vertex___animation}{W\+Default\+Vertex\+\_\+\+Animation}).
+\item \hyperlink{class_w_skeleton}{W\+Skeleton} will create a texture that will represent how the bones are positioned at a point in the animation. This texture is updated every frame to reflect the animation of the bones. Every 4 pixels represent a matrix for a bone at that index. The matrix is stored row by row, but the last row is omitted and its\textquotesingle{} components are encoded in the first 3 rows\textquotesingle{} w component.
+\item The bone texture and the animation vertex buffer are passed to the vertex shader, which is free to use in any way. The default implementation uses the bone\+I\+Ds of every vertex (supplied by the animation vertex buffer) to fetch the matrix of that bone (3 texture fetches) and then applies the matrix in the vertex transformation.
+\end{DoxyItemize}
+
+\begin{DoxyAuthor}{Author}
+Hasan Al-\/\+Jawaheri (hbj) 
+\end{DoxyAuthor}
+\begin{DoxyRefDesc}{Bug}
+\item[\hyperlink{bug__bug000002}{Bug}]No known bugs. \end{DoxyRefDesc}

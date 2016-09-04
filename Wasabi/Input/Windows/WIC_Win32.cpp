@@ -4,7 +4,6 @@
 
 WIC_Win32::WIC_Win32(Wasabi* const app) : WInputComponent(app) {
 	m_rightClick = m_leftClick = m_middleClick = false;
-	m_mouseX = m_mouseY = m_mouseZ = 0;
 	m_escapeE = true;
 	for (UINT i = 0; i < 256; i++)
 		m_keyDown[i] = false;
@@ -123,8 +122,6 @@ void WIC_Win32::SetMousePosition(UINT x, UINT y) {
 	//convert to screen space
 	ClientToScreen(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &pos);
 	SetCursorPos(pos.x, pos.y);
-	m_mouseX = pos.x;
-	m_mouseY = pos.y;
 }
 void WIC_Win32::SetMouseZ(int value) {
 	//set the mouse wheel position

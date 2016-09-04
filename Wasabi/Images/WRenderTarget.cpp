@@ -96,15 +96,19 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 			1);
 
 	VkResult err = vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &m_renderCmdBuffer);
-	if (err != VK_SUCCESS)
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
 		return WError(W_OUTOFMEMORY);
+	}
 
 	// create pipeline cache
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	err = vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &m_pipelineCache);
-	if (err != VK_SUCCESS)
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
 		return WError(W_OUTOFMEMORY);
+	}
 
 	//
 	// Create the render pass
@@ -170,7 +174,10 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 	renderPassInfo.pDependencies = NULL;
 
 	err = vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_renderPass);
-	assert(!err);
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
+		return WError(W_OUTOFMEMORY);
+	}
 
 	//
 	// Create the depth-stencil buffer
@@ -211,15 +218,24 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 		VkMemoryRequirements memReqs;
 
 		err = vkCreateImage(device, &image, nullptr, &m_depthStencil.image);
-		assert(!err);
+		if (err != VK_SUCCESS) {
+			_DestroyResources();
+			return WError(W_UNABLETOCREATEIMAGE);
+		}
 		vkGetImageMemoryRequirements(device, m_depthStencil.image, &memReqs);
 		mem_alloc.allocationSize = memReqs.size;
 		m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &mem_alloc.memoryTypeIndex);
 		err = vkAllocateMemory(device, &mem_alloc, nullptr, &m_depthStencil.mem);
-		assert(!err);
+		if (err != VK_SUCCESS) {
+			_DestroyResources();
+			return WError(W_OUTOFMEMORY);
+		}
 
 		err = vkBindImageMemory(device, m_depthStencil.image, m_depthStencil.mem, 0);
-		assert(!err);
+		if (err != VK_SUCCESS) {
+			_DestroyResources();
+			return WError(W_OUTOFMEMORY);
+		}
 
 		m_app->BeginCommandBuffer();
 		vkTools::setImageLayout(
@@ -232,7 +248,10 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 
 		depthStencilView.image = m_depthStencil.image;
 		err = vkCreateImageView(device, &depthStencilView, nullptr, &m_depthStencil.view);
-		assert(!err);
+		if (err != VK_SUCCESS) {
+			_DestroyResources();
+			return WError(W_OUTOFMEMORY);
+		}
 	}
 
 	//
@@ -257,7 +276,10 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 	// Create frame buffers for every swap chain image
 	m_frameBuffers.resize(1);
 	err = vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &m_frameBuffers[0]);
-	assert(!err);
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
+		return WError(W_UNABLETOCREATEBUFFER);
+	}
 
 	m_width = width;
 	m_height = height;
@@ -282,15 +304,19 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 			1);
 
 	VkResult err = vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &m_renderCmdBuffer);
-	if (err != VK_SUCCESS)
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
 		return WError(W_OUTOFMEMORY);
+	}
 
 	// create pipeline cache
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	err = vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &m_pipelineCache);
-	if (err != VK_SUCCESS)
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
 		return WError(W_OUTOFMEMORY);
+	}
 
 	//
 	// Create the render pass
@@ -348,7 +374,10 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	renderPassInfo.pDependencies = NULL;
 
 	err = vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_renderPass);
-	assert(!err);
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
+		return WError(W_OUTOFMEMORY);
+	}
 
 	//
 	// Create the depth-stencil buffer
@@ -388,15 +417,24 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	VkMemoryRequirements memReqs;
 
 	err = vkCreateImage(device, &image, nullptr, &m_depthStencil.image);
-	assert(!err);
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
+		return WError(W_UNABLETOCREATEIMAGE);
+	}
 	vkGetImageMemoryRequirements(device, m_depthStencil.image, &memReqs);
 	mem_alloc.allocationSize = memReqs.size;
 	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &mem_alloc.memoryTypeIndex);
 	err = vkAllocateMemory(device, &mem_alloc, nullptr, &m_depthStencil.mem);
-	assert(!err);
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
+		return WError(W_OUTOFMEMORY);
+	}
 
 	err = vkBindImageMemory(device, m_depthStencil.image, m_depthStencil.mem, 0);
-	assert(!err);
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
+		return WError(W_OUTOFMEMORY);
+	}
 
 	m_app->BeginCommandBuffer();
 	vkTools::setImageLayout(
@@ -409,7 +447,10 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 
 	depthStencilView.image = m_depthStencil.image;
 	err = vkCreateImageView(device, &depthStencilView, nullptr, &m_depthStencil.view);
-	assert(!err);
+	if (err != VK_SUCCESS) {
+		_DestroyResources();
+		return WError(W_OUTOFMEMORY);
+	}
 
 	//
 	// Create the frame buffers
@@ -434,7 +475,12 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	for (uint32_t i = 0; i < m_frameBuffers.size(); i++) {
 		imageViews[0] = views[i];
 		VkResult err = vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &m_frameBuffers[i]);
-		assert(!err);
+		if (err != VK_SUCCESS) {
+			while (m_frameBuffers.size() > i)
+				m_frameBuffers.pop_back();
+			_DestroyResources();
+			return WError(W_OUTOFMEMORY);
+		}
 	}
 
 	m_width = width;
@@ -536,7 +582,11 @@ void WRenderTarget::SetClearColor(WColor  col) {
 }
 
 void WRenderTarget::SetCamera(WCamera* cam) {
+	if (m_camera)
+		m_camera->RemoveReference();
 	m_camera = cam;
+	if (cam)
+		cam->AddReference();
 }
 
 VkRenderPass WRenderTarget::GetRenderPass() const {

@@ -1,0 +1,128 @@
+\hypertarget{class_w_game_state}{}\section{W\+Game\+State Class Reference}
+\label{class_w_game_state}\index{W\+Game\+State@{W\+Game\+State}}
+
+
+{\ttfamily \#include $<$W\+Core.\+h$>$}
+
+Inheritance diagram for W\+Game\+State\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_w_game_state}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Game\+State} (\hyperlink{class_wasabi}{Wasabi} $\ast$const a)\hypertarget{class_w_game_state_a2aa62cdf3a1dc59558b4aa017abdb248}{}\label{class_w_game_state_a2aa62cdf3a1dc59558b4aa017abdb248}
+
+\item 
+virtual void \hyperlink{class_w_game_state_a20031e5724a12eb99aa81c013d1d9d63}{Load} ()
+\item 
+virtual void \hyperlink{class_w_game_state_a5fe5a485ca56800cfd79237be2568d36}{Update} (float f\+Delta\+Time)
+\item 
+virtual void \hyperlink{class_w_game_state_ac4d0979d5ae27a8fd5df34949ae51d23}{On\+Keydown} (char c)
+\item 
+virtual void \hyperlink{class_w_game_state_abcae0b58bf3c27406f0783c628a3c714}{On\+Keyup} (char c)
+\item 
+virtual void \hyperlink{class_w_game_state_a952d55f104f8503f717ecbdcd6a8711c}{On\+Input} (char c)
+\item 
+virtual void \hyperlink{class_w_game_state_a50eddb2f648dc478ed0e10fee73fd4e9}{Cleanup} ()
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_wasabi}{Wasabi} $\ast$const \hyperlink{class_w_game_state_a68c0b595d15be38854585e6cbcbe452b}{m\+\_\+app}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This class represents a game state. Game states can be used to completely separate different phases of a game. For example, one can crate a game state for the pre-\/menu credits, a state for the game menu and a state for the actual game.
+
+States need to be allocated and freed by the user. 
+
+\subsection{Member Function Documentation}
+\index{W\+Game\+State@{W\+Game\+State}!Cleanup@{Cleanup}}
+\index{Cleanup@{Cleanup}!W\+Game\+State@{W\+Game\+State}}
+\subsubsection[{\texorpdfstring{Cleanup()}{Cleanup()}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void W\+Game\+State\+::\+Cleanup (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_w_game_state_a50eddb2f648dc478ed0e10fee73fd4e9}{}\label{class_w_game_state_a50eddb2f648dc478ed0e10fee73fd4e9}
+This function is called before this state is switched from. This gives the state a chance to clean up its resources before its destroyed. 
+
+Reimplemented in \hyperlink{class_instancing_demo_a5c8e4cc00517e928128771f91028d473}{Instancing\+Demo}, \hyperlink{class_animation_demo_a07d34d2c7f61565ac911d30216a9fb25}{Animation\+Demo}, and \hyperlink{class_kofta_a6650b02967c26d871e27aefd551e0c40}{Kofta}.
+
+\index{W\+Game\+State@{W\+Game\+State}!Load@{Load}}
+\index{Load@{Load}!W\+Game\+State@{W\+Game\+State}}
+\subsubsection[{\texorpdfstring{Load()}{Load()}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void W\+Game\+State\+::\+Load (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_w_game_state_a20031e5724a12eb99aa81c013d1d9d63}{}\label{class_w_game_state_a20031e5724a12eb99aa81c013d1d9d63}
+This function, will be called every time this state is switched to. This gives the state a chance to load its resources. 
+
+Reimplemented in \hyperlink{class_instancing_demo_abf05a0b6ce3814cb50cc43785f0f53c8}{Instancing\+Demo}, \hyperlink{class_animation_demo_aec31e9f0100b86674561ba14e16f364d}{Animation\+Demo}, and \hyperlink{class_kofta_a82e99828dc080cbc5a9cfc3db7b50081}{Kofta}.
+
+\index{W\+Game\+State@{W\+Game\+State}!On\+Input@{On\+Input}}
+\index{On\+Input@{On\+Input}!W\+Game\+State@{W\+Game\+State}}
+\subsubsection[{\texorpdfstring{On\+Input(char c)}{OnInput(char c)}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void W\+Game\+State\+::\+On\+Input (
+\begin{DoxyParamCaption}
+\item[{char}]{c}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_w_game_state_a952d55f104f8503f717ecbdcd6a8711c}{}\label{class_w_game_state_a952d55f104f8503f717ecbdcd6a8711c}
+This function is called whenever character input is received while this state is active. Character input is supplied by the OS, and is best suitable for capturing input for things like text boxes. 
+\begin{DoxyParams}{Parameters}
+{\em c} & \mbox{[}description\mbox{]} \\
+\hline
+\end{DoxyParams}
+\index{W\+Game\+State@{W\+Game\+State}!On\+Keydown@{On\+Keydown}}
+\index{On\+Keydown@{On\+Keydown}!W\+Game\+State@{W\+Game\+State}}
+\subsubsection[{\texorpdfstring{On\+Keydown(char c)}{OnKeydown(char c)}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void W\+Game\+State\+::\+On\+Keydown (
+\begin{DoxyParamCaption}
+\item[{char}]{c}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_w_game_state_ac4d0979d5ae27a8fd5df34949ae51d23}{}\label{class_w_game_state_ac4d0979d5ae27a8fd5df34949ae51d23}
+This function is called whenever a key is pushed down while this state is active. 
+\begin{DoxyParams}{Parameters}
+{\em c} & The pushed key \\
+\hline
+\end{DoxyParams}
+\index{W\+Game\+State@{W\+Game\+State}!On\+Keyup@{On\+Keyup}}
+\index{On\+Keyup@{On\+Keyup}!W\+Game\+State@{W\+Game\+State}}
+\subsubsection[{\texorpdfstring{On\+Keyup(char c)}{OnKeyup(char c)}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void W\+Game\+State\+::\+On\+Keyup (
+\begin{DoxyParamCaption}
+\item[{char}]{c}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_w_game_state_abcae0b58bf3c27406f0783c628a3c714}{}\label{class_w_game_state_abcae0b58bf3c27406f0783c628a3c714}
+This function is called whenever a key is released while this state is active. 
+\begin{DoxyParams}{Parameters}
+{\em c} & The released key \\
+\hline
+\end{DoxyParams}
+\index{W\+Game\+State@{W\+Game\+State}!Update@{Update}}
+\index{Update@{Update}!W\+Game\+State@{W\+Game\+State}}
+\subsubsection[{\texorpdfstring{Update(float f\+Delta\+Time)}{Update(float fDeltaTime)}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void W\+Game\+State\+::\+Update (
+\begin{DoxyParamCaption}
+\item[{float}]{f\+Delta\+Time}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_w_game_state_a5fe5a485ca56800cfd79237be2568d36}{}\label{class_w_game_state_a5fe5a485ca56800cfd79237be2568d36}
+This function is called every frame (right after \hyperlink{class_wasabi_ae7f699787307843fc886c4a9a09ebab7}{Wasabi\+::\+Loop()}) while the state is active. 
+\begin{DoxyParams}{Parameters}
+{\em f\+Delta\+Time} & The step time for this frame (roughly 1 / F\+PS) \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented in \hyperlink{class_instancing_demo_a233c7a0d4552fc6a4c8f43a59b04f01c}{Instancing\+Demo}, \hyperlink{class_animation_demo_aa694b73bfa77098e98a77399655203c2}{Animation\+Demo}, and \hyperlink{class_kofta_a27da31ebb583a8a017061823ab6575da}{Kofta}.
+
+
+
+\subsection{Member Data Documentation}
+\index{W\+Game\+State@{W\+Game\+State}!m\+\_\+app@{m\+\_\+app}}
+\index{m\+\_\+app@{m\+\_\+app}!W\+Game\+State@{W\+Game\+State}}
+\subsubsection[{\texorpdfstring{m\+\_\+app}{m_app}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Wasabi}$\ast$ const W\+Game\+State\+::m\+\_\+app\hspace{0.3cm}{\ttfamily [protected]}}\hypertarget{class_w_game_state_a68c0b595d15be38854585e6cbcbe452b}{}\label{class_w_game_state_a68c0b595d15be38854585e6cbcbe452b}
+Pointer to the application (the \hyperlink{class_wasabi}{Wasabi} instance) 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Core/\hyperlink{_w_core_8h}{W\+Core.\+h}\end{DoxyCompactItemize}

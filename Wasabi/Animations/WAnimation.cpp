@@ -114,6 +114,13 @@ void WAnimation::AddSubAnimation() {
 	m_subAnimations.push_back(new W_SUB_ANIMATION);
 }
 
+void WAnimation::RemoveSubAnimation(unsigned int index) {
+	if (index > 0 && index < m_subAnimations.size()) {
+		delete m_subAnimations[index];
+		m_subAnimations.erase(m_subAnimations.begin() + index);
+	}
+}
+
 WError WAnimation::SetKeyFrameTime(unsigned int frame, float fTime) {
 	if (frame >= m_frames.size())
 		return WError(W_INVALIDPARAM);
@@ -283,12 +290,12 @@ void WAnimation::Reset(unsigned int subAnimation) {
 
 	if (subAnimation == -1) {
 		for (unsigned int n = 0; n < m_subAnimations.size(); n++) {
-			((W_SUB_ANIMATION*)m_subAnimations[n])->fCurrentTime = 0.0f;
-			((W_SUB_ANIMATION*)m_subAnimations[n])->curFrame = 0;
+			((W_SUB_ANIMATION*)m_subAnimations[n])->fCurrentTime = ((W_SUB_ANIMATION*)m_subAnimations[n])->fPlayStartTime;
+			((W_SUB_ANIMATION*)m_subAnimations[n])->curFrame = ((W_SUB_ANIMATION*)m_subAnimations[n])->firstFrame;
 		}
 	} else {
-		((W_SUB_ANIMATION*)m_subAnimations[subAnimation])->fCurrentTime = 0.0f;
-		((W_SUB_ANIMATION*)m_subAnimations[subAnimation])->curFrame = 0;
+		((W_SUB_ANIMATION*)m_subAnimations[subAnimation])->fCurrentTime = ((W_SUB_ANIMATION*)m_subAnimations[subAnimation])->fPlayStartTime;
+		((W_SUB_ANIMATION*)m_subAnimations[subAnimation])->curFrame = ((W_SUB_ANIMATION*)m_subAnimations[subAnimation])->firstFrame;
 	}
 }
 

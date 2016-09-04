@@ -1,0 +1,56 @@
+\hypertarget{_w_geometry_8h}{}\section{Wasabi/\+Geometries/\+W\+Geometry.h File Reference}
+\label{_w_geometry_8h}\index{Wasabi/\+Geometries/\+W\+Geometry.\+h@{Wasabi/\+Geometries/\+W\+Geometry.\+h}}
+
+
+Geometry (mesh) implementation.  
+
+
+{\ttfamily \#include \char`\"{}../\+Core/\+W\+Core.\+h\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_w___v_e_r_t_e_x___a_t_t_r_i_b_u_t_e}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE}
+\item 
+struct \hyperlink{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON}
+\item 
+struct \hyperlink{struct_w_default_vertex}{W\+Default\+Vertex}
+\item 
+struct \hyperlink{struct_w_default_vertex___animation}{W\+Default\+Vertex\+\_\+\+Animation}
+\item 
+class \hyperlink{class_w_geometry}{W\+Geometry}
+\item 
+class \hyperlink{class_w_geometry_manager}{W\+Geometry\+Manager}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bfseries W\+\_\+\+A\+T\+T\+R\+I\+B\+U\+T\+E\+\_\+\+P\+O\+S\+I\+T\+I\+ON}~\hyperlink{struct_w___v_e_r_t_e_x___a_t_t_r_i_b_u_t_e}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE}(\char`\"{}position\char`\"{}, 3)\hypertarget{_w_geometry_8h_a17dd0dca12b3d3f0daf3872609aaf44c}{}\label{_w_geometry_8h_a17dd0dca12b3d3f0daf3872609aaf44c}
+
+\item 
+\#define {\bfseries W\+\_\+\+A\+T\+T\+R\+I\+B\+U\+T\+E\+\_\+\+T\+A\+N\+G\+E\+NT}~\hyperlink{struct_w___v_e_r_t_e_x___a_t_t_r_i_b_u_t_e}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE}(\char`\"{}tangent\char`\"{}, 3)\hypertarget{_w_geometry_8h_ac1b46b3e2f4cf02a22c09fbf7a2708ad}{}\label{_w_geometry_8h_ac1b46b3e2f4cf02a22c09fbf7a2708ad}
+
+\item 
+\#define {\bfseries W\+\_\+\+A\+T\+T\+R\+I\+B\+U\+T\+E\+\_\+\+N\+O\+R\+M\+AL}~\hyperlink{struct_w___v_e_r_t_e_x___a_t_t_r_i_b_u_t_e}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE}(\char`\"{}normal\char`\"{}, 3)\hypertarget{_w_geometry_8h_a0b63d2b4a8301e91e9640eb215336280}{}\label{_w_geometry_8h_a0b63d2b4a8301e91e9640eb215336280}
+
+\item 
+\#define {\bfseries W\+\_\+\+A\+T\+T\+R\+I\+B\+U\+T\+E\+\_\+\+UV}~\hyperlink{struct_w___v_e_r_t_e_x___a_t_t_r_i_b_u_t_e}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE}(\char`\"{}uv\char`\"{}, 2)\hypertarget{_w_geometry_8h_a186aaad751ff8f740b4bc6f36a456f8f}{}\label{_w_geometry_8h_a186aaad751ff8f740b4bc6f36a456f8f}
+
+\item 
+\#define {\bfseries W\+\_\+\+A\+T\+T\+R\+I\+B\+U\+T\+E\+\_\+\+B\+O\+N\+E\+\_\+\+I\+N\+D\+EX}~\hyperlink{struct_w___v_e_r_t_e_x___a_t_t_r_i_b_u_t_e}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE}(\char`\"{}bone\+\_\+index\char`\"{}, 4)\hypertarget{_w_geometry_8h_a37c9bcdb2531561b5b97acf2afb29442}{}\label{_w_geometry_8h_a37c9bcdb2531561b5b97acf2afb29442}
+
+\item 
+\#define {\bfseries W\+\_\+\+A\+T\+T\+R\+I\+B\+U\+T\+E\+\_\+\+B\+O\+N\+E\+\_\+\+W\+E\+I\+G\+HT}~\hyperlink{struct_w___v_e_r_t_e_x___a_t_t_r_i_b_u_t_e}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+A\+T\+T\+R\+I\+B\+U\+TE}(\char`\"{}bone\+\_\+weight\char`\"{}, 4)\hypertarget{_w_geometry_8h_a674e461c8662b62b132baf551feef211}{}\label{_w_geometry_8h_a674e461c8662b62b132baf551feef211}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Geometry (mesh) implementation. 
+
+A \hyperlink{class_w_geometry}{W\+Geometry} is a flexible way to represent any geometry that is needed for rendering or any general computation or usage. \hyperlink{class_w_geometry}{W\+Geometry} can be derived such that one can modify the composition of the geometry (the attributes).
+
+\begin{DoxyAuthor}{Author}
+Hasan Al-\/\+Jawaheri (hbj) 
+\end{DoxyAuthor}
+\begin{DoxyRefDesc}{Bug}
+\item[\hyperlink{bug__bug000011}{Bug}]No known bugs. \end{DoxyRefDesc}
