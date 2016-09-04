@@ -150,7 +150,7 @@
     <ClCompile Include="Images\WRenderTarget.cpp">
       <Filter>Images</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Core.cpp">
+    <ClCompile Include="Core\WCore.cpp">
       <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -303,7 +303,7 @@
     <ClInclude Include="Images\WRenderTarget.h">
       <Filter>Images</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Core.h">
+    <ClInclude Include="Core\WCore.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 #include "WRenderer.h"
 #include "../Materials/WMaterial.h"
 

@@ -1,0 +1,75 @@
+\hypertarget{class_w_shader}{}\section{W\+Shader Class Reference}
+\label{class_w_shader}\index{W\+Shader@{W\+Shader}}
+Inheritance diagram for W\+Shader\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=10.000000cm]{class_w_shader}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Shader} (class \hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_shader_aa47ebd4f94586e3b030d16a549849568}{}\label{class_w_shader_aa47ebd4f94586e3b030d16a549849568}
+
+\item 
+virtual void {\bfseries Load} ()=0\hypertarget{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{}\label{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}
+
+\item 
+virtual bool \hyperlink{class_w_shader_a04a739bdfc8524c6d5aa14353c0e3f99}{Valid} () const 
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void {\bfseries Load\+Code\+S\+P\+I\+RV} (const char $\ast$const code, int len)\hypertarget{class_w_shader_a63ad1afcf46d791088eecabf9c6622b0}{}\label{class_w_shader_a63ad1afcf46d791088eecabf9c6622b0}
+
+\item 
+void {\bfseries Load\+Code\+G\+L\+SL} (std\+::string code)\hypertarget{class_w_shader_a29cffc471a569bbd669969feed3245d5}{}\label{class_w_shader_a29cffc471a569bbd669969feed3245d5}
+
+\item 
+void {\bfseries Load\+Code\+S\+P\+I\+R\+V\+From\+File} (std\+::string filename)\hypertarget{class_w_shader_a53e2b763b3d9160eeb3712ddd315efd3}{}\label{class_w_shader_a53e2b763b3d9160eeb3712ddd315efd3}
+
+\item 
+void {\bfseries Load\+Code\+G\+L\+S\+L\+From\+File} (std\+::string filename)\hypertarget{class_w_shader_a027b08b66b2152f70889d95a37d8bf13}{}\label{class_w_shader_a027b08b66b2152f70889d95a37d8bf13}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+D\+E\+SC} {\bfseries m\+\_\+desc}\hypertarget{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}{}\label{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}
+
+\item 
+Vk\+Shader\+Module {\bfseries m\+\_\+module}\hypertarget{class_w_shader_a4fc9835e83eac6bcbc2c166c0d5b4ad1}{}\label{class_w_shader_a4fc9835e83eac6bcbc2c166c0d5b4ad1}
+
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+class {\bfseries W\+Effect}\hypertarget{class_w_shader_aa862ff89ea243967dcfdb12c12ad040b}{}\label{class_w_shader_aa862ff89ea243967dcfdb12c12ad040b}
+
+\item 
+class {\bfseries W\+Material}\hypertarget{class_w_shader_a82829be2ace0f839dd132dface8a4da3}{}\label{class_w_shader_a82829be2ace0f839dd132dface8a4da3}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\index{W\+Shader@{W\+Shader}!Valid@{Valid}}
+\index{Valid@{Valid}!W\+Shader@{W\+Shader}}
+\subsubsection[{\texorpdfstring{Valid() const }{Valid() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Shader\+::\+Valid (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_shader_a04a739bdfc8524c6d5aa14353c0e3f99}{}\label{class_w_shader_a04a739bdfc8524c6d5aa14353c0e3f99}
+Must be implemented by the child. This function should report the validity status of the object, in whatever sense of \char`\"{}validity\char`\"{} it chooses. \begin{DoxyReturn}{Returns}
+true if the object is \char`\"{}valid\char`\"{}, false otherwise 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_base_a76ac973ba9a43e182f6a6a4869d69725}{W\+Base}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Materials/W\+Effect.\+h\item 
+Wasabi/\+Materials/W\+Effect.\+cpp\end{DoxyCompactItemize}

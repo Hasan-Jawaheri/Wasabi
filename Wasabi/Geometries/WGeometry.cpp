@@ -13,8 +13,8 @@ static void ConvertVertices(void* vbFrom, void* vbTo, unsigned int num_verts,
 			std::string name = vtx_to.attributes[j].name;
 			int off_in_from = vtx_from.GetOffset(name);
 			int index_in_from = vtx_from.GetIndex(name);
-			if (off_in_from >= 0 && vtx_to.attributes[j].size == vtx_from.attributes[index_in_from].size)
-				memcpy(myvtx + vtx_to.GetOffset(name), fromvtx + off_in_from, vtx_to.attributes[j].size * 4);
+			if (off_in_from >= 0 && vtx_to.attributes[j].num_components == vtx_from.attributes[index_in_from].num_components)
+				memcpy(myvtx + vtx_to.GetOffset(name), fromvtx + off_in_from, vtx_to.attributes[j].num_components * 4);
 		}
 	}
 }
@@ -22,7 +22,7 @@ static void ConvertVertices(void* vbFrom, void* vbTo, unsigned int num_verts,
 size_t W_VERTEX_DESCRIPTION::GetSize() const {
 	size_t s = 0;
 	for (int i = 0; i < attributes.size(); i++)
-		s += 4 * attributes[i].size;
+		s += 4 * attributes[i].num_components;
 	return s;
 }
 
@@ -31,7 +31,7 @@ size_t W_VERTEX_DESCRIPTION::GetOffset(unsigned int attrib_index) const {
 	for (int i = 0; i < attributes.size(); i++) {
 		if (i == attrib_index)
 			return s;
-		s += 4 * attributes[i].size;
+		s += 4 * attributes[i].num_components;
 	}
 	return -1;
 }
@@ -41,7 +41,7 @@ size_t W_VERTEX_DESCRIPTION::GetOffset(std::string attrib_name) const {
 	for (int i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == attrib_name)
 			return s;
-		s += 4 * attributes[i].size;
+		s += 4 * attributes[i].num_components;
 	}
 	return -1;
 }
@@ -122,8 +122,11 @@ void WGeometry::_CalcNormals(void* vb, unsigned int num_verts, void* ib, unsigne
 		return; // must be a triangle list
 
 	int offset = GetVertexDescription(0).GetOffset("position");
-	int normal_offset = GetVertexDescription(0).GetOffset("position");
+	int normal_offset = GetVertexDescription(0).GetOffset("normal");
 	int vsize = GetVertexDescription(0).GetSize();
+
+	if (offset == -1 || normal_offset == -1)
+		return; // no position/normal attributes
 
 	int num_tris = num_indices / 3;
 	for (int i = 0; i < num_tris; i++) {
@@ -427,7 +430,6 @@ WError WGeometry::CreateAnimationData(void* ab) {
 	// Destroy staging buffers
 destroy_staging:
 	// remove staging buffers if there's an error, geometry is immutable or if its dynamic
-	m_immutable = m_app->engineParams["geometryImmutable"];
 	if (err || m_immutable || m_dynamic) {
 		vkDestroyBuffer(device, m_animationbuf.staging.buf, nullptr);
 		vkFreeMemory(device, m_animationbuf.staging.mem, nullptr);
@@ -608,6 +610,8 @@ WError WGeometry::CreatePlain(float fSize, int xsegs, int zsegs, bool bDynamic) 
 }
 
 WError WGeometry::CreateSphere(float Radius, unsigned int VRes, unsigned int URes, bool bDynamic) {
+	if (VRes < 3 || URes < 2)
+		return WError(W_INVALIDPARAM);
 	const UINT NumVertexRings = VRes - 2;
 	unsigned int num_vertices = NumVertexRings * URes + 2;
 	const UINT NumTriangleRings = VRes - 1;
@@ -694,6 +698,9 @@ WError WGeometry::CreateSphere(float Radius, unsigned int VRes, unsigned int URe
 }
 
 WError WGeometry::CreateCone(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic) {
+	hsegs -= 2;
+	if (csegs < 3 || hsegs < 2)
+		return WError(W_INVALIDPARAM);
 	//3 indices * number of triangles (top and bottom triangles + side triangles)
 	unsigned int num_indices = 3 * (csegs + (hsegs - 1)*csegs * 2);
 	//bottom with the circle vertices plus [csegs] vertices for every [hsegs] + one extra seg for uvs
@@ -774,6 +781,9 @@ WError WGeometry::CreateCone(float fRadius, float fHeight, unsigned int hsegs, u
 }
 
 WError WGeometry::CreateCylinder(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic) {
+	hsegs -= 2;
+	if (csegs < 3 || hsegs < 2)
+		return WError(W_INVALIDPARAM);
 	//3 indices * number of triangles (top and bottom triangles + side triangles)
 	unsigned int num_indices = 3 * (csegs * 2 + (hsegs - 1)*csegs * 2);
 	//top and bottom with their circles vertices plus [csegs] vertices for every [hsegs] + one extra seg for uvs
@@ -943,7 +953,7 @@ WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
 		file.read((char*)&num_attributes, sizeof(unsigned int));
 		desc.attributes.resize(num_attributes);
 		for (int i = 0; i < num_attributes; i++) {
-			file.read((char*)&desc.attributes[i].size, sizeof(unsigned char));
+			file.read((char*)&desc.attributes[i].num_components, sizeof(unsigned char));
 			unsigned int namesize = desc.attributes[i].name.length();
 			file.read((char*)&namesize, sizeof(unsigned int));
 			file.read(temp, min(namesize, 255));
@@ -1041,7 +1051,7 @@ WError WGeometry::SaveToWGM(std::string filename) {
 		unsigned int num_attributes = my_desc.attributes.size();
 		file.write((char*)&num_attributes, sizeof(unsigned int));
 		for (int i = 0; i < num_attributes; i++) {
-			file.write((char*)&my_desc.attributes[i].size, sizeof(unsigned char));
+			file.write((char*)&my_desc.attributes[i].num_components, sizeof(unsigned char));
 			unsigned int namesize = my_desc.attributes[i].name.length();
 			file.write((char*)&namesize, sizeof(unsigned int));
 			file.write(my_desc.attributes[i].name.c_str(), namesize);
@@ -1295,6 +1305,9 @@ WError WGeometry::Scale(float mulFactor) {
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
+	if (offset == -1)
+		return W_ERROR(W_NOTVALID);
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1303,9 +1316,9 @@ WError WGeometry::Scale(float mulFactor) {
 
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
+		memcpy(&v, (char*)data + vtx_size * i + offset, size);
 		v *= mulFactor;
-		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
+		memcpy((char*)data + vtx_size * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -1319,6 +1332,9 @@ WError WGeometry::ScaleX(float mulFactor) {
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
+	if (offset == -1)
+		return W_ERROR(W_NOTVALID);
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1327,9 +1343,9 @@ WError WGeometry::ScaleX(float mulFactor) {
 
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
+		memcpy(&v, (char*)data + vtx_size * i + offset, size);
 		v.x *= mulFactor;
-		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
+		memcpy((char*)data + vtx_size * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -1343,6 +1359,9 @@ WError WGeometry::ScaleY(float mulFactor) {
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
+	if (offset == -1)
+		return W_ERROR(W_NOTVALID);
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1351,9 +1370,9 @@ WError WGeometry::ScaleY(float mulFactor) {
 
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
+		memcpy(&v, (char*)data + vtx_size * i + offset, size);
 		v.y *= mulFactor;
-		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
+		memcpy((char*)data + vtx_size * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -1367,6 +1386,9 @@ WError WGeometry::ScaleZ(float mulFactor) {
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
+	if (offset == -1)
+		return W_ERROR(W_NOTVALID);
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1375,9 +1397,9 @@ WError WGeometry::ScaleZ(float mulFactor) {
 
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
+		memcpy(&v, (char*)data + vtx_size * i + offset, size);
 		v.z *= mulFactor;
-		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
+		memcpy((char*)data + vtx_size * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -1395,6 +1417,9 @@ WError WGeometry::ApplyOffset(WVector3 _offset) {
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
+	if (offset == -1)
+		return W_ERROR(W_NOTVALID);
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1403,22 +1428,25 @@ WError WGeometry::ApplyOffset(WVector3 _offset) {
 
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
+		memcpy(&v, (char*)data + vtx_size * i + offset, size);
 		v += _offset;
-		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
+		memcpy((char*)data + vtx_size * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
 	return WError(W_SUCCEEDED);
 }
 
-WError WGeometry::ApplyRotation(WMatrix mtx) {
+WError WGeometry::ApplyTransformation(WMatrix mtx) {
 	if (!Valid() || (m_immutable && !m_dynamic))
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
 	size_t vtx_size = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
+	if (offset == -1)
+		return W_ERROR(W_NOTVALID);
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data);
@@ -1427,9 +1455,9 @@ WError WGeometry::ApplyRotation(WMatrix mtx) {
 
 	for (int i = 0; i < m_vertices.count; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, sizeof(WVector3));
+		memcpy(&v, (char*)data + vtx_size * i + offset, size);
 		v = WVec3TransformCoord(v, mtx);
-		memcpy((char*)data + vtx_size * i + offset, &v, sizeof(WVector3));
+		memcpy((char*)data + vtx_size * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -1441,10 +1469,24 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 		return false;
 
 	/*
-	Check all triangles, what is intersected will
-	be inserted into the vector intersection, then
-	the closest triangle to p1 will be returned
+		Check all triangles, what is intersected will
+		be inserted into the vector intersection, then
+		the closest triangle to p1 will be returned
 	*/
+
+	unsigned int pos_offset = GetVertexDescription(0).GetOffset("position");
+	unsigned int vtx_size = GetVertexDescription(0).GetSize();
+	unsigned int uv_offset = GetVertexDescription(0).GetOffset("uv");
+	unsigned int uv_size = -1;
+
+	if (pos_offset == -1)
+		return false;
+	if (GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components < 3)
+		return false;
+	if (uv_offset != -1)
+		uv_size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("uv")].num_components * 4;
+	if (uv_size < 8) // if we don't have at least 2 components, ignore UVs
+		uv_offset = -1;
 
 	struct IntersectionInfo {
 		unsigned int index;
@@ -1464,15 +1506,21 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 		return false;
 	}
 
-	unsigned int pos_offset = GetVertexDescription(0).GetOffset("position");
-	unsigned int vtx_size = GetVertexDescription(0).GetSize();
 	for (UINT i = 0; i < m_indices.count / 3; i++) {
 		WVector3 v0;
 		WVector3 v1;
 		WVector3 v2;
+		WVector2 uv0 (0, 0);
+		WVector2 uv1 (1, 0);
+		WVector2 uv2 (0, 1);
 		memcpy(&v0, &((char*)vb)[ib[i * 3 + 0] * vtx_size + pos_offset], sizeof WVector3);
 		memcpy(&v1, &((char*)vb)[ib[i * 3 + 1] * vtx_size + pos_offset], sizeof WVector3);
 		memcpy(&v2, &((char*)vb)[ib[i * 3 + 2] * vtx_size + pos_offset], sizeof WVector3);
+		if (uv_offset != -1) {
+			memcpy(&uv0, &((char*)vb)[ib[i * 3 + 0] * vtx_size + uv_offset], sizeof WVector2);
+			memcpy(&uv1, &((char*)vb)[ib[i * 3 + 1] * vtx_size + uv_offset], sizeof WVector2);
+			memcpy(&uv2, &((char*)vb)[ib[i * 3 + 2] * vtx_size + uv_offset], sizeof WVector2);
+		}
 
 		WVector3 e1, e2, h, s, q;
 		float a, f, u, v;
@@ -1504,8 +1552,8 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 			//add this triangle to the intersection vector
 			IntersectionInfo ii;
 			ii.index = i;
-			ii.u = u;
-			ii.v = v;
+			ii.u = uv0.x * (1-u) + uv1.x * u;
+			ii.v = uv0.y * (1-v) + uv2.y * v;
 			ii.point = v0 + u*(v1 - v0) + v*(v2 - v0);
 
 			intersection.push_back(ii);

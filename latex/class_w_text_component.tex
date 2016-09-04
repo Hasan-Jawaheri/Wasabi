@@ -1,0 +1,68 @@
+\hypertarget{class_w_text_component}{}\section{W\+Text\+Component Class Reference}
+\label{class_w_text_component}\index{W\+Text\+Component@{W\+Text\+Component}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Text\+Component} (class \hyperlink{class_wasabi}{Wasabi} $\ast$app)\hypertarget{class_w_text_component_a61b7a0a976a6bab65937aa634a49daf1}{}\label{class_w_text_component_a61b7a0a976a6bab65937aa634a49daf1}
+
+\item 
+void {\bfseries Add\+Font\+Directory} (std\+::string dir)\hypertarget{class_w_text_component_a6e75f75e6239cf12d9faf0cb4911ecd0}{}\label{class_w_text_component_a6e75f75e6239cf12d9faf0cb4911ecd0}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Initialize} ()\hypertarget{class_w_text_component_af058bfd7021ea60f724d0e650faeaf24}{}\label{class_w_text_component_af058bfd7021ea60f724d0e650faeaf24}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Create\+Font} (unsigned int ID, std\+::string font\+Name)\hypertarget{class_w_text_component_a6381c19b7c3b17108e9b4d244999955a}{}\label{class_w_text_component_a6381c19b7c3b17108e9b4d244999955a}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Destroy\+Font} (unsigned int ID)\hypertarget{class_w_text_component_aca27e939664f8e1ffa392e8d361103b7}{}\label{class_w_text_component_aca27e939664f8e1ffa392e8d361103b7}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Set\+Text\+Color} (\hyperlink{class_w_color}{W\+Color} col)\hypertarget{class_w_text_component_aaa045f9cc46861a90f048fb0bf959ff1}{}\label{class_w_text_component_aaa045f9cc46861a90f048fb0bf959ff1}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Set\+Font} (unsigned int ID)\hypertarget{class_w_text_component_aaf7f72c29da9d6085e814d9099498177}{}\label{class_w_text_component_aaf7f72c29da9d6085e814d9099498177}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Render\+Text} (std\+::string text, int x, int y, float f\+Height)\hypertarget{class_w_text_component_adbf4f965b141fc199541413e5700f657}{}\label{class_w_text_component_adbf4f965b141fc199541413e5700f657}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Render\+Text} (std\+::string text, int x, int y, float f\+Height, unsigned int font\+ID)\hypertarget{class_w_text_component_a7991923a70194f6f47f54c8e01a63222}{}\label{class_w_text_component_a7991923a70194f6f47f54c8e01a63222}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} {\bfseries Render\+Text} (std\+::string text, int x, int y, float f\+Height, unsigned int font\+ID, \hyperlink{class_w_color}{W\+Color} col)\hypertarget{class_w_text_component_a0db38186ae9cbebe22df5e4d6bd2bff1}{}\label{class_w_text_component_a0db38186ae9cbebe22df5e4d6bd2bff1}
+
+\item 
+void {\bfseries Render} (class \hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$rt)\hypertarget{class_w_text_component_a28969585d0835bb30103f8911d8586f0}{}\label{class_w_text_component_a28969585d0835bb30103f8911d8586f0}
+
+\item 
+unsigned int {\bfseries Get\+Text\+Width} (std\+::string text, float f\+Height, unsigned int font\+ID=-\/1)\hypertarget{class_w_text_component_a29cc611511111757f3392f4b3c83879a}{}\label{class_w_text_component_a29cc611511111757f3392f4b3c83879a}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_wasabi}{Wasabi} $\ast$ {\bfseries m\+\_\+app}\hypertarget{class_w_text_component_a89ad75cb63091bda1e5e5757955994e1}{}\label{class_w_text_component_a89ad75cb63091bda1e5e5757955994e1}
+
+\item 
+std\+::vector$<$ std\+::string $>$ {\bfseries m\+\_\+directories}\hypertarget{class_w_text_component_a9b7024448f1fcc35bfe3d972dbf74f30}{}\label{class_w_text_component_a9b7024448f1fcc35bfe3d972dbf74f30}
+
+\item 
+std\+::map$<$ unsigned int, \hyperlink{struct_w___f_o_n_t___o_b_j_e_c_t}{W\+\_\+\+F\+O\+N\+T\+\_\+\+O\+B\+J\+E\+CT} $>$ {\bfseries m\+\_\+fonts}\hypertarget{class_w_text_component_ab9be4ab20948d10cdbf798ba15e97b16}{}\label{class_w_text_component_ab9be4ab20948d10cdbf798ba15e97b16}
+
+\item 
+unsigned int {\bfseries m\+\_\+cur\+Font}\hypertarget{class_w_text_component_a6601148a11fdf9711071d05913e80c79}{}\label{class_w_text_component_a6601148a11fdf9711071d05913e80c79}
+
+\item 
+\hyperlink{class_w_color}{W\+Color} {\bfseries m\+\_\+cur\+Color}\hypertarget{class_w_text_component_a37b3634ddc5a1ba25bd3c676ba18b06d}{}\label{class_w_text_component_a37b3634ddc5a1ba25bd3c676ba18b06d}
+
+\item 
+class \hyperlink{class_w_effect}{W\+Effect} $\ast$ {\bfseries m\+\_\+text\+Effect}\hypertarget{class_w_text_component_a6eb0c9ac09a85b9dc05471180f62b1a0}{}\label{class_w_text_component_a6eb0c9ac09a85b9dc05471180f62b1a0}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Texts/W\+Text.\+h\item 
+Wasabi/\+Texts/W\+Text.\+cpp\end{DoxyCompactItemize}

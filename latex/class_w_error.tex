@@ -1,0 +1,59 @@
+\hypertarget{class_w_error}{}\section{W\+Error Class Reference}
+\label{class_w_error}\index{W\+Error@{W\+Error}}
+
+
+{\ttfamily \#include $<$W\+Error.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Error} (\hyperlink{_w_error_8h_a97f0087198171b385313d83b2faf9059}{W\+\_\+\+E\+R\+R\+OR} err)\hypertarget{class_w_error_a1cff47dc17222c62d5c2ec25be85ef8f}{}\label{class_w_error_a1cff47dc17222c62d5c2ec25be85ef8f}
+
+\item 
+std\+::string \hyperlink{class_w_error_a3ceca4515f576d2df7f1161d6cce4f2a}{As\+String} () const 
+\item 
+\hyperlink{class_w_error_ab94b591eb1cff7c009e044af45258a4c}{operator bool} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{_w_error_8h_a97f0087198171b385313d83b2faf9059}{W\+\_\+\+E\+R\+R\+OR} \hyperlink{class_w_error_a456679cda00d598ceaa2addc8f16c5aa}{m\+\_\+error}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This class represents a general purpose error code. 
+
+\subsection{Member Function Documentation}
+\index{W\+Error@{W\+Error}!As\+String@{As\+String}}
+\index{As\+String@{As\+String}!W\+Error@{W\+Error}}
+\subsubsection[{\texorpdfstring{As\+String() const }{AsString() const }}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string W\+Error\+::\+As\+String (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_error_a3ceca4515f576d2df7f1161d6cce4f2a}{}\label{class_w_error_a3ceca4515f576d2df7f1161d6cce4f2a}
+Retrieves the string corresponding to the carried error. \begin{DoxyReturn}{Returns}
+A string corresponding to m\+\_\+error 
+\end{DoxyReturn}
+\index{W\+Error@{W\+Error}!operator bool@{operator bool}}
+\index{operator bool@{operator bool}!W\+Error@{W\+Error}}
+\subsubsection[{\texorpdfstring{operator bool()}{operator bool()}}]{\setlength{\rightskip}{0pt plus 5cm}W\+Error\+::operator bool (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_error_ab94b591eb1cff7c009e044af45258a4c}{}\label{class_w_error_ab94b591eb1cff7c009e044af45258a4c}
+Evaluates this error code to a boolean. \begin{DoxyReturn}{Returns}
+return true if m\+\_\+error == W\+\_\+\+S\+U\+C\+C\+E\+E\+D\+ED, false otherwise 
+\end{DoxyReturn}
+
+
+\subsection{Member Data Documentation}
+\index{W\+Error@{W\+Error}!m\+\_\+error@{m\+\_\+error}}
+\index{m\+\_\+error@{m\+\_\+error}!W\+Error@{W\+Error}}
+\subsubsection[{\texorpdfstring{m\+\_\+error}{m_error}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+\_\+\+E\+R\+R\+OR} W\+Error\+::m\+\_\+error}\hypertarget{class_w_error_a456679cda00d598ceaa2addc8f16c5aa}{}\label{class_w_error_a456679cda00d598ceaa2addc8f16c5aa}
+The carried error code 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Core/\hyperlink{_w_error_8h}{W\+Error.\+h}\item 
+Wasabi/\+Core/W\+Error.\+cpp\end{DoxyCompactItemize}

@@ -13,6 +13,20 @@ WWC_Win32::WWC_Win32(Wasabi* app) : WWindowComponent(app) {
 	m_maxWindowX = 640 * 20;
 	m_maxWindowY = 480 * 20;
 	m_isMinimized = true;
+
+	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW)));
+	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW))); // DWORD
+	app->engineParams.insert(std::pair<std::string, void*>("classIcon", (void*)(NULL))); // HICON
+	app->engineParams.insert(std::pair<std::string, void*>("classCursor", (void*)(LoadCursorA(NULL, MAKEINTRESOURCEA(32512))))); // HCURSOR
+	app->engineParams.insert(std::pair<std::string, void*>("menuName", (void*)(NULL))); // LPCSTR
+	app->engineParams.insert(std::pair<std::string, void*>("menuProc", (void*)(NULL))); // void (*) (HMENU, UINT)
+	app->engineParams.insert(std::pair<std::string, void*>("classIcon_sm", (void*)(NULL))); // HICON
+	app->engineParams.insert(std::pair<std::string, void*>("windowMenu", (void*)(NULL))); // HMENU
+	app->engineParams.insert(std::pair<std::string, void*>("windowParent", (void*)(NULL))); // HWND
+	app->engineParams.insert(std::pair<std::string, void*>("windowStyle", (void*)(WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_VISIBLE))); // DWORD
+	app->engineParams.insert(std::pair<std::string, void*>("windowStyleEx", (void*)(WS_EX_OVERLAPPEDWINDOW))); // DWORD
+	app->engineParams.insert(std::pair<std::string, void*>("defWndX", (void*)(-1))); // int
+	app->engineParams.insert(std::pair<std::string, void*>("defWndY", (void*)(-1))); //int
 }
 WError WWC_Win32::Initialize(int width, int height) {
 	//do not initialize if the window is already there
@@ -312,8 +326,8 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_MOUSEMOVE:
 		if (appInst->InputComponent) {
-			((WIC_Win32*)appInst->InputComponent)->m_mouseX = LOWORD(lParam);
-			((WIC_Win32*)appInst->InputComponent)->m_mouseY = HIWORD(lParam);
+			//((WIC_Win32*)appInst->InputComponent)->m_mouseX = LOWORD(lParam);
+			//((WIC_Win32*)appInst->InputComponent)->m_mouseY = HIWORD(lParam);
 		}
 		break;
 	case WM_MOUSEWHEEL:

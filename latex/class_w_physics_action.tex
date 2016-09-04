@@ -1,0 +1,65 @@
+\hypertarget{class_w_physics_action}{}\section{W\+Physics\+Action Class Reference}
+\label{class_w_physics_action}\index{W\+Physics\+Action@{W\+Physics\+Action}}
+Inheritance diagram for W\+Physics\+Action\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_w_physics_action}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Physics\+Action} (class \hyperlink{class_wasabi}{Wasabi} $\ast$const app, \hyperlink{class_w_rigid_body}{W\+Rigid\+Body} $\ast$const body, unsigned int ID=0)\hypertarget{class_w_physics_action_a0c13f3d8356a71ef44e790c3173bcf07}{}\label{class_w_physics_action_a0c13f3d8356a71ef44e790c3173bcf07}
+
+\item 
+void {\bfseries Initialize} ()\hypertarget{class_w_physics_action_a5f10a83329770a3316600b06fe4c9e32}{}\label{class_w_physics_action_a5f10a83329770a3316600b06fe4c9e32}
+
+\item 
+void {\bfseries Update} (float f\+Delta\+Time)\hypertarget{class_w_physics_action_a1abe5f88a0302c9437d47b62cc36b7ed}{}\label{class_w_physics_action_a1abe5f88a0302c9437d47b62cc36b7ed}
+
+\item 
+virtual void {\bfseries apply\+Action} (const hk\+Step\+Info \&step\+Info)\hypertarget{class_w_physics_action_aedd4a156442f0e5912a4c9ab8556a459}{}\label{class_w_physics_action_aedd4a156442f0e5912a4c9ab8556a459}
+
+\item 
+virtual hkp\+Action $\ast$ {\bfseries clone} (const hk\+Array$<$ hkp\+Entity $\ast$ $>$ \&new\+Entities, const hk\+Array$<$ hkp\+Phantom $\ast$ $>$ \&new\+Phantoms) const \hypertarget{class_w_physics_action_aeea1b17b3af0145c993add199a5f9f66}{}\label{class_w_physics_action_aeea1b17b3af0145c993add199a5f9f66}
+
+\item 
+virtual void {\bfseries Set\+Motion\+Direction} (\hyperlink{class_w_vector3}{W\+Vector3} dir)\hypertarget{class_w_physics_action_a99760fa333032a97e3b1abd6ab1045d0}{}\label{class_w_physics_action_a99760fa333032a97e3b1abd6ab1045d0}
+
+\item 
+virtual \hyperlink{class_w_vector3}{W\+Vector3} {\bfseries Get\+Motion\+Direction} () const \hypertarget{class_w_physics_action_a83af9c3f3d92903b6cbf31eac1520919}{}\label{class_w_physics_action_a83af9c3f3d92903b6cbf31eac1520919}
+
+\item 
+bool \hyperlink{class_w_physics_action_a0d9071445335152380fb79a3fd8d651b}{Valid} () const 
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_w_rigid_body}{W\+Rigid\+Body} $\ast$ {\bfseries m\+\_\+rb}\hypertarget{class_w_physics_action_ab8534cb6ef50748a4b05b4665074475f}{}\label{class_w_physics_action_ab8534cb6ef50748a4b05b4665074475f}
+
+\item 
+bool {\bfseries m\+\_\+valid}\hypertarget{class_w_physics_action_ac5a182e2a1a31ac3566fe217de3c2356}{}\label{class_w_physics_action_ac5a182e2a1a31ac3566fe217de3c2356}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\index{W\+Physics\+Action@{W\+Physics\+Action}!Valid@{Valid}}
+\index{Valid@{Valid}!W\+Physics\+Action@{W\+Physics\+Action}}
+\subsubsection[{\texorpdfstring{Valid() const }{Valid() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Physics\+Action\+::\+Valid (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_physics_action_a0d9071445335152380fb79a3fd8d651b}{}\label{class_w_physics_action_a0d9071445335152380fb79a3fd8d651b}
+Must be implemented by the child. This function should report the validity status of the object, in whatever sense of \char`\"{}validity\char`\"{} it chooses. \begin{DoxyReturn}{Returns}
+true if the object is \char`\"{}valid\char`\"{}, false otherwise 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_base_a76ac973ba9a43e182f6a6a4869d69725}{W\+Base}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Physics/\+Havok/W\+Havok\+Physics.\+h\end{DoxyCompactItemize}

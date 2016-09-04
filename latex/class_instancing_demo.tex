@@ -1,0 +1,67 @@
+\hypertarget{class_instancing_demo}{}\section{Instancing\+Demo Class Reference}
+\label{class_instancing_demo}\index{Instancing\+Demo@{Instancing\+Demo}}
+Inheritance diagram for Instancing\+Demo\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_instancing_demo}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries Instancing\+Demo} (\hyperlink{class_wasabi}{Wasabi} $\ast$const app)\hypertarget{class_instancing_demo_a090d90ceb1dd39ff1764f6dbb0ab3dbb}{}\label{class_instancing_demo_a090d90ceb1dd39ff1764f6dbb0ab3dbb}
+
+\item 
+virtual void \hyperlink{class_instancing_demo_abf05a0b6ce3814cb50cc43785f0f53c8}{Load} ()
+\item 
+virtual void \hyperlink{class_instancing_demo_a233c7a0d4552fc6a4c8f43a59b04f01c}{Update} (float f\+Delta\+Time)
+\item 
+virtual void \hyperlink{class_instancing_demo_a5c8e4cc00517e928128771f91028d473}{Cleanup} ()
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\index{Instancing\+Demo@{Instancing\+Demo}!Cleanup@{Cleanup}}
+\index{Cleanup@{Cleanup}!Instancing\+Demo@{Instancing\+Demo}}
+\subsubsection[{\texorpdfstring{Cleanup()}{Cleanup()}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void Instancing\+Demo\+::\+Cleanup (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_instancing_demo_a5c8e4cc00517e928128771f91028d473}{}\label{class_instancing_demo_a5c8e4cc00517e928128771f91028d473}
+This function is called before this state is switched from. This gives the state a chance to clean up its resources before its destroyed. 
+
+Reimplemented from \hyperlink{class_w_game_state_a50eddb2f648dc478ed0e10fee73fd4e9}{W\+Game\+State}.
+
+\index{Instancing\+Demo@{Instancing\+Demo}!Load@{Load}}
+\index{Load@{Load}!Instancing\+Demo@{Instancing\+Demo}}
+\subsubsection[{\texorpdfstring{Load()}{Load()}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void Instancing\+Demo\+::\+Load (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_instancing_demo_abf05a0b6ce3814cb50cc43785f0f53c8}{}\label{class_instancing_demo_abf05a0b6ce3814cb50cc43785f0f53c8}
+This function, will be called every time this state is switched to. This gives the state a chance to load its resources. 
+
+Reimplemented from \hyperlink{class_w_game_state_a20031e5724a12eb99aa81c013d1d9d63}{W\+Game\+State}.
+
+\index{Instancing\+Demo@{Instancing\+Demo}!Update@{Update}}
+\index{Update@{Update}!Instancing\+Demo@{Instancing\+Demo}}
+\subsubsection[{\texorpdfstring{Update(float f\+Delta\+Time)}{Update(float fDeltaTime)}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void Instancing\+Demo\+::\+Update (
+\begin{DoxyParamCaption}
+\item[{float}]{f\+Delta\+Time}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_instancing_demo_a233c7a0d4552fc6a4c8f43a59b04f01c}{}\label{class_instancing_demo_a233c7a0d4552fc6a4c8f43a59b04f01c}
+This function is called every frame (right after \hyperlink{class_wasabi_ae7f699787307843fc886c4a9a09ebab7}{Wasabi\+::\+Loop()}) while the state is active. 
+\begin{DoxyParams}{Parameters}
+{\em f\+Delta\+Time} & The step time for this frame (roughly 1 / F\+PS) \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{class_w_game_state_a5fe5a485ca56800cfd79237be2568d36}{W\+Game\+State}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi Test/Tests.\+cpp\end{DoxyCompactItemize}

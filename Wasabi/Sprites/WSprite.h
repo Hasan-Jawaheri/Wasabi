@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 
 class WSprite : public WBase {
 	virtual std::string GetTypeName() const;

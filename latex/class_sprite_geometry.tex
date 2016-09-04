@@ -1,0 +1,60 @@
+\hypertarget{class_sprite_geometry}{}\section{Sprite\+Geometry Class Reference}
+\label{class_sprite_geometry}\index{Sprite\+Geometry@{Sprite\+Geometry}}
+Inheritance diagram for Sprite\+Geometry\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_sprite_geometry}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries Sprite\+Geometry} (\hyperlink{class_wasabi}{Wasabi} $\ast$const app)\hypertarget{class_sprite_geometry_a597eab0671bcd1e06f2a30d13298d303}{}\label{class_sprite_geometry_a597eab0671bcd1e06f2a30d13298d303}
+
+\item 
+virtual unsigned int \hyperlink{class_sprite_geometry_a3c2a4c34292f6643f4bc7f375fe7ae68}{Get\+Vertex\+Buffer\+Count} () const 
+\item 
+virtual \hyperlink{struct_w___v_e_r_t_e_x___d_e_s_c_r_i_p_t_i_o_n}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON} \hyperlink{class_sprite_geometry_a84172139912969ed1d36f48506f5918a}{Get\+Vertex\+Description} (unsigned int index) const 
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\index{Sprite\+Geometry@{Sprite\+Geometry}!Get\+Vertex\+Buffer\+Count@{Get\+Vertex\+Buffer\+Count}}
+\index{Get\+Vertex\+Buffer\+Count@{Get\+Vertex\+Buffer\+Count}!Sprite\+Geometry@{Sprite\+Geometry}}
+\subsubsection[{\texorpdfstring{Get\+Vertex\+Buffer\+Count() const }{GetVertexBufferCount() const }}]{\setlength{\rightskip}{0pt plus 5cm}virtual unsigned int Sprite\+Geometry\+::\+Get\+Vertex\+Buffer\+Count (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_sprite_geometry_a3c2a4c34292f6643f4bc7f375fe7ae68}{}\label{class_sprite_geometry_a3c2a4c34292f6643f4bc7f375fe7ae68}
+This function should return the number of vertex descriptions that \hyperlink{class_sprite_geometry_a84172139912969ed1d36f48506f5918a}{Get\+Vertex\+Description()} can return, which represents the number of vertex buffers this geometry class can hold. \begin{DoxyReturn}{Returns}
+The number of vertex buffers this geometry can hold 
+\end{DoxyReturn}
+
+
+Reimplemented from \hyperlink{class_w_geometry_a4eab34844955ef4583d393c3304d250c}{W\+Geometry}.
+
+\index{Sprite\+Geometry@{Sprite\+Geometry}!Get\+Vertex\+Description@{Get\+Vertex\+Description}}
+\index{Get\+Vertex\+Description@{Get\+Vertex\+Description}!Sprite\+Geometry@{Sprite\+Geometry}}
+\subsubsection[{\texorpdfstring{Get\+Vertex\+Description(unsigned int index) const }{GetVertexDescription(unsigned int index) const }}]{\setlength{\rightskip}{0pt plus 5cm}virtual {\bf W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+D\+E\+S\+C\+R\+I\+P\+T\+I\+ON} Sprite\+Geometry\+::\+Get\+Vertex\+Description (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{layout\+\_\+index}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}\hypertarget{class_sprite_geometry_a84172139912969ed1d36f48506f5918a}{}\label{class_sprite_geometry_a84172139912969ed1d36f48506f5918a}
+Retrieves the vertex description of a vertex buffer. Should return valid descriptions for all {\itshape layout\+\_\+index} values between 0 and \hyperlink{class_sprite_geometry_a3c2a4c34292f6643f4bc7f375fe7ae68}{Get\+Vertex\+Buffer\+Count()}-\/1. 
+\begin{DoxyParams}{Parameters}
+{\em layout\+\_\+index} & Index of the vertex buffer \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The description of a vertex in the layout\+\_\+index \textquotesingle{}th vertex buffer 
+\end{DoxyReturn}
+
+
+Reimplemented from \hyperlink{class_w_geometry_a84409cef0ba8228b571f4f69cdfd6131}{W\+Geometry}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Sprites/W\+Sprite.\+cpp\end{DoxyCompactItemize}

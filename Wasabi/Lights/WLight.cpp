@@ -64,7 +64,6 @@ void WLight::SetIntensity(float fIntensity) {
 
 void WLight::SetEmittingAngle(float fAngle) {
 	float fRads = W_DEGTORAD(fAngle / 2.0f);
-	m_tanPhi = tanf(fRads) * m_range;
 	m_cosAngle = cosf(fRads);
 }
 

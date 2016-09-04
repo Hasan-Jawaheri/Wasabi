@@ -1,0 +1,95 @@
+\hypertarget{_w_core_8h}{}\section{Wasabi/\+Core/\+W\+Core.h File Reference}
+\label{_w_core_8h}\index{Wasabi/\+Core/\+W\+Core.\+h@{Wasabi/\+Core/\+W\+Core.\+h}}
+
+
+Core of the engine.  
+
+
+{\ttfamily \#include \char`\"{}vulkan/vulkan.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}Vk\+Tools/vulkanswapchain.\+hpp\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}Vk\+Tools/vulkantools.\+h\char`\"{}}\\*
+{\ttfamily \#include $<$string$>$}\\*
+{\ttfamily \#include $<$fstream$>$}\\*
+{\ttfamily \#include $<$iostream$>$}\\*
+{\ttfamily \#include $<$vector$>$}\\*
+{\ttfamily \#include $<$map$>$}\\*
+{\ttfamily \#include $<$array$>$}\\*
+{\ttfamily \#include $<$chrono$>$}\\*
+{\ttfamily \#include \char`\"{}W\+Error.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}W\+Manager.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}W\+Base.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}W\+Orientation.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}W\+Timer.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}W\+Math.\+h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}W\+Utilities.\+h\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_w___b_u_f_f_e_r}{W\+\_\+\+B\+U\+F\+F\+ER}
+\item 
+class \hyperlink{class_wasabi}{Wasabi}
+\item 
+class \hyperlink{class_w_game_state}{W\+Game\+State}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bfseries W\+\_\+\+S\+A\+F\+E\+\_\+\+R\+E\+L\+E\+A\+SE}(x)~\{ if ( x ) \{ x-\/$>$Release ( ); x = N\+U\+LL; \} \}\hypertarget{_w_core_8h_a0c68bf367ddf3ca6c5b48d4e0f0fcfb6}{}\label{_w_core_8h_a0c68bf367ddf3ca6c5b48d4e0f0fcfb6}
+
+\item 
+\#define {\bfseries W\+\_\+\+S\+A\+F\+E\+\_\+\+R\+E\+M\+O\+V\+E\+R\+EF}(x)~\{ if ( x ) \{ x-\/$>$Remove\+Reference ( ); x = N\+U\+LL; \} \}\hypertarget{_w_core_8h_acbed03424525e067bf0fe6bb2f9f29fc}{}\label{_w_core_8h_acbed03424525e067bf0fe6bb2f9f29fc}
+
+\item 
+\#define {\bfseries W\+\_\+\+S\+A\+F\+E\+\_\+\+D\+E\+L\+E\+TE}(x)~\{ if ( x ) \{ delete x; x = N\+U\+LL; \} \}\hypertarget{_w_core_8h_a2143bcdc0c4a356a359e10a78f762252}{}\label{_w_core_8h_a2143bcdc0c4a356a359e10a78f762252}
+
+\item 
+\#define {\bfseries W\+\_\+\+S\+A\+F\+E\+\_\+\+D\+E\+L\+E\+T\+E\+\_\+\+A\+R\+R\+AY}(x)~\{ if ( x ) \{ delete\mbox{[}$\,$\mbox{]} x; x = N\+U\+LL; \} \}\hypertarget{_w_core_8h_a1493eceb8165a09ff145c84b33fbf420}{}\label{_w_core_8h_a1493eceb8165a09ff145c84b33fbf420}
+
+\item 
+\#define {\bfseries W\+\_\+\+S\+A\+F\+E\+\_\+\+A\+L\+L\+OC}(x)~Global\+Alloc ( G\+P\+TR, x )\hypertarget{_w_core_8h_a80ee56f697e5cce5354840c14cb3f497}{}\label{_w_core_8h_a80ee56f697e5cce5354840c14cb3f497}
+
+\item 
+\#define {\bfseries W\+\_\+\+S\+A\+F\+E\+\_\+\+F\+R\+EE}(x)~\{ if ( x ) \{ Global\+Free ( x ); \} \}\hypertarget{_w_core_8h_ac27777d33f692857187796fca478e275}{}\label{_w_core_8h_ac27777d33f692857187796fca478e275}
+
+\item 
+\#define {\bfseries min}(a,  b)~(a$<$b?a\+:b)\hypertarget{_w_core_8h_ac6afabdc09a49a433ee19d8a9486056d}{}\label{_w_core_8h_ac6afabdc09a49a433ee19d8a9486056d}
+
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef unsigned int {\bfseries uint}\hypertarget{_w_core_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}{}\label{_w_core_8h_a91ad9478d81a7aaf2593e8d9c3d06a14}
+
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_wasabi}{Wasabi} $\ast$ \hyperlink{_w_core_8h_a11755ff88a142c77261ff01a1ffcba27}{W\+Initialize} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Core of the engine. 
+
+This file contains the core of the engine (the \hyperlink{class_wasabi}{Wasabi} class) and various tools used by the engine.
+
+\begin{DoxyAuthor}{Author}
+Hasan Al-\/\+Jawaheri (hbj) 
+\end{DoxyAuthor}
+\begin{DoxyRefDesc}{Bug}
+\item[\hyperlink{bug__bug000005}{Bug}]No known bugs. \end{DoxyRefDesc}
+
+
+\subsection{Function Documentation}
+\index{W\+Core.\+h@{W\+Core.\+h}!W\+Initialize@{W\+Initialize}}
+\index{W\+Initialize@{W\+Initialize}!W\+Core.\+h@{W\+Core.\+h}}
+\subsubsection[{\texorpdfstring{W\+Initialize()}{WInitialize()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Wasabi}$\ast$ W\+Initialize (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{_w_core_8h_a11755ff88a142c77261ff01a1ffcba27}{}\label{_w_core_8h_a11755ff88a142c77261ff01a1ffcba27}
+This function is not defined by the library. It must be defined by the user. This function will be called at the beginning of the program, and will expect the user-\/defined code to create a newly allocated instance of an application, which should be a child of a \hyperlink{class_wasabi}{Wasabi} class.
+
+\begin{DoxyReturn}{Returns}
+A newly allocated \hyperlink{class_wasabi}{Wasabi} child that will run the engine 
+\end{DoxyReturn}

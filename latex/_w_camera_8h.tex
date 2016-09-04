@@ -1,0 +1,41 @@
+\hypertarget{_w_camera_8h}{}\section{Wasabi/\+Cameras/\+W\+Camera.h File Reference}
+\label{_w_camera_8h}\index{Wasabi/\+Cameras/\+W\+Camera.\+h@{Wasabi/\+Cameras/\+W\+Camera.\+h}}
+
+
+Cameras implementation.  
+
+
+{\ttfamily \#include \char`\"{}../\+Core/\+W\+Core.\+h\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_w_camera}{W\+Camera}
+\item 
+class \hyperlink{class_w_camera_manager}{W\+Camera\+Manager}
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{_w_camera_8h_a9a7f9c92f81a74e22c4e4c6f08cd6dde}{W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+PE} \{ {\bfseries P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+P\+E\+R\+S\+P\+E\+C\+T\+I\+VE} = 0, 
+{\bfseries P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+O\+R\+T\+H\+O\+G\+O\+N\+AL} = 1
+ \}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Cameras implementation. 
+
+A camera in \hyperlink{class_wasabi}{Wasabi} is a combination of a view matrix and a projection. A view matrix is one that shifts objects from their world-\/space coordinates to \char`\"{}view-\/space\char`\"{} coordinates, which means objects would be shifted such that they remain in the same \char`\"{}view\char`\"{} to the camera but the camera is at the origin. After applying the view matrix transformation, a projection matrix can be applied to transform vertices from view-\/space to screen-\/space. A projection matrix controls how far and close objects are seen by the camera. For example, using a perspective-\/projection matrix will result in \char`\"{}realistic\char`\"{} projection such that farther objects appear smaller on screen. On the other hand, orthogonal project transforms objects disregarding their distance to the camera.
+
+\begin{DoxyAuthor}{Author}
+Hasan Al-\/\+Jawaheri (hbj) 
+\end{DoxyAuthor}
+\begin{DoxyRefDesc}{Bug}
+\item[\hyperlink{bug__bug000003}{Bug}]No known bugs. \end{DoxyRefDesc}
+
+
+\subsection{Enumeration Type Documentation}
+\index{W\+Camera.\+h@{W\+Camera.\+h}!W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+PE@{W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+PE}}
+\index{W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+PE@{W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+PE}!W\+Camera.\+h@{W\+Camera.\+h}}
+\subsubsection[{\texorpdfstring{W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+PE}{W_PROJECTIONTYPE}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+PE}}\hypertarget{_w_camera_8h_a9a7f9c92f81a74e22c4e4c6f08cd6dde}{}\label{_w_camera_8h_a9a7f9c92f81a74e22c4e4c6f08cd6dde}
+Type of the projection method used by the camera 

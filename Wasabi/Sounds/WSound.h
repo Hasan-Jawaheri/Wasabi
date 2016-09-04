@@ -6,7 +6,7 @@ desc.: Wasabi Engine OpenAL wrapper
 
 #pragma once
 
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 
 #include <al.h>				//openAL sound header
 #include <alc.h>			//openAL sound header

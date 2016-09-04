@@ -1,0 +1,61 @@
+\hypertarget{class_w_prismatic_constraint}{}\section{W\+Prismatic\+Constraint Class Reference}
+\label{class_w_prismatic_constraint}\index{W\+Prismatic\+Constraint@{W\+Prismatic\+Constraint}}
+Inheritance diagram for W\+Prismatic\+Constraint\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_w_prismatic_constraint}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Prismatic\+Constraint} (class \hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_prismatic_constraint_a58b0db51ad33a74dfa5294d110e1c38d}{}\label{class_w_prismatic_constraint_a58b0db51ad33a74dfa5294d110e1c38d}
+
+\item 
+void {\bfseries Build} (const \hyperlink{class_w_rigid_body}{W\+Rigid\+Body} $\ast$const rb1, const \hyperlink{class_w_rigid_body}{W\+Rigid\+Body} $\ast$const rb2, bool breakable=false)\hypertarget{class_w_prismatic_constraint_a498041b77ad9b43d7a58896cc8e8062e}{}\label{class_w_prismatic_constraint_a498041b77ad9b43d7a58896cc8e8062e}
+
+\item 
+void {\bfseries Set\+Position\+World} (float x, float y, float z, float axisX, float axisY, float axisZ)\hypertarget{class_w_prismatic_constraint_a27057fbcf00d1cd965ea678c76b6b481}{}\label{class_w_prismatic_constraint_a27057fbcf00d1cd965ea678c76b6b481}
+
+\item 
+void {\bfseries Set\+Position\+World} (\hyperlink{class_w_vector3}{W\+Vector3} position, \hyperlink{class_w_vector3}{W\+Vector3} axis)\hypertarget{class_w_prismatic_constraint_ae4d868231daa739af0b885224c43fa3d}{}\label{class_w_prismatic_constraint_ae4d868231daa739af0b885224c43fa3d}
+
+\item 
+void {\bfseries Set\+Position\+Local} (float x1, float y1, float z1, float x2, float y2, float z2, float axis\+X1, float axis\+Y1, float axis\+Z1, float axis\+X2, float axis\+Y2, float axis\+Z2, float axis\+X1perp, float axis\+Y1perp, float axis\+Z1perp, float axis\+X2perp, float axis\+Y2perp, float axis\+Z2perp)\hypertarget{class_w_prismatic_constraint_a2dccb56187ae04e3f87d14fa70a36644}{}\label{class_w_prismatic_constraint_a2dccb56187ae04e3f87d14fa70a36644}
+
+\item 
+void {\bfseries Set\+Position\+Local} (\hyperlink{class_w_vector3}{W\+Vector3} position1, \hyperlink{class_w_vector3}{W\+Vector3} position2, \hyperlink{class_w_vector3}{W\+Vector3} axis1, \hyperlink{class_w_vector3}{W\+Vector3} axis2, \hyperlink{class_w_vector3}{W\+Vector3} axis1perp, \hyperlink{class_w_vector3}{W\+Vector3} axis2perp)\hypertarget{class_w_prismatic_constraint_ada1679da859e5b89e5b08f064348f156}{}\label{class_w_prismatic_constraint_ada1679da859e5b89e5b08f064348f156}
+
+\item 
+void {\bfseries Set\+Maximum\+Position} (float pos)\hypertarget{class_w_prismatic_constraint_a93ec322e76b0254715266ba5bac101c7}{}\label{class_w_prismatic_constraint_a93ec322e76b0254715266ba5bac101c7}
+
+\item 
+void {\bfseries Set\+Minimum\+Position} (float pos)\hypertarget{class_w_prismatic_constraint_a231dd51752f5bd4a91c53b464fd71ed0}{}\label{class_w_prismatic_constraint_a231dd51752f5bd4a91c53b464fd71ed0}
+
+\item 
+void {\bfseries Set\+Max\+Friction} (float friction)\hypertarget{class_w_prismatic_constraint_a895bb17544a3979ebe795290930d8ae3}{}\label{class_w_prismatic_constraint_a895bb17544a3979ebe795290930d8ae3}
+
+\item 
+void {\bfseries Set\+Motor} (void(\+\_\+\+\_\+cdecl $\ast$cb)(const class hkp\+Callback\+Constraint\+Motor \&motor, const class hkp\+Constraint\+Motor\+Input $\ast$input, class hkp\+Constraint\+Motor\+Output $\ast$output), float f\+Min\+Force, float f\+Max\+Force)\hypertarget{class_w_prismatic_constraint_a4c81b0ffe56da58053f143a9abadd4ca}{}\label{class_w_prismatic_constraint_a4c81b0ffe56da58053f143a9abadd4ca}
+
+\item 
+void {\bfseries Enable\+Motor} ()\hypertarget{class_w_prismatic_constraint_ab79cf381c615732ab6c6acc9ece8a787}{}\label{class_w_prismatic_constraint_ab79cf381c615732ab6c6acc9ece8a787}
+
+\item 
+void {\bfseries Disable\+Motor} ()\hypertarget{class_w_prismatic_constraint_a0cf5cccd6adce1b97e4f365a455e2b0e}{}\label{class_w_prismatic_constraint_a0cf5cccd6adce1b97e4f365a455e2b0e}
+
+\item 
+void {\bfseries Set\+Motor\+Target\+Pos} (float pos)\hypertarget{class_w_prismatic_constraint_aabb1a36f74cedc6c7bfc5e678dde38c6}{}\label{class_w_prismatic_constraint_aabb1a36f74cedc6c7bfc5e678dde38c6}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+hkp\+Prismatic\+Constraint\+Data $\ast$ {\bfseries m\+\_\+pr}\hypertarget{class_w_prismatic_constraint_afe55553ef994e814d9155fb213c2fec3}{}\label{class_w_prismatic_constraint_afe55553ef994e814d9155fb213c2fec3}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Physics/\+Havok/W\+Havok\+Physics.\+h\end{DoxyCompactItemize}

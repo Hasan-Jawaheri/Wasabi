@@ -1,0 +1,496 @@
+\hypertarget{class_w_skeleton}{}\section{W\+Skeleton Class Reference}
+\label{class_w_skeleton}\index{W\+Skeleton@{W\+Skeleton}}
+
+
+{\ttfamily \#include $<$W\+Skeletal\+Animation.\+h$>$}
+
+Inheritance diagram for W\+Skeleton\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_w_skeleton}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Skeleton} (\hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_skeleton_ae21c72daeb9f7d5fe33c2a00b0fcf188}{}\label{class_w_skeleton_ae21c72daeb9f7d5fe33c2a00b0fcf188}
+
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_skeleton_a9e4fbd0755c9e81d18b5c967353585d1}{Create\+Key\+Frame} (\hyperlink{class_w_bone}{W\+Bone} $\ast$base\+Bone, float f\+Time)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_skeleton_a7ef6ce4bf8ff72030cd9fcaf2657b417}{Delete\+Key\+Frame} (unsigned int frame)
+\item 
+\hyperlink{class_w_bone}{W\+Bone} $\ast$ \hyperlink{class_w_skeleton_a3f170e9e19601da0967ad54a09fb501f}{Get\+Key\+Frame} (unsigned int frame)
+\item 
+virtual void \hyperlink{class_w_skeleton_af8de1fd3b0d620873ae0341058441d9a}{Add\+Sub\+Animation} ()
+\item 
+void \hyperlink{class_w_skeleton_a3e2be1a8bda4cd0dbb61778e3a7866e9}{Set\+Sub\+Animation\+Base\+Bone} (unsigned int sub\+Animation, unsigned int bone\+Index, unsigned int parent\+Sub\+Animation=-\/1)
+\item 
+virtual void \hyperlink{class_w_skeleton_a894e87b86e90c3883a9467177c0d0077}{Update} (float f\+Delta\+Time)
+\item 
+virtual \hyperlink{class_w_image}{W\+Image} $\ast$ \hyperlink{class_w_skeleton_a43627eefdaa0f04fe365e5068b64f10a}{Get\+Texture} () const 
+\item 
+virtual \hyperlink{class_w_bone}{W\+Bone} $\ast$ \hyperlink{class_w_skeleton_afddaae186252abb835c01422e1e3c073}{Get\+Bone} (unsigned int frame, unsigned int index) const 
+\item 
+virtual \hyperlink{class_w_bone}{W\+Bone} $\ast$ \hyperlink{class_w_skeleton_a61341f24782103faace05e7f497965fb}{Get\+Bone} (unsigned int frame, std\+::string name) const 
+\item 
+void \hyperlink{class_w_skeleton_a43bd01e7af7f342ec9aeb26500da6878}{Scale} (float scale)
+\item 
+void \hyperlink{class_w_skeleton_ac67c115823b22c8438f78c4e3aaf97a3}{Scale} (float x, float y, float z)
+\item 
+void \hyperlink{class_w_skeleton_a2bf575904565eb1150e6a796de63e07b}{Scale} (\hyperlink{class_w_vector3}{W\+Vector3} scale)
+\item 
+void \hyperlink{class_w_skeleton_a37e63615cb97bc43113427a17b9419a9}{Bind\+To\+Bone} (\hyperlink{class_w_orientation}{W\+Orientation} $\ast$obj, unsigned int bone\+ID)
+\item 
+void \hyperlink{class_w_skeleton_a20e053441e09e09039d80ddd23145389}{Unbind\+From\+Bone} (\hyperlink{class_w_orientation}{W\+Orientation} $\ast$obj, unsigned int bone\+ID)
+\item 
+void \hyperlink{class_w_skeleton_a193daa8bf2f7a7f1231a9c6a0a513aa4}{Unbind\+From\+Bone} (unsigned int bone\+ID)
+\item 
+void \hyperlink{class_w_skeleton_ad97bb94863e4ff37abdc40710b5ac8e2}{Set\+Binding\+Scale} (float scale)
+\item 
+void \hyperlink{class_w_skeleton_a58b9feb4fef3ec547a558b13349785a1}{Set\+Binding\+Scale} (float x, float y, float z)
+\item 
+void \hyperlink{class_w_skeleton_a6bf4fbb06d9670927ed0dd4ba9d1f8a9}{Set\+Binding\+Scale} (\hyperlink{class_w_vector3}{W\+Vector3} scale)
+\item 
+\hyperlink{class_w_vector3}{W\+Vector3} \hyperlink{class_w_skeleton_a0099df756dc92977203b6917a7e6fb96}{Get\+Current\+Parent\+Bone\+Position} ()
+\item 
+virtual \hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_skeleton_a3f4cf5fc26481c00b1be94182ff88548}{Load\+From\+WA} (std\+::string Filename)
+\item 
+virtual \hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_skeleton_a97b90a01212b9cd36481b4f4c6e081d0}{Load\+From\+WA} (basic\+\_\+filebuf$<$ char $>$ $\ast$buff=nullptr, unsigned int pos=0)
+\item 
+virtual \hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_skeleton_a2330bb6911f771affb31248585fd6b54}{Save\+To\+WA} (basic\+\_\+filebuf$<$ char $>$ $\ast$buff=nullptr, unsigned int pos=0) const 
+\item 
+virtual \hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_skeleton_aff8cf0e75c84d3fe126e05600e6524cd}{Save\+To\+WA} (std\+::string Filename) const 
+\item 
+virtual \hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_skeleton_a4560ff9c5033bfad06fb97b99322461a}{Copy\+From} (const \hyperlink{class_w_animation}{W\+Animation} $\ast$const from)
+\item 
+virtual \hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_skeleton_a8ce00fae07d10e185a9a8cfa64861498}{Use\+Animation\+Frames} (const \hyperlink{class_w_animation}{W\+Animation} $\ast$const anim)
+\item 
+bool \hyperlink{class_w_skeleton_a65c1f1939b921fd33bc1be39bb89b15e}{Valid} () const 
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+This is the class implementing skeletal animation, as described in \hyperlink{_w_skeletal_animation_8h}{W\+Skeletal\+Animation.\+h}. 
+
+\subsection{Member Function Documentation}
+\index{W\+Skeleton@{W\+Skeleton}!Add\+Sub\+Animation@{Add\+Sub\+Animation}}
+\index{Add\+Sub\+Animation@{Add\+Sub\+Animation}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Add\+Sub\+Animation()}{AddSubAnimation()}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Add\+Sub\+Animation (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_af8de1fd3b0d620873ae0341058441d9a}{}\label{class_w_skeleton_af8de1fd3b0d620873ae0341058441d9a}
+Appends a subanimation to this animation. This is inherited from \hyperlink{class_w_animation}{W\+Animation}. 
+
+Reimplemented from \hyperlink{class_w_animation_a42f0459e88ccf7e2c6414a9512865c6f}{W\+Animation}.
+
+\index{W\+Skeleton@{W\+Skeleton}!Bind\+To\+Bone@{Bind\+To\+Bone}}
+\index{Bind\+To\+Bone@{Bind\+To\+Bone}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Bind\+To\+Bone(\+W\+Orientation $\ast$obj, unsigned int bone\+I\+D)}{BindToBone(WOrientation *obj, unsigned int boneID)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Bind\+To\+Bone (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Orientation} $\ast$}]{obj, }
+\item[{unsigned int}]{bone\+ID}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a37e63615cb97bc43113427a17b9419a9}{}\label{class_w_skeleton_a37e63615cb97bc43113427a17b9419a9}
+Binds any orientation-\/enabled entity (\hyperlink{class_w_object}{W\+Object}, \hyperlink{class_w_light}{W\+Light}, etc...) to a bone in the skeleton. The user {\bfseries M\+U\+ST} ensure that the bound object remains valid while it is bound to a skeleton. 
+\begin{DoxyParams}{Parameters}
+{\em obj} & Pointer to the object to bind \\
+\hline
+{\em bone\+ID} & Index of the bone to bind obj to \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Copy\+From@{Copy\+From}}
+\index{Copy\+From@{Copy\+From}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Copy\+From(const W\+Animation $\ast$const from)}{CopyFrom(const WAnimation *const from)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Skeleton\+::\+Copy\+From (
+\begin{DoxyParamCaption}
+\item[{const {\bf W\+Animation} $\ast$const}]{from}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_a4560ff9c5033bfad06fb97b99322461a}{}\label{class_w_skeleton_a4560ff9c5033bfad06fb97b99322461a}
+Copies another \hyperlink{class_w_skeleton}{W\+Skeleton}. 
+\begin{DoxyParams}{Parameters}
+{\em from} & Sekelton to copy from \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_animation_a42ee18109b6a417733c81d513f82184d}{W\+Animation}.
+
+\index{W\+Skeleton@{W\+Skeleton}!Create\+Key\+Frame@{Create\+Key\+Frame}}
+\index{Create\+Key\+Frame@{Create\+Key\+Frame}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Create\+Key\+Frame(\+W\+Bone $\ast$base\+Bone, float f\+Time)}{CreateKeyFrame(WBone *baseBone, float fTime)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Skeleton\+::\+Create\+Key\+Frame (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Bone} $\ast$}]{base\+Bone, }
+\item[{float}]{f\+Time}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a9e4fbd0755c9e81d18b5c967353585d1}{}\label{class_w_skeleton_a9e4fbd0755c9e81d18b5c967353585d1}
+Appends a keyframe to the frames of this animation. 
+\begin{DoxyParams}{Parameters}
+{\em base\+Bone} & The root of the bone structure for this keyframe \\
+\hline
+{\em f\+Time} & The duration of this keyframe \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Skeleton@{W\+Skeleton}!Delete\+Key\+Frame@{Delete\+Key\+Frame}}
+\index{Delete\+Key\+Frame@{Delete\+Key\+Frame}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Delete\+Key\+Frame(unsigned int frame)}{DeleteKeyFrame(unsigned int frame)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Skeleton\+::\+Delete\+Key\+Frame (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{frame}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a7ef6ce4bf8ff72030cd9fcaf2657b417}{}\label{class_w_skeleton_a7ef6ce4bf8ff72030cd9fcaf2657b417}
+Delete a an existing keyframe. 
+\begin{DoxyParams}{Parameters}
+{\em frame} & Index of the keyframe to delete \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Skeleton@{W\+Skeleton}!Get\+Bone@{Get\+Bone}}
+\index{Get\+Bone@{Get\+Bone}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Get\+Bone(unsigned int frame, unsigned int index) const }{GetBone(unsigned int frame, unsigned int index) const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Bone} $\ast$ W\+Skeleton\+::\+Get\+Bone (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{frame, }
+\item[{unsigned int}]{index}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_afddaae186252abb835c01422e1e3c073}{}\label{class_w_skeleton_afddaae186252abb835c01422e1e3c073}
+Retrieves a pointer to a bone from a frame. Changing the returned bone will impact the frame in real-\/time without any re-\/initialization. 
+\begin{DoxyParams}{Parameters}
+{\em frame} & Frame to retrieve from \\
+\hline
+{\em index} & Index of the bone to retrieve \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A pointer to the retrieved bone, nullptr if it doesnt exist 
+\end{DoxyReturn}
+\index{W\+Skeleton@{W\+Skeleton}!Get\+Bone@{Get\+Bone}}
+\index{Get\+Bone@{Get\+Bone}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Get\+Bone(unsigned int frame, std\+::string name) const }{GetBone(unsigned int frame, std::string name) const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Bone} $\ast$ W\+Skeleton\+::\+Get\+Bone (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{frame, }
+\item[{std\+::string}]{name}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_a61341f24782103faace05e7f497965fb}{}\label{class_w_skeleton_a61341f24782103faace05e7f497965fb}
+Retrieves a pointer to a bone from a frame. Changing the returned bone will impact the frame in real-\/time without any re-\/initialization. 
+\begin{DoxyParams}{Parameters}
+{\em frame} & Frame to retrieve from \\
+\hline
+{\em index} & Name of the bone to retrieve \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A pointer to the retrieved bone, nullptr if it doesnt exist 
+\end{DoxyReturn}
+\index{W\+Skeleton@{W\+Skeleton}!Get\+Current\+Parent\+Bone\+Position@{Get\+Current\+Parent\+Bone\+Position}}
+\index{Get\+Current\+Parent\+Bone\+Position@{Get\+Current\+Parent\+Bone\+Position}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Get\+Current\+Parent\+Bone\+Position()}{GetCurrentParentBonePosition()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Vector3} W\+Skeleton\+::\+Get\+Current\+Parent\+Bone\+Position (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a0099df756dc92977203b6917a7e6fb96}{}\label{class_w_skeleton_a0099df756dc92977203b6917a7e6fb96}
+Retrieves the world-\/space position of the root of this skeleton at this point in the animation. \begin{DoxyReturn}{Returns}
+A 3D point whee the skeleton is rooted at this time 
+\end{DoxyReturn}
+\index{W\+Skeleton@{W\+Skeleton}!Get\+Key\+Frame@{Get\+Key\+Frame}}
+\index{Get\+Key\+Frame@{Get\+Key\+Frame}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Get\+Key\+Frame(unsigned int frame)}{GetKeyFrame(unsigned int frame)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Bone} $\ast$ W\+Skeleton\+::\+Get\+Key\+Frame (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{frame}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a3f170e9e19601da0967ad54a09fb501f}{}\label{class_w_skeleton_a3f170e9e19601da0967ad54a09fb501f}
+Retrieves an existing keyframe. 
+\begin{DoxyParams}{Parameters}
+{\em frame} & Index of the keyframe to retrieve \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The root of the bone structure of thi keyframe 
+\end{DoxyReturn}
+\index{W\+Skeleton@{W\+Skeleton}!Get\+Texture@{Get\+Texture}}
+\index{Get\+Texture@{Get\+Texture}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Get\+Texture() const }{GetTexture() const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Image} $\ast$ W\+Skeleton\+::\+Get\+Texture (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_a43627eefdaa0f04fe365e5068b64f10a}{}\label{class_w_skeleton_a43627eefdaa0f04fe365e5068b64f10a}
+Retrieves the animation texture, as described in \hyperlink{_w_skeletal_animation_8h}{W\+Skeletal\+Animation.\+h} \begin{DoxyReturn}{Returns}
+The animation texture 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_animation_a6d7a8cbd7db22b88c528c7ed2c61601f}{W\+Animation}.
+
+\index{W\+Skeleton@{W\+Skeleton}!Load\+From\+WA@{Load\+From\+WA}}
+\index{Load\+From\+WA@{Load\+From\+WA}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Load\+From\+W\+A(std\+::string Filename)}{LoadFromWA(std::string Filename)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Skeleton\+::\+Load\+From\+WA (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{Filename}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_a3f4cf5fc26481c00b1be94182ff88548}{}\label{class_w_skeleton_a3f4cf5fc26481c00b1be94182ff88548}
+Loads a skeleton from a .WA file. 
+\begin{DoxyParams}{Parameters}
+{\em Filename} & Filename to load \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_animation_a011a53c9674f21c34f86883cefef3ad3}{W\+Animation}.
+
+\index{W\+Skeleton@{W\+Skeleton}!Load\+From\+WA@{Load\+From\+WA}}
+\index{Load\+From\+WA@{Load\+From\+WA}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Load\+From\+W\+A(basic\+\_\+filebuf$<$ char $>$ $\ast$buff=nullptr, unsigned int pos=0)}{LoadFromWA(basic_filebuf< char > *buff=nullptr, unsigned int pos=0)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Skeleton\+::\+Load\+From\+WA (
+\begin{DoxyParamCaption}
+\item[{basic\+\_\+filebuf$<$ char $>$ $\ast$}]{buff = {\ttfamily nullptr}, }
+\item[{unsigned int}]{pos = {\ttfamily 0}}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_a97b90a01212b9cd36481b4f4c6e081d0}{}\label{class_w_skeleton_a97b90a01212b9cd36481b4f4c6e081d0}
+Loads a skeleton from a file stream. 
+\begin{DoxyParams}{Parameters}
+{\em buff} & a pointer to a basic\+\_\+filebuf object to read from \\
+\hline
+{\em pos} & position into the buffer buff \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_animation_a85ef267b11ef54ac9a2a4beba53eb1d4}{W\+Animation}.
+
+\index{W\+Skeleton@{W\+Skeleton}!Save\+To\+WA@{Save\+To\+WA}}
+\index{Save\+To\+WA@{Save\+To\+WA}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Save\+To\+W\+A(basic\+\_\+filebuf$<$ char $>$ $\ast$buff=nullptr, unsigned int pos=0) const }{SaveToWA(basic_filebuf< char > *buff=nullptr, unsigned int pos=0) const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Skeleton\+::\+Save\+To\+WA (
+\begin{DoxyParamCaption}
+\item[{basic\+\_\+filebuf$<$ char $>$ $\ast$}]{buff = {\ttfamily nullptr}, }
+\item[{unsigned int}]{pos = {\ttfamily 0}}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_a2330bb6911f771affb31248585fd6b54}{}\label{class_w_skeleton_a2330bb6911f771affb31248585fd6b54}
+Saves a skeleton to a file stream. 
+\begin{DoxyParams}{Parameters}
+{\em buff} & a pointer to a basic\+\_\+filebuf object to read from \\
+\hline
+{\em pos} & position into the buffer buff \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_animation_a0cac916766d0ad9ec50621a365518536}{W\+Animation}.
+
+\index{W\+Skeleton@{W\+Skeleton}!Save\+To\+WA@{Save\+To\+WA}}
+\index{Save\+To\+WA@{Save\+To\+WA}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Save\+To\+W\+A(std\+::string Filename) const }{SaveToWA(std::string Filename) const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Skeleton\+::\+Save\+To\+WA (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{Filename}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_aff8cf0e75c84d3fe126e05600e6524cd}{}\label{class_w_skeleton_aff8cf0e75c84d3fe126e05600e6524cd}
+Saves a skeleton to a .WA file. 
+\begin{DoxyParams}{Parameters}
+{\em Filename} & Filename to load \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_animation_aa9d5d21f13a215a7ccf2432a3d9aeef0}{W\+Animation}.
+
+\index{W\+Skeleton@{W\+Skeleton}!Scale@{Scale}}
+\index{Scale@{Scale}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Scale(float scale)}{Scale(float scale)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Scale (
+\begin{DoxyParamCaption}
+\item[{float}]{scale}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a43bd01e7af7f342ec9aeb26500da6878}{}\label{class_w_skeleton_a43bd01e7af7f342ec9aeb26500da6878}
+Scales the skeleton. 
+\begin{DoxyParams}{Parameters}
+{\em scale} & Scale factor, 100.\+0 for full scale, 200.\+0 for double, etc... \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Scale@{Scale}}
+\index{Scale@{Scale}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Scale(float x, float y, float z)}{Scale(float x, float y, float z)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Scale (
+\begin{DoxyParamCaption}
+\item[{float}]{x, }
+\item[{float}]{y, }
+\item[{float}]{z}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_ac67c115823b22c8438f78c4e3aaf97a3}{}\label{class_w_skeleton_ac67c115823b22c8438f78c4e3aaf97a3}
+Scales the skeleton. 
+\begin{DoxyParams}{Parameters}
+{\em x} & Scale factor on X, 100.\+0 for full scale, 200.\+0 for double, etc... \\
+\hline
+{\em y} & Scale factor on Y, 100.\+0 for full scale, 200.\+0 for double, etc... \\
+\hline
+{\em z} & Scale factor on Z, 100.\+0 for full scale, 200.\+0 for double, etc... \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Scale@{Scale}}
+\index{Scale@{Scale}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Scale(\+W\+Vector3 scale)}{Scale(WVector3 scale)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Scale (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{scale}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a2bf575904565eb1150e6a796de63e07b}{}\label{class_w_skeleton_a2bf575904565eb1150e6a796de63e07b}
+Scales the skeleton. 
+\begin{DoxyParams}{Parameters}
+{\em scale} & Scale factor, a component of 100.\+0 results in full scale, 200.\+0 results in double, etc... \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Set\+Binding\+Scale@{Set\+Binding\+Scale}}
+\index{Set\+Binding\+Scale@{Set\+Binding\+Scale}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Set\+Binding\+Scale(float scale)}{SetBindingScale(float scale)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Set\+Binding\+Scale (
+\begin{DoxyParamCaption}
+\item[{float}]{scale}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_ad97bb94863e4ff37abdc40710b5ac8e2}{}\label{class_w_skeleton_ad97bb94863e4ff37abdc40710b5ac8e2}
+Set the binding scale, which is applied to the binding matrix before it is set on bound objects. 
+\begin{DoxyParams}{Parameters}
+{\em scale} & Scale factor, 100.\+0 for full scale, 200.\+0 for double, etc... \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Set\+Binding\+Scale@{Set\+Binding\+Scale}}
+\index{Set\+Binding\+Scale@{Set\+Binding\+Scale}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Set\+Binding\+Scale(float x, float y, float z)}{SetBindingScale(float x, float y, float z)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Set\+Binding\+Scale (
+\begin{DoxyParamCaption}
+\item[{float}]{x, }
+\item[{float}]{y, }
+\item[{float}]{z}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a58b9feb4fef3ec547a558b13349785a1}{}\label{class_w_skeleton_a58b9feb4fef3ec547a558b13349785a1}
+Set the binding scale, which is applied to the binding matrix before it is set on bound objects. 
+\begin{DoxyParams}{Parameters}
+{\em x} & Scale factor on X, 100.\+0 for full scale, 200.\+0 for double, etc... \\
+\hline
+{\em y} & Scale factor on Y, 100.\+0 for full scale, 200.\+0 for double, etc... \\
+\hline
+{\em z} & Scale factor on Z, 100.\+0 for full scale, 200.\+0 for double, etc... \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Set\+Binding\+Scale@{Set\+Binding\+Scale}}
+\index{Set\+Binding\+Scale@{Set\+Binding\+Scale}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Set\+Binding\+Scale(\+W\+Vector3 scale)}{SetBindingScale(WVector3 scale)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Set\+Binding\+Scale (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{scale}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a6bf4fbb06d9670927ed0dd4ba9d1f8a9}{}\label{class_w_skeleton_a6bf4fbb06d9670927ed0dd4ba9d1f8a9}
+Set the binding scale, which is applied to the binding matrix before it is set on bound objects. 
+\begin{DoxyParams}{Parameters}
+{\em scale} & Scale factor, a component of 100.\+0 results in full scale, 200.\+0 results in double, etc... \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Set\+Sub\+Animation\+Base\+Bone@{Set\+Sub\+Animation\+Base\+Bone}}
+\index{Set\+Sub\+Animation\+Base\+Bone@{Set\+Sub\+Animation\+Base\+Bone}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Set\+Sub\+Animation\+Base\+Bone(unsigned int sub\+Animation, unsigned int bone\+Index, unsigned int parent\+Sub\+Animation=-\/1)}{SetSubAnimationBaseBone(unsigned int subAnimation, unsigned int boneIndex, unsigned int parentSubAnimation=-1)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Set\+Sub\+Animation\+Base\+Bone (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{sub\+Animation, }
+\item[{unsigned int}]{bone\+Index, }
+\item[{unsigned int}]{parent\+Sub\+Animation = {\ttfamily -\/1}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a3e2be1a8bda4cd0dbb61778e3a7866e9}{}\label{class_w_skeleton_a3e2be1a8bda4cd0dbb61778e3a7866e9}
+Sets the base bone for a subanimation. A subanimation\textquotesingle{}s transformations will affect its base bone and all its children. If a parent subanimation is present, then this subanimation will be affected by the motion of that parent subanimation. 
+\begin{DoxyParams}{Parameters}
+{\em sub\+Animation} & The subanimation to set its base bane \\
+\hline
+{\em bone\+Index} & The index of the bone to be set as base \\
+\hline
+{\em parent\+Sub\+Animation} & The parent subanimation, -\/1 if none \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Unbind\+From\+Bone@{Unbind\+From\+Bone}}
+\index{Unbind\+From\+Bone@{Unbind\+From\+Bone}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Unbind\+From\+Bone(\+W\+Orientation $\ast$obj, unsigned int bone\+I\+D)}{UnbindFromBone(WOrientation *obj, unsigned int boneID)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Unbind\+From\+Bone (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Orientation} $\ast$}]{obj, }
+\item[{unsigned int}]{bone\+ID}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a20e053441e09e09039d80ddd23145389}{}\label{class_w_skeleton_a20e053441e09e09039d80ddd23145389}
+Unbind an object from a bone. 
+\begin{DoxyParams}{Parameters}
+{\em obj} & Pointer to the object to unbind \\
+\hline
+{\em bone\+ID} & Index of the bone to unbind obj from \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Unbind\+From\+Bone@{Unbind\+From\+Bone}}
+\index{Unbind\+From\+Bone@{Unbind\+From\+Bone}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Unbind\+From\+Bone(unsigned int bone\+I\+D)}{UnbindFromBone(unsigned int boneID)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Unbind\+From\+Bone (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{bone\+ID}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_skeleton_a193daa8bf2f7a7f1231a9c6a0a513aa4}{}\label{class_w_skeleton_a193daa8bf2f7a7f1231a9c6a0a513aa4}
+Unbind all objects from a bone. 
+\begin{DoxyParams}{Parameters}
+{\em bone\+ID} & Index of the bone to unbind objects from \\
+\hline
+\end{DoxyParams}
+\index{W\+Skeleton@{W\+Skeleton}!Update@{Update}}
+\index{Update@{Update}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Update(float f\+Delta\+Time)}{Update(float fDeltaTime)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Skeleton\+::\+Update (
+\begin{DoxyParamCaption}
+\item[{float}]{f\+Delta\+Time}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_a894e87b86e90c3883a9467177c0d0077}{}\label{class_w_skeleton_a894e87b86e90c3883a9467177c0d0077}
+Steps the state of the playing (or looping) subanimations forward. This is usually called by the engine during normal execution each frame. 
+\begin{DoxyParams}{Parameters}
+{\em f\+Delta\+Time} & step time in seconds \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{class_w_animation_a14390c833c0f255fcb461661f0577c6e}{W\+Animation}.
+
+\index{W\+Skeleton@{W\+Skeleton}!Use\+Animation\+Frames@{Use\+Animation\+Frames}}
+\index{Use\+Animation\+Frames@{Use\+Animation\+Frames}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Use\+Animation\+Frames(const W\+Animation $\ast$const anim)}{UseAnimationFrames(const WAnimation *const anim)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Skeleton\+::\+Use\+Animation\+Frames (
+\begin{DoxyParamCaption}
+\item[{const {\bf W\+Animation} $\ast$const}]{anim}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_a8ce00fae07d10e185a9a8cfa64861498}{}\label{class_w_skeleton_a8ce00fae07d10e185a9a8cfa64861498}
+Use the animation frames of another animation object. This is more efficient than copying in time and memory usage. 
+\begin{DoxyParams}{Parameters}
+{\em anim} & Animation to use its frames \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_animation_af341efba3efd68107679396c2e31839d}{W\+Animation}.
+
+\index{W\+Skeleton@{W\+Skeleton}!Valid@{Valid}}
+\index{Valid@{Valid}!W\+Skeleton@{W\+Skeleton}}
+\subsubsection[{\texorpdfstring{Valid() const }{Valid() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Skeleton\+::\+Valid (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_skeleton_a65c1f1939b921fd33bc1be39bb89b15e}{}\label{class_w_skeleton_a65c1f1939b921fd33bc1be39bb89b15e}
+Returns whether or not this skeleton is valid. A valid skeleton is one that has animation keyframes and a bone texture. \begin{DoxyReturn}{Returns}
+true if the skeleton is valid, false otherwise 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_base_a76ac973ba9a43e182f6a6a4869d69725}{W\+Base}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Animations/\hyperlink{_w_skeletal_animation_8h}{W\+Skeletal\+Animation.\+h}\item 
+Wasabi/\+Animations/W\+Skeletal\+Animation.\+cpp\end{DoxyCompactItemize}

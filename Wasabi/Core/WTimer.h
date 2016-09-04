@@ -1,8 +1,9 @@
-/*********************************************************************
-******************* W A S A B I   E N G I N E ************************
-copyright (c) 2016 by Hassan Al-Jawaheri
-desc.: Wasabi Engine timers helper library.
-*********************************************************************/
+/** @file WTimer.h
+ *  @brief Basic timer implementation
+ *
+ *  @author Hasan Al-Jawaheri (hbj)
+ *  @bug No known bugs.
+ */
 
 #pragma once
 
@@ -13,29 +14,63 @@ desc.: Wasabi Engine timers helper library.
 #define W_TIMER_MILLISECONDS	1000
 #define W_TIMER_MICROSECONDS	1000000
 
-/*********************************************************************
-*********************************hxTimer*****************************
-Timers class
-*********************************************************************/
+/**
+ * @ingroup engineclass
+ *
+ * A timer can be used to to calculate elapsed times and can be controlled by
+ * starting, pausing and stopping it.
+ */
 class WTimer {
 public:
 	WTimer(float fUnit = W_TIMER_MILLISECONDS);
-	~WTimer(void);
+	~WTimer();
 
-	void				Start();
-	void				Pause();
-	void				Reset();
+	/**
+	 * Start the timer.
+	 */
+	void Start();
 
-	W_TIMER_TYPE	GetElapsedTime() const;
+	/**
+	 * Pause the timer.
+	 */
+	void Pause();
+
+	/**
+	 * Reset the timer. This will also stop it.
+	 */
+	void Reset();
+
+	/**
+	 * Get the time elapsed since this timer was and until it was paused.
+	 * @return The elapsed time
+	 */
+	W_TIMER_TYPE GetElapsedTime() const;
 
 private:
+	/** The time at which the timer started */
 	__int64 m_startTime;
+	/** The time at which the last pause started */
 	__int64 m_pauseStartTime;
+	/** The total amount of time spent paused */
 	__int64 m_totalPauseTime;
+	/** "seconds per count" */
 	float m_SPC;
+	/** conversion constant */
 	float m_unit;
+
+	/**
+	 * Retrieves the total time spent paused
+	 * @return Total time spent paused
+	 */
 	W_TIMER_TYPE GetPauseTime() const;
 };
 
+/**
+ * Initializes the timers library. This is called by the engine.
+ */
 void WInitializeTimers();
+
+/**
+ * Un-initializes the timers library. This is called by the engine.
+ */
 void WUnInitializeTimers();

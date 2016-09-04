@@ -1,5 +1,5 @@
 #include "WObject.h"
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 #include "../Core/WUtilities.h"
 #include "../Images/WImage.h"
 #include "../Images/WRenderTarget.h"

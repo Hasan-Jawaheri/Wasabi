@@ -1,5 +1,5 @@
 #include "WText.h"
-#include "../Core/Core.h"
+#include "../Core/WCore.h"
 #include "../Renderers/WRenderer.h"
 #include "../Images/WImage.h"
 #include "../Materials/WEffect.h"

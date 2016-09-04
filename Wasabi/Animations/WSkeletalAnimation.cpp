@@ -65,29 +65,8 @@ void WBone::Scale(WVector3 scale) {
 	m_scale = scale;
 	m_bAltered = true;
 }
-void WBone::ScaleX(float scale) {
-	m_scale.x = scale;
-	m_bAltered = true;
-}
-void WBone::ScaleY(float scale) {
-	m_scale.y = scale;
-	m_bAltered = true;
-}
-void WBone::ScaleZ(float scale) {
-	m_scale.z = scale;
-	m_bAltered = true;
-}
 WVector3 WBone::GetScale() const {
 	return m_scale;
-}
-float WBone::GetScaleX() const {
-	return m_scale.x;
-}
-float WBone::GetScaleY() const {
-	return m_scale.y;
-}
-float WBone::GetScaleZ() const {
-	return m_scale.z;
 }
 WMatrix WBone::GetMatrix() {
 	UpdateLocals();
@@ -142,7 +121,7 @@ void WBone::OnStateChange(STATE_CHANGE_TYPE type) {
 	WOrientation::OnStateChange(type);
 	m_bAltered = true;
 }
-WError WBone::LoadFromWS(basic_filebuf<char>* buff, unsigned int pos) {
+WError WBone::LoadFromWA(basic_filebuf<char>* buff, unsigned int pos) {
 	fstream file;
 	if (!buff)
 		return WError(W_FILENOTFOUND);
@@ -160,12 +139,12 @@ WError WBone::LoadFromWS(basic_filebuf<char>* buff, unsigned int pos) {
 		WBone* child = new WBone();
 		child->SetParent(this);
 		AddChild(child);
-		child->LoadFromWS(buff, file.tellg());
+		child->LoadFromWA(buff, file.tellg());
 	}
 
 	return WError(W_SUCCEEDED);
 }
-WError WBone::SaveToWS(basic_filebuf<char>* buff, unsigned int pos) const {
+WError WBone::SaveToWA(basic_filebuf<char>* buff, unsigned int pos) const {
 	fstream file;
 	if (!buff)
 		return WError(W_FILENOTFOUND);
@@ -178,7 +157,7 @@ WError WBone::SaveToWS(basic_filebuf<char>* buff, unsigned int pos) const {
 	unsigned int numChildren = GetNumChildren();
 	file.write((char*)&numChildren, 4);
 	for (unsigned int i = 0; i < numChildren; i++)
-		m_children[i]->SaveToWS(buff, file.tellp());
+		m_children[i]->SaveToWA(buff, file.tellp());
 
 	return WError(W_SUCCEEDED);
 }
@@ -531,7 +510,7 @@ void WSkeleton::SetBindingScale(WVector3 scale) {
 WVector3 WSkeleton::GetCurrentParentBonePosition() {
 	return m_parentBonePos;
 }
-WError WSkeleton::LoadFromWS(std::string Filename) {
+WError WSkeleton::LoadFromWA(std::string Filename) {
 	//delete the bone texture and any existing frames
 	W_SAFE_REMOVEREF(m_boneTex);
 	if (WAnimation::m_bFramesOwner)
@@ -567,7 +546,7 @@ WError WSkeleton::LoadFromWS(std::string Filename) {
 		file.read((char*)&fTime, 4);
 
 		WBone* baseBone = new WBone();
-		baseBone->LoadFromWS(file.rdbuf(), file.tellg());
+		baseBone->LoadFromWA(file.rdbuf(), file.tellg());
 
 		ret = CreateKeyFrame(baseBone, fTime);
 		delete baseBone;
@@ -582,7 +561,7 @@ WError WSkeleton::LoadFromWS(std::string Filename) {
 
 	return ret;
 }
-WError WSkeleton::SaveToWS(std::string Filename) const {
+WError WSkeleton::SaveToWA(std::string Filename) const {
 	if (Valid()) //only attempt to save if the skeleton if its valid
 	{
 		//open the file for writing
@@ -609,7 +588,7 @@ WError WSkeleton::SaveToWS(std::string Filename) const {
 				for (unsigned int i = 0; i < b->GetNumChildren(); i++)
 					boneStack.push_back(b->GetChild(i));
 			}
-			curFrame->baseBone->SaveToWS(file.rdbuf(), file.tellp());
+			curFrame->baseBone->SaveToWA(file.rdbuf(), file.tellp());
 		}
 
 		//close the file
@@ -619,7 +598,7 @@ WError WSkeleton::SaveToWS(std::string Filename) const {
 
 	return WError(W_SUCCEEDED);
 }
-WError WSkeleton::SaveToWS(basic_filebuf<char>* buff, unsigned int pos) const {
+WError WSkeleton::SaveToWA(basic_filebuf<char>* buff, unsigned int pos) const {
 	if (Valid()) //only attempt to save if the mesh is valid and is not dynamic
 	{
 		//use the given stream
@@ -647,14 +626,14 @@ WError WSkeleton::SaveToWS(basic_filebuf<char>* buff, unsigned int pos) const {
 				for (unsigned int i = 0; i < b->GetNumChildren(); i++)
 					boneStack.push_back(b->GetChild(i));
 			}
-			curFrame->baseBone->SaveToWS(buff, file.tellp());
+			curFrame->baseBone->SaveToWA(buff, file.tellp());
 		}
 	} else
 		return WError(W_NOTVALID);
 
 	return WError(W_SUCCEEDED);
 }
-WError WSkeleton::LoadFromWS(basic_filebuf<char>* buff, unsigned int pos) {
+WError WSkeleton::LoadFromWA(basic_filebuf<char>* buff, unsigned int pos) {
 	//delete the bone texture and any existing frames
 	W_SAFE_REMOVEREF(m_boneTex);
 	if (WAnimation::m_bFramesOwner)
@@ -688,7 +667,7 @@ WError WSkeleton::LoadFromWS(basic_filebuf<char>* buff, unsigned int pos) {
 		file.read((char*)&fTime, 4);
 
 		WBone* baseBone = new WBone();
-		baseBone->LoadFromWS(buff, file.tellp());
+		baseBone->LoadFromWA(buff, file.tellp());
 
 		ret = CreateKeyFrame(baseBone, fTime);
 		delete baseBone;

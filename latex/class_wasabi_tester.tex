@@ -1,0 +1,76 @@
+\hypertarget{class_wasabi_tester}{}\section{Wasabi\+Tester Class Reference}
+\label{class_wasabi_tester}\index{Wasabi\+Tester@{Wasabi\+Tester}}
+Inheritance diagram for Wasabi\+Tester\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_wasabi_tester}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_wasabi_tester_adb587247c11c450311109b8ac8e24a1b}{Setup} ()
+\item 
+bool \hyperlink{class_wasabi_tester_af1de210def8a9f4e8788d55ba6722df1}{Loop} (float f\+Delta\+Time)
+\item 
+void \hyperlink{class_wasabi_tester_a6b54660889675572b733fe079d43512c}{Cleanup} ()
+\item 
+void {\bfseries Set\+Camera\+Position} (\hyperlink{class_w_vector3}{W\+Vector3} pos)\hypertarget{class_wasabi_tester_ae2a1bd29af71c8458623dc127e6307a7}{}\label{class_wasabi_tester_ae2a1bd29af71c8458623dc127e6307a7}
+
+\item 
+void {\bfseries Set\+Zoom} (float d)\hypertarget{class_wasabi_tester_a8a649dbb7d493b289bdec9e41836c94b}{}\label{class_wasabi_tester_a8a649dbb7d493b289bdec9e41836c94b}
+
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\index{Wasabi\+Tester@{Wasabi\+Tester}!Cleanup@{Cleanup}}
+\index{Cleanup@{Cleanup}!Wasabi\+Tester@{Wasabi\+Tester}}
+\subsubsection[{\texorpdfstring{Cleanup()}{Cleanup()}}]{\setlength{\rightskip}{0pt plus 5cm}void Wasabi\+Tester\+::\+Cleanup (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_wasabi_tester_a6b54660889675572b733fe079d43512c}{}\label{class_wasabi_tester_a6b54660889675572b733fe079d43512c}
+This function must be implemented by an application. It is called by the engine to give the application a last chance to clean up its resources before the engine exits. 
+
+Implements \hyperlink{class_wasabi_a521f6c42d5b85da50a7f59b829113b3d}{Wasabi}.
+
+\index{Wasabi\+Tester@{Wasabi\+Tester}!Loop@{Loop}}
+\index{Loop@{Loop}!Wasabi\+Tester@{Wasabi\+Tester}}
+\subsubsection[{\texorpdfstring{Loop(float f\+Delta\+Time)}{Loop(float fDeltaTime)}}]{\setlength{\rightskip}{0pt plus 5cm}bool Wasabi\+Tester\+::\+Loop (
+\begin{DoxyParamCaption}
+\item[{float}]{f\+Delta\+Time}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_wasabi_tester_af1de210def8a9f4e8788d55ba6722df1}{}\label{class_wasabi_tester_af1de210def8a9f4e8788d55ba6722df1}
+This function must be implemented by an application. It is called by the engine every frame to allow the application to update its state. 
+\begin{DoxyParams}{Parameters}
+{\em f\+Delta\+Time} & The step time for this frame (roughly 1 / F\+PS) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+If this function returns true, execution continues, otherwise, the application will exit 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_wasabi_ae7f699787307843fc886c4a9a09ebab7}{Wasabi}.
+
+\index{Wasabi\+Tester@{Wasabi\+Tester}!Setup@{Setup}}
+\index{Setup@{Setup}!Wasabi\+Tester@{Wasabi\+Tester}}
+\subsubsection[{\texorpdfstring{Setup()}{Setup()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} Wasabi\+Tester\+::\+Setup (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_wasabi_tester_adb587247c11c450311109b8ac8e24a1b}{}\label{class_wasabi_tester_adb587247c11c450311109b8ac8e24a1b}
+This function must be implemented by an application. It is called after W\+Initialize and is supposed to call \hyperlink{class_wasabi_a9699f9a19b9bc45d776b651e6fe52c56}{Start\+Engine()} and initialize application resources. \begin{DoxyReturn}{Returns}
+Any error returned other than W\+\_\+\+S\+U\+C\+C\+E\+E\+D\+ED will result in the end of the program 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_wasabi_ad90c79e1c06779720e589f083a7fe025}{Wasabi}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi Test/Tests.\+cpp\end{DoxyCompactItemize}

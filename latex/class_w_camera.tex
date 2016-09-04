@@ -1,0 +1,432 @@
+\hypertarget{class_w_camera}{}\section{W\+Camera Class Reference}
+\label{class_w_camera}\index{W\+Camera@{W\+Camera}}
+
+
+{\ttfamily \#include $<$W\+Camera.\+h$>$}
+
+Inheritance diagram for W\+Camera\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_w_camera}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries W\+Camera} (\hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_camera_a02362e02ece2c149e2abd1f7358f88e7}{}\label{class_w_camera_a02362e02ece2c149e2abd1f7358f88e7}
+
+\item 
+void \hyperlink{class_w_camera_a44cd30d5dc870c8a08c200ccca64792f}{On\+State\+Change} (\hyperlink{_w_orientation_8h_afe94de0a48bbd7b343ab18bc318cef28}{S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+PE} type)
+\item 
+void \hyperlink{class_w_camera_af59a47532adac71379efd499ec655750}{Update\+Internals} ()
+\item 
+void \hyperlink{class_w_camera_aa4c4abcba7618888e33984f4220dab03}{Enable\+Auto\+Aspect} ()
+\item 
+void \hyperlink{class_w_camera_ac8b3661f197c10cf0ffb5dae4ff550ca}{Disable\+Auto\+Aspect} ()
+\item 
+void \hyperlink{class_w_camera_a18ebb7d402821e7e1e75f807845c842c}{Set\+Range} (float min, float max)
+\item 
+void \hyperlink{class_w_camera_a846ac55abaf3f25e2dbe1af3aff4ab91}{Set\+F\+OV} (float f\+Value)
+\item 
+void \hyperlink{class_w_camera_a52ad98e1106f1cc235fca2f303f95cce}{Set\+Aspect} (float aspect)
+\item 
+void \hyperlink{class_w_camera_a960555526c2bfcd06fc06ba7ac5c5f13}{Set\+Projection\+Type} (\hyperlink{_w_camera_8h_a9a7f9c92f81a74e22c4e4c6f08cd6dde}{W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+PE} type)
+\item 
+void \hyperlink{class_w_camera_a90b2aa2474068643e88876ac50639e0e}{Render} (unsigned int width, unsigned int height)
+\item 
+\hyperlink{class_w_matrix}{W\+Matrix} \hyperlink{class_w_camera_a5a1c340a7bfd239fe3675f27afacfb48}{Get\+View\+Matrix} () const 
+\item 
+\hyperlink{class_w_matrix}{W\+Matrix} \hyperlink{class_w_camera_a8a579493db789bbc7d2a7c295d161279}{Get\+Projection\+Matrix} (bool b\+Force\+Ortho=false) const 
+\item 
+float \hyperlink{class_w_camera_af50819dad55bf98e54f3cd046a39d1f8}{Get\+Min\+Range} () const 
+\item 
+float \hyperlink{class_w_camera_a59ab75c472bbb3af15d1512436d3dc1f}{Get\+Max\+Range} () const 
+\item 
+float \hyperlink{class_w_camera_a8fabfeba271baa99fdfcae35dd966f1a}{Get\+F\+OV} () const 
+\item 
+float \hyperlink{class_w_camera_aeb1771e08c8e5f7e5064e0cf66601eb7}{Get\+Aspect} () const 
+\item 
+bool \hyperlink{class_w_camera_a8cb759213422225c4244f044ed6e0785}{Check\+Point\+In\+Frustum} (float x, float y, float z) const 
+\item 
+bool \hyperlink{class_w_camera_aebb55c0b8ebf3068b26b552f5f817b57}{Check\+Point\+In\+Frustum} (\hyperlink{class_w_vector3}{W\+Vector3} point) const 
+\item 
+bool \hyperlink{class_w_camera_a1c8d048c786d1f06fad1d4c626b70c1c}{Check\+Cube\+In\+Frustum} (float x, float y, float z, float radius) const 
+\item 
+bool \hyperlink{class_w_camera_a67885aed602059895e025348936ffe78}{Check\+Cube\+In\+Frustum} (\hyperlink{class_w_vector3}{W\+Vector3} pos, float radius) const 
+\item 
+bool \hyperlink{class_w_camera_a40a713c0385c345bb13b69e41c67f89e}{Check\+Sphere\+In\+Frustum} (float x, float y, float z, float radius) const 
+\item 
+bool \hyperlink{class_w_camera_ad903939a239697caa8f0b7a6dc6fc243}{Check\+Sphere\+In\+Frustum} (\hyperlink{class_w_vector3}{W\+Vector3} pos, float radius) const 
+\item 
+bool \hyperlink{class_w_camera_a4740f99cef774d046499eb361b5b89a2}{Check\+Box\+In\+Frustum} (float x, float y, float z, float x\+Size, float y\+Size, float z\+Size) const 
+\item 
+bool \hyperlink{class_w_camera_ade2dbaf0d351b4ae69c88e4fe3cec728}{Check\+Box\+In\+Frustum} (\hyperlink{class_w_vector3}{W\+Vector3} pos, \hyperlink{class_w_vector3}{W\+Vector3} size) const 
+\item 
+virtual bool \hyperlink{class_w_camera_a21af71c51c191beeec0d1dc5b836cc0c}{Valid} () const 
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+This implements a camera in \hyperlink{class_wasabi}{Wasabi}. 
+
+\subsection{Member Function Documentation}
+\index{W\+Camera@{W\+Camera}!Check\+Box\+In\+Frustum@{Check\+Box\+In\+Frustum}}
+\index{Check\+Box\+In\+Frustum@{Check\+Box\+In\+Frustum}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Check\+Box\+In\+Frustum(float x, float y, float z, float x\+Size, float y\+Size, float z\+Size) const }{CheckBoxInFrustum(float x, float y, float z, float xSize, float ySize, float zSize) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Camera\+::\+Check\+Box\+In\+Frustum (
+\begin{DoxyParamCaption}
+\item[{float}]{x, }
+\item[{float}]{y, }
+\item[{float}]{z, }
+\item[{float}]{x\+Size, }
+\item[{float}]{y\+Size, }
+\item[{float}]{z\+Size}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_a4740f99cef774d046499eb361b5b89a2}{}\label{class_w_camera_a4740f99cef774d046499eb361b5b89a2}
+Checks if a given box is in the viewing frustum of the camera 
+\begin{DoxyParams}{Parameters}
+{\em x} & Box center x \\
+\hline
+{\em y} & Box center y \\
+\hline
+{\em z} & Box center z \\
+\hline
+{\em x\+Size} & Box dimension x from the center to the edge \\
+\hline
+{\em y\+Size} & Box dimension y from the center to the edge \\
+\hline
+{\em z\+Size} & Box dimension z from the center to the edge \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the box is in the viewing frustum, false otherwise 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Check\+Box\+In\+Frustum@{Check\+Box\+In\+Frustum}}
+\index{Check\+Box\+In\+Frustum@{Check\+Box\+In\+Frustum}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Check\+Box\+In\+Frustum(\+W\+Vector3 pos, W\+Vector3 size) const }{CheckBoxInFrustum(WVector3 pos, WVector3 size) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Camera\+::\+Check\+Box\+In\+Frustum (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{pos, }
+\item[{{\bf W\+Vector3}}]{size}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_ade2dbaf0d351b4ae69c88e4fe3cec728}{}\label{class_w_camera_ade2dbaf0d351b4ae69c88e4fe3cec728}
+Checks if a given box is in the viewing frustum of the camera 
+\begin{DoxyParams}{Parameters}
+{\em pos} & Box center \\
+\hline
+{\em size} & Box dimensions from the center to each edge \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the box is in the viewing frustum, false otherwise 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Check\+Cube\+In\+Frustum@{Check\+Cube\+In\+Frustum}}
+\index{Check\+Cube\+In\+Frustum@{Check\+Cube\+In\+Frustum}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Check\+Cube\+In\+Frustum(float x, float y, float z, float radius) const }{CheckCubeInFrustum(float x, float y, float z, float radius) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Camera\+::\+Check\+Cube\+In\+Frustum (
+\begin{DoxyParamCaption}
+\item[{float}]{x, }
+\item[{float}]{y, }
+\item[{float}]{z, }
+\item[{float}]{radius}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_a1c8d048c786d1f06fad1d4c626b70c1c}{}\label{class_w_camera_a1c8d048c786d1f06fad1d4c626b70c1c}
+Checks if a given cube is in the viewing frustum of the camera. 
+\begin{DoxyParams}{Parameters}
+{\em x} & Cube center x \\
+\hline
+{\em y} & Cube center y \\
+\hline
+{\em z} & Cube center z \\
+\hline
+{\em radius} & Cube diagonal (distance from the center to a corner) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the cube is in the viewing frustum, false otherwise 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Check\+Cube\+In\+Frustum@{Check\+Cube\+In\+Frustum}}
+\index{Check\+Cube\+In\+Frustum@{Check\+Cube\+In\+Frustum}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Check\+Cube\+In\+Frustum(\+W\+Vector3 pos, float radius) const }{CheckCubeInFrustum(WVector3 pos, float radius) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Camera\+::\+Check\+Cube\+In\+Frustum (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{pos, }
+\item[{float}]{radius}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_a67885aed602059895e025348936ffe78}{}\label{class_w_camera_a67885aed602059895e025348936ffe78}
+Checks if a given cube is in the viewing frustum of the camera. 
+\begin{DoxyParams}{Parameters}
+{\em pos} & Cube center \\
+\hline
+{\em radius} & Cube diagonal (distance from the center to a corner) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the cube is in the viewing frustum, false otherwise 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Check\+Point\+In\+Frustum@{Check\+Point\+In\+Frustum}}
+\index{Check\+Point\+In\+Frustum@{Check\+Point\+In\+Frustum}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Check\+Point\+In\+Frustum(float x, float y, float z) const }{CheckPointInFrustum(float x, float y, float z) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Camera\+::\+Check\+Point\+In\+Frustum (
+\begin{DoxyParamCaption}
+\item[{float}]{x, }
+\item[{float}]{y, }
+\item[{float}]{z}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_a8cb759213422225c4244f044ed6e0785}{}\label{class_w_camera_a8cb759213422225c4244f044ed6e0785}
+Checks if a given point is in the viewing frustum of the camera. 
+\begin{DoxyParams}{Parameters}
+{\em x} & Point x \\
+\hline
+{\em y} & Point y \\
+\hline
+{\em z} & Point z \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if (x, y, z) is in the viewing frustum, false otherwise 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Check\+Point\+In\+Frustum@{Check\+Point\+In\+Frustum}}
+\index{Check\+Point\+In\+Frustum@{Check\+Point\+In\+Frustum}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Check\+Point\+In\+Frustum(\+W\+Vector3 point) const }{CheckPointInFrustum(WVector3 point) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Camera\+::\+Check\+Point\+In\+Frustum (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{point}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_aebb55c0b8ebf3068b26b552f5f817b57}{}\label{class_w_camera_aebb55c0b8ebf3068b26b552f5f817b57}
+Checks if a given point is in the viewing frustum of the camera. 
+\begin{DoxyParams}{Parameters}
+{\em point} & Point to check \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if point is in the viewing frustum, false otherwise 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Check\+Sphere\+In\+Frustum@{Check\+Sphere\+In\+Frustum}}
+\index{Check\+Sphere\+In\+Frustum@{Check\+Sphere\+In\+Frustum}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Check\+Sphere\+In\+Frustum(float x, float y, float z, float radius) const }{CheckSphereInFrustum(float x, float y, float z, float radius) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Camera\+::\+Check\+Sphere\+In\+Frustum (
+\begin{DoxyParamCaption}
+\item[{float}]{x, }
+\item[{float}]{y, }
+\item[{float}]{z, }
+\item[{float}]{radius}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_a40a713c0385c345bb13b69e41c67f89e}{}\label{class_w_camera_a40a713c0385c345bb13b69e41c67f89e}
+Checks if a given sphere is in the viewing frustum of the camera. 
+\begin{DoxyParams}{Parameters}
+{\em x} & Sphere center x \\
+\hline
+{\em y} & Sphere center y \\
+\hline
+{\em z} & Sphere center z \\
+\hline
+{\em radius} & Sphere radius \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the sphere is in the viewing frustum, false otherwise 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Check\+Sphere\+In\+Frustum@{Check\+Sphere\+In\+Frustum}}
+\index{Check\+Sphere\+In\+Frustum@{Check\+Sphere\+In\+Frustum}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Check\+Sphere\+In\+Frustum(\+W\+Vector3 pos, float radius) const }{CheckSphereInFrustum(WVector3 pos, float radius) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Camera\+::\+Check\+Sphere\+In\+Frustum (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{pos, }
+\item[{float}]{radius}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_ad903939a239697caa8f0b7a6dc6fc243}{}\label{class_w_camera_ad903939a239697caa8f0b7a6dc6fc243}
+Checks if a given sphere is in the viewing frustum of the camera. 
+\begin{DoxyParams}{Parameters}
+{\em pos} & Sphere center \\
+\hline
+{\em radius} & Sphere radius \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the sphere is in the viewing frustum, false otherwise 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Disable\+Auto\+Aspect@{Disable\+Auto\+Aspect}}
+\index{Disable\+Auto\+Aspect@{Disable\+Auto\+Aspect}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Disable\+Auto\+Aspect()}{DisableAutoAspect()}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Camera\+::\+Disable\+Auto\+Aspect (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_camera_ac8b3661f197c10cf0ffb5dae4ff550ca}{}\label{class_w_camera_ac8b3661f197c10cf0ffb5dae4ff550ca}
+Enables auto aspect ratio calculation when the window/viewport size changes. Auto aspect ratio is calculated as viewport\+\_\+width / viewport\+\_\+height. \index{W\+Camera@{W\+Camera}!Enable\+Auto\+Aspect@{Enable\+Auto\+Aspect}}
+\index{Enable\+Auto\+Aspect@{Enable\+Auto\+Aspect}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Enable\+Auto\+Aspect()}{EnableAutoAspect()}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Camera\+::\+Enable\+Auto\+Aspect (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_camera_aa4c4abcba7618888e33984f4220dab03}{}\label{class_w_camera_aa4c4abcba7618888e33984f4220dab03}
+Enables auto aspect ratio calculation when the window/viewport size changes. Auto aspect ratio is calculated as viewport\+\_\+width / viewport\+\_\+height. \index{W\+Camera@{W\+Camera}!Get\+Aspect@{Get\+Aspect}}
+\index{Get\+Aspect@{Get\+Aspect}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Get\+Aspect() const }{GetAspect() const }}]{\setlength{\rightskip}{0pt plus 5cm}float W\+Camera\+::\+Get\+Aspect (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_aeb1771e08c8e5f7e5064e0cf66601eb7}{}\label{class_w_camera_aeb1771e08c8e5f7e5064e0cf66601eb7}
+Retrieves the aspect ratio. \begin{DoxyReturn}{Returns}
+Aspect ratio 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Get\+F\+OV@{Get\+F\+OV}}
+\index{Get\+F\+OV@{Get\+F\+OV}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Get\+F\+O\+V() const }{GetFOV() const }}]{\setlength{\rightskip}{0pt plus 5cm}float W\+Camera\+::\+Get\+F\+OV (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_a8fabfeba271baa99fdfcae35dd966f1a}{}\label{class_w_camera_a8fabfeba271baa99fdfcae35dd966f1a}
+Retrieves the F\+OV (field of view). \begin{DoxyReturn}{Returns}
+F\+OV (field of view) in degrees 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Get\+Max\+Range@{Get\+Max\+Range}}
+\index{Get\+Max\+Range@{Get\+Max\+Range}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Get\+Max\+Range() const }{GetMaxRange() const }}]{\setlength{\rightskip}{0pt plus 5cm}float W\+Camera\+::\+Get\+Max\+Range (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_a59ab75c472bbb3af15d1512436d3dc1f}{}\label{class_w_camera_a59ab75c472bbb3af15d1512436d3dc1f}
+Retrieves the maximum draw distance. \begin{DoxyReturn}{Returns}
+Maximum draw distance 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Get\+Min\+Range@{Get\+Min\+Range}}
+\index{Get\+Min\+Range@{Get\+Min\+Range}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Get\+Min\+Range() const }{GetMinRange() const }}]{\setlength{\rightskip}{0pt plus 5cm}float W\+Camera\+::\+Get\+Min\+Range (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_af50819dad55bf98e54f3cd046a39d1f8}{}\label{class_w_camera_af50819dad55bf98e54f3cd046a39d1f8}
+Retrieves the minimum draw distance. \begin{DoxyReturn}{Returns}
+Minimum draw distance 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Get\+Projection\+Matrix@{Get\+Projection\+Matrix}}
+\index{Get\+Projection\+Matrix@{Get\+Projection\+Matrix}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Get\+Projection\+Matrix(bool b\+Force\+Ortho=false) const }{GetProjectionMatrix(bool bForceOrtho=false) const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Matrix} W\+Camera\+::\+Get\+Projection\+Matrix (
+\begin{DoxyParamCaption}
+\item[{bool}]{b\+Force\+Ortho = {\ttfamily false}}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_a8a579493db789bbc7d2a7c295d161279}{}\label{class_w_camera_a8a579493db789bbc7d2a7c295d161279}
+Retrieves the current projection matrix \begin{DoxyReturn}{Returns}
+Current projection matrix Retrieves the current projection matrix 
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em b\+Force\+Ortho} & If set to true, the returned projection matrix will be forcefully set to use P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+\_\+\+O\+R\+T\+H\+O\+G\+O\+N\+AL for this call \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Current projection matrix 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!Get\+View\+Matrix@{Get\+View\+Matrix}}
+\index{Get\+View\+Matrix@{Get\+View\+Matrix}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Get\+View\+Matrix() const }{GetViewMatrix() const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Matrix} W\+Camera\+::\+Get\+View\+Matrix (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_camera_a5a1c340a7bfd239fe3675f27afacfb48}{}\label{class_w_camera_a5a1c340a7bfd239fe3675f27afacfb48}
+Retrieves the current view matrix \begin{DoxyReturn}{Returns}
+Current view matrix 
+\end{DoxyReturn}
+\index{W\+Camera@{W\+Camera}!On\+State\+Change@{On\+State\+Change}}
+\index{On\+State\+Change@{On\+State\+Change}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{On\+State\+Change(\+S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+P\+E type)}{OnStateChange(STATE_CHANGE_TYPE type)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Camera\+::\+On\+State\+Change (
+\begin{DoxyParamCaption}
+\item[{{\bf S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+PE}}]{type}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_camera_a44cd30d5dc870c8a08c200ccca64792f}{}\label{class_w_camera_a44cd30d5dc870c8a08c200ccca64792f}
+This is a callback (inherited from \hyperlink{class_w_orientation}{W\+Orientation}) to inform this object of a change in orientation. 
+\begin{DoxyParams}{Parameters}
+{\em type} & Orientation change type (rotation or motion) \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{class_w_orientation_aa765b7dcd772bbcc511c2c9317e7693c}{W\+Orientation}.
+
+\index{W\+Camera@{W\+Camera}!Render@{Render}}
+\index{Render@{Render}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Render(unsigned int width, unsigned int height)}{Render(unsigned int width, unsigned int height)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Camera\+::\+Render (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{width, }
+\item[{unsigned int}]{height}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_camera_a90b2aa2474068643e88876ac50639e0e}{}\label{class_w_camera_a90b2aa2474068643e88876ac50639e0e}
+Prepares the camera such that its\textquotesingle{} matrices can be used to perform transformations such as object rendering. 
+\begin{DoxyParams}{Parameters}
+{\em width} & Width of the rendering viewport \\
+\hline
+{\em height} & Height of the rendering viewport \\
+\hline
+\end{DoxyParams}
+\index{W\+Camera@{W\+Camera}!Set\+Aspect@{Set\+Aspect}}
+\index{Set\+Aspect@{Set\+Aspect}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Set\+Aspect(float aspect)}{SetAspect(float aspect)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Camera\+::\+Set\+Aspect (
+\begin{DoxyParamCaption}
+\item[{float}]{aspect}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_camera_a52ad98e1106f1cc235fca2f303f95cce}{}\label{class_w_camera_a52ad98e1106f1cc235fca2f303f95cce}
+Sets the aspect ratio. If auto aspect ratio is enabled, this will be overridden on the next \hyperlink{class_w_camera_af59a47532adac71379efd499ec655750}{Update\+Internals()} or \hyperlink{class_w_camera_a90b2aa2474068643e88876ac50639e0e}{Render()}. 
+\begin{DoxyParams}{Parameters}
+{\em aspect} & New aspect ratio \\
+\hline
+\end{DoxyParams}
+\index{W\+Camera@{W\+Camera}!Set\+F\+OV@{Set\+F\+OV}}
+\index{Set\+F\+OV@{Set\+F\+OV}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Set\+F\+O\+V(float f\+Value)}{SetFOV(float fValue)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Camera\+::\+Set\+F\+OV (
+\begin{DoxyParamCaption}
+\item[{float}]{f\+Value}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_camera_a846ac55abaf3f25e2dbe1af3aff4ab91}{}\label{class_w_camera_a846ac55abaf3f25e2dbe1af3aff4ab91}
+Set the F\+OV (field of view) for the camera. 
+\begin{DoxyParams}{Parameters}
+{\em f\+Value} & New field of view, in degrees \\
+\hline
+\end{DoxyParams}
+\index{W\+Camera@{W\+Camera}!Set\+Projection\+Type@{Set\+Projection\+Type}}
+\index{Set\+Projection\+Type@{Set\+Projection\+Type}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Set\+Projection\+Type(\+W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+P\+E type)}{SetProjectionType(W_PROJECTIONTYPE type)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Camera\+::\+Set\+Projection\+Type (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+\_\+\+P\+R\+O\+J\+E\+C\+T\+I\+O\+N\+T\+Y\+PE}}]{type}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_camera_a960555526c2bfcd06fc06ba7ac5c5f13}{}\label{class_w_camera_a960555526c2bfcd06fc06ba7ac5c5f13}
+Sets the projection type for this camera. 
+\begin{DoxyParams}{Parameters}
+{\em type} & Type of projection \\
+\hline
+\end{DoxyParams}
+\index{W\+Camera@{W\+Camera}!Set\+Range@{Set\+Range}}
+\index{Set\+Range@{Set\+Range}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Set\+Range(float min, float max)}{SetRange(float min, float max)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Camera\+::\+Set\+Range (
+\begin{DoxyParamCaption}
+\item[{float}]{min, }
+\item[{float}]{max}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_camera_a18ebb7d402821e7e1e75f807845c842c}{}\label{class_w_camera_a18ebb7d402821e7e1e75f807845c842c}
+Sets the range in which the camera can see. The camera cannot render closer to it than min and farther to it than max. 
+\begin{DoxyParams}{Parameters}
+{\em min} & minimum draw distance \\
+\hline
+{\em max} & maximum draw distance \\
+\hline
+\end{DoxyParams}
+\index{W\+Camera@{W\+Camera}!Update\+Internals@{Update\+Internals}}
+\index{Update\+Internals@{Update\+Internals}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Update\+Internals()}{UpdateInternals()}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Camera\+::\+Update\+Internals (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_camera_af59a47532adac71379efd499ec655750}{}\label{class_w_camera_af59a47532adac71379efd499ec655750}
+Update the matrices to match the latest changes. This is automatically called during rendering of a camera. \index{W\+Camera@{W\+Camera}!Valid@{Valid}}
+\index{Valid@{Valid}!W\+Camera@{W\+Camera}}
+\subsubsection[{\texorpdfstring{Valid() const }{Valid() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Camera\+::\+Valid (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_camera_a21af71c51c191beeec0d1dc5b836cc0c}{}\label{class_w_camera_a21af71c51c191beeec0d1dc5b836cc0c}
+Checks if the camera is valid (always true). \begin{DoxyReturn}{Returns}
+true 
+\end{DoxyReturn}
+
+
+Implements \hyperlink{class_w_base_a76ac973ba9a43e182f6a6a4869d69725}{W\+Base}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Cameras/\hyperlink{_w_camera_8h}{W\+Camera.\+h}\item 
+Wasabi/\+Cameras/W\+Camera.\+cpp\end{DoxyCompactItemize}

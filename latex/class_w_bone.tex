@@ -1,0 +1,345 @@
+\hypertarget{class_w_bone}{}\section{W\+Bone Class Reference}
+\label{class_w_bone}\index{W\+Bone@{W\+Bone}}
+
+
+{\ttfamily \#include $<$W\+Skeletal\+Animation.\+h$>$}
+
+Inheritance diagram for W\+Bone\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_w_bone}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int \hyperlink{class_w_bone_ac34df13d37b9ef9fa49581de312ea802}{Get\+Index} () const 
+\item 
+void \hyperlink{class_w_bone_a816d5c7fa5f33d1cfff653c20be0008b}{Set\+Index} (unsigned int index)
+\item 
+void \hyperlink{class_w_bone_af24fc7f8abe358165a02189e97d909f8}{Get\+Name} (char $\ast$name, unsigned int max\+Chars) const 
+\item 
+void \hyperlink{class_w_bone_ab1409e5a42fe007b9571686f6716b91e}{Set\+Name} (std\+::string name)
+\item 
+\hyperlink{class_w_bone}{W\+Bone} $\ast$ \hyperlink{class_w_bone_acafa3e5893e744113492fb2525cb812b}{Get\+Parent} () const 
+\item 
+void \hyperlink{class_w_bone_acb93dbbf3dcbb65411d3dd55d3b5044b}{Set\+Parent} (\hyperlink{class_w_bone}{W\+Bone} $\ast$parent)
+\item 
+unsigned int \hyperlink{class_w_bone_abf92c1789862985bda1819eb24cf1566}{Get\+Num\+Children} () const 
+\item 
+\hyperlink{class_w_bone}{W\+Bone} $\ast$ \hyperlink{class_w_bone_ad3f4731db0aa3779765c9b1896589399}{Get\+Child} (unsigned int index) const 
+\item 
+\hyperlink{class_w_bone}{W\+Bone} $\ast$ \hyperlink{class_w_bone_a0566019906b04267d0bc1ed97b2a7aa6}{Get\+Child} (std\+::string name) const 
+\item 
+void \hyperlink{class_w_bone_ad946c1721952194f897bb507b3a957f4}{Add\+Child} (\hyperlink{class_w_bone}{W\+Bone} $\ast$child)
+\item 
+void \hyperlink{class_w_bone_ab50eaca75d126aed8e673e56b9af83c1}{Clear\+Children} ()
+\item 
+void \hyperlink{class_w_bone_aeff2f20a5dfc558411c008bd37827330}{Set\+Inv\+Binding\+Pose} (\hyperlink{class_w_matrix}{W\+Matrix} mtx)
+\item 
+void \hyperlink{class_w_bone_a7dc15ea6b51d156256c712fd492e7255}{Scale} (float x, float y, float z)
+\item 
+void \hyperlink{class_w_bone_a596a55c9ff01c1bbcd252fdddcd904e8}{Scale} (\hyperlink{class_w_vector3}{W\+Vector3} scale)
+\item 
+\hyperlink{class_w_vector3}{W\+Vector3} \hyperlink{class_w_bone_a2990b236df6401d6da86ecf100b9d9a3}{Get\+Scale} () const 
+\item 
+\hyperlink{class_w_matrix}{W\+Matrix} \hyperlink{class_w_bone_af4bf5df0ad9914386678d68d00d1186b}{Get\+Matrix} ()
+\item 
+\hyperlink{class_w_matrix}{W\+Matrix} \hyperlink{class_w_bone_a8433b63d8befcf52332f5522b75c299c}{Get\+Relative\+Matrix} ()
+\item 
+\hyperlink{class_w_matrix}{W\+Matrix} \hyperlink{class_w_bone_aadce63c7723e17d7df8d0db041b69239}{Get\+Inv\+Binding\+Pose} () const 
+\item 
+bool \hyperlink{class_w_bone_a977bbdc281b3bf3964c19823e36fe164}{Update\+Locals} ()
+\item 
+void \hyperlink{class_w_bone_a71d121b3b2a3e38dd4aa5c4361ec375a}{On\+State\+Change} (\hyperlink{_w_orientation_8h_afe94de0a48bbd7b343ab18bc318cef28}{S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+PE} type)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_bone_a0ee298f8d9b5bfa784bb573782a25193}{Load\+From\+WA} (basic\+\_\+filebuf$<$ char $>$ $\ast$buff, unsigned int pos)
+\item 
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_bone_aa2e559eb103eff0a32838e3f1e7491ab}{Save\+To\+WA} (basic\+\_\+filebuf$<$ char $>$ $\ast$buff, unsigned int pos) const 
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This class represents a single bone in a skeleton. The final matrix of this bone is calculated by \hyperlink{class_w_bone_aadce63c7723e17d7df8d0db041b69239}{Get\+Inv\+Binding\+Pose()} $\ast$ \hyperlink{class_w_bone_a8433b63d8befcf52332f5522b75c299c}{Get\+Relative\+Matrix()}. 
+
+\subsection{Member Function Documentation}
+\index{W\+Bone@{W\+Bone}!Add\+Child@{Add\+Child}}
+\index{Add\+Child@{Add\+Child}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Add\+Child(\+W\+Bone $\ast$child)}{AddChild(WBone *child)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+Add\+Child (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Bone} $\ast$}]{child}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_ad946c1721952194f897bb507b3a957f4}{}\label{class_w_bone_ad946c1721952194f897bb507b3a957f4}
+Adds a child to this bone. 
+\begin{DoxyParams}{Parameters}
+{\em child} & Pointer to the new child \\
+\hline
+\end{DoxyParams}
+\index{W\+Bone@{W\+Bone}!Clear\+Children@{Clear\+Children}}
+\index{Clear\+Children@{Clear\+Children}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Clear\+Children()}{ClearChildren()}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+Clear\+Children (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_ab50eaca75d126aed8e673e56b9af83c1}{}\label{class_w_bone_ab50eaca75d126aed8e673e56b9af83c1}
+Clears all children of this bone. \index{W\+Bone@{W\+Bone}!Get\+Child@{Get\+Child}}
+\index{Get\+Child@{Get\+Child}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Child(unsigned int index) const }{GetChild(unsigned int index) const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Bone} $\ast$ W\+Bone\+::\+Get\+Child (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{index}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_bone_ad3f4731db0aa3779765c9b1896589399}{}\label{class_w_bone_ad3f4731db0aa3779765c9b1896589399}
+Retrieve a pointer to the child with the given index. 
+\begin{DoxyParams}{Parameters}
+{\em index} & Index of the child \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The child at index, or nullptr if index is invalid 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Get\+Child@{Get\+Child}}
+\index{Get\+Child@{Get\+Child}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Child(std\+::string name) const }{GetChild(std::string name) const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Bone} $\ast$ W\+Bone\+::\+Get\+Child (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{name}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_bone_a0566019906b04267d0bc1ed97b2a7aa6}{}\label{class_w_bone_a0566019906b04267d0bc1ed97b2a7aa6}
+Retrieves a child by name. 
+\begin{DoxyParams}{Parameters}
+{\em name} & Name of the child to retrieve \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The child with the name name, or nullptr if it is invalid 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Get\+Index@{Get\+Index}}
+\index{Get\+Index@{Get\+Index}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Index() const }{GetIndex() const }}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int W\+Bone\+::\+Get\+Index (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_bone_ac34df13d37b9ef9fa49581de312ea802}{}\label{class_w_bone_ac34df13d37b9ef9fa49581de312ea802}
+Retrieves the index of this bone. \begin{DoxyReturn}{Returns}
+Index of this bone 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Get\+Inv\+Binding\+Pose@{Get\+Inv\+Binding\+Pose}}
+\index{Get\+Inv\+Binding\+Pose@{Get\+Inv\+Binding\+Pose}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Inv\+Binding\+Pose() const }{GetInvBindingPose() const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Matrix} W\+Bone\+::\+Get\+Inv\+Binding\+Pose (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_bone_aadce63c7723e17d7df8d0db041b69239}{}\label{class_w_bone_aadce63c7723e17d7df8d0db041b69239}
+Retrieves the inverse binding pose for this bone. \begin{DoxyReturn}{Returns}
+The inverse binding pose matrix. 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Get\+Matrix@{Get\+Matrix}}
+\index{Get\+Matrix@{Get\+Matrix}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Matrix()}{GetMatrix()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Matrix} W\+Bone\+::\+Get\+Matrix (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_af4bf5df0ad9914386678d68d00d1186b}{}\label{class_w_bone_af4bf5df0ad9914386678d68d00d1186b}
+Retrieves the local matrix of this bone. \begin{DoxyReturn}{Returns}
+Local matrix of this bone 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Get\+Name@{Get\+Name}}
+\index{Get\+Name@{Get\+Name}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Name(char $\ast$name, unsigned int max\+Chars) const }{GetName(char *name, unsigned int maxChars) const }}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+Get\+Name (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{name, }
+\item[{unsigned int}]{max\+Chars}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_bone_af24fc7f8abe358165a02189e97d909f8}{}\label{class_w_bone_af24fc7f8abe358165a02189e97d909f8}
+Retrieves the name of this bone. 
+\begin{DoxyParams}{Parameters}
+{\em name} & A character array to be filled with the name \\
+\hline
+{\em max\+Chars} & Maximum number of characters to fill in name \\
+\hline
+\end{DoxyParams}
+\index{W\+Bone@{W\+Bone}!Get\+Num\+Children@{Get\+Num\+Children}}
+\index{Get\+Num\+Children@{Get\+Num\+Children}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Num\+Children() const }{GetNumChildren() const }}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int W\+Bone\+::\+Get\+Num\+Children (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_bone_abf92c1789862985bda1819eb24cf1566}{}\label{class_w_bone_abf92c1789862985bda1819eb24cf1566}
+Retrieves the number of children this bone has. \begin{DoxyReturn}{Returns}
+Number of children for this bone 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Get\+Parent@{Get\+Parent}}
+\index{Get\+Parent@{Get\+Parent}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Parent() const }{GetParent() const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Bone} $\ast$ W\+Bone\+::\+Get\+Parent (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_bone_acafa3e5893e744113492fb2525cb812b}{}\label{class_w_bone_acafa3e5893e744113492fb2525cb812b}
+Retrieves a pointer to the parent of this bone. \begin{DoxyReturn}{Returns}
+Parent of this bone 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Get\+Relative\+Matrix@{Get\+Relative\+Matrix}}
+\index{Get\+Relative\+Matrix@{Get\+Relative\+Matrix}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Relative\+Matrix()}{GetRelativeMatrix()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Matrix} W\+Bone\+::\+Get\+Relative\+Matrix (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_a8433b63d8befcf52332f5522b75c299c}{}\label{class_w_bone_a8433b63d8befcf52332f5522b75c299c}
+Retrieves the local matrix of this bone multiplied by the relative matrix of the parent bone (will recursively produce the final matrix for this bone). \begin{DoxyReturn}{Returns}
+Relative (final) matrix of this bone. 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Get\+Scale@{Get\+Scale}}
+\index{Get\+Scale@{Get\+Scale}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Get\+Scale() const }{GetScale() const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Vector3} W\+Bone\+::\+Get\+Scale (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_bone_a2990b236df6401d6da86ecf100b9d9a3}{}\label{class_w_bone_a2990b236df6401d6da86ecf100b9d9a3}
+Retrieves the scale of this bone. \begin{DoxyReturn}{Returns}
+A 3D vector representing the scale, where a component of 100.\+0 represents full scale, 200.\+0 being twice the scale, etc... 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Load\+From\+WA@{Load\+From\+WA}}
+\index{Load\+From\+WA@{Load\+From\+WA}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Load\+From\+W\+A(basic\+\_\+filebuf$<$ char $>$ $\ast$buff, unsigned int pos)}{LoadFromWA(basic_filebuf< char > *buff, unsigned int pos)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Bone\+::\+Load\+From\+WA (
+\begin{DoxyParamCaption}
+\item[{basic\+\_\+filebuf$<$ char $>$ $\ast$}]{buff, }
+\item[{unsigned int}]{pos}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_a0ee298f8d9b5bfa784bb573782a25193}{}\label{class_w_bone_a0ee298f8d9b5bfa784bb573782a25193}
+Load this bone from a file stream as a WA format. 
+\begin{DoxyParams}{Parameters}
+{\em buff} & Pointer to a file stream \\
+\hline
+{\em pos} & Position into the file stream \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!On\+State\+Change@{On\+State\+Change}}
+\index{On\+State\+Change@{On\+State\+Change}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{On\+State\+Change(\+S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+P\+E type)}{OnStateChange(STATE_CHANGE_TYPE type)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+On\+State\+Change (
+\begin{DoxyParamCaption}
+\item[{{\bf S\+T\+A\+T\+E\+\_\+\+C\+H\+A\+N\+G\+E\+\_\+\+T\+Y\+PE}}]{type}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_bone_a71d121b3b2a3e38dd4aa5c4361ec375a}{}\label{class_w_bone_a71d121b3b2a3e38dd4aa5c4361ec375a}
+This is a callback (inherited from \hyperlink{class_w_orientation}{W\+Orientation}) to inform this object of a change in orientation. 
+\begin{DoxyParams}{Parameters}
+{\em type} & Orientation change type (rotation or motion) \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{class_w_orientation_aa765b7dcd772bbcc511c2c9317e7693c}{W\+Orientation}.
+
+\index{W\+Bone@{W\+Bone}!Save\+To\+WA@{Save\+To\+WA}}
+\index{Save\+To\+WA@{Save\+To\+WA}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Save\+To\+W\+A(basic\+\_\+filebuf$<$ char $>$ $\ast$buff, unsigned int pos) const }{SaveToWA(basic_filebuf< char > *buff, unsigned int pos) const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Bone\+::\+Save\+To\+WA (
+\begin{DoxyParamCaption}
+\item[{basic\+\_\+filebuf$<$ char $>$ $\ast$}]{buff, }
+\item[{unsigned int}]{pos}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_bone_aa2e559eb103eff0a32838e3f1e7491ab}{}\label{class_w_bone_aa2e559eb103eff0a32838e3f1e7491ab}
+Save this bone to a file stream as a WA format. 
+\begin{DoxyParams}{Parameters}
+{\em buff} & Pointer to a file stream \\
+\hline
+{\em pos} & Position into the file stream \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Bone@{W\+Bone}!Scale@{Scale}}
+\index{Scale@{Scale}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Scale(float x, float y, float z)}{Scale(float x, float y, float z)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+Scale (
+\begin{DoxyParamCaption}
+\item[{float}]{x, }
+\item[{float}]{y, }
+\item[{float}]{z}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_a7dc15ea6b51d156256c712fd492e7255}{}\label{class_w_bone_a7dc15ea6b51d156256c712fd492e7255}
+Sets the scale of this bone. 
+\begin{DoxyParams}{Parameters}
+{\em x} & Scale x, 100.\+0 being full, 200.\+0 being twice the size, etc... \\
+\hline
+{\em y} & Scale y, 100.\+0 being full, 200.\+0 being twice the size, etc... \\
+\hline
+{\em z} & Scale z, 100.\+0 being full, 200.\+0 being twice the size, etc... \\
+\hline
+\end{DoxyParams}
+\index{W\+Bone@{W\+Bone}!Scale@{Scale}}
+\index{Scale@{Scale}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Scale(\+W\+Vector3 scale)}{Scale(WVector3 scale)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+Scale (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Vector3}}]{scale}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_a596a55c9ff01c1bbcd252fdddcd904e8}{}\label{class_w_bone_a596a55c9ff01c1bbcd252fdddcd904e8}
+Sets the scale of this bone. 
+\begin{DoxyParams}{Parameters}
+{\em scale} & A 3D vector representing the scale, where a component of 100.\+0 represents full scale, 200.\+0 being twice the scale, etc... \\
+\hline
+\end{DoxyParams}
+\index{W\+Bone@{W\+Bone}!Set\+Index@{Set\+Index}}
+\index{Set\+Index@{Set\+Index}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Set\+Index(unsigned int index)}{SetIndex(unsigned int index)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+Set\+Index (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{index}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_a816d5c7fa5f33d1cfff653c20be0008b}{}\label{class_w_bone_a816d5c7fa5f33d1cfff653c20be0008b}
+Sets the index of this bone. 
+\begin{DoxyParams}{Parameters}
+{\em Index} & new index \\
+\hline
+\end{DoxyParams}
+\index{W\+Bone@{W\+Bone}!Set\+Inv\+Binding\+Pose@{Set\+Inv\+Binding\+Pose}}
+\index{Set\+Inv\+Binding\+Pose@{Set\+Inv\+Binding\+Pose}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Set\+Inv\+Binding\+Pose(\+W\+Matrix mtx)}{SetInvBindingPose(WMatrix mtx)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+Set\+Inv\+Binding\+Pose (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Matrix}}]{mtx}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_aeff2f20a5dfc558411c008bd37827330}{}\label{class_w_bone_aeff2f20a5dfc558411c008bd37827330}
+Sets the inverse matrix of the binding pose for this bone. 
+\begin{DoxyParams}{Parameters}
+{\em mtx} & Inverse binding pose matrix \\
+\hline
+\end{DoxyParams}
+\index{W\+Bone@{W\+Bone}!Set\+Name@{Set\+Name}}
+\index{Set\+Name@{Set\+Name}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Set\+Name(std\+::string name)}{SetName(std::string name)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+Set\+Name (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{name}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_ab1409e5a42fe007b9571686f6716b91e}{}\label{class_w_bone_ab1409e5a42fe007b9571686f6716b91e}
+Sets the name of this bone. 
+\begin{DoxyParams}{Parameters}
+{\em name} & New name \\
+\hline
+\end{DoxyParams}
+\index{W\+Bone@{W\+Bone}!Set\+Parent@{Set\+Parent}}
+\index{Set\+Parent@{Set\+Parent}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Set\+Parent(\+W\+Bone $\ast$parent)}{SetParent(WBone *parent)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Bone\+::\+Set\+Parent (
+\begin{DoxyParamCaption}
+\item[{{\bf W\+Bone} $\ast$}]{parent}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_acb93dbbf3dcbb65411d3dd55d3b5044b}{}\label{class_w_bone_acb93dbbf3dcbb65411d3dd55d3b5044b}
+Sets the parent of this bone. 
+\begin{DoxyParams}{Parameters}
+{\em Parent} & pointer to the new parent \\
+\hline
+\end{DoxyParams}
+\index{W\+Bone@{W\+Bone}!Update\+Locals@{Update\+Locals}}
+\index{Update\+Locals@{Update\+Locals}!W\+Bone@{W\+Bone}}
+\subsubsection[{\texorpdfstring{Update\+Locals()}{UpdateLocals()}}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Bone\+::\+Update\+Locals (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_bone_a977bbdc281b3bf3964c19823e36fe164}{}\label{class_w_bone_a977bbdc281b3bf3964c19823e36fe164}
+Updates the local matrix of this bone. This function should only be called by \hyperlink{class_w_skeleton}{W\+Skeleton}. \begin{DoxyReturn}{Returns}
+true if the local matrix has changed, false if not. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Wasabi/\+Animations/\hyperlink{_w_skeletal_animation_8h}{W\+Skeletal\+Animation.\+h}\item 
+Wasabi/\+Animations/W\+Skeletal\+Animation.\+cpp\end{DoxyCompactItemize}

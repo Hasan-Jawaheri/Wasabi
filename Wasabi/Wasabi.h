@@ -1,3 +1,10 @@
+/** @file Wasabi.h
+ *  @brief Main header file for the library
+ *
+ *  @author Hasan Al-Jawaheri (hbj)
+ *  @bug No known bugs.
+ */
+
 #pragma once
 
 #include "Windows/WWindowComponent.h"
@@ -27,4 +34,12 @@
 
 #pragma comment(lib, "Wasabi.lib")
 
+/**
+ * This function is not defined by the library. It must be defined by the user.
+ * This function will be called at the beginning of the program, and will
+ * expect the user-defined code to create a newly allocated instance of an
+ * application, which should be a child of a Wasabi class.
+ * 
+ * @return A newly allocated Wasabi child that will run the engine
+ */
 Wasabi* WInitialize();
