@@ -3,7 +3,6 @@
 #include "../Windows/WWindowComponent.h"
 
 WRenderer::WRenderer(Wasabi* const app) : m_app(app) {
-	m_resizing = false;
 	m_semaphores.presentComplete = VK_NULL_HANDLE;
 	m_semaphores.renderComplete = VK_NULL_HANDLE;
 }
@@ -100,10 +99,6 @@ void WRenderer::_Render() {
 }
 
 WError WRenderer::Resize(unsigned int width, unsigned int height) {
-	if (m_resizing)
-		return WError(W_SUCCEEDED);
-
-	m_resizing = true;
 	m_width = width;
 	m_height = height;
 
@@ -163,8 +158,6 @@ WError WRenderer::Resize(unsigned int width, unsigned int height) {
 
 	vkQueueWaitIdle(m_queue);
 	vkDeviceWaitIdle(m_device);
-
-	m_resizing = false;
 
 	return WError(W_SUCCEEDED);
 }
