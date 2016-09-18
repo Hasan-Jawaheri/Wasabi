@@ -11,6 +11,7 @@
  *  @author Hasan Al-Jawaheri (hbj)
  *  @bug No known bugs.
  */
+
 #pragma once
 
 #include "../Core/WCore.h"
@@ -86,7 +87,7 @@ public:
 	virtual void Update(float fDeltaTime);
 
 	/**
-	 * Retrieves the texture that corresponds to the animation. This depends on 
+	 * Retrieves the texture that corresponds to the animation. This depends on
 	 * the implementation. For example, a skeletal animation implementation may
 	 * return a texture that contains bone matrices encoded in its pixels.
 	 * @return The animation texture

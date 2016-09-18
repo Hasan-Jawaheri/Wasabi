@@ -34,9 +34,10 @@ enum W_MOUSEPOSTYPE {
 
 /**
  * @ingroup engineclass
- * 
+ *
  * This defines the bare minimum requirements for an input component to be
- * usable by Wasabi.
+ * usable by Wasabi. An input component implements a platform-specific
+ * input retrieval system.
  */
 class WInputComponent {
 public:

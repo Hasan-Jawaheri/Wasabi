@@ -155,49 +155,49 @@ void WWC_Win32::SetWindowSize(int width, int height) {
 	// TODO: resize engine
 	//m_app->Init(rc.right, rc.bottom, m_app->IsVSyncEnabled());
 }
-void WWC_Win32::MaximizeWindow(void) {
+void WWC_Win32::MaximizeWindow() {
 	//show window as maximized
 	ShowWindow(m_mainWindow, SW_SHOWMAXIMIZED);
 	m_isMinimized = false; //mark not minimized
 }
-void WWC_Win32::MinimizeWindow(void) {
+void WWC_Win32::MinimizeWindow() {
 	//show window as minimized
 	ShowWindow(m_mainWindow, SW_SHOWMINIMIZED);
 	m_isMinimized = true; //mark minimized
 }
-uint WWC_Win32::RestoreWindow(void) {
+uint WWC_Win32::RestoreWindow() {
 	//restore window
 	int result = ShowWindow(m_mainWindow, SW_RESTORE);
 	m_isMinimized = false; //mark not minimized
 	return result;
 }
-uint WWC_Win32::GetWindowWidth(void) const {
+uint WWC_Win32::GetWindowWidth() const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.right;
 }
-uint WWC_Win32::GetWindowHeight(void) const {
+uint WWC_Win32::GetWindowHeight() const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.bottom;
 }
-int WWC_Win32::GetWindowPositionX(void) const {
+int WWC_Win32::GetWindowPositionX() const {
 	//return the left coordinate of the window rect
 	RECT rc;
 	GetWindowRect(m_mainWindow, &rc);
 	return rc.left;
 }
-int WWC_Win32::GetWindowPositionY(void) const {
+int WWC_Win32::GetWindowPositionY() const {
 	//return the top coordinate of the window rect
 	RECT rc;
 	GetWindowRect(m_mainWindow, &rc);
 	return rc.top;
 }
-HWND WWC_Win32::GetWindow(void) const {
+HWND WWC_Win32::GetWindow() const {
 	//return the API HWND
 	return m_mainWindow;
 }
-HINSTANCE WWC_Win32::GetInstance(void) const {
+HINSTANCE WWC_Win32::GetInstance() const {
 	//return the instance
 	return m_hInstance;
 }
@@ -212,7 +212,7 @@ void WWC_Win32::SetFullScreenState(bool bFullScreen) {
 	// TODO: implement this
 	//m_app->GetSwapChain()->SetFullscreenState(bFullScreen, nullptr);
 }
-bool WWC_Win32::GetFullScreenState(void) const {
+bool WWC_Win32::GetFullScreenState() const {
 	BOOL bf = false;
 	// TODO: implement this
 	//m_app->GetSwapChain()->GetFullscreenState(&bf, nullptr);
