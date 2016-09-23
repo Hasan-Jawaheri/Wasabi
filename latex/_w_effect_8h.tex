@@ -1,0 +1,71 @@
+\hypertarget{_w_effect_8h}{}\section{Wasabi/\+Materials/\+W\+Effect.h File Reference}
+\label{_w_effect_8h}\index{Wasabi/\+Materials/\+W\+Effect.\+h@{Wasabi/\+Materials/\+W\+Effect.\+h}}
+
+
+Shaders and rendering effects implementation.  
+
+
+{\ttfamily \#include \char`\"{}../\+Core/\+W\+Core.\+h\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_w___s_h_a_d_e_r___v_a_r_i_a_b_l_e___i_n_f_o}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+V\+A\+R\+I\+A\+B\+L\+E\+\_\+\+I\+N\+FO}
+\item 
+struct \hyperlink{struct_w___b_o_u_n_d___r_e_s_o_u_r_c_e}{W\+\_\+\+B\+O\+U\+N\+D\+\_\+\+R\+E\+S\+O\+U\+R\+CE}
+\item 
+struct \hyperlink{struct_w___i_n_p_u_t___l_a_y_o_u_t}{W\+\_\+\+I\+N\+P\+U\+T\+\_\+\+L\+A\+Y\+O\+UT}
+\item 
+struct \hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+D\+E\+SC}
+\item 
+class \hyperlink{class_w_shader}{W\+Shader}
+\item 
+class \hyperlink{class_w_shader_manager}{W\+Shader\+Manager}
+\item 
+class \hyperlink{class_w_effect}{W\+Effect}
+\item 
+class \hyperlink{class_w_effect_manager}{W\+Effect\+Manager}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{struct_w___s_h_a_d_e_r___v_a_r_i_a_b_l_e___i_n_f_o}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+V\+A\+R\+I\+A\+B\+L\+E\+\_\+\+I\+N\+FO} \hyperlink{group__engineclass_gac58914f40a8d012635bf7704c3a74409}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+V\+A\+R\+I\+A\+B\+L\+E\+\_\+\+I\+N\+FO}
+\item 
+typedef struct \hyperlink{struct_w___b_o_u_n_d___r_e_s_o_u_r_c_e}{W\+\_\+\+B\+O\+U\+N\+D\+\_\+\+R\+E\+S\+O\+U\+R\+CE} \hyperlink{group__engineclass_gafbfee122f0f44bd16c3369f295e95aae}{W\+\_\+\+B\+O\+U\+N\+D\+\_\+\+R\+E\+S\+O\+U\+R\+CE}
+\item 
+typedef struct \hyperlink{struct_w___i_n_p_u_t___l_a_y_o_u_t}{W\+\_\+\+I\+N\+P\+U\+T\+\_\+\+L\+A\+Y\+O\+UT} \hyperlink{group__engineclass_ga4da83d88937c92af31c7178c6dd76b7a}{W\+\_\+\+I\+N\+P\+U\+T\+\_\+\+L\+A\+Y\+O\+UT}
+\item 
+typedef struct \hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+D\+E\+SC} \hyperlink{group__engineclass_gae87c08a1640684c24a55606a8700fb5c}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+D\+E\+SC}
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{group__engineclass_ga8a79e4a3a441c88450e176150102c7b7}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+T\+Y\+PE} \{ \hyperlink{group__engineclass_gga8a79e4a3a441c88450e176150102c7b7a931690c7bb781b1a1c0cfac827e2cacf}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+S\+H\+A\+D\+ER} = V\+K\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+S\+T\+A\+G\+E\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+B\+IT, 
+\hyperlink{group__engineclass_gga8a79e4a3a441c88450e176150102c7b7aff8fd7a9b753adb4f08ef1568b31cc88}{W\+\_\+\+F\+R\+A\+G\+M\+E\+N\+T\+\_\+\+S\+H\+A\+D\+ER} = V\+K\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+S\+T\+A\+G\+E\+\_\+\+F\+R\+A\+G\+M\+E\+N\+T\+\_\+\+B\+IT, 
+\hyperlink{group__engineclass_gga8a79e4a3a441c88450e176150102c7b7a5ad83b2bdd13115508520d7362884105}{W\+\_\+\+P\+I\+X\+E\+L\+\_\+\+S\+H\+A\+D\+ER} = V\+K\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+S\+T\+A\+G\+E\+\_\+\+F\+R\+A\+G\+M\+E\+N\+T\+\_\+\+B\+IT
+ \}
+\item 
+enum \hyperlink{group__engineclass_gaeca2b79f62ba669ae9c5dbc516b66522}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+V\+A\+R\+I\+A\+B\+L\+E\+\_\+\+T\+Y\+PE} \{ \hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522ae4539d4f3784b6d80f44e9dd4867fa00}{W\+\_\+\+T\+Y\+P\+E\+\_\+\+F\+L\+O\+AT} = 0, 
+\hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522a0bac51e72d76cf1ad3bf0f3253492cba}{W\+\_\+\+T\+Y\+P\+E\+\_\+\+I\+NT} = 1, 
+\hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522a0781e52e28b630b71af9c730d9f53572}{W\+\_\+\+T\+Y\+P\+E\+\_\+\+U\+I\+NT} = 2
+ \}
+\item 
+enum \hyperlink{group__engineclass_ga6f7d88d2bbec56561a4b13c4e6604893}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+B\+O\+U\+N\+D\+\_\+\+R\+E\+S\+O\+U\+R\+C\+E\+\_\+\+T\+Y\+PE} \{ \hyperlink{group__engineclass_gga6f7d88d2bbec56561a4b13c4e6604893af36b467046e1fae5dff40f5a2c15162c}{W\+\_\+\+T\+Y\+P\+E\+\_\+\+U\+BO} = 0, 
+\hyperlink{group__engineclass_gga6f7d88d2bbec56561a4b13c4e6604893a6e2bb9072511a82a2d31810554c22c8a}{W\+\_\+\+T\+Y\+P\+E\+\_\+\+S\+A\+M\+P\+L\+ER} = 1
+ \}
+\item 
+enum \hyperlink{group__engineclass_gad9e5fe1880687bc445eec4c141324116}{W\+\_\+\+V\+E\+R\+T\+E\+X\+\_\+\+I\+N\+P\+U\+T\+\_\+\+R\+A\+TE} \{ \hyperlink{group__engineclass_ggad9e5fe1880687bc445eec4c141324116a6fca29ea21ed48a0deedb03a85b32b4d}{W\+\_\+\+I\+N\+P\+U\+T\+\_\+\+R\+A\+T\+E\+\_\+\+P\+E\+R\+\_\+\+V\+E\+R\+T\+EX} = 0, 
+\hyperlink{group__engineclass_ggad9e5fe1880687bc445eec4c141324116ad23d31d0dd16491a624616d7f77de9bf}{W\+\_\+\+I\+N\+P\+U\+T\+\_\+\+R\+A\+T\+E\+\_\+\+P\+E\+R\+\_\+\+I\+N\+S\+T\+A\+N\+CE} = 1
+ \}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Shaders and rendering effects implementation. 
+
+An effect in \hyperlink{class_wasabi}{Wasabi} is a collection of shaders and rendering states ( components of a Vulkan pipeline). An effect controls the way geometry is drawn on the screen.
+
+\begin{DoxyAuthor}{Author}
+Hasan Al-\/\+Jawaheri (hbj) 
+\end{DoxyAuthor}
+\begin{DoxyRefDesc}{Bug}
+\item[\hyperlink{bug__bug000017}{Bug}]No known bugs. \end{DoxyRefDesc}

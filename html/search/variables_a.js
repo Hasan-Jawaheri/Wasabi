@@ -2,6 +2,7 @@ var searchData=
 [
   ['m_5fapp',['m_app',['../class_w_base.html#a1650fafeaee7a217a863b79e9bba9a08',1,'WBase::m_app()'],['../class_w_game_state.html#a68c0b595d15be38854585e6cbcbe452b',1,'WGameState::m_app()'],['../class_w_manager.html#ac25fc4a5d0ae81526d34b67ac7067915',1,'WManager::m_app()'],['../class_w_input_component.html#a7ad5ee1c9e6397f4a13f5c674029441a',1,'WInputComponent::m_app()']]],
   ['m_5fbframesowner',['m_bFramesOwner',['../class_w_animation.html#a2aca672278527eed1f5477690a3f1a9e',1,'WAnimation']]],
+  ['m_5fdesc',['m_desc',['../class_w_shader.html#a887bf7b5a672bcc901eb8999713d8cfe',1,'WShader']]],
   ['m_5fentities',['m_entities',['../class_w_manager.html#aad7041fe4813ac2bee7bb8380ed02b68',1,'WManager']]],
   ['m_5ferror',['m_error',['../class_w_error.html#a456679cda00d598ceaa2addc8f16c5aa',1,'WError']]],
   ['m_5fescapee',['m_escapeE',['../class_w_i_c___win32.html#a41480b502fe374514f4d4d0e53ea2984',1,'WIC_Win32']]],
@@ -9,6 +10,7 @@ var searchData=
   ['m_5fkeydown',['m_keyDown',['../class_w_i_c___win32.html#af07652b15f2a84c0a83b262f5431cde6',1,'WIC_Win32']]],
   ['m_5fleftclick',['m_leftClick',['../class_w_i_c___win32.html#ab6af7475976aa0cfe19ecc233df5a6e5',1,'WIC_Win32']]],
   ['m_5fmiddleclick',['m_middleClick',['../class_w_i_c___win32.html#a0f7ff5339ac45c9a67c67fc6d5d5e544',1,'WIC_Win32']]],
+  ['m_5fmodule',['m_module',['../class_w_shader.html#a4fc9835e83eac6bcbc2c166c0d5b4ad1',1,'WShader']]],
   ['m_5fmousez',['m_mouseZ',['../class_w_i_c___win32.html#ac03dc4e6a2718caff6007fcbf35fe3ab',1,'WIC_Win32']]],
   ['m_5frightclick',['m_rightClick',['../class_w_i_c___win32.html#a92e3904726f4b216c33c2dcb1e441988',1,'WIC_Win32']]],
   ['m_5fsubanimations',['m_subAnimations',['../class_w_animation.html#ac8bd5b9f5b8ddae1a8658a169e0cbf51',1,'WAnimation']]],

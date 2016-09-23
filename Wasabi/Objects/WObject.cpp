@@ -126,7 +126,7 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 }
 
 WInstance::WInstance() {
-	m_scale = WVector3(100.0f, 100.0f, 100.0f);
+	m_scale = WVector3(1.0f, 1.0f, 1.0f);
 }
 
 WInstance::~WInstance() {
@@ -207,7 +207,7 @@ bool WInstance::UpdateLocals() {
 		m_worldM = WMatrixInverse(m_worldM);
 
 		//scale matrix
-		m_worldM = WScalingMatrix(m_scale.x / 100.0f, m_scale.y / 100.0f, m_scale.z / 100.0f) * m_worldM;
+		m_worldM = WScalingMatrix(m_scale) * m_worldM;
 
 		if (IsBound())
 			m_worldM *= GetBindingMatrix();
@@ -237,7 +237,7 @@ WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_instanc
 	m_bFrustumCull = true;
 
 	m_WorldM = WMatrix();
-	m_fScaleX = m_fScaleY = m_fScaleZ = 100.0f;
+	m_scale = WVector3(1.0f, 1.0f, 1.0f);
 
 	m_instanceTexture = nullptr;
 
@@ -263,13 +263,15 @@ std::string WObject::GetTypeName() const {
 }
 
 bool WObject::Valid() const {
-	return true; // TODO: put actual implementation
+	if (m_geometry && m_material && m_geometry->Valid() && m_material->Valid())
+		if (m_geometry->GetVertexDescription(0).GetSize() != m_material->GetEffect()->GetInputLayout(0).GetSize())
+			return true;
+
+		return false;
 }
 
 void WObject::Render(WRenderTarget* rt) {
-	if (m_geometry && m_material && m_geometry->Valid() && m_material->Valid() && !m_hidden) {
-		if (m_geometry->GetVertexDescription(0).GetSize() != m_material->GetEffect()->GetInputLayout(0).GetSize())
-			return;
+	if (Valid() && !m_hidden) {
 		WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();
 		if (m_bFrustumCull) {
@@ -371,13 +373,14 @@ WError WObject::InitInstancing(unsigned int maxInstances) {
 	}
 
 	m_instancesDirty = true;
+	m_maxInstances = maxInstances;
 
 	return WError(W_SUCCEEDED);
 }
 
 WInstance* WObject::CreateInstance() {
-	if (!m_instanceTexture)
-		return NULL;
+	if (!m_instanceTexture || m_instanceV.size() >= m_maxInstances)
+		return nullptr;
 
 	WInstance* inst = new WInstance();
 	m_instanceV.push_back(inst);
@@ -388,7 +391,7 @@ WInstance* WObject::CreateInstance() {
 WInstance* WObject::GetInstance(unsigned int index) const {
 	if (index < m_instanceV.size())
 		return m_instanceV[index];
-	return NULL;
+	return nullptr;
 }
 
 void WObject::DeleteInstance(WInstance* instance) {
@@ -407,6 +410,10 @@ void WObject::DeleteInstance(unsigned int index) {
 		m_instanceV.erase(m_instanceV.begin() + index);
 		m_instancesDirty = true;
 	}
+}
+
+unsigned int WObject::GetInstancesCount() const {
+	return m_instanceV.size();
 }
 
 void WObject::_UpdateInstanceBuffer() {
@@ -463,48 +470,44 @@ void WObject::DisableFrustumCulling() {
 }
 
 WVector3 WObject::GetScale() const {
-	return WVector3(m_fScaleX, m_fScaleY, m_fScaleZ);
+	return m_scale;
 }
 
 float WObject::GetScaleX() const {
-	return m_fScaleX;
+	return m_scale.x;
 }
 
 float WObject::GetScaleY() const {
-	return m_fScaleY;
+	return m_scale.y;
 }
 
 float WObject::GetScaleZ() const {
-	return m_fScaleZ;
+	return m_scale.z;
 }
 
 void WObject::Scale(float x, float y, float z) {
 	m_bAltered = true;
-	m_fScaleX = x;
-	m_fScaleY = y;
-	m_fScaleZ = z;
+	m_scale = WVector3(x, y, z);
 }
 
 void WObject::Scale(WVector3 scale) {
 	m_bAltered = true;
-	m_fScaleX = scale.x;
-	m_fScaleY = scale.y;
-	m_fScaleZ = scale.z;
+	m_scale = scale;
 }
 
 void WObject::ScaleX(float scale) {
 	m_bAltered = true;
-	m_fScaleX = scale;
+	m_scale.x = scale;
 }
 
 void WObject::ScaleY(float scale) {
 	m_bAltered = true;
-	m_fScaleY = scale;
+	m_scale.y = scale;
 }
 
 void WObject::ScaleZ(float scale) {
 	m_bAltered = true;
-	m_fScaleZ = scale;
+	m_scale.z = scale;
 }
 
 WMatrix WObject::GetWorldMatrix() {
@@ -536,7 +539,7 @@ bool WObject::UpdateLocals(WVector3 offset) {
 		m_WorldM = WMatrixInverse(m_WorldM);
 
 		//scale matrix
-		m_WorldM = WScalingMatrix(m_fScaleX / 100.0f, m_fScaleY / 100.0f, m_fScaleZ / 100.0f) * m_WorldM;
+		m_WorldM = WScalingMatrix(m_scale) * m_WorldM;
 
 		return true;
 	}

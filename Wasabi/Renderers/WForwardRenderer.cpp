@@ -410,4 +410,3 @@ WError WFRMaterial::SetColor(WColor col) {
 	SetVariableInt("isTextured", isTextured);
 	return SetVariableColor("color", col);
 }
-

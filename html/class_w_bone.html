@@ -7,7 +7,7 @@
 <meta name="generator" content="Doxygen 1.8.11"/>
 <title>Wasabi: WBone Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="jquery.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
@@ -17,6 +17,8 @@
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 <link href="customdoxygen.css" rel="stylesheet" type="text/css"/>
+<link href="bootstrap.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="bootstrap.min.js" />
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -442,7 +444,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retrieves the scale of this bone. </p><dl class="section return"><dt>Returns</dt><dd>A 3D vector representing the scale, where a component of 100.0 represents full scale, 200.0 being twice the scale, etc... </dd></dl>
+<p>Retrieves the scale of this bone. </p><dl class="section return"><dt>Returns</dt><dd>A 3D vector representing the scale components </dd></dl>
 
 </div>
 </div>
@@ -577,9 +579,9 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Sets the scale of this bone. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">x</td><td>Scale x, 100.0 being full, 200.0 being twice the size, etc... </td></tr>
-    <tr><td class="paramname">y</td><td>Scale y, 100.0 being full, 200.0 being twice the size, etc... </td></tr>
-    <tr><td class="paramname">z</td><td>Scale z, 100.0 being full, 200.0 being twice the size, etc... </td></tr>
+    <tr><td class="paramname">x</td><td>Scale x multiplier </td></tr>
+    <tr><td class="paramname">y</td><td>Scale y multiplier </td></tr>
+    <tr><td class="paramname">z</td><td>Scale z multiplier </td></tr>
   </table>
   </dd>
 </dl>
@@ -601,7 +603,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Sets the scale of this bone. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">scale</td><td>A 3D vector representing the scale, where a component of 100.0 represents full scale, 200.0 being twice the scale, etc... </td></tr>
+    <tr><td class="paramname">scale</td><td>A 3D vector representing the scale components </td></tr>
   </table>
   </dd>
 </dl>

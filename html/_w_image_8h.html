@@ -7,7 +7,7 @@
 <meta name="generator" content="Doxygen 1.8.11"/>
 <title>Wasabi: Wasabi/Images/WImage.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="jquery.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
@@ -17,6 +17,8 @@
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 <link href="customdoxygen.css" rel="stylesheet" type="text/css"/>
+<link href="bootstrap.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="bootstrap.min.js" />
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -111,6 +113,7 @@ Classes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Manager class implementation. </p>
+<p>Rendering materials implementation.</p>
 <p>Images (textures) implementation.</p>
 <p>A <a class="el" href="class_w_manager.html">WManager</a> is a template for a class that manages classes which inherit from a <a class="el" href="class_w_base.html">WBase</a>. A manager has a list of all instances of the class that it manages, as long as the class makes sure it registers itself (usually in its constructor) and removes itself upon destruction (usually in its destructor).</p>
 <dl class="section author"><dt>Author</dt><dd>Hasan Al-Jawaheri (hbj) </dd></dl>
@@ -118,6 +121,9 @@ Classes</h2></td></tr>
 <p>An image in <a class="el" href="class_wasabi.html">Wasabi</a> is a way to represent textures that could be used for any purpose. <a class="el" href="class_wasabi.html">Wasabi</a> images support custom formats and dynamic mapping/ unmapping for dynamically modifing images.</p>
 <dl class="section author"><dt>Author</dt><dd>Hasan Al-Jawaheri (hbj) </dd></dl>
 <dl class="bug"><dt><b><a class="el" href="bug.html#_bug000012">Bug:</a></b></dt><dd>No known bugs. </dd></dl>
+<p>Materials are the way <a class="el" href="class_wasabi.html">Wasabi</a> passes parameters to effects and their shaders. Materials provide a simple, convenient interface to assign textures and shader UBO variables to shaders.</p>
+<dl class="section author"><dt>Author</dt><dd>Hasan Al-Jawaheri (hbj) </dd></dl>
+<dl class="bug"><dt><b><a class="el" href="bug.html#_bug000018">Bug:</a></b></dt><dd>No known bugs. </dd></dl>
 </div></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.11-->
 <!-- start footer part -->

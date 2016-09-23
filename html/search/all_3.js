@@ -18,6 +18,7 @@ var searchData=
   ['createcylinder',['CreateCylinder',['../class_w_geometry.html#a312684c5e5f15629065c0e64fb8d121d',1,'WGeometry']]],
   ['createfromdata',['CreateFromData',['../class_w_geometry.html#ae9c73db37d16327132921df70669c6a4',1,'WGeometry']]],
   ['createfrompixelsarray',['CreateFromPixelsArray',['../class_w_image.html#aa862e77190c45d44bb7f85c533e2f904',1,'WImage']]],
+  ['createinstance',['CreateInstance',['../class_w_object.html#acb0daac5850075a54b012703bab0b589',1,'WObject']]],
   ['createkeyframe',['CreateKeyFrame',['../class_w_skeleton.html#a9e4fbd0755c9e81d18b5c967353585d1',1,'WSkeleton']]],
   ['createplain',['CreatePlain',['../class_w_geometry.html#adeb899c32ca3f634dfccf7ba9780a3b3',1,'WGeometry']]],
   ['createsphere',['CreateSphere',['../class_w_geometry.html#a2a1d9a7ca9310f4e024250c33ace1dec',1,'WGeometry']]],

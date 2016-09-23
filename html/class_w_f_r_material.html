@@ -7,7 +7,7 @@
 <meta name="generator" content="Doxygen 1.8.11"/>
 <title>Wasabi: WFRMaterial Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="jquery.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
@@ -17,6 +17,8 @@
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 <link href="customdoxygen.css" rel="stylesheet" type="text/css"/>
+<link href="bootstrap.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="bootstrap.min.js" />
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -110,8 +112,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a870f81f67384798616d72ef0bf4228d5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a870f81f67384798616d72ef0bf4228d5"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>WFRMaterial</b> (class <a class="el" href="class_wasabi.html">Wasabi</a> *const app, unsigned int ID=0)</td></tr>
 <tr class="separator:a870f81f67384798616d72ef0bf4228d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab57a021a6e21d2c6dc872d6ea4450093"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab57a021a6e21d2c6dc872d6ea4450093"></a>
-virtual <a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Bind</b> (class <a class="el" href="class_w_render_target.html">WRenderTarget</a> *rt, unsigned int num_vertex_buffers=-1)</td></tr>
+<tr class="memitem:ab57a021a6e21d2c6dc872d6ea4450093"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_f_r_material.html#ab57a021a6e21d2c6dc872d6ea4450093">Bind</a> (class <a class="el" href="class_w_render_target.html">WRenderTarget</a> *rt, unsigned int num_vertex_buffers=-1)</td></tr>
 <tr class="separator:ab57a021a6e21d2c6dc872d6ea4450093"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc4467bcda7cc98023847549541bd0eb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acc4467bcda7cc98023847549541bd0eb"></a>
 <a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Texture</b> (class <a class="el" href="class_w_image.html">WImage</a> *img)</td></tr>
@@ -123,50 +124,35 @@ virtual <a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="
 <tr class="memitem:a5bfc9ab92d0ed404bd31e7e85a3a3306 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5bfc9ab92d0ed404bd31e7e85a3a3306"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>WMaterial</b> (class <a class="el" href="class_wasabi.html">Wasabi</a> *const app, unsigned int ID=0)</td></tr>
 <tr class="separator:a5bfc9ab92d0ed404bd31e7e85a3a3306 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae48bfe0ea4d05867d077b8b48989c584 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae48bfe0ea4d05867d077b8b48989c584"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetEffect</b> (class <a class="el" href="class_w_effect.html">WEffect</a> *const effect)</td></tr>
+<tr class="memitem:ae48bfe0ea4d05867d077b8b48989c584 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#ae48bfe0ea4d05867d077b8b48989c584">SetEffect</a> (class <a class="el" href="class_w_effect.html">WEffect</a> *const effect)</td></tr>
 <tr class="separator:ae48bfe0ea4d05867d077b8b48989c584 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa14596445073d1eca1059e51d33af63b inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa14596445073d1eca1059e51d33af63b"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableFloat</b> (std::string varName, float fVal)</td></tr>
-<tr class="separator:aa14596445073d1eca1059e51d33af63b inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95b58dcb45ea3ecf851e635cac37c091 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a95b58dcb45ea3ecf851e635cac37c091"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableFloatArray</b> (std::string varName, float *fArr, int num_elements)</td></tr>
-<tr class="separator:a95b58dcb45ea3ecf851e635cac37c091 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1fca266d8755ab2d53c282c68eb69eed inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1fca266d8755ab2d53c282c68eb69eed"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableInt</b> (std::string varName, int iVal)</td></tr>
-<tr class="separator:a1fca266d8755ab2d53c282c68eb69eed inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a880c486ab408e5120bc979e8d721dfc8 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a880c486ab408e5120bc979e8d721dfc8"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableIntArray</b> (std::string varName, int *iArr, int num_elements)</td></tr>
-<tr class="separator:a880c486ab408e5120bc979e8d721dfc8 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2449e4c84b0178d4a17dbf3c38b65bc0 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2449e4c84b0178d4a17dbf3c38b65bc0"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableMatrix</b> (std::string varName, <a class="el" href="class_w_matrix.html">WMatrix</a> mtx)</td></tr>
-<tr class="separator:a2449e4c84b0178d4a17dbf3c38b65bc0 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a292db3323499ff88c90d0520b7a1f37e inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a292db3323499ff88c90d0520b7a1f37e"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableVector2</b> (std::string varName, <a class="el" href="class_w_vector2.html">WVector2</a> vec)</td></tr>
-<tr class="separator:a292db3323499ff88c90d0520b7a1f37e inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6657ad5aad5e928e779630f8c7f5c982 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6657ad5aad5e928e779630f8c7f5c982"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableVector3</b> (std::string varName, <a class="el" href="class_w_vector3.html">WVector3</a> vec)</td></tr>
-<tr class="separator:a6657ad5aad5e928e779630f8c7f5c982 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a588327bcc22a2f15c194956ae7fef5f5 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a588327bcc22a2f15c194956ae7fef5f5"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableVector4</b> (std::string varName, <a class="el" href="class_w_vector4.html">WVector4</a> vec)</td></tr>
-<tr class="separator:a588327bcc22a2f15c194956ae7fef5f5 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a198f6c0646136cac167dd512d7e7a6d9 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a198f6c0646136cac167dd512d7e7a6d9"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableColor</b> (std::string varName, <a class="el" href="class_w_color.html">WColor</a> col)</td></tr>
-<tr class="separator:a198f6c0646136cac167dd512d7e7a6d9 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2542310d912de3c3953dac8e9c269960 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2542310d912de3c3953dac8e9c269960"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetVariableData</b> (std::string varName, void *data, int len)</td></tr>
-<tr class="separator:a2542310d912de3c3953dac8e9c269960 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4936e1d25fd3ecce6fbef960eeb75fdf inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4936e1d25fd3ecce6fbef960eeb75fdf"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetTexture</b> (int binding_index, class <a class="el" href="class_w_image.html">WImage</a> *img)</td></tr>
+<tr class="memitem:ae2ec704f31b54ea0a1f8c9d30ea327d7 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#ae2ec704f31b54ea0a1f8c9d30ea327d7">SetVariableFloat</a> (string varName, float fVal)</td></tr>
+<tr class="separator:ae2ec704f31b54ea0a1f8c9d30ea327d7 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28b095dc5ac19dc38dc8022bce985f91 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#a28b095dc5ac19dc38dc8022bce985f91">SetVariableFloatArray</a> (string varName, float *fArr, int num_elements)</td></tr>
+<tr class="separator:a28b095dc5ac19dc38dc8022bce985f91 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1fb138e3ef4b40fec3334e0ad569068 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#ac1fb138e3ef4b40fec3334e0ad569068">SetVariableInt</a> (string varName, int iVal)</td></tr>
+<tr class="separator:ac1fb138e3ef4b40fec3334e0ad569068 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b0c5a02616ab0b8722c2c68e7e25c79 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#a1b0c5a02616ab0b8722c2c68e7e25c79">SetVariableIntArray</a> (string varName, int *iArr, int num_elements)</td></tr>
+<tr class="separator:a1b0c5a02616ab0b8722c2c68e7e25c79 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa791d00b4497df9ce81bab36df3fd369 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#aa791d00b4497df9ce81bab36df3fd369">SetVariableMatrix</a> (string varName, <a class="el" href="class_w_matrix.html">WMatrix</a> mtx)</td></tr>
+<tr class="separator:aa791d00b4497df9ce81bab36df3fd369 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4de2149658e89f97d79ced3e7ec18bcd inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#a4de2149658e89f97d79ced3e7ec18bcd">SetVariableVector2</a> (string varName, <a class="el" href="class_w_vector2.html">WVector2</a> vec)</td></tr>
+<tr class="separator:a4de2149658e89f97d79ced3e7ec18bcd inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09edc2496ed59ab067e3c8a412856d74 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#a09edc2496ed59ab067e3c8a412856d74">SetVariableVector3</a> (string varName, <a class="el" href="class_w_vector3.html">WVector3</a> vec)</td></tr>
+<tr class="separator:a09edc2496ed59ab067e3c8a412856d74 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ea8adcd3f141f3896adc680e141d02b inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#a8ea8adcd3f141f3896adc680e141d02b">SetVariableVector4</a> (string varName, <a class="el" href="class_w_vector4.html">WVector4</a> vec)</td></tr>
+<tr class="separator:a8ea8adcd3f141f3896adc680e141d02b inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d477cb8e3d6cf35a377b4fd438f01d0 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#a2d477cb8e3d6cf35a377b4fd438f01d0">SetVariableColor</a> (string varName, <a class="el" href="class_w_color.html">WColor</a> col)</td></tr>
+<tr class="separator:a2d477cb8e3d6cf35a377b4fd438f01d0 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7a25be78f0609fce4e88bfdcd6aadcb inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#ab7a25be78f0609fce4e88bfdcd6aadcb">SetVariableData</a> (string varName, void *data, int len)</td></tr>
+<tr class="separator:ab7a25be78f0609fce4e88bfdcd6aadcb inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4936e1d25fd3ecce6fbef960eeb75fdf inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#a4936e1d25fd3ecce6fbef960eeb75fdf">SetTexture</a> (int binding_index, class <a class="el" href="class_w_image.html">WImage</a> *img)</td></tr>
 <tr class="separator:a4936e1d25fd3ecce6fbef960eeb75fdf inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02d31133d0c88cd8def56318bb69ff90 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a02d31133d0c88cd8def56318bb69ff90"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetAnimationTexture</b> (class <a class="el" href="class_w_image.html">WImage</a> *img)</td></tr>
+<tr class="memitem:a02d31133d0c88cd8def56318bb69ff90 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#a02d31133d0c88cd8def56318bb69ff90">SetAnimationTexture</a> (class <a class="el" href="class_w_image.html">WImage</a> *img)</td></tr>
 <tr class="separator:a02d31133d0c88cd8def56318bb69ff90 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2ec1357e8a694111bb352711dbfe123 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac2ec1357e8a694111bb352711dbfe123"></a>
-<a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SetInstancingTexture</b> (class <a class="el" href="class_w_image.html">WImage</a> *img)</td></tr>
+<tr class="memitem:ac2ec1357e8a694111bb352711dbfe123 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_error.html">WError</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#ac2ec1357e8a694111bb352711dbfe123">SetInstancingTexture</a> (class <a class="el" href="class_w_image.html">WImage</a> *img)</td></tr>
 <tr class="separator:ac2ec1357e8a694111bb352711dbfe123 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af80d6b296601457db6d35283c3e3d206 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af80d6b296601457db6d35283c3e3d206"></a>
-class <a class="el" href="class_w_effect.html">WEffect</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>GetEffect</b> () const </td></tr>
+<tr class="memitem:af80d6b296601457db6d35283c3e3d206 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top">class <a class="el" href="class_w_effect.html">WEffect</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#af80d6b296601457db6d35283c3e3d206">GetEffect</a> () const </td></tr>
 <tr class="separator:af80d6b296601457db6d35283c3e3d206 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73cd4716c62a5a331f32e211ebd54654 inherit pub_methods_class_w_material"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_material.html#a73cd4716c62a5a331f32e211ebd54654">Valid</a> () const </td></tr>
 <tr class="separator:a73cd4716c62a5a331f32e211ebd54654 inherit pub_methods_class_w_material"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,6 +183,51 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a1650fafeaee7a217a863b79e9bba9a08 inherit pro_attribs_class_w_base"><td class="memItemLeft" align="right" valign="top">class <a class="el" href="class_wasabi.html">Wasabi</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_base.html#a1650fafeaee7a217a863b79e9bba9a08">m_app</a></td></tr>
 <tr class="separator:a1650fafeaee7a217a863b79e9bba9a08 inherit pro_attribs_class_w_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="ab57a021a6e21d2c6dc872d6ea4450093"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_w_error.html">WError</a> WFRMaterial::Bind </td>
+          <td>(</td>
+          <td class="paramtype">class <a class="el" href="class_w_render_target.html">WRenderTarget</a> *&#160;</td>
+          <td class="paramname"><em>rt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>num_vertex_buffers</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Binds the material and its effect to the graphics pipeline. A child class may choose to override this to change the binding procedure, or apply a certain operation upon binding. The render target must have its Begin() function called before this function is called. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">rt</td><td>Render target whose pipeline is being used </td></tr>
+    <tr><td class="paramname">num_vertex_buffers</td><td>Number of vertex buffers that the material needs to render, valid values are either 0 if the effect uses no vertex buffers, or 1 to the number of input layouts in the effect </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code, see <a class="el" href="_w_error_8h.html" title="Error codes implementation. ">WError.h</a> </dd></dl>
+
+<p>Reimplemented from <a class="el" href="class_w_material.html#a420e012110ddabf5410bab0805fac025">WMaterial</a>.</p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>Wasabi/Renderers/<a class="el" href="_w_forward_renderer_8h_source.html">WForwardRenderer.h</a></li>
 <li>Wasabi/Renderers/WForwardRenderer.cpp</li>

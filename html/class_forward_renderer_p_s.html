@@ -7,7 +7,7 @@
 <meta name="generator" content="Doxygen 1.8.11"/>
 <title>Wasabi: ForwardRendererPS Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="jquery.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
@@ -17,6 +17,8 @@
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 <link href="customdoxygen.css" rel="stylesheet" type="text/css"/>
+<link href="bootstrap.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="bootstrap.min.js" />
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -110,8 +112,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6a1ed068b3859b8a06fdd1e7013f62da"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a1ed068b3859b8a06fdd1e7013f62da"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>ForwardRendererPS</b> (class <a class="el" href="class_wasabi.html">Wasabi</a> *const app)</td></tr>
 <tr class="separator:a6a1ed068b3859b8a06fdd1e7013f62da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb142acd77b661e238ddcee56911f020"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb142acd77b661e238ddcee56911f020"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Load</b> ()</td></tr>
+<tr class="memitem:abb142acd77b661e238ddcee56911f020"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_forward_renderer_p_s.html#abb142acd77b661e238ddcee56911f020">Load</a> ()</td></tr>
 <tr class="separator:abb142acd77b661e238ddcee56911f020"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_w_shader"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_w_shader')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_w_shader.html">WShader</a></td></tr>
 <tr class="memitem:aa47ebd4f94586e3b030d16a549849568 inherit pub_methods_class_w_shader"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa47ebd4f94586e3b030d16a549849568"></a>
@@ -143,29 +144,50 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Load</b> ()</
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_methods_class_w_shader"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_w_shader')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_w_shader.html">WShader</a></td></tr>
-<tr class="memitem:a63ad1afcf46d791088eecabf9c6622b0 inherit pro_methods_class_w_shader"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a63ad1afcf46d791088eecabf9c6622b0"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadCodeSPIRV</b> (const char *const code, int len)</td></tr>
+<tr class="memitem:a63ad1afcf46d791088eecabf9c6622b0 inherit pro_methods_class_w_shader"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_shader.html#a63ad1afcf46d791088eecabf9c6622b0">LoadCodeSPIRV</a> (const char *const code, int len)</td></tr>
 <tr class="separator:a63ad1afcf46d791088eecabf9c6622b0 inherit pro_methods_class_w_shader"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29cffc471a569bbd669969feed3245d5 inherit pro_methods_class_w_shader"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a29cffc471a569bbd669969feed3245d5"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadCodeGLSL</b> (std::string code)</td></tr>
+<tr class="memitem:a29cffc471a569bbd669969feed3245d5 inherit pro_methods_class_w_shader"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_shader.html#a29cffc471a569bbd669969feed3245d5">LoadCodeGLSL</a> (std::string code)</td></tr>
 <tr class="separator:a29cffc471a569bbd669969feed3245d5 inherit pro_methods_class_w_shader"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a53e2b763b3d9160eeb3712ddd315efd3 inherit pro_methods_class_w_shader"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a53e2b763b3d9160eeb3712ddd315efd3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadCodeSPIRVFromFile</b> (std::string filename)</td></tr>
+<tr class="memitem:a53e2b763b3d9160eeb3712ddd315efd3 inherit pro_methods_class_w_shader"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_shader.html#a53e2b763b3d9160eeb3712ddd315efd3">LoadCodeSPIRVFromFile</a> (std::string filename)</td></tr>
 <tr class="separator:a53e2b763b3d9160eeb3712ddd315efd3 inherit pro_methods_class_w_shader"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a027b08b66b2152f70889d95a37d8bf13 inherit pro_methods_class_w_shader"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a027b08b66b2152f70889d95a37d8bf13"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadCodeGLSLFromFile</b> (std::string filename)</td></tr>
+<tr class="memitem:a027b08b66b2152f70889d95a37d8bf13 inherit pro_methods_class_w_shader"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_shader.html#a027b08b66b2152f70889d95a37d8bf13">LoadCodeGLSLFromFile</a> (std::string filename)</td></tr>
 <tr class="separator:a027b08b66b2152f70889d95a37d8bf13 inherit pro_methods_class_w_shader"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_w_shader"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_w_shader')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_w_shader.html">WShader</a></td></tr>
-<tr class="memitem:a887bf7b5a672bcc901eb8999713d8cfe inherit pro_attribs_class_w_shader"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a887bf7b5a672bcc901eb8999713d8cfe"></a>
-<a class="el" href="struct_w___s_h_a_d_e_r___d_e_s_c.html">W_SHADER_DESC</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m_desc</b></td></tr>
+<tr class="memitem:a887bf7b5a672bcc901eb8999713d8cfe inherit pro_attribs_class_w_shader"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_w___s_h_a_d_e_r___d_e_s_c.html">W_SHADER_DESC</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_shader.html#a887bf7b5a672bcc901eb8999713d8cfe">m_desc</a></td></tr>
 <tr class="separator:a887bf7b5a672bcc901eb8999713d8cfe inherit pro_attribs_class_w_shader"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4fc9835e83eac6bcbc2c166c0d5b4ad1 inherit pro_attribs_class_w_shader"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4fc9835e83eac6bcbc2c166c0d5b4ad1"></a>
-VkShaderModule&#160;</td><td class="memItemRight" valign="bottom"><b>m_module</b></td></tr>
+<tr class="memitem:a4fc9835e83eac6bcbc2c166c0d5b4ad1 inherit pro_attribs_class_w_shader"><td class="memItemLeft" align="right" valign="top">VkShaderModule&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_shader.html#a4fc9835e83eac6bcbc2c166c0d5b4ad1">m_module</a></td></tr>
 <tr class="separator:a4fc9835e83eac6bcbc2c166c0d5b4ad1 inherit pro_attribs_class_w_shader"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_w_base"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_w_base')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_w_base.html">WBase</a></td></tr>
 <tr class="memitem:a1650fafeaee7a217a863b79e9bba9a08 inherit pro_attribs_class_w_base"><td class="memItemLeft" align="right" valign="top">class <a class="el" href="class_wasabi.html">Wasabi</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_w_base.html#a1650fafeaee7a217a863b79e9bba9a08">m_app</a></td></tr>
 <tr class="separator:a1650fafeaee7a217a863b79e9bba9a08 inherit pro_attribs_class_w_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="abb142acd77b661e238ddcee56911f020"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ForwardRendererPS::Load </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Loads the shader into this object. This function must be implemented by a child class. The implemented function must fill in m_module and m_desc protected members to fully define the shader. See <a class="el" href="class_w_shader.html">WShader</a> for example usage. </p>
+
+<p>Implements <a class="el" href="class_w_shader.html#a7ce478193bc1676b1a7fdd741bdb32aa">WShader</a>.</p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>Wasabi/Renderers/WForwardRenderer.cpp</li>
 </ul>

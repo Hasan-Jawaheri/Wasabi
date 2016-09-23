@@ -1,5 +1,9 @@
 \hypertarget{class_w_shader}{}\section{W\+Shader Class Reference}
 \label{class_w_shader}\index{W\+Shader@{W\+Shader}}
+
+
+{\ttfamily \#include $<$W\+Effect.\+h$>$}
+
 Inheritance diagram for W\+Shader\+:\begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -12,34 +16,27 @@ Inheritance diagram for W\+Shader\+:\begin{figure}[H]
 {\bfseries W\+Shader} (class \hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_shader_aa47ebd4f94586e3b030d16a549849568}{}\label{class_w_shader_aa47ebd4f94586e3b030d16a549849568}
 
 \item 
-virtual void {\bfseries Load} ()=0\hypertarget{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{}\label{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}
-
+virtual void \hyperlink{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{Load} ()=0
 \item 
 virtual bool \hyperlink{class_w_shader_a04a739bdfc8524c6d5aa14353c0e3f99}{Valid} () const 
 \end{DoxyCompactItemize}
 \subsection*{Protected Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-void {\bfseries Load\+Code\+S\+P\+I\+RV} (const char $\ast$const code, int len)\hypertarget{class_w_shader_a63ad1afcf46d791088eecabf9c6622b0}{}\label{class_w_shader_a63ad1afcf46d791088eecabf9c6622b0}
-
+void \hyperlink{class_w_shader_a63ad1afcf46d791088eecabf9c6622b0}{Load\+Code\+S\+P\+I\+RV} (const char $\ast$const code, int len)
 \item 
-void {\bfseries Load\+Code\+G\+L\+SL} (std\+::string code)\hypertarget{class_w_shader_a29cffc471a569bbd669969feed3245d5}{}\label{class_w_shader_a29cffc471a569bbd669969feed3245d5}
-
+void \hyperlink{class_w_shader_a29cffc471a569bbd669969feed3245d5}{Load\+Code\+G\+L\+SL} (std\+::string code)
 \item 
-void {\bfseries Load\+Code\+S\+P\+I\+R\+V\+From\+File} (std\+::string filename)\hypertarget{class_w_shader_a53e2b763b3d9160eeb3712ddd315efd3}{}\label{class_w_shader_a53e2b763b3d9160eeb3712ddd315efd3}
-
+void \hyperlink{class_w_shader_a53e2b763b3d9160eeb3712ddd315efd3}{Load\+Code\+S\+P\+I\+R\+V\+From\+File} (std\+::string filename)
 \item 
-void {\bfseries Load\+Code\+G\+L\+S\+L\+From\+File} (std\+::string filename)\hypertarget{class_w_shader_a027b08b66b2152f70889d95a37d8bf13}{}\label{class_w_shader_a027b08b66b2152f70889d95a37d8bf13}
-
+void \hyperlink{class_w_shader_a027b08b66b2152f70889d95a37d8bf13}{Load\+Code\+G\+L\+S\+L\+From\+File} (std\+::string filename)
 \end{DoxyCompactItemize}
 \subsection*{Protected Attributes}
 \begin{DoxyCompactItemize}
 \item 
-\hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+D\+E\+SC} {\bfseries m\+\_\+desc}\hypertarget{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}{}\label{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}
-
+\hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c}{W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+D\+E\+SC} \hyperlink{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}{m\+\_\+desc}
 \item 
-Vk\+Shader\+Module {\bfseries m\+\_\+module}\hypertarget{class_w_shader_a4fc9835e83eac6bcbc2c166c0d5b4ad1}{}\label{class_w_shader_a4fc9835e83eac6bcbc2c166c0d5b4ad1}
-
+Vk\+Shader\+Module \hyperlink{class_w_shader_a4fc9835e83eac6bcbc2c166c0d5b4ad1}{m\+\_\+module}
 \end{DoxyCompactItemize}
 \subsection*{Friends}
 \begin{DoxyCompactItemize}
@@ -52,16 +49,190 @@ class {\bfseries W\+Material}\hypertarget{class_w_shader_a82829be2ace0f839dd132d
 \end{DoxyCompactItemize}
 
 
+\subsection{Detailed Description}
+Encapsulation of a shader object. A shader is a small program bound to the graphics (or compute) Vulkan pipelines that does its work on the G\+PU.
+
+To create a \hyperlink{class_w_shader}{W\+Shader}, one must define a child class which implements \hyperlink{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{W\+Shader\+::\+Load()}. The load function needs to fill in the m\+\_\+desc and m\+\_\+module protected variables. m\+\_\+module is automatically filled by a call to one of the Load\+Code$\ast$ functions (which needs to be called during the \hyperlink{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{Load()} call). The m\+\_\+desc structure should be initialized to describe the shader and the resources that can/need to be bound to it.
+
+Examples\+:
+
+Creating a simple vertex shader type that is compatible with the default vertex layout of \hyperlink{class_wasabi}{Wasabi} (see \hyperlink{struct_w_default_vertex}{W\+Default\+Vertex}). 
+\begin{DoxyCode}
+\textcolor{keyword}{class }SimpleVS : \textcolor{keyword}{public} \hyperlink{class_w_shader}{WShader} \{
+\textcolor{keyword}{public}:
+    SimpleVS(\textcolor{keyword}{class} \hyperlink{class_wasabi}{Wasabi}* \textcolor{keyword}{const} app) : \hyperlink{class_w_shader}{WShader}(app) \{\}
+
+    \textcolor{comment}{// We need to implement Load(), which loads the shader.}
+    \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} \hyperlink{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{Load}() \{
+        \hyperlink{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}{m\_desc}.\hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c_ad7b83db0ce3b5eb747a0fea76b52acd5}{type} = \hyperlink{group__engineclass_gga8a79e4a3a441c88450e176150102c7b7a931690c7bb781b1a1c0cfac827e2cacf}{W\_VERTEX\_SHADER}; \textcolor{comment}{// Creating a vertex shader}
+        \hyperlink{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}{m\_desc}.\hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c_aa3fea1cc775493c0fe9590129f91df63}{bound\_resources} = \{
+            \textcolor{comment}{// We have 1 UBO, bound to "location = 0" (in the shader code below)}
+            \hyperlink{group__engineclass_gafbfee122f0f44bd16c3369f295e95aae}{W\_BOUND\_RESOURCE}(\hyperlink{group__engineclass_gga6f7d88d2bbec56561a4b13c4e6604893af36b467046e1fae5dff40f5a2c15162c}{W\_TYPE\_UBO}, 0, \{
+                \textcolor{comment}{// projection matrix}
+                \hyperlink{group__engineclass_gac58914f40a8d012635bf7704c3a74409}{W\_SHADER\_VARIABLE\_INFO}(\hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522ae4539d4f3784b6d80f44e9dd4867fa00}{W\_TYPE\_FLOAT}, 4 * 4, \textcolor{stringliteral}{"gProjection"}
+      ),
+                \textcolor{comment}{// world matrix}
+                \hyperlink{group__engineclass_gac58914f40a8d012635bf7704c3a74409}{W\_SHADER\_VARIABLE\_INFO}(\hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522ae4539d4f3784b6d80f44e9dd4867fa00}{W\_TYPE\_FLOAT}, 4 * 4, \textcolor{stringliteral}{"gWorld"}),
+                \textcolor{comment}{// view matrix}
+                \hyperlink{group__engineclass_gac58914f40a8d012635bf7704c3a74409}{W\_SHADER\_VARIABLE\_INFO}(\hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522ae4539d4f3784b6d80f44e9dd4867fa00}{W\_TYPE\_FLOAT}, 4 * 4, \textcolor{stringliteral}{"gView"}),
+            \}),
+        \};
+        \textcolor{comment}{// We have 1 per-vertex input layout}
+        \textcolor{comment}{// This layout corresponds to the layout of vertices in WDefaultVertex}
+        \textcolor{comment}{// which WGeometry uses by default.}
+        \hyperlink{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}{m\_desc}.\hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c_a994385c2ccd44ff6b0879ac15ba035cd}{input\_layouts} = \{\hyperlink{group__engineclass_ga4da83d88937c92af31c7178c6dd76b7a}{W\_INPUT\_LAYOUT}(\{
+            \hyperlink{group__engineclass_gac58914f40a8d012635bf7704c3a74409}{W\_SHADER\_VARIABLE\_INFO}(\hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522ae4539d4f3784b6d80f44e9dd4867fa00}{W\_TYPE\_FLOAT}, 3), \textcolor{comment}{// position}
+            \hyperlink{group__engineclass_gac58914f40a8d012635bf7704c3a74409}{W\_SHADER\_VARIABLE\_INFO}(\hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522ae4539d4f3784b6d80f44e9dd4867fa00}{W\_TYPE\_FLOAT}, 3), \textcolor{comment}{// tangent}
+            \hyperlink{group__engineclass_gac58914f40a8d012635bf7704c3a74409}{W\_SHADER\_VARIABLE\_INFO}(\hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522ae4539d4f3784b6d80f44e9dd4867fa00}{W\_TYPE\_FLOAT}, 3), \textcolor{comment}{// normal}
+            \hyperlink{group__engineclass_gac58914f40a8d012635bf7704c3a74409}{W\_SHADER\_VARIABLE\_INFO}(\hyperlink{group__engineclass_ggaeca2b79f62ba669ae9c5dbc516b66522ae4539d4f3784b6d80f44e9dd4867fa00}{W\_TYPE\_FLOAT}, 2), \textcolor{comment}{// UV}
+        \})\};
+        \hyperlink{class_w_shader_a29cffc471a569bbd669969feed3245d5}{LoadCodeGLSL}(
+            \textcolor{stringliteral}{"#version 450\(\backslash\)n"}
+            \textcolor{stringliteral}{""}
+            \textcolor{stringliteral}{"#extension GL\_ARB\_separate\_shader\_objects : enable\(\backslash\)n"}
+            \textcolor{stringliteral}{"#extension GL\_ARB\_shading\_language\_420pack : enable\(\backslash\)n"}
+            \textcolor{stringliteral}{""}
+            \textcolor{stringliteral}{"layout(location = 0) in vec3 inPos;\(\backslash\)n"}
+            \textcolor{stringliteral}{"layout(location = 1) in vec3 inTang;\(\backslash\)n"}
+            \textcolor{stringliteral}{"layout(location = 2) in vec3 inNorm;\(\backslash\)n"}
+            \textcolor{stringliteral}{"layout(location = 3) in vec2 inUV;\(\backslash\)n"}
+            \textcolor{stringliteral}{""}
+            \textcolor{stringliteral}{"layout(binding = 0) uniform UBO \{\(\backslash\)n"}
+            \textcolor{stringliteral}{"   mat4 projectionMatrix;\(\backslash\)n"}
+            \textcolor{stringliteral}{"   mat4 modelMatrix;\(\backslash\)n"}
+            \textcolor{stringliteral}{"   mat4 viewMatrix;\(\backslash\)n"}
+            \textcolor{stringliteral}{"\} ubo;\(\backslash\)n"}
+            \textcolor{stringliteral}{""}
+            \textcolor{stringliteral}{"layout(location = 0) out vec2 outUV;\(\backslash\)n"}
+            \textcolor{stringliteral}{""}
+            \textcolor{stringliteral}{"void main() \{\(\backslash\)n"}
+            \textcolor{stringliteral}{"   outUV = inUV;\(\backslash\)n"}
+            \textcolor{stringliteral}{"   gl\_Position = ubo.projectionMatrix * \(\backslash\)n"}
+            \textcolor{stringliteral}{"               ubo.viewMatrix * \(\backslash\)n"}
+            \textcolor{stringliteral}{"               ubo.modelMatrix * \(\backslash\)n"}
+            \textcolor{stringliteral}{"               vec4(outWorldPos, 1.0);\(\backslash\)n"}
+            \textcolor{stringliteral}{"\}\(\backslash\)n"}
+        );
+    \}
+\};
+\end{DoxyCode}
+
+
+Simple pixel (or fragment) shader, compatible with the above vertex shader\+: 
+\begin{DoxyCode}
+\textcolor{keyword}{class }SimplePS : \textcolor{keyword}{public} \hyperlink{class_w_shader}{WShader} \{
+\textcolor{keyword}{public}:
+    SimplePS(\textcolor{keyword}{class} \hyperlink{class_wasabi}{Wasabi}* \textcolor{keyword}{const} app) : \hyperlink{class_w_shader}{WShader}(app) \{\}
+
+    \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} \hyperlink{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{Load}() \{
+        \hyperlink{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}{m\_desc}.\hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c_ad7b83db0ce3b5eb747a0fea76b52acd5}{type} = \hyperlink{group__engineclass_gga8a79e4a3a441c88450e176150102c7b7aff8fd7a9b753adb4f08ef1568b31cc88}{W\_FRAGMENT\_SHADER}; \textcolor{comment}{// Fragment (or pixel) shader}
+        \hyperlink{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}{m\_desc}.\hyperlink{struct_w___s_h_a_d_e_r___d_e_s_c_aa3fea1cc775493c0fe9590129f91df63}{bound\_resources} = \{\}; \textcolor{comment}{// no bound resources}
+        \hyperlink{class_w_shader_a29cffc471a569bbd669969feed3245d5}{LoadCodeGLSL}(
+            \textcolor{stringliteral}{"#version 450\(\backslash\)n"}
+            \textcolor{stringliteral}{""}
+            \textcolor{stringliteral}{"#extension GL\_ARB\_separate\_shader\_objects : enable\(\backslash\)n"}
+            \textcolor{stringliteral}{"#extension GL\_ARB\_shading\_language\_420pack : enable\(\backslash\)n"}
+            \textcolor{stringliteral}{""} \textcolor{comment}{// The UV coordinates are passed in from the vertex shader}
+            \textcolor{stringliteral}{"layout(location = 0) in vec2 inUV;\(\backslash\)n"}
+            \textcolor{stringliteral}{""} \textcolor{comment}{// We need to output a color using this variable in main()}
+            \textcolor{stringliteral}{"layout(location = 0) out vec4 outFragColor;\(\backslash\)n"}
+            \textcolor{stringliteral}{""}
+            \textcolor{stringliteral}{"void main() \{\(\backslash\)n"}
+            \textcolor{stringliteral}{"       outFragColor = vec4(inUV.x, inUV.y, 0, 1);\(\backslash\)n"}
+            \textcolor{stringliteral}{"\}\(\backslash\)n"}
+        );
+    \}
+\};
+\end{DoxyCode}
+
+
+Using the above shaders to create an effect\+: 
+\begin{DoxyCode}
+\hyperlink{class_w_shader}{WShader}* vs = \textcolor{keyword}{new} SimpleVS(\textcolor{keyword}{this});
+vs->\hyperlink{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{Load}();
+\hyperlink{class_w_shader}{WShader}* ps = \textcolor{keyword}{new} SimplePS(\textcolor{keyword}{this});
+ps->\hyperlink{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{Load}();
+\hyperlink{class_w_effect}{WEffect}* FX = \textcolor{keyword}{new} \hyperlink{class_w_effect}{WEffect}(\textcolor{keyword}{this});
+FX->\hyperlink{class_w_effect_a8d10167b5c583f2407024c442c1f3b1f}{BindShader}(vs);
+FX->\hyperlink{class_w_effect_a8d10167b5c583f2407024c442c1f3b1f}{BindShader}(ps);
+FX->\hyperlink{class_w_effect_a3a23db5f72658be47397a877552a78fd}{BuildPipeline}(Renderer->GetDefaultRenderTarget());
+vs->\hyperlink{class_w_base_a8917d59438e0ebd8352ef55497ff5be0}{RemoveReference}();
+ps->\hyperlink{class_w_base_a8917d59438e0ebd8352ef55497ff5be0}{RemoveReference}();
+\end{DoxyCode}
+ 
+
 \subsection{Member Function Documentation}
+\index{W\+Shader@{W\+Shader}!Load@{Load}}
+\index{Load@{Load}!W\+Shader@{W\+Shader}}
+\subsubsection[{\texorpdfstring{Load()=0}{Load()=0}}]{\setlength{\rightskip}{0pt plus 5cm}virtual void W\+Shader\+::\+Load (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [pure virtual]}}\hypertarget{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}{}\label{class_w_shader_a7ce478193bc1676b1a7fdd741bdb32aa}
+Loads the shader into this object. This function must be implemented by a child class. The implemented function must fill in m\+\_\+module and m\+\_\+desc protected members to fully define the shader. See \hyperlink{class_w_shader}{W\+Shader} for example usage. 
+
+Implemented in \hyperlink{class_forward_renderer_p_s_abb142acd77b661e238ddcee56911f020}{Forward\+Renderer\+PS}, \hyperlink{class_text_p_s_af22b914fbd382746541d1cf04cf6a80f}{Text\+PS}, \hyperlink{class_deferred_renderer_p_s_af8c4e8d25a9d77dbaff0dfb45d6dfb07}{Deferred\+Renderer\+PS}, \hyperlink{class_sprite_p_s_a4791a5cc708e8419f6d8b20a64b678d3}{Sprite\+PS}, \hyperlink{class_text_v_s_a5f5b2c085db4b90bc68f4c69434285ee}{Text\+VS}, \hyperlink{class_sprite_v_s_abd9362ef4fca5c252de18fcb089f7c40}{Sprite\+VS}, \hyperlink{class_forward_renderer_v_s_a68964f98fe8bec8f0addf39a4fcbe9fa}{Forward\+Renderer\+VS}, and \hyperlink{class_deferred_renderer_v_s_a35e479b4de6f046fa3b45e147eab3acf}{Deferred\+Renderer\+VS}.
+
+\index{W\+Shader@{W\+Shader}!Load\+Code\+G\+L\+SL@{Load\+Code\+G\+L\+SL}}
+\index{Load\+Code\+G\+L\+SL@{Load\+Code\+G\+L\+SL}!W\+Shader@{W\+Shader}}
+\subsubsection[{\texorpdfstring{Load\+Code\+G\+L\+S\+L(std\+::string code)}{LoadCodeGLSL(std::string code)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Shader\+::\+Load\+Code\+G\+L\+SL (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{code}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [protected]}}\hypertarget{class_w_shader_a29cffc471a569bbd669969feed3245d5}{}\label{class_w_shader_a29cffc471a569bbd669969feed3245d5}
+Loads G\+L\+SL shader code from a string. Loaded code will be compiled into m\+\_\+module. 
+\begin{DoxyParams}{Parameters}
+{\em code} & String containing G\+L\+SL code \\
+\hline
+\end{DoxyParams}
+\index{W\+Shader@{W\+Shader}!Load\+Code\+G\+L\+S\+L\+From\+File@{Load\+Code\+G\+L\+S\+L\+From\+File}}
+\index{Load\+Code\+G\+L\+S\+L\+From\+File@{Load\+Code\+G\+L\+S\+L\+From\+File}!W\+Shader@{W\+Shader}}
+\subsubsection[{\texorpdfstring{Load\+Code\+G\+L\+S\+L\+From\+File(std\+::string filename)}{LoadCodeGLSLFromFile(std::string filename)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Shader\+::\+Load\+Code\+G\+L\+S\+L\+From\+File (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{filename}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [protected]}}\hypertarget{class_w_shader_a027b08b66b2152f70889d95a37d8bf13}{}\label{class_w_shader_a027b08b66b2152f70889d95a37d8bf13}
+Loads G\+L\+SL shader code from file. Loaded code will be compiled into m\+\_\+module. 
+\begin{DoxyParams}{Parameters}
+{\em filename} & Name of the file to load the code from \\
+\hline
+\end{DoxyParams}
+\index{W\+Shader@{W\+Shader}!Load\+Code\+S\+P\+I\+RV@{Load\+Code\+S\+P\+I\+RV}}
+\index{Load\+Code\+S\+P\+I\+RV@{Load\+Code\+S\+P\+I\+RV}!W\+Shader@{W\+Shader}}
+\subsubsection[{\texorpdfstring{Load\+Code\+S\+P\+I\+R\+V(const char $\ast$const code, int len)}{LoadCodeSPIRV(const char *const code, int len)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Shader\+::\+Load\+Code\+S\+P\+I\+RV (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$const}]{code, }
+\item[{int}]{len}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [protected]}}\hypertarget{class_w_shader_a63ad1afcf46d791088eecabf9c6622b0}{}\label{class_w_shader_a63ad1afcf46d791088eecabf9c6622b0}
+Loads S\+P\+I\+R-\/V formatted shader code from memory. Loaded code will be compiled into m\+\_\+module. 
+\begin{DoxyParams}{Parameters}
+{\em code} & Address of the S\+P\+I\+R-\/V code in memory \\
+\hline
+{\em len} & Length of the code, in bytes \\
+\hline
+\end{DoxyParams}
+\index{W\+Shader@{W\+Shader}!Load\+Code\+S\+P\+I\+R\+V\+From\+File@{Load\+Code\+S\+P\+I\+R\+V\+From\+File}}
+\index{Load\+Code\+S\+P\+I\+R\+V\+From\+File@{Load\+Code\+S\+P\+I\+R\+V\+From\+File}!W\+Shader@{W\+Shader}}
+\subsubsection[{\texorpdfstring{Load\+Code\+S\+P\+I\+R\+V\+From\+File(std\+::string filename)}{LoadCodeSPIRVFromFile(std::string filename)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Shader\+::\+Load\+Code\+S\+P\+I\+R\+V\+From\+File (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{filename}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [protected]}}\hypertarget{class_w_shader_a53e2b763b3d9160eeb3712ddd315efd3}{}\label{class_w_shader_a53e2b763b3d9160eeb3712ddd315efd3}
+Loads S\+P\+I\+R-\/V formatted shader code from a file. Loaded code will be compiled into m\+\_\+module. 
+\begin{DoxyParams}{Parameters}
+{\em filename} & Name of the file to load the code from \\
+\hline
+\end{DoxyParams}
 \index{W\+Shader@{W\+Shader}!Valid@{Valid}}
 \index{Valid@{Valid}!W\+Shader@{W\+Shader}}
 \subsubsection[{\texorpdfstring{Valid() const }{Valid() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool W\+Shader\+::\+Valid (
 \begin{DoxyParamCaption}
-{}
+\item[{void}]{}
 \end{DoxyParamCaption}
 ) const\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_shader_a04a739bdfc8524c6d5aa14353c0e3f99}{}\label{class_w_shader_a04a739bdfc8524c6d5aa14353c0e3f99}
-Must be implemented by the child. This function should report the validity status of the object, in whatever sense of \char`\"{}validity\char`\"{} it chooses. \begin{DoxyReturn}{Returns}
-true if the object is \char`\"{}valid\char`\"{}, false otherwise 
+Checks the validity of the shader. A shader is valid if m\+\_\+module is set. \begin{DoxyReturn}{Returns}
+true if the shader is valid, false otherwise 
 \end{DoxyReturn}
 
 
@@ -69,7 +240,16 @@ Implements \hyperlink{class_w_base_a76ac973ba9a43e182f6a6a4869d69725}{W\+Base}.
 
 
 
+\subsection{Member Data Documentation}
+\index{W\+Shader@{W\+Shader}!m\+\_\+desc@{m\+\_\+desc}}
+\index{m\+\_\+desc@{m\+\_\+desc}!W\+Shader@{W\+Shader}}
+\subsubsection[{\texorpdfstring{m\+\_\+desc}{m_desc}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+\_\+\+S\+H\+A\+D\+E\+R\+\_\+\+D\+E\+SC} W\+Shader\+::m\+\_\+desc\hspace{0.3cm}{\ttfamily [protected]}}\hypertarget{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}{}\label{class_w_shader_a887bf7b5a672bcc901eb8999713d8cfe}
+Shader description \index{W\+Shader@{W\+Shader}!m\+\_\+module@{m\+\_\+module}}
+\index{m\+\_\+module@{m\+\_\+module}!W\+Shader@{W\+Shader}}
+\subsubsection[{\texorpdfstring{m\+\_\+module}{m_module}}]{\setlength{\rightskip}{0pt plus 5cm}Vk\+Shader\+Module W\+Shader\+::m\+\_\+module\hspace{0.3cm}{\ttfamily [protected]}}\hypertarget{class_w_shader_a4fc9835e83eac6bcbc2c166c0d5b4ad1}{}\label{class_w_shader_a4fc9835e83eac6bcbc2c166c0d5b4ad1}
+Compiled shader code object 
+
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 
-Wasabi/\+Materials/W\+Effect.\+h\item 
+Wasabi/\+Materials/\hyperlink{_w_effect_8h}{W\+Effect.\+h}\item 
 Wasabi/\+Materials/W\+Effect.\+cpp\end{DoxyCompactItemize}

@@ -1,5 +1,9 @@
 \hypertarget{class_w_object_manager}{}\section{W\+Object\+Manager Class Reference}
 \label{class_w_object_manager}\index{W\+Object\+Manager@{W\+Object\+Manager}}
+
+
+{\ttfamily \#include $<$W\+Object.\+h$>$}
+
 Inheritance diagram for W\+Object\+Manager\+:\begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -12,14 +16,11 @@ Inheritance diagram for W\+Object\+Manager\+:\begin{figure}[H]
 {\bfseries W\+Object\+Manager} (class \hyperlink{class_wasabi}{Wasabi} $\ast$const app)\hypertarget{class_w_object_manager_a6ac9e43e828feff89da389bff3504bbd}{}\label{class_w_object_manager_a6ac9e43e828feff89da389bff3504bbd}
 
 \item 
-\hyperlink{class_w_object}{W\+Object} $\ast$ {\bfseries Pick\+Object} (int x, int y, bool b\+Any\+Hit, unsigned int i\+Obj\+Start\+ID=0, unsigned int i\+Obj\+End\+ID=0, \hyperlink{class_w_vector3}{W\+Vector3} $\ast$pt=nullptr, \hyperlink{class_w_vector2}{W\+Vector2} $\ast$uv=nullptr, unsigned int $\ast$face\+Index=nullptr) const \hypertarget{class_w_object_manager_a589763cdee79fc0410ba560fcae327a0}{}\label{class_w_object_manager_a589763cdee79fc0410ba560fcae327a0}
-
+\hyperlink{class_w_object}{W\+Object} $\ast$ \hyperlink{class_w_object_manager_a589763cdee79fc0410ba560fcae327a0}{Pick\+Object} (int x, int y, bool b\+Any\+Hit, unsigned int i\+Obj\+Start\+ID=0, unsigned int i\+Obj\+End\+ID=0, \hyperlink{class_w_vector3}{W\+Vector3} $\ast$pt=nullptr, \hyperlink{class_w_vector2}{W\+Vector2} $\ast$uv=nullptr, unsigned int $\ast$face\+Index=nullptr) const 
 \item 
-void {\bfseries Render} (class \hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$rt)\hypertarget{class_w_object_manager_a7c0543b08ecbc6ddc019402cc62d0c1b}{}\label{class_w_object_manager_a7c0543b08ecbc6ddc019402cc62d0c1b}
-
+void \hyperlink{class_w_object_manager_a7c0543b08ecbc6ddc019402cc62d0c1b}{Render} (class \hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$rt)
 \item 
-\hyperlink{class_w_error}{W\+Error} {\bfseries Load} ()\hypertarget{class_w_object_manager_abbb11fb7005e059f2057b0d3dfac55a9}{}\label{class_w_object_manager_abbb11fb7005e059f2057b0d3dfac55a9}
-
+\hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_object_manager_abbb11fb7005e059f2057b0d3dfac55a9}{Load} ()
 \end{DoxyCompactItemize}
 \subsection*{Friends}
 \begin{DoxyCompactItemize}
@@ -30,7 +31,71 @@ class {\bfseries W\+Object}\hypertarget{class_w_object_manager_a703e2c74495afdc3
 \subsection*{Additional Inherited Members}
 
 
+\subsection{Detailed Description}
+Manager class for \hyperlink{class_w_object}{W\+Object}. 
+
+\subsection{Member Function Documentation}
+\index{W\+Object\+Manager@{W\+Object\+Manager}!Load@{Load}}
+\index{Load@{Load}!W\+Object\+Manager@{W\+Object\+Manager}}
+\subsubsection[{\texorpdfstring{Load()}{Load()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+Object\+Manager\+::\+Load (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_object_manager_abbb11fb7005e059f2057b0d3dfac55a9}{}\label{class_w_object_manager_abbb11fb7005e059f2057b0d3dfac55a9}
+Loads the manager. \begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+\index{W\+Object\+Manager@{W\+Object\+Manager}!Pick\+Object@{Pick\+Object}}
+\index{Pick\+Object@{Pick\+Object}!W\+Object\+Manager@{W\+Object\+Manager}}
+\subsubsection[{\texorpdfstring{Pick\+Object(int x, int y, bool b\+Any\+Hit, unsigned int i\+Obj\+Start\+I\+D=0, unsigned int i\+Obj\+End\+I\+D=0, W\+Vector3 $\ast$pt=nullptr, W\+Vector2 $\ast$uv=nullptr, unsigned int $\ast$face\+Index=nullptr) const }{PickObject(int x, int y, bool bAnyHit, unsigned int iObjStartID=0, unsigned int iObjEndID=0, WVector3 *pt=nullptr, WVector2 *uv=nullptr, unsigned int *faceIndex=nullptr) const }}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Object} $\ast$ W\+Object\+Manager\+::\+Pick\+Object (
+\begin{DoxyParamCaption}
+\item[{int}]{x, }
+\item[{int}]{y, }
+\item[{bool}]{b\+Any\+Hit, }
+\item[{unsigned int}]{i\+Obj\+Start\+ID = {\ttfamily 0}, }
+\item[{unsigned int}]{i\+Obj\+End\+ID = {\ttfamily 0}, }
+\item[{{\bf W\+Vector3} $\ast$}]{pt = {\ttfamily nullptr}, }
+\item[{{\bf W\+Vector2} $\ast$}]{uv = {\ttfamily nullptr}, }
+\item[{unsigned int $\ast$}]{face\+Index = {\ttfamily nullptr}}
+\end{DoxyParamCaption}
+) const}\hypertarget{class_w_object_manager_a589763cdee79fc0410ba560fcae327a0}{}\label{class_w_object_manager_a589763cdee79fc0410ba560fcae327a0}
+Checks if an object is in the view in the default renderer\textquotesingle{}s camera and and part of that object is at the given (x,y) coordinates on the screen. If multiple objects are under the (x,y) coordinate, the one with the closest hit will be returned. 
+\begin{DoxyParams}{Parameters}
+{\em x} & Screen x coordinate to check for a hit \\
+\hline
+{\em y} & Screen y coordinate to check for a hit \\
+\hline
+{\em b\+Any\+Hit} & If set to true, the first hit will be returned, otherwise the closest one will be returned \\
+\hline
+{\em i\+Obj\+Start\+ID} & If both i\+Obj\+Start\+ID and i\+Obj\+End\+ID are non-\/zero, then only objects whose ID is between i\+Obj\+Start\+ID and i\+Obj\+End\+ID (inclusive) are considered for picking \\
+\hline
+{\em i\+Obj\+End\+ID} & If both i\+Obj\+Start\+ID and i\+Obj\+End\+ID are non-\/zero, then only objects whose ID is between i\+Obj\+Start\+ID and i\+Obj\+End\+ID (inclusive) are considered for picking \\
+\hline
+{\em pt} & Optional pointer to a 3D vector which will be populated with the 3D coordinate at which the hit occurred, if a hit was found \\
+\hline
+{\em uv} & Optional pointer to a 2D vector which will be populated with the UV coordinates returned by \hyperlink{class_w_geometry_a63ea1ccc4bab8fb3ce70027ffd07626a}{W\+Geometry\+::\+Intersect()}, if a hit was found \\
+\hline
+{\em face\+Index} & Optional pointer to an integer which will be populated with the index of the triangle into the buffer of the geometry of the object that was hit, if a hit was found \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Object that was picked, nullptr if no Object was was picked 
+\end{DoxyReturn}
+\index{W\+Object\+Manager@{W\+Object\+Manager}!Render@{Render}}
+\index{Render@{Render}!W\+Object\+Manager@{W\+Object\+Manager}}
+\subsubsection[{\texorpdfstring{Render(class W\+Render\+Target $\ast$rt)}{Render(class WRenderTarget *rt)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+Object\+Manager\+::\+Render (
+\begin{DoxyParamCaption}
+\item[{class {\bf W\+Render\+Target} $\ast$}]{rt}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_object_manager_a7c0543b08ecbc6ddc019402cc62d0c1b}{}\label{class_w_object_manager_a7c0543b08ecbc6ddc019402cc62d0c1b}
+Renders all objects registered by this manager (by calling their \hyperlink{class_w_object_a315a4d624c6e6c5fef996e1dd87abe33}{W\+Object\+::\+Render()} function). 
+\begin{DoxyParams}{Parameters}
+{\em rt} & Render target to render to \\
+\hline
+\end{DoxyParams}
+
+
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 
-Wasabi/\+Objects/W\+Object.\+h\item 
+Wasabi/\+Objects/\hyperlink{_w_object_8h}{W\+Object.\+h}\item 
 Wasabi/\+Objects/W\+Object.\+cpp\end{DoxyCompactItemize}

@@ -412,7 +412,7 @@ Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h}
 \item[{bool}]{bind\+\_\+animation = {\ttfamily true}}
 \end{DoxyParamCaption}
 )}\hypertarget{class_w_geometry_abf8e134f4345d4d998f9def43883f896}{}\label{class_w_geometry_abf8e134f4345d4d998f9def43883f896}
-Draw the geometry to the render target. This function will bind the geometry buffer to vertex buffer slot 0 in Vulkan, and will bind the animation buffer (if available and requested) to slot 1. 
+Draw the geometry to the render target. This function will bind the geometry buffer to vertex buffer slot 0 in Vulkan, and will bind the animation buffer (if available and requested) to slot 1. The render target must have its Begin() function called before this function is called. 
 \begin{DoxyParams}{Parameters}
 {\em rt} & Render target to draw to \\
 \hline

@@ -12,8 +12,7 @@ Inheritance diagram for W\+F\+R\+Material\+:\begin{figure}[H]
 {\bfseries W\+F\+R\+Material} (class \hyperlink{class_wasabi}{Wasabi} $\ast$const app, unsigned int ID=0)\hypertarget{class_w_f_r_material_a870f81f67384798616d72ef0bf4228d5}{}\label{class_w_f_r_material_a870f81f67384798616d72ef0bf4228d5}
 
 \item 
-virtual \hyperlink{class_w_error}{W\+Error} {\bfseries Bind} (class \hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$rt, unsigned int num\+\_\+vertex\+\_\+buffers=-\/1)\hypertarget{class_w_f_r_material_ab57a021a6e21d2c6dc872d6ea4450093}{}\label{class_w_f_r_material_ab57a021a6e21d2c6dc872d6ea4450093}
-
+virtual \hyperlink{class_w_error}{W\+Error} \hyperlink{class_w_f_r_material_ab57a021a6e21d2c6dc872d6ea4450093}{Bind} (class \hyperlink{class_w_render_target}{W\+Render\+Target} $\ast$rt, unsigned int num\+\_\+vertex\+\_\+buffers=-\/1)
 \item 
 \hyperlink{class_w_error}{W\+Error} {\bfseries Texture} (class \hyperlink{class_w_image}{W\+Image} $\ast$img)\hypertarget{class_w_f_r_material_acc4467bcda7cc98023847549541bd0eb}{}\label{class_w_f_r_material_acc4467bcda7cc98023847549541bd0eb}
 
@@ -22,6 +21,31 @@ virtual \hyperlink{class_w_error}{W\+Error} {\bfseries Bind} (class \hyperlink{c
 
 \end{DoxyCompactItemize}
 \subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\index{W\+F\+R\+Material@{W\+F\+R\+Material}!Bind@{Bind}}
+\index{Bind@{Bind}!W\+F\+R\+Material@{W\+F\+R\+Material}}
+\subsubsection[{\texorpdfstring{Bind(class W\+Render\+Target $\ast$rt, unsigned int num\+\_\+vertex\+\_\+buffers=-\/1)}{Bind(class WRenderTarget *rt, unsigned int num_vertex_buffers=-1)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf W\+Error} W\+F\+R\+Material\+::\+Bind (
+\begin{DoxyParamCaption}
+\item[{class {\bf W\+Render\+Target} $\ast$}]{rt, }
+\item[{unsigned int}]{num\+\_\+vertex\+\_\+buffers = {\ttfamily -\/1}}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [virtual]}}\hypertarget{class_w_f_r_material_ab57a021a6e21d2c6dc872d6ea4450093}{}\label{class_w_f_r_material_ab57a021a6e21d2c6dc872d6ea4450093}
+Binds the material and its effect to the graphics pipeline. A child class may choose to override this to change the binding procedure, or apply a certain operation upon binding. The render target must have its Begin() function called before this function is called. 
+\begin{DoxyParams}{Parameters}
+{\em rt} & Render target whose pipeline is being used \\
+\hline
+{\em num\+\_\+vertex\+\_\+buffers} & Number of vertex buffers that the material needs to render, valid values are either 0 if the effect uses no vertex buffers, or 1 to the number of input layouts in the effect \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code, see \hyperlink{_w_error_8h}{W\+Error.\+h} 
+\end{DoxyReturn}
+
+
+Reimplemented from \hyperlink{class_w_material_a420e012110ddabf5410bab0805fac025}{W\+Material}.
+
 
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
