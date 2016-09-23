@@ -235,4 +235,6 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 
+# doxygen generated code
 html/
+latex/
