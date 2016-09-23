@@ -7,7 +7,7 @@
 <meta name="generator" content="Doxygen 1.8.11"/>
 <title>Wasabi: WGeometry Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="jquery.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
@@ -17,6 +17,8 @@
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 <link href="customdoxygen.css" rel="stylesheet" type="text/css"/>
+<link href="bootstrap.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="bootstrap.min.js" />
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -754,7 +756,7 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Draw the geometry to the render target. This function will bind the geometry buffer to vertex buffer slot 0 in Vulkan, and will bind the animation buffer (if available and requested) to slot 1. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Draw the geometry to the render target. This function will bind the geometry buffer to vertex buffer slot 0 in Vulkan, and will bind the animation buffer (if available and requested) to slot 1. The render target must have its Begin() function called before this function is called. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">rt</td><td>Render target to draw to </td></tr>
     <tr><td class="paramname">num_triangles</td><td>Number of triangles to draw, -1 for all </td></tr>
