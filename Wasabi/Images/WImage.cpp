@@ -1,5 +1,11 @@
 #include "WImage.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnarrowing"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-fpermissive"
 #pragma warning(disable:4477)
 #pragma warning(disable:4838)
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -12,6 +18,9 @@
 #include "../stb/stb.h"
 #pragma warning(default:4477)
 #pragma warning(default:4838)
+#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 
 std::string WImageManager::GetTypeName() const {
 	return "Image";
