@@ -4,7 +4,7 @@
 const unsigned int sizeofBoneNoPtrs = 4 + 64 + sizeof(bool) + sizeof(WVector3) + 2 * sizeof(WMatrix);
 
 WBone::WBone() {
-	m_scale = WVector3(100.0f, 100.0f, 100.0f);
+	m_scale = WVector3(1.0f, 1.0f, 1.0f);
 	m_worldM = WMatrix();
 	m_invBindingPose = WMatrixInverse(WMatrix());
 	m_parent = nullptr;
@@ -107,7 +107,7 @@ bool WBone::UpdateLocals() {
 
 		//scale matrix
 		//m_worldM = WTranslationMatrix ( -GetPosition ( ) ) * m_worldM; //remove offset after rotation
-		m_worldM = WScalingMatrix(m_scale.x / 100.0f, m_scale.y / 100.0f, m_scale.z / 100.0f) * m_worldM;
+		m_worldM = WScalingMatrix(m_scale) * m_worldM;
 		if (GetParent() == nullptr)
 			for (int i = 0; i < 4; i++)
 				m_worldM(2, i) = -m_worldM(2, i);
@@ -208,7 +208,7 @@ WSkeleton::WSkeleton(Wasabi* const app, unsigned int ID) : WAnimation(app, ID) {
 	m_subAnimations.push_back(new W_SKELETAL_SUB_ANIMATION());
 
 	m_boneTex = nullptr;
-	m_bindingScale = WVector3(100.0f, 100.0f, 100.0f);
+	m_bindingScale = WVector3(1.0f, 1.0f, 1.0f);
 	m_parentBonePos = WVector3(0, 0, 0);
 }
 WSkeleton::~WSkeleton() {
@@ -387,7 +387,7 @@ void WSkeleton::Update(float fDeltaTime) {
 							bindMtx(2, j) = -bindMtx(2, j);
 						for (unsigned int j = 0; j < m_bindings.size(); j++)
 							if (m_bindings[j].boneID == boneIndex)
-								m_bindings[j].obj->SetBindingMatrix(bindMtx * WScalingMatrix(m_bindingScale / 100.0f));
+								m_bindings[j].obj->SetBindingMatrix(bindMtx * WScalingMatrix(m_bindingScale));
 					}
 
 					//encode the matrix (decoded in the shader to save a texture fetch in the VS)
@@ -434,7 +434,7 @@ void WSkeleton::Update(float fDeltaTime) {
 							bindMtx(2, j) = -bindMtx(2, j);
 						for (unsigned int j = 0; j < m_bindings.size(); j++)
 							if (m_bindings[j].boneID == boneIndex)
-								m_bindings[j].obj->SetBindingMatrix(bindMtx * WScalingMatrix(m_bindingScale / 100.0f));
+								m_bindings[j].obj->SetBindingMatrix(bindMtx * WScalingMatrix(m_bindingScale));
 					}
 
 					//encode the matrix (decoded in the shader to save a texture fetch in the VS)

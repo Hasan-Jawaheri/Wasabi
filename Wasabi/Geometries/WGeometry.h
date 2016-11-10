@@ -591,7 +591,9 @@ public:
 	/**
 	 * Draw the geometry to the render target. This function will bind the
 	 * geometry buffer to vertex buffer slot 0 in Vulkan, and will bind the
-	 * animation buffer (if available and requested) to slot 1.
+	 * animation buffer (if available and requested) to slot 1. The render
+	 * target must have its Begin() function called before this function is
+	 * called.
 	 * @param  rt             Render target to draw to
 	 * @param  num_triangles  Number of triangles to draw, -1 for all
 	 * @param  num_instances  Number of instances to draw

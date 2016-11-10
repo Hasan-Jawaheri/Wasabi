@@ -112,24 +112,21 @@ public:
 
 	/**
 	 * Sets the scale of this bone.
-	 * @param x Scale x, 100.0 being full, 200.0 being twice the size, etc...
-	 * @param y Scale y, 100.0 being full, 200.0 being twice the size, etc...
-	 * @param z Scale z, 100.0 being full, 200.0 being twice the size, etc...
+	 * @param x Scale x multiplier
+	 * @param y Scale y multiplier
+	 * @param z Scale z multiplier
 	 */
 	void Scale(float x, float y, float z);
 
 	/**
 	 * Sets the scale of this bone.
-	 * @param scale A 3D vector representing the scale, where a component of
-	 *              100.0 represents full scale, 200.0 being twice the scale,
-	 *              etc...
+	 * @param scale A 3D vector representing the scale components
 	 */
 	void Scale(WVector3 scale);
 
 	/**
 	 * Retrieves the scale of this bone.
-	 * @return A 3D vector representing the scale, where a component of 100.0
-	 *         represents full scale, 200.0 being twice the scale, etc...
+	 * @return A 3D vector representing the scale components
 	 */
 	WVector3 GetScale() const;
 
@@ -319,23 +316,22 @@ public:
 	virtual WBone* GetBone(unsigned int frame, std::string name) const;
 
 	/**
-	 * Scales the skeleton.
-	 * @param scale Scale factor, 100.0 for full scale, 200.0 for double, etc...
+	 * Sets the scale of the the skeleton.
+	 * @param scale Scale multiplier
 	 */
 	void Scale(float scale);
 
 	/**
-	 * Scales the skeleton.
-	 * @param x Scale factor on X, 100.0 for full scale, 200.0 for double, etc...
-	 * @param y Scale factor on Y, 100.0 for full scale, 200.0 for double, etc...
-	 * @param z Scale factor on Z, 100.0 for full scale, 200.0 for double, etc...
+	 * Sets the scale of the the skeleton.
+	 * @param x Scale multiplier on X
+	 * @param y Scale multiplier on Y
+	 * @param z Scale multiplier on Z
 	 */
 	void Scale(float x, float y, float z);
 
 	/**
 	 * Scales the skeleton.
-	 * @param scale Scale factor, a component of 100.0 results in full scale,
-	 *              200.0 results in double, etc...
+	 * @param scale Scale multiplier components
 	 */
 	void Scale(WVector3 scale);
 
@@ -364,24 +360,23 @@ public:
 	/**
 	 * Set the binding scale, which is applied to the binding matrix before it
 	 * is set on bound objects.
-	 * @param scale Scale factor, 100.0 for full scale, 200.0 for double, etc...
+	 * @param scale Scale multiplier
 	 */
 	void SetBindingScale(float scale);
 
 	/**
 	 * Set the binding scale, which is applied to the binding matrix before it
 	 * is set on bound objects.
-	 * @param x Scale factor on X, 100.0 for full scale, 200.0 for double, etc...
-	 * @param y Scale factor on Y, 100.0 for full scale, 200.0 for double, etc...
-	 * @param z Scale factor on Z, 100.0 for full scale, 200.0 for double, etc...
+	 * @param x Scale multiplier on X
+	 * @param y Scale multiplier on Y
+	 * @param z Scale multiplier on Z
 	 */
 	void SetBindingScale(float x, float y, float z);
 
 	/**
 	 * Set the binding scale, which is applied to the binding matrix before it
 	 * is set on bound objects.
-	 * @param scale Scale factor, a component of 100.0 results in full scale,
-	 *              200.0 results in double, etc...
+	 * @param scale Scale multiplier components
 	 */
 	void SetBindingScale(WVector3 scale);
 
