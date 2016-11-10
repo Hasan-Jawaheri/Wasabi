@@ -2,8 +2,8 @@
 Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game Engine. Wasabi is designed to allow C++ programmers to write games and graphics applications easily without having to worry about the details of the tedious graphics APIs (Vulkan, Direct3D, OpenGL, etc...).
 
 ## Current Features
-[tick]: 
-[prog]: 
+[tick]:
+[prog]:
 
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/tick.png" width="16" height="16"> OpenAL Sounds
 
@@ -40,9 +40,16 @@ To run Wasabi, you will need the following:
   * Intel graphics card: https://software.intel.com/en-us/blogs/2016/03/14/new-intel-vulkan-beta-1540204404-graphics-driver-for-windows-78110-1540
   * AMD graphics card: (???)
 * LunarG Vulkan SDK (https://lunarg.com/vulkan-sdk/)
-* OpenAL SDK (https://www.openal.org/downloads/)
+* OpenAL SDK (for Windows) (https://www.openal.org/downloads/)
 
 With the above installed, Wasabi should compile with Visual Studio using **x86 configuration (NOT x64)**. For other compilers, you need to add the include path and library path of OpenAL and LunarG SDK. Those can be usually found in C:/VulkanSDK/<version>/include, C:/VulkanSDK/<version>/bin32, C:\Program Files (x86)\OpenAL 1.1 SDK\include, C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\ on Windows.
+
+On linux, you will need
+```
+sudo apt-get install g++-multilib
+sudo apt-get install libopenal-dev
+sudo apt-get install libx11-xcb-dev
+```
 
 ## Usage
 

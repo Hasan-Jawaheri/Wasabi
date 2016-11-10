@@ -1,6 +1,6 @@
 /*
 * Class wrapping access to the swap chain
-* 
+*
 * A swap chain is a collection of framebuffers used for rendering
 * The swap chain images can then presented to the windowing system
 *
@@ -21,7 +21,9 @@
 #include <windows.h>
 #include <fcntl.h>
 #include <io.h>
-#else
+#elif (defined __linux__)
+#include <xcb/xcb.h>
+#include <X11/Xlib.h>
 #endif
 
 #include <vulkan/vulkan.h>
@@ -58,14 +60,14 @@ typedef struct _SwapChainBuffers {
 
 class VulkanSwapChain
 {
-private: 
+private:
 	VkInstance instance;
 	VkDevice device;
 	VkPhysicalDevice physicalDevice;
 	VkSurfaceKHR surface;
 	// Function pointers
 	PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
-	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR; 
+	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
 	PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR;
 	PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR;
 	PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR;
@@ -79,12 +81,12 @@ public:
 
 	VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 
-	uint32_t imageCount;
+	uint imageCount;
 	std::vector<VkImage> images;
 	std::vector<SwapChainBuffer> buffers;
 
 	// Index of the deteced graphics and presenting device queue
-	uint32_t queueNodeIndex = UINT32_MAX;
+	uint queueNodeIndex = UINT32_MAX;
 
 	// Creates an os specific surface
 	// Tries to find a graphics and a present queue
@@ -118,7 +120,7 @@ public:
 #endif
 
 		// Get available queue family properties
-		uint32_t queueCount;
+		uint queueCount;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, NULL);
 		assert(queueCount >= 1);
 
@@ -129,25 +131,25 @@ public:
 		// Find a queue with present support
 		// Will be used to present the swap chain images to the windowing system
 		std::vector<VkBool32> supportsPresent(queueCount);
-		for (uint32_t i = 0; i < queueCount; i++) 
+		for (uint i = 0; i < queueCount; i++)
 		{
 			fpGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &supportsPresent[i]);
 		}
 
 		// Search for a graphics and a present queue in the array of queue
 		// families, try to find one that supports both
-		uint32_t graphicsQueueNodeIndex = UINT32_MAX;
-		uint32_t presentQueueNodeIndex = UINT32_MAX;
-		for (uint32_t i = 0; i < queueCount; i++) 
+		uint graphicsQueueNodeIndex = UINT32_MAX;
+		uint presentQueueNodeIndex = UINT32_MAX;
+		for (uint i = 0; i < queueCount; i++)
 		{
-			if ((queueProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) 
+			if ((queueProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
 			{
-				if (graphicsQueueNodeIndex == UINT32_MAX) 
+				if (graphicsQueueNodeIndex == UINT32_MAX)
 				{
 					graphicsQueueNodeIndex = i;
 				}
 
-				if (supportsPresent[i] == VK_TRUE) 
+				if (supportsPresent[i] == VK_TRUE)
 				{
 					graphicsQueueNodeIndex = i;
 					presentQueueNodeIndex = i;
@@ -155,13 +157,13 @@ public:
 				}
 			}
 		}
-		if (presentQueueNodeIndex == UINT32_MAX) 
-		{	
+		if (presentQueueNodeIndex == UINT32_MAX)
+		{
 			// If there's no queue that supports both present and graphics
 			// try to find a separate present queue
-			for (uint32_t i = 0; i < queueCount; ++i) 
+			for (uint i = 0; i < queueCount; ++i)
 			{
-				if (supportsPresent[i] == VK_TRUE) 
+				if (supportsPresent[i] == VK_TRUE)
 				{
 					presentQueueNodeIndex = i;
 					break;
@@ -180,7 +182,7 @@ public:
 		queueNodeIndex = graphicsQueueNodeIndex;
 
 		// Get list of supported surface formats
-		uint32_t formatCount;
+		uint formatCount;
 		err = fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, NULL);
 		assert(!err);
 		assert(formatCount > 0);
@@ -226,7 +228,7 @@ public:
 	}
 
 	// Create the swap chain and get images with given width and height
-	void create(VkCommandBuffer cmdBuffer, uint32_t *width, uint32_t *height)
+	void create(VkCommandBuffer cmdBuffer, uint *width, uint *height)
 	{
 		VkResult err;
 		VkSwapchainKHR oldSwapchain = swapChain;
@@ -237,7 +239,7 @@ public:
 		assert(!err);
 
 		// Get available present modes
-		uint32_t presentModeCount;
+		uint presentModeCount;
 		err = fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL);
 		assert(!err);
 		assert(presentModeCount > 0);
@@ -266,21 +268,21 @@ public:
 
 		// Prefer mailbox mode if present, it's the lowest latency non-tearing present  mode
 		VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-		for (size_t i = 0; i < presentModeCount; i++) 
+		for (size_t i = 0; i < presentModeCount; i++)
 		{
-			if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) 
+			if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
 				swapchainPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
 				break;
 			}
-			if ((swapchainPresentMode != VK_PRESENT_MODE_MAILBOX_KHR) && (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR)) 
+			if ((swapchainPresentMode != VK_PRESENT_MODE_MAILBOX_KHR) && (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR))
 			{
 				swapchainPresentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 			}
 		}
 
 		// Determine the number of images
-		uint32_t desiredNumberOfSwapchainImages = surfCaps.minImageCount + 1;
+		uint desiredNumberOfSwapchainImages = surfCaps.minImageCount + 1;
 		if ((surfCaps.maxImageCount > 0) && (desiredNumberOfSwapchainImages > surfCaps.maxImageCount))
 		{
 			desiredNumberOfSwapchainImages = surfCaps.maxImageCount;
@@ -291,7 +293,7 @@ public:
 		{
 			preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 		}
-		else 
+		else
 		{
 			preTransform = surfCaps.currentTransform;
 		}
@@ -320,9 +322,9 @@ public:
 
 		// If an existing sawp chain is re-created, destroy the old swap chain
 		// This also cleans up all the presentable images
-		if (oldSwapchain != VK_NULL_HANDLE) 
-		{ 
-			for (uint32_t i = 0; i < imageCount; i++)
+		if (oldSwapchain != VK_NULL_HANDLE)
+		{
+			for (uint i = 0; i < imageCount; i++)
 			{
 				vkDestroyImageView(device, buffers[i].view, nullptr);
 			}
@@ -339,7 +341,7 @@ public:
 
 		// Get the swap chain buffers containing the image and imageview
 		buffers.resize(imageCount);
-		for (uint32_t i = 0; i < imageCount; i++)
+		for (uint i = 0; i < imageCount; i++)
 		{
 			VkImageViewCreateInfo colorAttachmentView = {};
 			colorAttachmentView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -363,10 +365,10 @@ public:
 
 			// Transform images from initial (undefined) to present layout
 			vkTools::setImageLayout(
-				cmdBuffer, 
-				buffers[i].image, 
-				VK_IMAGE_ASPECT_COLOR_BIT, 
-				VK_IMAGE_LAYOUT_UNDEFINED, 
+				cmdBuffer,
+				buffers[i].image,
+				VK_IMAGE_ASPECT_COLOR_BIT,
+				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 			colorAttachmentView.image = buffers[i].image;
@@ -377,13 +379,13 @@ public:
 	}
 
 	// Acquires the next image in the swap chain
-	VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t *currentBuffer)
+	VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint *currentBuffer)
 	{
 		return fpAcquireNextImageKHR(device, swapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, currentBuffer);
 	}
 
 	// Present the current image to the queue
-	VkResult queuePresent(VkQueue queue, uint32_t currentBuffer)
+	VkResult queuePresent(VkQueue queue, uint currentBuffer)
 	{
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -395,7 +397,7 @@ public:
 	}
 
 	// Present the current image to the queue
-	VkResult queuePresent(VkQueue queue, uint32_t currentBuffer, VkSemaphore waitSemaphore)
+	VkResult queuePresent(VkQueue queue, uint currentBuffer, VkSemaphore waitSemaphore)
 	{
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -415,7 +417,7 @@ public:
 	// Free all Vulkan resources used by the swap chain
 	void cleanup()
 	{
-		for (uint32_t i = 0; i < imageCount; i++)
+		for (uint i = 0; i < imageCount; i++)
 		{
 			vkDestroyImageView(device, buffers[i].view, nullptr);
 		}

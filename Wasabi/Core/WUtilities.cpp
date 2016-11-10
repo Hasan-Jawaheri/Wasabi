@@ -37,7 +37,7 @@ bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, int* _x, int* _y) {
 
 bool WUtil::RayIntersectCube(float cubeHalfSize, WVector3 rayPos, WVector3 rayDir, WVector3 cubePos) {
 	//if the ray position is inside the box, it intersects then
-	if (abs(rayPos.x) < cubeHalfSize && abs(rayPos.y) < cubeHalfSize && abs(rayPos.z) < cubeHalfSize)
+	if (fabs(rayPos.x) < cubeHalfSize && fabs(rayPos.y) < cubeHalfSize && fabs(rayPos.z) < cubeHalfSize)
 		return true;
 
 	//allocate 24 vertices for the cube
@@ -131,7 +131,7 @@ bool WUtil::RayIntersectCube(float cubeHalfSize, WVector3 rayPos, WVector3 rayDi
 
 bool WUtil::RayIntersectBox(WVector3 boxDimensions, WVector3 rayPos, WVector3 rayDir, WVector3 boxPos) {
 	//if the ray position is inside the box, it intersects then
-	if (abs(rayPos.x) < boxDimensions.x && abs(rayPos.y) < boxDimensions.y && abs(rayPos.z) < boxDimensions.z)
+	if (fabs(rayPos.x) < boxDimensions.x && fabs(rayPos.y) < boxDimensions.y && fabs(rayPos.z) < boxDimensions.z)
 		return true;
 
 	//allocate 24 vertices for the cube

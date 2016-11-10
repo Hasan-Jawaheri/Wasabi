@@ -17,13 +17,19 @@
 #ifndef VK_USE_PLATFORM_WIN32_KHR
 #define VK_USE_PLATFORM_WIN32_KHR
 #endif
-#else
+#elif (defined __linux__)
+#ifndef VK_USE_PLATFORM_XCB_KHR
+#define VK_USE_PLATFORM_XCB_KHR
+#endif
 #endif
 #include "vulkan/vulkan.h"
 #pragma comment (lib, "vulkan-1.lib")
 #include "VkTools/vulkanswapchain.hpp"
 #include "VkTools/vulkantools.h"
 
+#include <math.h>
+#include <float.h>
+#include <climits>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -46,18 +52,17 @@ using std::basic_filebuf;
 using std::vector;
 using std::array;
 
-#define W_SAFE_RELEASE(x) { if ( x ) { x->Release ( ); x = NULL; } }
-#define W_SAFE_REMOVEREF(x) { if ( x ) { x->RemoveReference ( ); x = NULL; } }
+#define W_SAFE_RELEASE(x) { if ( x ) { (x)->Release ( ); x = NULL; } }
+#define W_SAFE_REMOVEREF(x) { if ( x ) { (x)->RemoveReference ( ); x = NULL; } }
 #define W_SAFE_DELETE(x) { if ( x ) { delete x; x = NULL; } }
 #define W_SAFE_DELETE_ARRAY(x) { if ( x ) { delete[] x; x = NULL; } }
-#define W_SAFE_ALLOC(x) GlobalAlloc ( GPTR, x )
-#define W_SAFE_FREE(x) { if ( x ) { GlobalFree ( x ); } }
+#define W_SAFE_ALLOC(x) malloc(x)
+#define W_SAFE_FREE(x) { if ( x ) { free(x); } }
 
-#ifndef max
-#define max(a,b) (a>b?a:b)
-#endif
-#ifndef min
-#define min(a,b) (a<b?a:b)
+#ifndef _WIN32
+#define fopen_s(a,b,c) *a = fopen(b, c)
+#define strcpy_s(a,b,c) strcpy(a,c)
+#define ZeroMemory(x,y) memset(x, 0, y)
 #endif
 
 typedef unsigned int uint;
@@ -267,8 +272,8 @@ public:
 	 * @param properties The requested memory properties to be found
 	 * @param typeIndex  Pointer to an index to be filled
 	 */
-	void GetMemoryType(uint32_t typeBits, VkFlags properties,
-					   uint32_t* typeIndex) const;
+	void GetMemoryType(uint typeBits, VkFlags properties,
+					   uint* typeIndex) const;
 
 	/**
 	 * Starts recording commands on the dummy command buffer, which can be
@@ -406,7 +411,7 @@ typedef unsigned int uint;
  * This function will be called at the beginning of the program, and will
  * expect the user-defined code to create a newly allocated instance of an
  * application, which should be a child of a Wasabi class.
- * 
+ *
  * @return A newly allocated Wasabi child that will run the engine
  */
 Wasabi* WInitialize();

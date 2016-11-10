@@ -201,7 +201,7 @@ public:
 	 *   WDefaultVertex(0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
 	 *                  0.0f, 0.0f, -1.0f, 1.0f, 0.0f)
 	 * };
-	 * DWORD indices[] = {0, 1, 2};
+	 * uint indices[] = {0, 1, 2};
 	 * WGeomery* geometry = new WGeometry(this);
 	 * geometry->CreateFromData(vertices, 3, indices, 3);
 	 * @endcode
@@ -212,7 +212,7 @@ public:
 	 * @param  num_verts     Number of vertices in vb
 	 * @param  ib            A pointer to the memory containing the index data,
 	 *                       which must be a valid contiguous memory of size
-	 *                       <a>num_indices*sizeof(DWORD)</a>
+	 *                       <a>num_indices*sizeof(uint)</a>
 	 * @param  num_indices   Number of indices in ab
 	 * @param  bDynamic      true if the geometry will require frequent
 	 *                       modifications, false otherwise
@@ -452,9 +452,9 @@ public:
 	 * Flip this first triangle
 	 * @code
 	 * // Assuming geometry is valid and dynamic
-	 * DWORD* indices;
+	 * uint* indices;
 	 * geometry->MapIndexBuffer(&indices);
-	 * DWORD temp = indices[0];
+	 * uint temp = indices[0];
 	 * indices[0] = indices[2];
 	 * indices[2] = temp;
 	 * geometry->UnmapIndexBuffer();
@@ -466,7 +466,7 @@ public:
 	 *                   array, false if you want to modify the indices
 	 * @return           Error code, see WError.h
 	 */
-	WError MapIndexBuffer(DWORD** const ib, bool bReadOnly = false);
+	WError MapIndexBuffer(uint** const ib, bool bReadOnly = false);
 
 	/**
 	 * Map the animation buffer of this geometry. This will fail if there is no

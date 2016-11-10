@@ -213,7 +213,7 @@ public:
 			"	float nl = clamp(dot(inWorldNorm, lDir), 0, 1);\n"
 			"	vec3 camDir = normalize(cam.gCamPos - inWorldPos);\n"
 			""  // Calculate specular term
-			"	float spec = max(dot(reflect(-lDir, inWorldNorm), camDir), 0.0f);\n"
+			"	float spec = max (dot(reflect(-lDir, inWorldNorm), camDir), 0.0f);\n"
 			"	vec3 unspecced = vec3(col * nl) * intensity;\n"
 			"	return unspecced * spec;\n"
 			"}\n"

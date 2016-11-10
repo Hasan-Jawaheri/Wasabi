@@ -1218,11 +1218,11 @@ struct stbvox_mesh_maker
 // have to use our own names to avoid the _MSC_VER path having conflicting type names
 #ifndef _MSC_VER
    #include <stdint.h>
-   typedef uint16_t stbvox_uint16;
-   typedef uint32_t stbvox_uint32;
+   typedef uint16_t stbvox_UINT16;
+   typedef uint stbvox_UINT32;
 #else
-   typedef unsigned short stbvox_uint16;
-   typedef unsigned int   stbvox_uint32;
+   typedef unsigned short stbvox_UINT16;
+   typedef unsigned int   stbvox_UINT32;
 #endif
 
 #ifdef _MSC_VER
@@ -1314,21 +1314,21 @@ struct stbvox_mesh_maker
 #endif
 
 #if defined(STBVOX_ICONFIG_VERTEX_32)
-   typedef stbvox_uint32 stbvox_mesh_vertex;
+   typedef stbvox_UINT32 stbvox_mesh_vertex;
    #define stbvox_vertex_encode(x,y,z,ao,texlerp) \
-      ((stbvox_uint32) ((x)+((y)<<7)+((z)<<14)+((ao)<<23)+((texlerp)<<29)))
+      ((stbvox_UINT32) ((x)+((y)<<7)+((z)<<14)+((ao)<<23)+((texlerp)<<29)))
 #elif defined(STBVOX_ICONFIG_VERTEX_16_1)  // mode=2
-   typedef stbvox_uint16 stbvox_mesh_vertex;
+   typedef stbvox_UINT16 stbvox_mesh_vertex;
    #define stbvox_vertex_encode(x,y,z,ao,texlerp) \
-      ((stbvox_uint16) ((z)+((ao)<<7)+((texlerp)<<13)
+      ((stbvox_UINT16) ((z)+((ao)<<7)+((texlerp)<<13)
 #elif defined(STBVOX_ICONFIG_VERTEX_16_2)  // mode=3
-   typedef stbvox_uint16 stbvox_mesh_vertex;
+   typedef stbvox_UINT16 stbvox_mesh_vertex;
    #define stbvox_vertex_encode(x,y,z,ao,texlerp) \
-      ((stbvox_uint16) ((x)+((z)<<6))+((ao)<<10))
+      ((stbvox_UINT16) ((x)+((z)<<6))+((ao)<<10))
 #elif defined(STBVOX_ICONFIG_VERTEX_8)
-   typedef stbvox_uint8 stbvox_mesh_vertex;
+   typedef stbvox_UINT8 stbvox_mesh_vertex;
    #define stbvox_vertex_encode(x,y,z,ao,texlerp) \
-      ((stbvox_uint8) ((z)+((ao)<<6))
+      ((stbvox_UINT8) ((z)+((ao)<<6))
 #else
    #error "internal error, no vertex type"
 #endif

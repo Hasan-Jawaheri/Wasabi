@@ -22,7 +22,7 @@ void WBone::SetIndex(unsigned int index) {
 	m_index = index;
 }
 void WBone::GetName(char* name, unsigned int maxChars) const {
-	strcpy_s(name, min(maxChars, 64), m_name);
+	strcpy_s(name, fmin(maxChars, 64), m_name);
 }
 void WBone::SetName(std::string name) {
 	strcpy_s(m_name, 64, name.c_str());
@@ -125,7 +125,7 @@ WError WBone::LoadFromWA(basic_filebuf<char>* buff, unsigned int pos) {
 	fstream file;
 	if (!buff)
 		return WError(W_FILENOTFOUND);
-	file.set_rdbuf(buff);
+	file.rdbuf(buff);
 	file.seekg(pos);
 
 	WVector3 posULR[4];
@@ -245,9 +245,10 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 			texWidth *= 2;
 
 		float* texData = new float[texWidth * texWidth * 4];
-		for (unsigned int i = 0; i < f->boneV.size(); i++)
-			memcpy(&((char*)texData)[i * sizeof WMatrix], &(f->boneV[i]->GetInvBindingPose() * f->boneV[i]->GetRelativeMatrix()),
-				   sizeof WMatrix - 4 * sizeof(float));
+		for (unsigned int i = 0; i < f->boneV.size(); i++) {
+			WMatrix mtx = f->boneV[i]->GetInvBindingPose() * f->boneV[i]->GetRelativeMatrix();
+			memcpy(&((char*)texData)[i * sizeof(WMatrix)], &mtx, sizeof(WMatrix) - 4 * sizeof(float));
+		}
 		m_boneTex = new WImage(m_app);
 		int oldMips = (int)m_app->engineParams["numGeneratedMips"];
 		m_app->engineParams["numGeneratedMips"] = (void*)1;
@@ -393,7 +394,7 @@ void WSkeleton::Update(float fDeltaTime) {
 					finalMatrix(0, 3) = finalMatrix(3, 0);
 					finalMatrix(1, 3) = finalMatrix(3, 1);
 					finalMatrix(2, 3) = finalMatrix(3, 2);
-					memcpy(&((char*)texData)[boneIndex * sizeof WMatrix], &finalMatrix, sizeof WMatrix - sizeof(float) * 4);
+					memcpy(&((char*)texData)[boneIndex * sizeof(WMatrix)], &finalMatrix, sizeof(WMatrix) - sizeof(float) * 4);
 				}
 
 				//set parents back to normal
@@ -440,7 +441,7 @@ void WSkeleton::Update(float fDeltaTime) {
 					finalMatrix(0, 3) = finalMatrix(3, 0);
 					finalMatrix(1, 3) = finalMatrix(3, 1);
 					finalMatrix(2, 3) = finalMatrix(3, 2);
-					memcpy(&((char*)texData)[boneIndex * sizeof WMatrix], &finalMatrix, sizeof WMatrix - sizeof(float) * 4);
+					memcpy(&((char*)texData)[boneIndex * sizeof(WMatrix)], &finalMatrix, sizeof(WMatrix) - sizeof(float) * 4);
 				}
 			}
 		}

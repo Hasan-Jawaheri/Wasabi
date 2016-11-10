@@ -461,7 +461,7 @@ WError WEffect::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	unsigned int pipeline = min(num_vertex_buffers == 0 ? 0 : num_vertex_buffers - 1, m_pipelines.size()-1);
+	unsigned int pipeline = fmin(num_vertex_buffers == 0 ? 0 : num_vertex_buffers - 1, m_pipelines.size()-1);
 	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[pipeline]);
 
 	return WError(W_SUCCEEDED);

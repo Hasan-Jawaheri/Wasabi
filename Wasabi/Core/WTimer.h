@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <chrono>
+
 #define W_TIMER_TYPE			float
 #define W_TIMER_SECONDS			1
 #define W_TIMER_MINUTES			(1.0f/60.0f)
@@ -48,13 +50,11 @@ public:
 
 private:
 	/** The time at which the timer started */
-	__int64 m_startTime;
+	long long m_startTime;
 	/** The time at which the last pause started */
-	__int64 m_pauseStartTime;
+	long long m_pauseStartTime;
 	/** The total amount of time spent paused */
-	__int64 m_totalPauseTime;
-	/** "seconds per count" */
-	float m_SPC;
+	long long m_totalPauseTime;
 	/** conversion constant */
 	float m_unit;
 

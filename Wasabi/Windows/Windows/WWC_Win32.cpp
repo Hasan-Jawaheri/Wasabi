@@ -15,16 +15,16 @@ WWC_Win32::WWC_Win32(Wasabi* app) : WWindowComponent(app) {
 	m_isMinimized = true;
 
 	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW)));
-	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW))); // DWORD
+	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW))); // uint
 	app->engineParams.insert(std::pair<std::string, void*>("classIcon", (void*)(NULL))); // HICON
 	app->engineParams.insert(std::pair<std::string, void*>("classCursor", (void*)(LoadCursorA(NULL, MAKEINTRESOURCEA(32512))))); // HCURSOR
 	app->engineParams.insert(std::pair<std::string, void*>("menuName", (void*)(NULL))); // LPCSTR
-	app->engineParams.insert(std::pair<std::string, void*>("menuProc", (void*)(NULL))); // void (*) (HMENU, UINT)
+	app->engineParams.insert(std::pair<std::string, void*>("menuProc", (void*)(NULL))); // void (*) (HMENU, uint)
 	app->engineParams.insert(std::pair<std::string, void*>("classIcon_sm", (void*)(NULL))); // HICON
 	app->engineParams.insert(std::pair<std::string, void*>("windowMenu", (void*)(NULL))); // HMENU
 	app->engineParams.insert(std::pair<std::string, void*>("windowParent", (void*)(NULL))); // HWND
-	app->engineParams.insert(std::pair<std::string, void*>("windowStyle", (void*)(WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_VISIBLE))); // DWORD
-	app->engineParams.insert(std::pair<std::string, void*>("windowStyleEx", (void*)(WS_EX_OVERLAPPEDWINDOW))); // DWORD
+	app->engineParams.insert(std::pair<std::string, void*>("windowStyle", (void*)(WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_VISIBLE))); // uint
+	app->engineParams.insert(std::pair<std::string, void*>("windowStyleEx", (void*)(WS_EX_OVERLAPPEDWINDOW))); // uint
 	app->engineParams.insert(std::pair<std::string, void*>("defWndX", (void*)(-1))); // int
 	app->engineParams.insert(std::pair<std::string, void*>("defWndY", (void*)(-1))); //int
 }
@@ -37,9 +37,9 @@ WError WWC_Win32::Initialize(int width, int height) {
 		rc.top = 0;
 		rc.right = width;
 		rc.bottom = height;
-		AdjustWindowRectEx(&rc, (DWORD)m_app->engineParams["windowStyle"],
+		AdjustWindowRectEx(&rc, (uint)m_app->engineParams["windowStyle"],
 			(m_app->engineParams["windowMenu"] == nullptr) ? FALSE : TRUE,
-			(DWORD)m_app->engineParams["windowStyleEx"]);
+			(uint)m_app->engineParams["windowStyleEx"]);
 
 		//adjust window position (no window re-creation)
 		SetWindowPos(m_mainWindow, nullptr, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE);
@@ -50,8 +50,8 @@ WError WWC_Win32::Initialize(int width, int height) {
 	//create window class
 	WNDCLASSEXA wcex;
 
-	wcex.cbSize = sizeof WNDCLASSEXA;
-	wcex.style = (DWORD)m_app->engineParams["classStyle"];
+	wcex.cbSize = sizeof(WNDCLASSEXA);
+	wcex.style = (uint)m_app->engineParams["classStyle"];
 	wcex.lpfnWndProc = hMainWndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
@@ -73,9 +73,9 @@ WError WWC_Win32::Initialize(int width, int height) {
 	rc.top = 0;
 	rc.right = width;
 	rc.bottom = height;
-	AdjustWindowRectEx(&rc, (DWORD)m_app->engineParams["windowStyle"],
+	AdjustWindowRectEx(&rc, (uint)m_app->engineParams["windowStyle"],
 		(m_app->engineParams["windowMenu"] == nullptr) ? FALSE : TRUE,
-		(DWORD)m_app->engineParams["windowStyleEx"]);
+		(uint)m_app->engineParams["windowStyleEx"]);
 
 	//set to default positions if specified
 	int x, y;
@@ -91,9 +91,9 @@ WError WWC_Win32::Initialize(int width, int height) {
 	//
 	//Create the main window
 	//
-	m_mainWindow = CreateWindowExA((DWORD)m_app->engineParams["windowStyleEx"], wcex.lpszClassName,
+	m_mainWindow = CreateWindowExA((uint)m_app->engineParams["windowStyleEx"], wcex.lpszClassName,
 		(LPCSTR)m_app->engineParams["appName"],
-		(DWORD)m_app->engineParams["windowStyle"],
+		(uint)m_app->engineParams["windowStyle"],
 		x, y, rc.right - rc.left, rc.bottom - rc.top,
 		(HWND)m_app->engineParams["windowParent"], (HMENU)m_app->engineParams["windowMenu"], m_hInstance, nullptr);
 
@@ -343,7 +343,7 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 		//send messages to child windows
 		if (HIWORD(wParam) == 0)
 			if (appInst->engineParams["windowMenu"] != nullptr && appInst->engineParams["menuPorc"] != nullptr)
-				((void(*)(HMENU, UINT))appInst->engineParams["menuProc"])(GetMenu(hWnd), LOWORD(wParam));
+				((void(*)(HMENU, uint))appInst->engineParams["menuProc"])(GetMenu(hWnd), LOWORD(wParam));
 		break;
 	}
 	default: //default behavior for other messages

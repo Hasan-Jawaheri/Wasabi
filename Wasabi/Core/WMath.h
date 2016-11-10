@@ -138,12 +138,12 @@ public:
 	}
 
 	const bool operator== (const WColor col) const {
-		return (abs(r - col.r) < W_EPSILON && abs(g - col.g) < W_EPSILON &&
-			abs(b - col.b) < W_EPSILON && abs(a - col.a) < W_EPSILON);
+		return (fabs(r - col.r) < W_EPSILON && fabs(g - col.g) < W_EPSILON &&
+			fabs(b - col.b) < W_EPSILON && fabs(a - col.a) < W_EPSILON);
 	}
 	const bool operator!= (const WColor col) const {
-		return (abs(r - col.r) >= W_EPSILON || abs(g - col.g) >= W_EPSILON ||
-			abs(b - col.b) >= W_EPSILON || abs(a - col.a) >= W_EPSILON);
+		return (fabs(r - col.r) >= W_EPSILON || fabs(g - col.g) >= W_EPSILON ||
+			fabs(b - col.b) >= W_EPSILON || fabs(a - col.a) >= W_EPSILON);
 	}
 };
 
@@ -252,10 +252,10 @@ public:
 	}
 
 	const bool operator== (const WVector2 vec) const {
-		return (abs(x - vec.x) < W_EPSILON && abs(y - vec.y) < W_EPSILON);
+		return (fabs(x - vec.x) < W_EPSILON && fabs(y - vec.y) < W_EPSILON);
 	}
 	const bool operator!= (const WVector2 vec) const {
-		return (abs(x - vec.x) >= W_EPSILON || abs(y - vec.y) >= W_EPSILON);
+		return (fabs(x - vec.x) >= W_EPSILON || fabs(y - vec.y) >= W_EPSILON);
 	}
 };
 
@@ -372,12 +372,12 @@ public:
 	}
 
 	const bool operator== (const WVector3 vec) const {
-		return (abs(x - vec.x) < W_EPSILON && abs(y - vec.y) <
-						W_EPSILON && abs(z - vec.z) < W_EPSILON);
+		return (fabs(x - vec.x) < W_EPSILON && fabs(y - vec.y) <
+						W_EPSILON && fabs(z - vec.z) < W_EPSILON);
 	}
 	const bool operator!= (const WVector3 vec) const {
-		return (abs(x - vec.x) >= W_EPSILON || abs(y - vec.y) >=
-						W_EPSILON || abs(z - vec.z) >= W_EPSILON);
+		return (fabs(x - vec.x) >= W_EPSILON || fabs(y - vec.y) >=
+						W_EPSILON || fabs(z - vec.z) >= W_EPSILON);
 	}
 };
 
@@ -504,12 +504,12 @@ public:
 	}
 
 	const bool operator== (const WVector4 vec) const {
-		return (abs(x - vec.x) < W_EPSILON && abs(y - vec.y) < W_EPSILON &&
-			abs(z - vec.z) < W_EPSILON && abs(w - vec.w) < W_EPSILON);
+		return (fabs(x - vec.x) < W_EPSILON && fabs(y - vec.y) < W_EPSILON &&
+			fabs(z - vec.z) < W_EPSILON && fabs(w - vec.w) < W_EPSILON);
 	}
 	const bool operator!= (const WVector4 vec) const {
-		return (abs(x - vec.x) >= W_EPSILON || abs(y - vec.y) >= W_EPSILON ||
-			abs(z - vec.z) >= W_EPSILON || abs(w - vec.w) >= W_EPSILON);
+		return (fabs(x - vec.x) >= W_EPSILON || fabs(y - vec.y) >= W_EPSILON ||
+			fabs(z - vec.z) >= W_EPSILON || fabs(w - vec.w) >= W_EPSILON);
 	}
 };
 

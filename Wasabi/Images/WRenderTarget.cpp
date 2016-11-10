@@ -68,7 +68,7 @@ void WRenderTarget::_DestroyResources() {
 		vkFreeMemory(device, m_depthStencil.mem, nullptr);
 	m_depthStencil.mem = VK_NULL_HANDLE;
 
-	for (uint32_t i = 0; i < m_frameBuffers.size(); i++)
+	for (uint i = 0; i < m_frameBuffers.size(); i++)
 		vkDestroyFramebuffer(device, m_frameBuffers[i], nullptr);
 	m_frameBuffers.clear();
 	m_currentFrameBuffer = 0;
@@ -472,7 +472,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 
 	// Create frame buffers for every swap chain image
 	m_frameBuffers.resize(num_views);
-	for (uint32_t i = 0; i < m_frameBuffers.size(); i++) {
+	for (uint i = 0; i < m_frameBuffers.size(); i++) {
 		imageViews[0] = views[i];
 		VkResult err = vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &m_frameBuffers[i]);
 		if (err != VK_SUCCESS) {

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#ifdef _WIN32
+
 #include "../WInputComponent.h"
 
 /**
@@ -51,3 +53,5 @@ protected:
 	/** states of all keys */
 	bool m_keyDown[256];
 };
+
+#endif

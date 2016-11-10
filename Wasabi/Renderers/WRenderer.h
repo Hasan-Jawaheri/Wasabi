@@ -37,8 +37,12 @@ enum W_RENDER_FILTER {
  * are, during the initialization in Wasabi::SetupComponents().
  */
 class WRenderer {
+#ifdef _WIN32
 	friend int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 								LPSTR cmdLine, int cmdShow);
+#elif (defined __linux__)
+	friend int main();
+#endif
 	friend class Wasabi;
 
 	/**
@@ -158,8 +162,8 @@ protected:
 	/** Vulkan format of the color buffer(s) of the swap chain */
 	VkFormat m_colorFormat;
 	/** Current width of the screen (window client) */
-	uint32_t m_width
+	uint m_width;
 	/** Current height of the screen (window client) */
-	uint32_t m_height;
+	uint m_height;
 };
 

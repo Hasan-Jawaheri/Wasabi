@@ -231,8 +231,8 @@ static void stbi__end_write_file(stbi__write_context *s)
 
 #endif // !STBI_WRITE_NO_STDIO
 
-typedef unsigned int stbiw_uint32;
-typedef int stb_image_write_test[sizeof(stbiw_uint32)==4 ? 1 : -1];
+typedef unsigned int stbiw_UINT32;
+typedef int stb_image_write_test[sizeof(stbiw_UINT32)==4 ? 1 : -1];
 
 #ifdef STB_IMAGE_WRITE_STATIC
 static int stbi_write_tga_with_rle = 1;
@@ -254,7 +254,7 @@ static void stbiw__writefv(stbi__write_context *s, const char *fmt, va_list v)
                      b[1] = STBIW_UCHAR(x>>8);
                      s->func(s->context,b,2);
                      break; }
-         case '4': { stbiw_uint32 x = va_arg(v,int);
+         case '4': { stbiw_UINT32 x = va_arg(v,int);
                      unsigned char b[4];
                      b[0]=STBIW_UCHAR(x);
                      b[1]=STBIW_UCHAR(x>>8);
@@ -321,7 +321,7 @@ static void stbiw__write_pixel(stbi__write_context *s, int rgb_dir, int comp, in
 
 static void stbiw__write_pixels(stbi__write_context *s, int rgb_dir, int vdir, int x, int y, int comp, void *data, int write_alpha, int scanline_pad, int expand_mono)
 {
-   stbiw_uint32 zero = 0;
+   stbiw_UINT32 zero = 0;
    int i,j, j_end;
 
    if (y <= 0)
@@ -704,7 +704,7 @@ static unsigned int stbiw__zlib_countm(unsigned char *a, unsigned char *b, int l
 
 static unsigned int stbiw__zhash(unsigned char *data)
 {
-   stbiw_uint32 hash = data[0] + (data[1] << 8) + (data[2] << 16);
+   stbiw_UINT32 hash = data[0] + (data[1] << 8) + (data[2] << 16);
    hash ^= hash << 3;
    hash += hash >> 5;
    hash ^= hash << 4;

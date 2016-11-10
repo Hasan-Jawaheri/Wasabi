@@ -1,35 +1,29 @@
 #include "WTimer.h"
+#ifdef _WIN32
 #include <Windows.h>
 #include <time.h>
 #include <mmsystem.h>					//time functions
 #pragma comment ( lib, "winmm.lib" )	//timeGetTime function
-
-void WInitializeTimers() {
-	//randomize timers
-	srand(timeGetTime());
-
-	//begin accurate timing system
-	timeBeginPeriod(1);
-}
-void WUnInitializeTimers() {
-	//end accurate timing system
-	timeEndPeriod(1);
-}
+#elif (defined __linux__)
+#include <stdlib.h>
+#endif
 
 W_TIMER_TYPE _GetCurrentTime() {
 	//calculate elapsed time
-	__int64 currtime = 0;
-	QueryPerformanceCounter((LARGE_INTEGER*)&currtime);
-	return (W_TIMER_TYPE)currtime;
-};
+	auto tNow = std::chrono::high_resolution_clock::now();
+	auto time = tNow.time_since_epoch().count();
+	return (W_TIMER_TYPE)time;
+}
+
+void WInitializeTimers() {
+	//randomize timers
+	srand(_GetCurrentTime());
+}
+void WUnInitializeTimers() {
+}
 
 WTimer::WTimer(float fUnit) {
 	m_unit = fUnit;
-
-	//initialize accurate timing system
-	__int64 countsPerSec;
-	QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSec);
-	m_SPC = 1.0f / (float)countsPerSec;
 
 	Reset();
 }
@@ -51,7 +45,7 @@ W_TIMER_TYPE WTimer::GetElapsedTime() const {
 	W_TIMER_TYPE totalElapsedTime = _GetCurrentTime() - m_startTime;
 	if (m_totalPauseTime + GetPauseTime() > totalElapsedTime) //dont allow negative values
 		return 0;
-	return ((totalElapsedTime - (m_totalPauseTime + GetPauseTime()))*m_SPC)*m_unit; //multiply to convert unit
+	return totalElapsedTime - (m_totalPauseTime + GetPauseTime()); //multiply to convert unit
 }
 W_TIMER_TYPE WTimer::GetPauseTime() const {
 	if (m_pauseStartTime)
