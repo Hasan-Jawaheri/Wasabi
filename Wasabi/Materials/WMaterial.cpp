@@ -38,6 +38,8 @@ bool WMaterial::Valid() const {
 void WMaterial::_DestroyResources() {
 	VkDevice device = m_app->GetVulkanDevice();
 
+	W_SAFE_REMOVEREF(m_effect);
+
 	for (int i = 0; i < m_uniformBuffers.size(); i++) {
 		vkFreeMemory(device, m_uniformBuffers[i].memory, nullptr);
 		vkDestroyBuffer(device, m_uniformBuffers[i].buffer, nullptr);
@@ -59,8 +61,6 @@ void WMaterial::_DestroyResources() {
 
 WError WMaterial::SetEffect(WEffect* const effect) {
 	VkDevice device = m_app->GetVulkanDevice();
-
-	W_SAFE_REMOVEREF(m_effect);
 
 	_DestroyResources();
 
