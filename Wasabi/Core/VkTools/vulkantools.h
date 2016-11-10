@@ -101,7 +101,7 @@ namespace vkTools
 		VkBuffer buffer;
 		VkDeviceMemory memory;
 		VkDescriptorBufferInfo descriptor;
-		uint32_t allocSize;
+		uint allocSize;
 		void* mapped = nullptr;
 	};
 
@@ -118,7 +118,7 @@ namespace vkTools
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo(
 			VkCommandPool commandPool,
 			VkCommandBufferLevel level,
-			uint32_t bufferCount);
+			uint bufferCount);
 
 		VkCommandPoolCreateInfo commandPoolCreateInfo();
 		VkCommandBufferBeginInfo commandBufferBeginInfo();
@@ -161,31 +161,31 @@ namespace vkTools
 			VkDeviceSize size);
 
 		VkDescriptorPoolCreateInfo descriptorPoolCreateInfo(
-			uint32_t poolSizeCount,
+			uint poolSizeCount,
 			VkDescriptorPoolSize* pPoolSizes,
-			uint32_t maxSets);
+			uint maxSets);
 
 		VkDescriptorPoolSize descriptorPoolSize(
 			VkDescriptorType type,
-			uint32_t descriptorCount);
+			uint descriptorCount);
 
 		VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(
 			VkDescriptorType type, 
 			VkShaderStageFlags stageFlags, 
-			uint32_t binding);
+			uint binding);
 
 		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo(
 			const VkDescriptorSetLayoutBinding* pBindings,
-			uint32_t bindingCount);
+			uint bindingCount);
 
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo(
 			const VkDescriptorSetLayout* pSetLayouts,
-			uint32_t setLayoutCount	);
+			uint setLayoutCount	);
 
 		VkDescriptorSetAllocateInfo descriptorSetAllocateInfo(
 			VkDescriptorPool descriptorPool,
 			const VkDescriptorSetLayout* pSetLayouts,
-			uint32_t descriptorSetCount);
+			uint descriptorSetCount);
 
 		VkDescriptorImageInfo descriptorImageInfo(
 			VkSampler sampler,
@@ -195,25 +195,25 @@ namespace vkTools
 		VkWriteDescriptorSet writeDescriptorSet(
 			VkDescriptorSet dstSet, 
 			VkDescriptorType type, 
-			uint32_t binding, 
+			uint binding, 
 			VkDescriptorBufferInfo* bufferInfo);
 
 		VkWriteDescriptorSet writeDescriptorSet(
 			VkDescriptorSet dstSet, 
 			VkDescriptorType type, 
-			uint32_t binding, 
+			uint binding, 
 			VkDescriptorImageInfo* imageInfo);
 
 		VkVertexInputBindingDescription vertexInputBindingDescription(
-			uint32_t binding, 
-			uint32_t stride, 
+			uint binding, 
+			uint stride, 
 			VkVertexInputRate inputRate);
 
 		VkVertexInputAttributeDescription vertexInputAttributeDescription(
-			uint32_t binding,
-			uint32_t location,
+			uint binding,
+			uint location,
 			VkFormat format,
-			uint32_t offset);
+			uint offset);
 
 		VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo();
 
@@ -233,7 +233,7 @@ namespace vkTools
 			VkBool32 blendEnable);
 
 		VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo(
-			uint32_t attachmentCount,
+			uint attachmentCount,
 			const VkPipelineColorBlendAttachmentState* pAttachments);
 
 		VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo(
@@ -242,8 +242,8 @@ namespace vkTools
 			VkCompareOp depthCompareOp);
 
 		VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo(
-			uint32_t viewportCount,
-			uint32_t scissorCount,
+			uint viewportCount,
+			uint scissorCount,
 			VkPipelineViewportStateCreateFlags flags);
 
 		VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo(
@@ -252,11 +252,11 @@ namespace vkTools
 
 		VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo(
 			const VkDynamicState *pDynamicStates,
-			uint32_t dynamicStateCount,
+			uint dynamicStateCount,
 			VkPipelineDynamicStateCreateFlags flags);
 
 		VkPipelineTessellationStateCreateInfo pipelineTessellationStateCreateInfo(
-			uint32_t patchControlPoints);
+			uint patchControlPoints);
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo(
 			VkPipelineLayout layout,
@@ -269,8 +269,8 @@ namespace vkTools
 
 		VkPushConstantRange pushConstantRange(
 			VkShaderStageFlags stageFlags,
-			uint32_t size,
-			uint32_t offset);
+			uint size,
+			uint offset);
 	}
 
 }

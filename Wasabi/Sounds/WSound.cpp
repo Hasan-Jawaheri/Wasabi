@@ -1,15 +1,14 @@
 #include "WSound.h"
-#include <windows.h>
 
 template<typename T>
-T BytesTo(BYTE* bytes, bool bLittleEndian = false) {
+T BytesTo(char* bytes, bool bLittleEndian = false) {
 	T ret = 0;
 
 	if (bLittleEndian)
 		for (uint i = sizeof(bytes) - 1; i >= 0 && i != UINT_MAX; i--)
 			ret = (ret << 8) + bytes[i];
 	else
-		for (uint i = 0; i < sizeof bytes; i++)
+		for (uint i = 0; i < sizeof(bytes); i++)
 			ret = (ret << 8) + bytes[i];
 
 	return ret;
@@ -143,7 +142,7 @@ WSound::WSound(Wasabi* const app, uint ID) : WBase(app, ID) {
 	m_valid = false;
 	m_numBuffers = W_NUM_SOUND_BUFFERS_PER_SOUND;
 	m_buffers = new ALuint[m_numBuffers];
-	ZeroMemory(m_buffers, m_numBuffers * sizeof ALuint);
+	ZeroMemory(m_buffers, m_numBuffers * sizeof(ALuint));
 
 	// Generate Buffers
 	alGetError(); // clear error code
@@ -153,11 +152,6 @@ WSound::WSound(Wasabi* const app, uint ID) : WBase(app, ID) {
 	// Generate Source
 	alGetError(); //clear errors
 	alGenSources(1, &m_source);
-
-	char name[256];
-	static uint i = 0;
-	sprintf_s(name, 256, "Sound%3u", i++);
-	SetName(name);
 
 	GetAppPtr()->SoundComponent->m_RegisterSound(this);
 }
@@ -230,17 +224,17 @@ WError WSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) {
 	//frequency at offset 24 (4 bytes long)
 	file.seekg(24);
 	file.read(buffer4Bytes, 4);
-	freq = BytesTo<__int32>((BYTE*)buffer4Bytes, bLittleEndian);
+	freq = BytesTo<int>((char*)buffer4Bytes, bLittleEndian);
 
 	//data size at offset 22 (2 bytes long)
 	file.seekg(22);
 	file.read(buffer2Bytes, 2);
-	uint numChannels = BytesTo<__int16>((BYTE*)buffer2Bytes, bLittleEndian);
+	uint numChannels = BytesTo<short>((char*)buffer2Bytes, bLittleEndian);
 
 	//bits per sample at offset 34 (2 bytes long)
 	file.seekg(34);
 	file.read(buffer2Bytes, 2);
-	uint bps = BytesTo<__int16>((BYTE*)buffer2Bytes, bLittleEndian);
+	uint bps = BytesTo<short>((char*)buffer2Bytes, bLittleEndian);
 
 	if (numChannels == 1)
 		format = bps == 8 ? AL_FORMAT_MONO8 : AL_FORMAT_MONO16;
@@ -271,7 +265,7 @@ WError WSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) {
 	//data size at offset (4 bytes long)
 	file.seekg(offset);
 	file.read(buffer4Bytes, 4);
-	dataSize = BytesTo<__int32>((BYTE*)buffer4Bytes, bLittleEndian);
+	dataSize = BytesTo<int>((char*)buffer4Bytes, bLittleEndian);
 
 	//data at offset+4 (dataSize bytes long)
 	file.seekg(offset + 4);
@@ -456,7 +450,7 @@ WError WSound::LoadFromWS(std::string filename, bool bSaveData) {
 	for (uint i = 0; i < numBuffers; i++) {
 		__SAVEDATA data;
 		file.read((char*)&data.buffer, 4); //buffer index
-		file.read((char*)&data.format, sizeof ALenum); //buffer format
+		file.read((char*)&data.format, sizeof(ALenum)); //buffer format
 		file.read((char*)&temp[0], 4); //frequency
 		file.read((char*)&data.dataSize, 4); //size of data
 		data.data = W_SAFE_ALLOC(data.dataSize);
@@ -497,7 +491,7 @@ WError WSound::LoadFromWS(basic_filebuf<char>* buff, uint pos, bool bSaveData) {
 	for (uint i = 0; i < numBuffers; i++) {
 		__SAVEDATA data;
 		file.read((char*)&data.buffer, 4); //buffer index
-		file.read((char*)&data.format, sizeof ALenum); //buffer format
+		file.read((char*)&data.format, sizeof(ALenum)); //buffer format
 		file.read((char*)&temp[0], 4); //frequency
 		file.read((char*)&data.dataSize, 4); //size of data
 		data.data = W_SAFE_ALLOC(data.dataSize);
@@ -539,7 +533,7 @@ WError WSound::SaveToWS(std::string filename) const {
 		file.write((char*)&numBuffers, 1);
 		for (uint i = 0; i < numBuffers; i++) {
 			file.write((char*)&m_dataV[i].buffer, 4); //buffer index
-			file.write((char*)&m_dataV[i].format, sizeof ALenum); //buffer format
+			file.write((char*)&m_dataV[i].format, sizeof(ALenum)); //buffer format
 			alGetBufferf(m_buffers[m_dataV[i].buffer], AL_FREQUENCY, &temp[0]);
 			file.write((char*)&temp[0], 4); //frequency
 			file.write((char*)&m_dataV[i].dataSize, 4); //size of data
@@ -581,7 +575,7 @@ WError WSound::SaveToWS(basic_filebuf<char>* buff, uint pos) const {
 		file.write((char*)&numBuffers, 1);
 		for (uint i = 0; i < numBuffers; i++) {
 			file.write((char*)&m_dataV[i].buffer, 4); //buffer index
-			file.write((char*)&m_dataV[i].format, sizeof ALenum); //buffer format
+			file.write((char*)&m_dataV[i].format, sizeof(ALenum)); //buffer format
 			alGetBufferf(m_buffers[m_dataV[i].buffer], AL_FREQUENCY, &temp[0]);
 			file.write((char*)&temp[0], 4); //frequency
 			file.write((char*)&m_dataV[i].dataSize, 4); //size of data

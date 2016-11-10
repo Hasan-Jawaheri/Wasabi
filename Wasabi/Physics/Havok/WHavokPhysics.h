@@ -231,12 +231,12 @@ private:
 	//physics
 	hkpRigidBody*		m_rigidBody;
 	W_RIGIDBODYTYPE		m_rbType;
-	UINT				m_rbNumVerts;
+	uint				m_rbNumVerts;
 	WVector3*			m_rbVerts;
-	UINT				m_numGeometries;
-	UINT*				m_geometryIDs;
+	uint				m_numGeometries;
+	uint*				m_geometryIDs;
 	void*				m_moppcode;
-	UINT				m_moppcodeSize;
+	uint				m_moppcodeSize;
 	bool				m_physics;
 	bool				m_simpleMesh;
 

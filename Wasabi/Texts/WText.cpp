@@ -98,7 +98,7 @@ WTextComponent::WTextComponent(Wasabi* app) : m_app(app) {
 
 WTextComponent::~WTextComponent() {
 	for (std::map<unsigned int, W_FONT_OBJECT>::iterator i = m_fonts.begin(); i != m_fonts.end(); i++) {
-		delete[] i->second.cdata;
+		delete[] (stbtt_bakedchar*)i->second.cdata;
 		i->second.img->RemoveReference();
 		W_SAFE_REMOVEREF(i->second.textGeometry);
 		W_SAFE_REMOVEREF(i->second.textMaterial);
@@ -183,11 +183,10 @@ WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
 	if (!fp)
 		return WError(W_FILENOTFOUND);
 
-	fpos_t fsize;
 	fseek(fp, 0, SEEK_END);
-	fgetpos(fp, &fsize);
+	uint fsize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
-	
+
 	unsigned char* buffer = new unsigned char[fsize+1];
 	fread(buffer, 1, fsize+1, fp);
 	fclose(fp);
@@ -208,7 +207,7 @@ WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
 	delete[] buffer;
 
 	if (res <= 0) {
-		delete[] f.cdata;
+		delete[] (stbtt_bakedchar*)f.cdata;
 		delete[] temp_bitmap;
 		return WError(W_ERRORUNK);
 	}
@@ -218,7 +217,7 @@ WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
 	delete[] temp_bitmap;
 
 	if (!err) {
-		delete[] f.cdata;
+		delete[] (stbtt_bakedchar*)f.cdata;
 		f.img->RemoveReference();
 		return err;
 	}
@@ -226,7 +225,7 @@ WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
 	f.textMaterial = new WMaterial(m_app);
 	err = f.textMaterial->SetEffect(m_textEffect);
 	if (!err) {
-		delete[] f.cdata;
+		delete[] (stbtt_bakedchar*)f.cdata;
 		f.img->RemoveReference();
 		W_SAFE_REMOVEREF(f.textMaterial);
 		return err;
@@ -235,7 +234,7 @@ WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
 	unsigned int num_verts = (unsigned int)m_app->engineParams["textBatchSize"] * 4;
 	unsigned int num_indices = (unsigned int)m_app->engineParams["textBatchSize"] * 6;
 	TextVertex* vb = new TextVertex[num_verts];
-	DWORD* ib = new DWORD[num_indices];
+	uint* ib = new uint[num_indices];
 
 	for (int i = 0; i < num_indices / 6; i++) {
 		// tri 1
@@ -254,7 +253,7 @@ WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
 	delete[] ib;
 
 	if (!err) {
-		delete[] f.cdata;
+		delete[] (stbtt_bakedchar*)f.cdata;
 		f.img->RemoveReference();
 		W_SAFE_REMOVEREF(f.textMaterial);
 		W_SAFE_REMOVEREF(f.textGeometry);
@@ -269,7 +268,7 @@ WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
 WError WTextComponent::DestroyFont(unsigned int ID) {
 	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(ID);
 	if (obj != m_fonts.end()) {
-		delete[] obj->second.cdata;
+		delete[] (stbtt_bakedchar*)obj->second.cdata;
 		obj->second.img->RemoveReference();
 		obj->second.textGeometry->RemoveReference();
 		obj->second.textMaterial->RemoveReference();
@@ -345,9 +344,9 @@ void WTextComponent::Render(WRenderTarget* rt) {
 			for (int i = 0; i < text.str.length(); i++) {
 				if (text.str[i] == '\n')
 					continue;
-				stbtt_bakedchar *cd = &((stbtt_bakedchar*)font->cdata)[(uint32_t)text.str[i] - 32];
-				minyoff = min(minyoff, cd->yoff);
-				maxyoff = max(maxyoff, cd->yoff);
+				stbtt_bakedchar *cd = &((stbtt_bakedchar*)font->cdata)[(uint)text.str[i] - 32];
+				minyoff = fmin(minyoff, cd->yoff);
+				maxyoff = fmax(maxyoff, cd->yoff);
 			}
 			maxCharHeight = (text.fHeight * fScale) * 2.0f / scrHeight;
 			for (int i = 0; i < text.str.length(); i++) {
@@ -357,7 +356,7 @@ void WTextComponent::Render(WRenderTarget* rt) {
 					y += maxCharHeight + 0.0f / scrHeight;
 					continue;
 				}
-				stbtt_bakedchar *cd = &((stbtt_bakedchar*)font->cdata)[(uint32_t)c - 32];
+				stbtt_bakedchar *cd = &((stbtt_bakedchar*)font->cdata)[(uint)c - 32];
 
 				float cw = ((cd->x1 - cd->x0) * fScale) * 2.0f / scrWidth;
 				float ch = ((cd->y1 - cd->y0) * fScale) * 2.0f / scrHeight;
@@ -399,9 +398,9 @@ unsigned int WTextComponent::GetTextWidth(std::string text, float fHeight, unsig
 				curWidth = 0;
 				continue;
 			}
-			stbtt_bakedchar *charData = &((stbtt_bakedchar*)obj->second.cdata)[(uint32_t)letter - 32];
+			stbtt_bakedchar *charData = &((stbtt_bakedchar*)obj->second.cdata)[(uint)letter - 32];
 			curWidth += charData->xadvance * fScale;
-			maxWidth = max(curWidth, maxWidth);
+			maxWidth = fmax(curWidth, maxWidth);
 		}
 		return maxWidth;
 	}

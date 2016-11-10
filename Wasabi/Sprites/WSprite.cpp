@@ -162,7 +162,7 @@ WError WSpriteManager::Load() {
 	unsigned int num_verts = 4;
 	unsigned int num_indices = 6;
 	SpriteVertex* vb = new SpriteVertex[num_verts];
-	DWORD* ib = new DWORD[num_indices];
+	uint* ib = new uint[num_indices];
 
 	// tri 1
 	ib[0] = 0;

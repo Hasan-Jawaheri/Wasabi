@@ -309,7 +309,7 @@ void WObject::Render(WRenderTarget* rt) {
 		err = m_material->Bind(rt, is_animated ? 2 : 1);
 
 		// bind the rest of the buffers and draw
-		err = m_geometry->Draw(rt, -1, max(m_instanceV.size(), 1), is_animated);
+		err = m_geometry->Draw(rt, -1, fmax(m_instanceV.size(), 1), is_animated);
 	}
 }
 
@@ -392,7 +392,7 @@ WInstance* WObject::GetInstance(unsigned int index) const {
 }
 
 void WObject::DeleteInstance(WInstance* instance) {
-	for (UINT i = 0; i < m_instanceV.size(); i++) {
+	for (uint i = 0; i < m_instanceV.size(); i++) {
 		if (m_instanceV[i] == instance) {
 			delete m_instanceV[i];
 			m_instanceV.erase(m_instanceV.begin() + i);
@@ -421,7 +421,7 @@ void WObject::_UpdateInstanceBuffer() {
 			if (ret) {
 				for (unsigned int i = 0; i < m_instanceV.size(); i++) {
 					WMatrix m = m_instanceV[i]->m_worldM;
-					memcpy(&((char*)pData)[i * sizeof WMatrix], &m, sizeof WMatrix - sizeof(float));
+					memcpy(&((char*)pData)[i * sizeof(WMatrix)], &m, sizeof(WMatrix) - sizeof(float));
 				}
 				m_instanceTexture->UnmapPixels();
 			}

@@ -1,7 +1,6 @@
 #include "../Core/WCore.h"
 #include "../Renderers/WForwardRenderer.h"
-#include "../Windows/Windows/WWC_Win32.h"
-#include "../Input/Windows/WIC_Win32.h"
+#include "../Windows/WWindowComponent.h"
 #include "../Objects/WObject.h"
 #include "../Geometries/WGeometry.h"
 #include "../Materials/WEffect.h"
@@ -16,7 +15,16 @@
 #include "../Sounds/WSound.h"
 #include "../Texts/WText.h"
 
+#ifdef _WIN32
+#include "../Windows/Windows/WWC_Win32.h"
+#include "../Input/Windows/WIC_Win32.h"
+#endif
+
+#ifdef _WIN32
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow) {
+#elif (defined __linux__)
+int main() {
+#endif
 	Wasabi* app = WInitialize();
 
 	if (app && app->Setup()) {
@@ -47,7 +55,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 			auto tEnd = std::chrono::high_resolution_clock::now();
 			auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
 			deltaTime = (float)tDiff / 1000.0f;
-			maxFPSReached = max(maxFPSReached, 1.0f / deltaTime);
+			maxFPSReached = fmax(maxFPSReached, 1.0f / deltaTime);
 
 			// update FPS
 			if (std::chrono::duration<double, std::milli>(tEnd - fpsTimer).count() / 1000.0f > 0.5f) {
@@ -67,9 +75,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 					} while ((float)diff / 1000.0f < (maxDeltaTime - deltaTime));
 					deltaTime = maxDeltaTime;
 				}
-				deltaTime = max(deltaTime, 1.0f / app->maxFPS); // dont let deltaTime be 0
+				deltaTime = fmax(deltaTime, 1.0f / app->maxFPS); // dont let deltaTime be 0
 			} else
-				deltaTime = max(deltaTime, 1.0f / maxFPSReached); // dont let deltaTime be 0
+				deltaTime = fmax(deltaTime, 1.0f / maxFPSReached); // dont let deltaTime be 0
 		}
 
 		app->Cleanup();
@@ -89,7 +97,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(
 	const char*                 pLayerPrefix,
 	const char*                 pMessage,
 	void*                       pUserData) {
+#ifdef _WIN32
 	MessageBoxA(NULL, pMessage, "Vulkan Error", MB_OK | MB_ICONERROR);
+#elif (defined __linux__)
+	/** TODO: Do a linux message box */
+#endif
 	std::cerr << pMessage << std::endl;
 	return VK_FALSE;
 }
@@ -209,7 +221,7 @@ VkInstance CreateVKInstance(const char* appName, const char* engineName) {
 	instanceCreateInfo.pNext = NULL;
 	instanceCreateInfo.pApplicationInfo = &appInfo;
 	if (enabledExtensions.size() > 0) {
-		instanceCreateInfo.enabledExtensionCount = (uint32_t)enabledExtensions.size();
+		instanceCreateInfo.enabledExtensionCount = (uint)enabledExtensions.size();
 		instanceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
 	}
 	if (enabledLayers.size() > 0) {
@@ -260,7 +272,7 @@ WError Wasabi::StartEngine(int width, int height) {
 
 
 	// Physical device
-	uint32_t gpuCount = 0;
+	uint gpuCount = 0;
 	// Get number of available physical devices
 	VkResult err = vkEnumeratePhysicalDevices(m_vkInstance, &gpuCount, nullptr);
 	if (err != VK_SUCCESS || gpuCount == 0) {
@@ -286,8 +298,8 @@ WError Wasabi::StartEngine(int width, int height) {
 	m_vkPhysDev = physicalDevices[index];
 
 	// Find a queue that supports graphics operations
-	uint32_t graphicsQueueIndex = 0;
-	uint32_t queueCount;
+	uint graphicsQueueIndex = 0;
+	uint queueCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysDev, &queueCount, NULL);
 	if (queueCount == 0) {
 		_DestroyResources();
@@ -327,7 +339,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	deviceCreateInfo.pEnabledFeatures = NULL;
 
 	if (enabledExtensions.size() > 0) {
-		deviceCreateInfo.enabledExtensionCount = (uint32_t)enabledExtensions.size();
+		deviceCreateInfo.enabledExtensionCount = (uint)enabledExtensions.size();
 		deviceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
 	}
 
@@ -446,8 +458,8 @@ WError Wasabi::Resize(unsigned int width, unsigned int height) {
 	return Renderer->Resize(width, height);
 }
 
-void Wasabi::GetMemoryType(uint32_t typeBits, VkFlags properties, uint32_t * typeIndex) const {
-	for (uint32_t i = 0; i < 32; i++) {
+void Wasabi::GetMemoryType(uint typeBits, VkFlags properties, uint * typeIndex) const {
+	for (uint i = 0; i < 32; i++) {
 		if ((typeBits & 1) == 1) {
 			if ((m_deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
 				*typeIndex = i;
@@ -489,7 +501,7 @@ VkResult Wasabi::BeginCommandBuffer() {
 		return err;
 
 	// Put buffer region copies into command buffer
-	// Note that the staging buffer must not be deleted before the copies 
+	// Note that the staging buffer must not be deleted before the copies
 	// have been submitted and executed
 	return vkBeginCommandBuffer(m_copyCommandBuffer, &cmdBufferBeginInfo);
 }

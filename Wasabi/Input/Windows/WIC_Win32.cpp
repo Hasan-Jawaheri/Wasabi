@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include "WIC_Win32.h"
 #include "../../Windows/Windows/WWC_Win32.h"
 #include <windows.h>
@@ -5,7 +7,7 @@
 WIC_Win32::WIC_Win32(Wasabi* const app) : WInputComponent(app) {
 	m_rightClick = m_leftClick = m_middleClick = false;
 	m_escapeE = true;
-	for (UINT i = 0; i < 256; i++)
+	for (uint i = 0; i < 256; i++)
 		m_keyDown[i] = false;
 }
 bool WIC_Win32::MouseClick(W_MOUSEBUTTON button) const {
@@ -20,7 +22,7 @@ bool WIC_Win32::MouseClick(W_MOUSEBUTTON button) const {
 
 	return false;
 }
-int WIC_Win32::WIC_Win32::MouseX(W_MOUSEPOSTYPE posT, UINT vpID) const {
+int WIC_Win32::WIC_Win32::MouseX(W_MOUSEPOSTYPE posT, uint vpID) const {
 	//get mouse position and convert it to the desired type
 	RECT rc;
 	POINT pt, __pt;
@@ -44,7 +46,7 @@ int WIC_Win32::WIC_Win32::MouseX(W_MOUSEPOSTYPE posT, UINT vpID) const {
 
 	return 0;
 }
-int WIC_Win32::MouseY(W_MOUSEPOSTYPE posT, UINT vpID) const {
+int WIC_Win32::MouseY(W_MOUSEPOSTYPE posT, uint vpID) const {
 	//get mouse position and convert it to the desired type
 	RECT rc;
 	POINT pt, __pt;
@@ -72,14 +74,14 @@ int WIC_Win32::MouseZ() const {
 	//return registered mouse wheel position
 	return m_mouseZ;
 }
-bool WIC_Win32::MouseInScreen(W_MOUSEPOSTYPE posT, UINT vpID) const {
+bool WIC_Win32::MouseInScreen(W_MOUSEPOSTYPE posT, uint vpID) const {
 	if (posT == MOUSEPOS_WINDOW) //check if mouse is in the window
 	{
 		POINT pt;
 		GetCursorPos(&pt);
 		RECT rc;
 		GetWindowRect(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &rc);
-		DWORD style = GetWindowLong(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), GWL_STYLE);
+		uint style = GetWindowLong(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), GWL_STYLE);
 		rc.left += (style & WS_BORDER ? 10 : 0);
 		rc.top += (style & WS_CAPTION ? 30 : 0);
 		rc.right -= (style & WS_BORDER ? 10 : 0);
@@ -97,7 +99,7 @@ bool WIC_Win32::MouseInScreen(W_MOUSEPOSTYPE posT, UINT vpID) const {
 		GetCursorPos(&pt);
 		RECT rc;
 		GetWindowRect(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &rc);
-		DWORD style = GetWindowLong(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), GWL_STYLE);
+		uint style = GetWindowLong(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), GWL_STYLE);
 		rc.left += (style & WS_BORDER ? 10 : 0);
 		rc.top += (style & WS_CAPTION ? 30 : 0);
 		rc.top += (GetMenu(((WWC_Win32*)m_app->WindowComponent)->GetWindow()) == NULL ? 0 : 20);
@@ -115,7 +117,7 @@ bool WIC_Win32::MouseInScreen(W_MOUSEPOSTYPE posT, UINT vpID) const {
 
 	return false;
 }
-void WIC_Win32::SetMousePosition(UINT x, UINT y) {
+void WIC_Win32::SetMousePosition(uint x, uint y) {
 	POINT pos;
 	pos.x = x;
 	pos.y = y;
@@ -139,3 +141,5 @@ bool WIC_Win32::KeyDown(char key) const {
 void WIC_Win32::InsertRawInput(char key, bool state) {
 	m_keyDown[key] = state;
 }
+
+#endif

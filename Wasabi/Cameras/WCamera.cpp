@@ -119,7 +119,7 @@ void WCamera::Render(unsigned int width, unsigned int height) {
 
 bool WCamera::CheckPointInFrustum(float x, float y, float z) const {
 	// Check if the point is inside all six planes of the view m_frustum.
-	for (UINT i = 0; i < 6; i++)
+	for (uint i = 0; i < 6; i++)
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3(x, y, z)) < 0.0f)
 			return false;
 
@@ -132,7 +132,7 @@ bool WCamera::CheckPointInFrustum(WVector3 point) const {
 
 bool WCamera::CheckCubeInFrustum(float xCenter, float yCenter, float zCenter, float radius) const {
 	// Check if any one point of the cube is in the view m_frustum.
-	for (UINT i = 0; i < 6; i++) {
+	for (uint i = 0; i < 6; i++) {
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3((xCenter - radius), (yCenter - radius), (zCenter - radius))) >= 0.0f)
 			continue;
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3((xCenter + radius), (yCenter - radius), (zCenter - radius))) >= 0.0f)
@@ -162,7 +162,7 @@ bool WCamera::CheckCubeInFrustum(WVector3 center, float radius) const {
 
 bool WCamera::CheckSphereInFrustum(float xCenter, float yCenter, float zCenter, float radius) const {
 	// Check if the radius of the sphere is inside the view m_frustum.
-	for (UINT i = 0; i < 6; i++)
+	for (uint i = 0; i < 6; i++)
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3(xCenter, yCenter, zCenter)) < -radius)
 			return false;
 
@@ -175,7 +175,7 @@ bool WCamera::CheckSphereInFrustum(WVector3 center, float radius) const {
 
 bool WCamera::CheckBoxInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize) const {
 	// Check if any of the 6 planes of the rectangle are inside the view m_frustum.
-	for (UINT i = 0; i < 6; i++) {
+	for (uint i = 0; i < 6; i++) {
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3((xCenter - xSize), (yCenter - ySize), (zCenter - zSize))) >= 0.0f)
 			continue;
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3((xCenter + xSize), (yCenter - ySize), (zCenter - zSize))) >= 0.0f)

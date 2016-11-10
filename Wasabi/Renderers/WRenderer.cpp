@@ -61,7 +61,7 @@ void WRenderer::_Render() {
 	vkDeviceWaitIdle(m_device);
 
 	// Get next image in the swap chain (back/front buffer)
-	uint32_t currentBuffer;
+	uint currentBuffer;
 	VkResult err = m_swapChain->acquireNextImage(m_semaphores.presentComplete, &currentBuffer);
 	if (err)
 		return;

@@ -21,11 +21,11 @@ using std::vector;
 using std::string;
 
 #ifndef max
-#define max(a,b) ((a) > (b) ? (a) : (b))
+#define fmax(a,b) ((a) > (b) ? (a) : (b))
 #endif
 
 #define W_HASHTABLESIZE 512
-#define W_HASH(id) id == 0 ? 0 : max ( id % W_HASHTABLESIZE, 1 )
+#define W_HASH(id) id == 0 ? 0 : fmax(id % W_HASHTABLESIZE, 1)
 
 /**
  * @ingroup engineclass

@@ -16,11 +16,6 @@ std::string WAnimationManager::GetTypeName() const {
 WAnimation::WAnimation(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	AddSubAnimation();
 
-	char name[256];
-	static unsigned int i = 0;
-	sprintf_s(name, 256, "Animation%3u", i++);
-	SetName(name);
-
 	m_bFramesOwner = true;
 	m_totalTime = 0.0f;
 
@@ -98,7 +93,7 @@ void WAnimation::Update(float fDeltaTime) {
 
 			//passed the total time, loop or not?
 			if (curSubAnimation->bLoop) {
-				float fEndTime = min(curSubAnimation->fPlayEndTime, m_totalTime);
+				float fEndTime = fmin(curSubAnimation->fPlayEndTime, m_totalTime);
 				float fOverflow = curSubAnimation->fCurrentTime - fEndTime;
 				SetCurrentTime(curSubAnimation->fPlayStartTime, anim);
 				curSubAnimation->fCurrentTime += fOverflow;

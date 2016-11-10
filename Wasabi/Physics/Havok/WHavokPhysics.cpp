@@ -1,7 +1,6 @@
+#if 0
 #include "WHavokPhysics.h"
 #include "../../Objects/WObject.h"
-
-#if 0
 
 // Classlists
 #define HK_CLASSES_FILE <Common/Serialize/Classlist/hkClasses.h>
@@ -20,7 +19,7 @@ WHavokPhysics::WHavokPhysics(Wasabi* app) : WPhysicsComponent(app) {
 	m_bVDB = false;
 	m_speed = 1.0f;
 	m_bStepping = false;
-	for (UINT i = 0; i < 5; i++)
+	for (uint i = 0; i < 5; i++)
 		m_fPrevDeltaTimes[i] = 0.0f;
 
 	RigidBodyManager = new WRigidBodyManager(m_app);
@@ -170,7 +169,7 @@ void WHavokPhysics::Step(float deltaTime) {
 		m_bStepping = true;
 
 		float finalDeltaTime = 0.0f; //take the average between the 5 steps to make it smoother
-		for (UINT i = 0; i < 5; i++) {
+		for (uint i = 0; i < 5; i++) {
 			if (m_fPrevDeltaTimes[i] == 0) {
 				m_fPrevDeltaTimes[i] = deltaTime;
 				return;
@@ -194,7 +193,7 @@ void WHavokPhysics::Step(float deltaTime) {
 		RigidBodyManager->Update(deltaTime);
 
 		//update delta times
-		for (UINT i = 1; i < 5; i++)
+		for (uint i = 1; i < 5; i++)
 			m_fPrevDeltaTimes[i - 1] = m_fPrevDeltaTimes[i];
 		m_fPrevDeltaTimes[4] = deltaTime;
 
@@ -249,8 +248,8 @@ WRigidBodyManager::WRigidBodyManager(Wasabi* app) : WManager<WRigidBody>(m_app) 
 
 void WRigidBodyManager::SyncWithObjects() {
 	((WHavokPhysics*)m_app->PhysicsComponent)->GetWorld()->lock();
-	for (UINT j = 0; j < W_HASHTABLESIZE; j++) {
-		for (UINT i = 0; i < m_entities[j].size(); i++) {
+	for (uint j = 0; j < W_HASHTABLESIZE; j++) {
+		for (uint i = 0; i < m_entities[j].size(); i++) {
 			if (!m_entities[j][i]->GetRigidBody())
 				continue;
 
@@ -265,8 +264,8 @@ void WRigidBodyManager::SyncWithObjects() {
 
 void WRigidBodyManager::Update(float fDeltaTime) {
 	((WHavokPhysics*)m_app->PhysicsComponent)->GetWorld()->lock();
-	for (UINT j = 0; j < W_HASHTABLESIZE; j++) {
-		for (UINT i = 0; i < m_entities[j].size(); i++) {
+	for (uint j = 0; j < W_HASHTABLESIZE; j++) {
+		for (uint i = 0; i < m_entities[j].size(); i++) {
 			if (m_entities[j][i]->GetRigidBody() && m_entities[j][i]->Enabled()) {
 				hkVector4 v = m_entities[j][i]->GetRigidBody()->getPosition(); //get position
 				hkQuaternion q = m_entities[j][i]->GetRigidBody()->getRotation(); //get rotation
@@ -335,7 +334,7 @@ void WRigidBody::BindObject(WObject* const object) {
 }
 
 void WRigidBody::UnbindObject(WObject* const object) {
-	for (UINT i = 0; i < m_objectV.size(); i++)
+	for (uint i = 0; i < m_objectV.size(); i++)
 		if (m_objectV[i] == object) {
 			W_SAFE_REMOVEREF(m_objectV[i]);
 			m_objectV.erase(m_objectV.begin() + i);
@@ -343,8 +342,8 @@ void WRigidBody::UnbindObject(WObject* const object) {
 		}
 }
 
-void WRigidBody::UnbindObject(UINT ID) {
-	for (UINT i = 0; i < m_objectV.size(); i++)
+void WRigidBody::UnbindObject(uint ID) {
+	for (uint i = 0; i < m_objectV.size(); i++)
 		if (m_objectV[i]->GetID() == ID) {
 			W_SAFE_REMOVEREF(m_objectV[i]);
 			m_objectV.erase(m_objectV.begin() + i);
@@ -371,8 +370,8 @@ bool WRigidBody::Enabled() const {
 	return m_physics;
 }
 
-WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* geometries, UINT numGeometries,
-									   bool bFixed, bool bSimplify, void* mopp, UINT moppsize) {
+WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* geometries, uint numGeometries,
+									   bool bFixed, bool bSimplify, void* mopp, uint moppsize) {
 	if (!((WHavokPhysics*)m_app->PhysicsComponent)->GetWorld())
 		return W_PHYSICSNOTINITIALIZED;
 
@@ -397,24 +396,24 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 	{
 		//count the vertices
 		m_rbNumVerts = 0;
-		for (UINT i = 0; i < numGeometries; i++)
+		for (uint i = 0; i < numGeometries; i++)
 			m_rbNumVerts += geometries[i]->GetNumVertices();
 
 		m_rbVerts = new WVector3[m_rbNumVerts];
 
 		m_rbNumVerts = 0; //set to 0 to apply offsets (will be increased to normal while copying vertices so no worries)
-		for (UINT i = 0; i < numGeometries; i++) {
+		for (uint i = 0; i < numGeometries; i++) {
 			W_VERTEX_DESCRIPTION desc = geometries[i]->GetVertexDescription();
-			UINT structSize = desc.GetSize();
-			UINT posoff = desc.GetOffset("position");
+			uint structSize = desc.GetSize();
+			uint posoff = desc.GetOffset("position");
 			if (posoff != -1) {
 				void* verts;
-				UINT geometryVerts = geometries[i]->GetNumVertices();
+				uint geometryVerts = geometries[i]->GetNumVertices();
 				geometries[i]->MapVertexBuffer(&verts) , true);
-				for (UINT n = 0; n < geometryVerts; n++) {
+				for (uint n = 0; n < geometryVerts; n++) {
 					WVector3 curVert;
 					//offset by (m_rbNumVerts*structSize) to move to current location
-					memcpy(&curVert, &((char*)verts)[n*structSize + posoff], sizeof WVector3);
+					memcpy(&curVert, &((char*)verts)[n*structSize + posoff], sizeof(WVector3));
 					m_rbVerts[m_rbNumVerts + n] = curVert;
 				}
 				geometries[i]->UnmapVertexBuffer();
@@ -428,7 +427,7 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 	float maxx = 0, maxy = 0, maxz = 0;
 	WVector3 farthestVert(0, 0, 0);
 
-	for (UINT i = 0; i < m_rbNumVerts; i++) {
+	for (uint i = 0; i < m_rbNumVerts; i++) {
 		if (m_rbVerts[i].x > maxx)
 			maxx = m_rbVerts[i].x;
 		if (m_rbVerts[i].x < minx)
@@ -446,22 +445,22 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 
 		//no sqrt for two reasons: we don't need to know the actual distance, just comparing, and sqrt
 		//can sometimes be slow
-		if (abs(m_rbVerts[i].x*m_rbVerts[i].x + m_rbVerts[i].y*m_rbVerts[i].y +
+		if (fabs(m_rbVerts[i].x*m_rbVerts[i].x + m_rbVerts[i].y*m_rbVerts[i].y +
 				m_rbVerts[i].z*m_rbVerts[i].z) >
-			abs(farthestVert.x*farthestVert.x + farthestVert.y*farthestVert.y + farthestVert.z*farthestVert.z))
+			fabs(farthestVert.x*farthestVert.x + farthestVert.y*farthestVert.y + farthestVert.z*farthestVert.z))
 			farthestVert = m_rbVerts[i];
 	}
 
 	//create a box body
 	if (type == RIGIDBODY_BOX) {
-		hkVector4 boxSize(max(maxx, minx), max(maxy, miny), max(maxz, minz));
+		hkVector4 boxSize(fmax(maxx, minx), fmax(maxy, miny), fmax(maxz, minz));
 
 		//no dimension should be zero
-		if (abs(boxSize(0)) <= 0.001f) //too small edge, enlargen it
+		if (fabs(boxSize(0)) <= 0.001f) //too small edge, enlargen it
 			boxSize(0) += 0.001f;
-		if (abs(boxSize(1)) <= 0.001f) //too small edge, enlargen it
+		if (fabs(boxSize(1)) <= 0.001f) //too small edge, enlargen it
 			boxSize(1) += 0.001f;
-		if (abs(boxSize(2)) <= 0.001f) //too small edge, enlargen it
+		if (fabs(boxSize(2)) <= 0.001f) //too small edge, enlargen it
 			boxSize(2) += 0.001f;
 
 		//initiate the body
@@ -474,10 +473,10 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 		rigidBodyInfo.m_shape = new hkpBoxShape(boxSize);
 	} else if (type == RIGIDBODY_SPHERE) {
 		//get radius (sphere size)
-		float radius = sqrt(float(abs(farthestVert.x*farthestVert.x +
+		float radius = sqrt(float(fabs(farthestVert.x*farthestVert.x +
 									  farthestVert.y*farthestVert.y +
 									  farthestVert.z*farthestVert.z)));
-		if (abs(radius) <= 0.001f) //too small
+		if (fabs(radius) <= 0.001f) //too small
 			radius += 0.001f;
 
 		//initiate the shape
@@ -493,7 +492,7 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 			//convert the vertex buffer to an array of havok vectors
 			float* vertices = new float[m_rbNumVerts * 4];
 
-			for (UINT i = 0; i < m_rbNumVerts; i++) {
+			for (uint i = 0; i < m_rbNumVerts; i++) {
 				vertices[i * 4 + 0] = m_rbVerts[i].x;
 				vertices[i * 4 + 1] = m_rbVerts[i].y;
 				vertices[i * 4 + 2] = m_rbVerts[i].z;
@@ -502,7 +501,7 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 
 			hkStridedVertices stridedVerts;
 			stridedVerts.m_numVertices = m_rbNumVerts;
-			stridedVerts.m_striding = sizeof hkVector4;
+			stridedVerts.m_striding = sizeof(WVector4);
 			stridedVerts.m_vertices = &(vertices[0]);
 
 			hkArray<hkVector4> dummyPlaneEquations;
@@ -517,33 +516,33 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 			geometry->setRadius(0.05f);
 
 			//vector<void*> memToFree;
-			for (UINT i = 0; i < numGeometries; i++) {
-				UINT posoff = geometries[i]->GetVertexDescription().GetOffset("position");
+			for (uint i = 0; i < numGeometries; i++) {
+				uint posoff = geometries[i]->GetVertexDescription().GetOffset("position");
 				if (posoff != -1) {
 					hkpExtendedMeshShape::TrianglesSubpart part;
 
-					part.m_vertexStriding = geometries[i]->GetVertexDescription().GetSize();//sizeof WVector3;
+					part.m_vertexStriding = geometries[i]->GetVertexDescription().GetSize();//sizeof(WVector3);
 					part.m_numVertices = geometries[i]->GetNumVertices();
 					//WVector3* tmpVertBase = new WVector3[part.m_numVertices];
 					//part.m_vertexBase = (float*)tmpVertBase;
-					//UINT structSize = geometries[i]->GetStructureSize ( );
+					//uint structSize = geometries[i]->GetStructureSize ( );
 					//void* verts;
 					geometries[i]->MapVertexBuffer((void**)&part.m_vertexBase, true);
 					part.m_vertexBase += posoff; // so that we are pointing at positions, stride remains the same
-						//for ( UINT n = 0; n < part.m_numVertices; n++ )
-						//	memcpy ( &tmpVertBase[n], &((char*)verts)[n*structSize], sizeof WVector3 );
+						//for ( uint n = 0; n < part.m_numVertices; n++ )
+						//	memcpy ( &tmpVertBase[n], &((char*)verts)[n*structSize], sizeof(WVector3) );
 
-						DWORD* indices = nullptr;
-					UINT geometryIndices = geometries[i]->GetNumIndices();
+						uint* indices = nullptr;
+					uint geometryIndices = geometries[i]->GetNumIndices();
 					geometries[i]->MapIndexBuffer(&indices), true);
 					//if (geometries[i]->GetTopology() == D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST) {
 					part.m_indexBase = indices;
-					part.m_indexStriding = 3 * sizeof DWORD; //request a triangle list
+					part.m_indexStriding = 3 * sizeof(uint); //request a triangle list
 					part.m_numTriangleShapes = geometryIndices / 3;
 					part.m_stridingType = hkpExtendedMeshShape::INDICES_INT32;
 					/*} else if (geometries[i]->GetTopology() == D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP) {
 						part.m_indexBase = indices;
-						part.m_indexStriding = 2 * sizeof DWORD; //request a triangle strip
+						part.m_indexStriding = 2 * sizeof(uint); //request a triangle strip
 						part.m_numTriangleShapes = (geometryIndices - 1) / 2 + 1; //1 to begin with, then a triangle for every 2
 						part.m_stridingType = hkpExtendedMeshShape::INDICES_INT32;
 					}*/
@@ -573,15 +572,15 @@ WError WRigidBody::BuildFromGeometries(W_RIGIDBODYTYPE type, WGeometry* const* g
 				m_moppcodeSize = code->getCodeSize() + code->getAllocatedSize();
 				m_moppcode = W_SAFE_ALLOC(m_moppcodeSize);
 				m_numGeometries = numGeometries;
-				m_geometryIDs = new UINT[numGeometries];
-				for (UINT i = 0; i < numGeometries; i++)
+				m_geometryIDs = new uint[numGeometries];
+				for (uint i = 0; i < numGeometries; i++)
 					m_geometryIDs[i] = geometries[i]->GetID();
 				hkOArchive oa(m_moppcode, m_moppcodeSize);
 				hkpMoppCodeStreamer::writeMoppCodeToArchive(code, oa);
 			}
 			rigidBodyInfo.m_shape = new hkpMoppBvTreeShape(geometry, code);
 
-			//for ( UINT i = 0; i < memToFree.size ( ); i++ )
+			//for ( uint i = 0; i < memToFree.size ( ); i++ )
 			//	delete[] memToFree[i];
 
 			geometry->removeReference();
@@ -824,7 +823,7 @@ void WRigidBody::OnStateChange(STATE_CHANGE_TYPE type) {
 	}
 
 	//update bound objects to be at the same position/rotation as the rigid body
-	for (UINT i = 0; i < m_objectV.size(); i++) {
+	for (uint i = 0; i < m_objectV.size(); i++) {
 		if (!m_objectV[i]) //object is invalid, erase it
 		{
 			m_objectV.erase(m_objectV.begin() + i);
@@ -1499,8 +1498,8 @@ WPhysicsActionManager::WPhysicsActionManager(Wasabi* app) : WManager<WPhysicsAct
 
 void WPhysicsActionManager::Update(float fDeltaTime) {
 	((WHavokPhysics*)m_app->PhysicsComponent)->GetWorld()->lock();
-	for (UINT j = 0; j < W_HASHTABLESIZE; j++)
-		for (UINT i = 0; i < m_entities[j].size(); i++)
+	for (uint j = 0; j < W_HASHTABLESIZE; j++)
+		for (uint i = 0; i < m_entities[j].size(); i++)
 			m_entities[j][i]->Update(fDeltaTime);
 	((WHavokPhysics*)m_app->PhysicsComponent)->GetWorld()->unlock();
 }
