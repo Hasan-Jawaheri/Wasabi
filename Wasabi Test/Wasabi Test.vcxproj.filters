@@ -1,39 +1,50 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
+    <Filter Include="Animation">
+      <UniqueIdentifier>{cb86eed5-3b76-420b-8037-dcd3d751bcc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Instancing">
+      <UniqueIdentifier>{88dff606-44a3-4e5a-a39b-1f2fe45d8625}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lights">
+      <UniqueIdentifier>{623d3f7c-1884-4ee0-bce8-e022688fae0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderTargetTexture">
+      <UniqueIdentifier>{48a49b51-14cf-4ca5-a361-e84e6f802ad1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestSuite">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Sound">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RenderTargetTexture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Instancing.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sound.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TestSuite.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>TestSuite</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderTargetTexture.hpp">
+      <Filter>RenderTargetTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="Lights.hpp">
+      <Filter>Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="Instancing.hpp">
+      <Filter>Instancing</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.hpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound.hpp">
+      <Filter>Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TestSuite.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="TestSuite.hpp">
+      <Filter>TestSuite</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

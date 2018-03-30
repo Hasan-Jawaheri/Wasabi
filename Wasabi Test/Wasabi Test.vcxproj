@@ -148,14 +148,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Animation.cpp" />
-    <ClCompile Include="Instancing.cpp" />
-    <ClCompile Include="RenderTargetTexture.cpp" />
-    <ClCompile Include="Sound.cpp" />
+    <ClCompile Include="Animation.hpp" />
+    <ClCompile Include="Instancing.hpp" />
+    <ClCompile Include="Lights.hpp" />
+    <ClCompile Include="RenderTargetTexture.hpp" />
+    <ClCompile Include="Sound.hpp" />
     <ClCompile Include="TestSuite.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TestSuite.h" />
+    <ClInclude Include="TestSuite.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
