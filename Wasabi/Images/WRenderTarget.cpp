@@ -20,7 +20,8 @@ WRenderTarget::WRenderTarget(Wasabi* const app, unsigned int ID) : WBase(app, ID
 	m_depthStencil.mem = VK_NULL_HANDLE;
 	m_currentFrameBuffer = 0;
 	m_camera = m_app->CameraManager->GetDefaultCamera();
-	m_target = NULL;
+	if (m_camera)
+		m_camera->AddReference();
 
 	m_clearColor = { { 0.425f, 0.425f, 0.425f, 1.0f } };
 	m_renderCmdBuffer = VK_NULL_HANDLE;
@@ -78,12 +79,21 @@ void WRenderTarget::_DestroyResources() {
 	m_depthStencil.image = VK_NULL_HANDLE;
 	m_depthStencil.mem = VK_NULL_HANDLE;
 
-	W_SAFE_REMOVEREF(m_target);
+	for (auto it = m_targets.begin(); it != m_targets.end(); it++)
+		W_SAFE_REMOVEREF((*it));
+	m_targets.clear();
 }
 
 WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* target, bool bDepth, VkFormat depthFormat) {
-	if (!target || !target->Valid())
+	return Create(width, height, vector<WImage*>({ target }), bDepth, depthFormat);
+}
+
+WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<class WImage*> targets, bool bDepth, VkFormat depthFormat) {
+	if (!targets.size())
 		return WError(W_INVALIDPARAM);
+	for (auto it = targets.begin(); it != targets.end(); it++)
+		if (!(*it) || !(*it)->Valid())
+			return WError(W_INVALIDPARAM);
 
 	VkDevice device = m_app->GetVulkanDevice();
 
@@ -113,37 +123,47 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 	//
 	// Create the render pass
 	//
-	VkAttachmentDescription attachments[2] = {};
+	vector<VkAttachmentDescription> attachments;
 
 	// Color attachment
-	attachments[0].format = target->GetFormat();
-	attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-	attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	for (auto it = targets.begin(); it != targets.end(); it++) {
+		VkAttachmentDescription attachment = {};
+		attachment.format = (*it)->GetFormat();
+		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		attachments.push_back(attachment);
+	}
 
 	if (bDepth) {
 		// Depth attachment
-		attachments[1].format = depthFormat;
-		attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		attachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		VkAttachmentDescription attachment = {};
+		attachment.format = depthFormat;
+		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		attachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		attachments.push_back(attachment);
 	}
 
-	VkAttachmentReference colorReference = {};
-	colorReference.attachment = 0;
-	colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	vector<VkAttachmentReference> colorReferences;
+	for (auto it = attachments.begin(); it != attachments.end(); it++) {
+		VkAttachmentReference attachmentRef = {};
+		attachmentRef.attachment = colorReferences.size();
+		attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorReferences.push_back(attachmentRef);
+	}
 
 	VkAttachmentReference depthReference = {};
 	if (bDepth) {
-		depthReference.attachment = 1;
+		depthReference.attachment = attachments.size()-1;
 		depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 	}
 
@@ -152,22 +172,18 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 	subpass.flags = 0;
 	subpass.inputAttachmentCount = 0;
 	subpass.pInputAttachments = NULL;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorReference;
+	subpass.colorAttachmentCount = colorReferences.size();
+	subpass.pColorAttachments = &colorReferences[0];
 	subpass.pResolveAttachments = NULL;
-	subpass.pDepthStencilAttachment = &depthReference;
+	subpass.pDepthStencilAttachment = bDepth ? &depthReference : NULL;
 	subpass.preserveAttachmentCount = 0;
 	subpass.pPreserveAttachments = NULL;
-
-	if (!bDepth) {
-		subpass.pDepthStencilAttachment = NULL;
-	}
 
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.pNext = NULL;
-	renderPassInfo.attachmentCount = bDepth ? 2 : 1;
-	renderPassInfo.pAttachments = attachments;
+	renderPassInfo.attachmentCount = attachments.size();
+	renderPassInfo.pAttachments = &attachments[0];
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
 	renderPassInfo.dependencyCount = 0;
@@ -257,18 +273,18 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 	//
 	// Create the frame buffers
 	//
-	VkImageView imageViews[2];
-
-	// Depth/Stencil attachment is the same for all frame buffers
-	imageViews[0] = target->GetView();
-	imageViews[1] = m_depthStencil.view;
+	vector<VkImageView> imageViews;
+	for (auto it = targets.begin(); it != targets.end(); it++)
+		imageViews.push_back((*it)->GetView());
+	if (bDepth)
+		imageViews.push_back(m_depthStencil.view);
 
 	VkFramebufferCreateInfo frameBufferCreateInfo = {};
 	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	frameBufferCreateInfo.pNext = NULL;
 	frameBufferCreateInfo.renderPass = m_renderPass;
-	frameBufferCreateInfo.attachmentCount = bDepth ? 2 : 1;
-	frameBufferCreateInfo.pAttachments = imageViews;
+	frameBufferCreateInfo.attachmentCount = imageViews.size();
+	frameBufferCreateInfo.pAttachments = &imageViews[0];
 	frameBufferCreateInfo.width = width;
 	frameBufferCreateInfo.height = height;
 	frameBufferCreateInfo.layers = 1;
@@ -284,9 +300,12 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 	m_width = width;
 	m_height = height;
 	m_depthFormat = depthFormat;
-	m_colorFormat = target->GetFormat();
-	m_target = target;
-	target->AddReference();
+
+	for (auto it = targets.begin(); it != targets.end(); it++) {
+		m_colorFormats.push_back((*it)->GetFormat());
+		m_targets.push_back(*it);
+		(*it)->AddReference();
+	}
 
 	return WError(W_SUCCEEDED);
 }
@@ -486,7 +505,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	m_width = width;
 	m_height = height;
 	m_depthFormat = depthFormat;
-	m_colorFormat = colorFormat;
+	m_colorFormats.push_back(colorFormat);
 
 	return WError(W_SUCCEEDED);
 }
@@ -503,9 +522,17 @@ WError WRenderTarget::UseFrameBuffer(unsigned int index) {
 WError WRenderTarget::Begin() {
 	VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
 
-	VkClearValue clearValues[2];
-	clearValues[0].color = m_clearColor;
-	clearValues[1].depthStencil = { 1.0f, 0 };
+	vector<VkClearValue> clearValues;
+	VkClearValue v = {0};
+	for (auto it = m_colorFormats.begin(); it != m_colorFormats.end(); it++) {
+		v.color = m_clearColor;
+		clearValues.push_back(v);
+	}
+	if (m_depthStencil.image) {
+		v = {0};
+		v.depthStencil = { 1.0f, 0 };
+		clearValues.push_back(v);
+	}
 
 	VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
 	renderPassBeginInfo.renderPass = m_renderPass;
@@ -513,8 +540,8 @@ WError WRenderTarget::Begin() {
 	renderPassBeginInfo.renderArea.offset.y = 0;
 	renderPassBeginInfo.renderArea.extent.width = m_width;
 	renderPassBeginInfo.renderArea.extent.height = m_height;
-	renderPassBeginInfo.clearValueCount = m_depthStencil.image ? 2 : 1;
-	renderPassBeginInfo.pClearValues = clearValues;
+	renderPassBeginInfo.clearValueCount = m_colorFormats.size() + (m_depthStencil.image ? 1 : 0);
+	renderPassBeginInfo.pClearValues = &clearValues[0];
 
 	// Set target frame buffer
 	renderPassBeginInfo.framebuffer = m_frameBuffers[m_currentFrameBuffer];

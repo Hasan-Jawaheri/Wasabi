@@ -85,17 +85,15 @@ void WRenderer::_Render() {
 
 	// Submit to queue
 	err = vkQueueSubmit(m_queue, 1, &submitInfo, VK_NULL_HANDLE);
-	if (err)
-		return;
-
 	err = m_swapChain->queuePresent(m_queue, currentBuffer, m_semaphores.renderComplete);
-	if (err)
-		return;
 
 	vkDeviceWaitIdle(m_device);
 }
 
 WError WRenderer::Resize(unsigned int width, unsigned int height) {
+	if (m_width == width && m_height == height)
+		return W_SUCCEEDED;
+
 	m_width = width;
 	m_height = height;
 

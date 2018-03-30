@@ -163,10 +163,38 @@ public:
 			"layout(location = 1) in vec3 inWorldPos;\n"
 			"layout(location = 2) in vec3 inWorldNorm;\n"
 			""
+			"layout(location = 0) out vec4 outColor;\n"
+			"layout(location = 1) out vec4 outNormals;\n"
+			""
+			"void main() {\n"
+			"	outColor = texture(samplerColor, inUV);\n"
+			"	outNormals = vec4(inWorldNorm, 1.0);\n"
+			"}\n"
+		);
+	}
+};
+
+class SceneCompositionPS : public WShader {
+public:
+	SceneCompositionPS(class Wasabi* const app) : WShader(app) {}
+
+	virtual void Load() {
+		m_desc.type = W_FRAGMENT_SHADER;
+		m_desc.bound_resources = {
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+		};
+		LoadCodeGLSL(
+			"#version 450\n"
+			"#extension GL_ARB_separate_shader_objects : enable\n"
+			"#extension GL_ARB_shading_language_420pack : enable\n"
+			""
+			"layout(binding = 1) uniform sampler2D sampler;\n"
+			"layout(location = 0) in vec2 inUV;\n"
 			"layout(location = 0) out vec4 outFragColor;\n"
 			""
 			"void main() {\n"
-			"	outFragColor = texture(samplerColor, inUV);\n"
+			"	vec4 c = texture(sampler, inUV);\n"
+			"	outFragColor = vec4(c.rgba);\n"
 			"}\n"
 		);
 	}
@@ -174,11 +202,16 @@ public:
 
 WDeferredRenderer::WDeferredRenderer(Wasabi* const app) : WRenderer(app) {
 	m_sampler = VK_NULL_HANDLE;
-
 	m_default_fx = nullptr;
+	m_GBuffer = nullptr;
+	m_GBufferColor = nullptr;
+	m_GBufferNormal = nullptr;
+	m_masterRenderSprite = nullptr;
 }
 
 WError WDeferredRenderer::Initiailize() {
+	Cleanup();
+
 	//
 	// Create the texture sampler
 	//
@@ -199,8 +232,10 @@ WError WDeferredRenderer::Initiailize() {
 	sampler.anisotropyEnable = VK_TRUE;
 	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 	VkResult err = vkCreateSampler(m_device, &sampler, nullptr, &m_sampler);
-	if (err != VK_SUCCESS)
+	if (err != VK_SUCCESS) {
+		Cleanup();
 		return WError(W_OUTOFMEMORY);
+	}
 
 	//
 	// Create the default effect for rendering
@@ -215,27 +250,85 @@ WError WDeferredRenderer::Initiailize() {
 	WError werr = m_default_fx->BuildPipeline(m_renderTarget);
 	vs->RemoveReference();
 	ps->RemoveReference();
-	if (!werr)
-		return werr;
 
-	return WError(W_SUCCEEDED);
+	//
+	// Create the GBuffer
+	//
+	if (werr == W_SUCCEEDED) {
+		m_GBufferColor = new WImage(m_app);
+		werr = m_GBufferColor->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+		if (werr == W_SUCCEEDED) {
+			m_GBufferNormal = new WImage(m_app);
+			werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+			if (werr == W_SUCCEEDED) {
+				m_GBuffer = new WRenderTarget(m_app);
+				werr = m_GBuffer->Create(m_width, m_height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }));
+				if (werr == W_SUCCEEDED) {
+					m_masterRenderSprite = new WSprite(m_app);
+					m_masterRenderSprite->SetImage(m_GBufferColor);
+				}
+			}
+		}
+	}
+
+	if (werr != W_SUCCEEDED)
+		Cleanup();
+
+	return werr;
 }
 
 WError WDeferredRenderer::Resize(unsigned int width, unsigned int height) {
-	return WRenderer::Resize(width, height);
+	WError werr = WRenderer::Resize(width, height);
+
+	if (werr == W_SUCCEEDED && m_GBuffer) {
+		werr = m_GBufferColor->CreateFromPixelsArray(nullptr, width, height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+		if (werr == W_SUCCEEDED) {
+			werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, width, height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+			if (werr == W_SUCCEEDED) {
+				werr = m_GBuffer->Create(width, height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }));
+			}
+		}
+		if (werr == W_SUCCEEDED) {
+			m_masterRenderSprite->SetSize(width, height);
+			m_masterRenderSprite->SetImage(m_GBufferColor);
+		}
+	}
+
+	return werr;
 }
 
 void WDeferredRenderer::Render(WRenderTarget* rt, unsigned int filter) {
-	WError werr = rt->Begin();
+	WError werr;
 
+	//
+	// Render to the GBuffer
+	//
+	m_GBuffer->SetCamera(rt->GetCamera());
+	werr = m_GBuffer->Begin();
 	if (werr != W_SUCCEEDED)
 		return;
 
 	if (filter & RENDER_FILTER_OBJECTS)
-		m_app->ObjectManager->Render(rt);
+		m_app->ObjectManager->Render(m_GBuffer);
 
-	if (filter & RENDER_FILTER_SPRITES)
+	werr = m_GBuffer->End();
+	if (werr != W_SUCCEEDED)
+		return;
+
+	//
+	// Compose the GBuffer onto the final render target
+	//
+	werr = rt->Begin();
+	if (werr != W_SUCCEEDED)
+		return;
+
+	m_masterRenderSprite->Show();
+	m_masterRenderSprite->Render(rt);
+	m_masterRenderSprite->Hide();
+
+	if (filter & RENDER_FILTER_SPRITES) {
 		m_app->SpriteManager->Render(rt);
+	}
 
 	if (filter & RENDER_FILTER_TEXT)
 		m_app->TextComponent->Render(rt);
@@ -249,6 +342,10 @@ void WDeferredRenderer::Cleanup() {
 	m_sampler = VK_NULL_HANDLE;
 
 	W_SAFE_REMOVEREF(m_default_fx);
+	W_SAFE_REMOVEREF(m_GBuffer);
+	W_SAFE_REMOVEREF(m_GBufferColor);
+	W_SAFE_REMOVEREF(m_GBufferNormal);
+	W_SAFE_REMOVEREF(m_masterRenderSprite);
 }
 
 class WMaterial* WDeferredRenderer::CreateDefaultMaterial() {
