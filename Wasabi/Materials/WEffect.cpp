@@ -329,6 +329,14 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	// No multi sampling used in this example
 	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
+	// Viewport state
+	VkPipelineViewportStateCreateInfo viewportState = {};
+	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	// One viewport
+	viewportState.viewportCount = 1;
+	// One scissor rectangle
+	viewportState.scissorCount = 1;
+
 	// Assign states
 	// Assign pipeline state create information
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
@@ -346,16 +354,14 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 		shaderStages.push_back(stage);
 	}
 
-	// The layout used for this pipeline
 	pipelineCreateInfo.layout = m_pipelineLayout;
-
 	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
 	pipelineCreateInfo.stageCount = shaderStages.size();
 	pipelineCreateInfo.pStages = shaderStages.data();
 	pipelineCreateInfo.pRasterizationState = &m_rasterizationState;
 	pipelineCreateInfo.pColorBlendState = &colorBlendState;
 	pipelineCreateInfo.pMultisampleState = &multisampleState;
-	pipelineCreateInfo.pViewportState = NULL; // viewport state is dynamic
+	pipelineCreateInfo.pViewportState = &viewportState;
 	pipelineCreateInfo.pDepthStencilState = &m_depthStencilState;
 	pipelineCreateInfo.renderPass = rt->GetRenderPass();
 	pipelineCreateInfo.pDynamicState = &dynamicState;
@@ -419,6 +425,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 		newstate.vertexAttributeDescriptionCount += ILs[i-1]->attributes.size();
 		inputStates[i] = newstate;
 	}
+
 	if (inputStates.size() == 1) { // 0 ILs, make one pipeline without buffers
 		pipelineCreateInfo.pVertexInputState = &inputStates[0];
 		pipelineCreateInfos.push_back(pipelineCreateInfo);
