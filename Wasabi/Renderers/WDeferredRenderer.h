@@ -17,6 +17,9 @@
 #include "../Core/WCore.h"
 #include "WRenderer.h"
 #include "../Materials/WMaterial.h"
+#include "../Images/WImage.h"
+#include "../Images/WRenderTarget.h"
+#include "../Sprites/WSprite.h"
 
 /**
  * @ingroup engineclass
@@ -34,6 +37,14 @@ class WDeferredRenderer : public WRenderer {
 	VkSampler m_sampler;
 	/** Default effect used to create materials */
 	class WEffect* m_default_fx;
+	/** GBuffer to store normals, depth and color */
+	WRenderTarget* m_GBuffer;
+	/** Color attachment in the GBuffer */
+	WImage* m_GBufferColor;
+	/** Normal attachment in the GBuffer */
+	WImage* m_GBufferNormal;
+	/** Sprite used to render the final composition */
+	WSprite* m_masterRenderSprite;
 
 public:
 	WDeferredRenderer(Wasabi* const app);

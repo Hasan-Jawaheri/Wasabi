@@ -95,7 +95,8 @@ public:
 	 * delete[] pixels;
 	 * @endcode
 	 * 
-	 * @param  pixels         A pointer to the memory containing the pixels
+	 * @param  pixels         A pointer to the memory containing the pixels. If NULL,
+	 *                        the image will not have initial data.
 	 * @param  width          Width of the image
 	 * @param  height         Height of the image
 	 * @param  bDynamic       Should be set to true for images that will be

@@ -33,9 +33,9 @@ public:
 	~WRenderTarget();
 
 	/**
-	 * Create a render target backed by a WImage. The format of the render target
-	 * will match that of the WImage. The render target will have 1 attachment
-	 * for color, and if bDepth == true, will have another attachment for depth.
+	 * Create a render target with a single color attachment backed by a WImage.
+	 * The format of the render target attachment will match that of the WImage.
+	 * Iif bDepth == true, the created render target will have an attachment for depth.
 	 * This function will cause exactly one frame buffer to be created.
 	 *
 	 * Examples:
@@ -59,6 +59,25 @@ public:
 	 */
 	WError Create(unsigned int width, unsigned int height,
 				  class WImage* target,
+				  bool bDepth = true,
+				  VkFormat depthFormat = VK_FORMAT_D32_SFLOAT_S8_UINT);
+
+	/**
+	 * Create a render target with a multiple color attachments, each backed by a WImage.
+	 * The format of the render target attachments will match those of the WImage's.
+	 * Iif bDepth == true, the created render target will also have an attachment for depth.
+	 * This function will cause exactly one frame buffer to be created.
+	 *
+	 * @param  width       Width of the render target
+	 * @param  height      Height of the render target
+	 * @param  targets     An array of WImage's backing the created render target attachments
+	 * @param  bDepth      true if the render target needs a depth attachment,
+	 *                     false otherwise
+	 * @param  depthFormat Format for the depth attachment, if bDepth == true
+	 * @return             Error code, see WError.h
+	 */
+	WError Create(unsigned int width, unsigned int height,
+				  vector<class WImage*> targets,
 				  bool bDepth = true,
 				  VkFormat depthFormat = VK_FORMAT_D32_SFLOAT_S8_UINT);
 
@@ -160,10 +179,10 @@ private:
 	std::vector<VkFramebuffer> m_frameBuffers;
 	/** Format of the depth image */
 	VkFormat m_depthFormat;
-	/** Format of the frame buffer(s) */
-	VkFormat m_colorFormat;
-	/** WImage backing the frame buffer (if available) */
-	class WImage* m_target;
+	/** Formats of the views in the attachments of the render target */
+	vector<VkFormat> m_colorFormats;
+	/** WImage's backing the frame buffer attachments (if available) */
+	vector<class WImage*> m_targets;
 	/** Render pass associated with this render target */
 	VkRenderPass m_renderPass;
 	/** A pipeline cache */

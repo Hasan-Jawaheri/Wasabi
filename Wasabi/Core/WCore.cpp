@@ -182,9 +182,14 @@ void Wasabi::_DestroyResources() {
 
 	if (m_cmdPool)
 		vkDestroyCommandPool(m_vkDevice, m_cmdPool, nullptr);
+	m_cmdPool = VK_NULL_HANDLE;
 
-	vkDestroyDevice(m_vkDevice, nullptr);
-	vkDestroyInstance(m_vkInstance, nullptr);
+	if (m_vkDevice)
+		vkDestroyDevice(m_vkDevice, nullptr);
+	if (m_vkInstance)
+		vkDestroyInstance(m_vkInstance, nullptr);
+	m_vkDevice = VK_NULL_HANDLE;
+	m_vkInstance = VK_NULL_HANDLE;
 }
 
 void Wasabi::SwitchState(WGameState* state) {
