@@ -2,7 +2,7 @@
 
 #include "Lights.hpp"
 
-LightsDemo::LightsDemo(Wasabi* const app) : WGameState(app) {
+LightsDemo::LightsDemo(Wasabi* const app) : WTestState(app) {
 }
 
 void LightsDemo::Load() {
@@ -29,7 +29,7 @@ void LightsDemo::Load() {
 	// remove default light
 	m_app->LightManager->GetDefaultLight()->Hide();
 
-	int maxLights = (int)m_app->engineParams.find("maxLights")->second;
+	int maxLights = 20;
 
 	for (int i = 0; i < maxLights / 2; i++) {
 		float x = 20.0f * (float)(rand() % 10000) / 10000.0f - 20.0f;

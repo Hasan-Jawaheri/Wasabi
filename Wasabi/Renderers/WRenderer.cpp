@@ -69,11 +69,7 @@ void WRenderer::_Render() {
 
 	m_renderTarget->UseFrameBuffer(currentBuffer);
 
-	WError werr = m_renderTarget->Begin();
-	if (werr) {
-		Render(m_renderTarget);
-		m_renderTarget->End(false);
-	}
+	Render(m_renderTarget);
 
 	// Command buffer to be sumitted to the queue
 	VkCommandBuffer cmdBuf = m_renderTarget->GetCommnadBuffer();

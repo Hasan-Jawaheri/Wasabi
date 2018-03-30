@@ -2,7 +2,7 @@
 
 #include "../TestSuite.hpp"
 
-class SoundDemo : public WGameState {
+class SoundDemo : public WTestState {
 	WSound* m_sound;
 
 public:

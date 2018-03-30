@@ -80,7 +80,9 @@ public:
 	 * Renders the scene to a certain render target. This function should be
 	 * implemented by a child class and it should perform the child-specific
 	 * rendering procedure. For a renderer bound to Wasabi, this function will be
-	 * called during Wasabi's Wasabi::StartEngine() call.
+	 * called during Wasabi's Wasabi::StartEngine() call. The Render call must
+	 * perform Begin() and End() for the given render target and the End() must
+	 * NOT submit (first parameter must be false).
 	 * @param rt     Render target to render the scene to
 	 * @param filter A filter, represented by a bitfield whose bits are any
 	 *               combination of W_RENDER_FILTER flags

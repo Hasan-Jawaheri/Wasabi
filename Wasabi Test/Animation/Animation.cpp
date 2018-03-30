@@ -1,6 +1,6 @@
 #include "Animation.hpp"
 
-AnimationDemo::AnimationDemo(Wasabi* const app) : WGameState(app) {
+AnimationDemo::AnimationDemo(Wasabi* const app) : WTestState(app) {
 }
 
 void AnimationDemo::Load() {

@@ -1,6 +1,6 @@
 #include "Instancing.hpp"
 
-InstancingDemo::InstancingDemo(Wasabi* const app) : WGameState(app) {
+InstancingDemo::InstancingDemo(Wasabi* const app) : WTestState(app) {
 }
 
 void InstancingDemo::Load() {

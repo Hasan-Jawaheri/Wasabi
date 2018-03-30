@@ -2,7 +2,7 @@
 
 #include "RenderTargetTexture.hpp"
 
-RenderTargetTextureDemo::RenderTargetTextureDemo(Wasabi* const app) : WGameState(app) {
+RenderTargetTextureDemo::RenderTargetTextureDemo(Wasabi* const app) : WTestState(app) {
 	rt = nullptr;
 }
 

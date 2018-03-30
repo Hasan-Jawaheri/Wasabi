@@ -1,8 +1,9 @@
 #pragma once
 
 #include "../TestSuite.hpp"
+#include <Renderers/WForwardRenderer.h>
 
-class RenderTargetTextureDemo : public WGameState {
+class RenderTargetTextureDemo : public WTestState {
 	WObject *o, *o2, *o3;
 	WLight* l;
 	WRenderTarget* rt;
@@ -14,4 +15,6 @@ public:
 	virtual void Load();
 	virtual void Update(float fDeltaTime);
 	virtual void Cleanup();
+
+	virtual WRenderer* CreateRenderer() { return new WForwardRenderer(m_app); }
 };

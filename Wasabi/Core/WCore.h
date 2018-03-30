@@ -309,9 +309,42 @@ protected:
 	/**
 	 * This function can be overloaded by the application. This function is
 	 * called by the engine in StartEngine() and will give the application a
-	 * chance to set the components of the engine manually.
+	 * chance to set the renderer of the engine. Default implementation
+	 * will create a deferred renderer (WDeferredRenderer).
 	 */
-	virtual void SetupComponents();
+	virtual WRenderer* CreateRenderer();
+
+	/**
+	* This function can be overloaded by the application. This function is
+	* called by the engine in StartEngine() and will give the application a
+	* chance to set the sound component of the engine. Default implementation
+	* will create a WSoundComponent.
+	*/
+	virtual WSoundComponent* CreateSoundComponent();
+
+	/**
+	* This function can be overloaded by the application. This function is
+	* called by the engine in StartEngine() and will give the application a
+	* chance to set the text component of the engine. Default implementation
+	* will create a WTextComponent.
+	*/
+	virtual WTextComponent* CreateTextComponent();
+
+	/**
+	* This function can be overloaded by the application. This function is
+	* called by the engine in StartEngine() and will give the application a
+	* chance to set the window component of the engine. Default implementation
+	* will create the appropriate component based on the OS.
+	*/
+	virtual WWindowComponent* CreateWindowComponent();
+
+	/**
+	* This function can be overloaded by the application. This function is
+	* called by the engine in StartEngine() and will give the application a
+	* chance to set the input component of the engine. Default implementation
+	* will create the appropriate component based on the OS.
+	*/
+	virtual WInputComponent* CreateInputComponent();
 
 private:
 	/** The Vulkan instance */

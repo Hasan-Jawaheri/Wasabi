@@ -334,6 +334,11 @@ WError WForwardRenderer::Resize(unsigned int width, unsigned int height) {
 }
 
 void WForwardRenderer::Render(WRenderTarget* rt, unsigned int filter) {
+	WError werr = rt->Begin();
+
+	if (werr != W_SUCCEEDED)
+		return;
+
 	// create the lights UBO data
 	int max_lights = (int)m_app->engineParams["maxLights"];
 	m_numLights = 0;
@@ -361,6 +366,8 @@ void WForwardRenderer::Render(WRenderTarget* rt, unsigned int filter) {
 
 	if (filter & RENDER_FILTER_TEXT)
 		m_app->TextComponent->Render(rt);
+
+	rt->End(false);
 }
 
 void WForwardRenderer::Cleanup() {
