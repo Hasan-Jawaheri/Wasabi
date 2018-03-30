@@ -273,7 +273,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 	frameBufferCreateInfo.height = height;
 	frameBufferCreateInfo.layers = 1;
 
-	// Create frame buffers for every swap chain image
+	// Create the frame buffer
 	m_frameBuffers.resize(1);
 	err = vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &m_frameBuffers[0]);
 	if (err != VK_SUCCESS) {
@@ -366,7 +366,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.pNext = NULL;
-	renderPassInfo.attachmentCount = 2;
+	renderPassInfo.attachmentCount = sizeof(attachments)/sizeof(VkAttachmentDescription);
 	renderPassInfo.pAttachments = attachments;
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;

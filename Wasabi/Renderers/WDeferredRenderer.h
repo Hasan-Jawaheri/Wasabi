@@ -30,9 +30,9 @@
  * @endcode
  */
 class WDeferredRenderer : public WRenderer {
-  /** Default Vulkan sampler */
+	/** Default Vulkan sampler */
 	VkSampler m_sampler;
-  /** Default effect used to create materials */
+	/** Default effect used to create materials */
 	class WEffect* m_default_fx;
 
 public:

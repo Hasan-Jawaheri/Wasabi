@@ -1,5 +1,5 @@
 #include "../Core/WCore.h"
-#include "../Renderers/WForwardRenderer.h"
+#include "../Renderers/WDeferredRenderer.h"
 #include "../Windows/WWindowComponent.h"
 #include "../Objects/WObject.h"
 #include "../Geometries/WGeometry.h"
@@ -360,7 +360,11 @@ WError Wasabi::StartEngine(int width, int height) {
 	// Gather physical device memory properties
 	vkGetPhysicalDeviceMemoryProperties(m_vkPhysDev, &m_deviceMemoryProperties);
 
-	SetupComponents();
+	Renderer = CreateRenderer();
+	SoundComponent = CreateSoundComponent();
+	TextComponent = CreateTextComponent();
+	WindowComponent = CreateWindowComponent();
+	InputComponent = CreateInputComponent();
 
 	WError werr = WindowComponent->Initialize(width, height);
 	if (!werr) {
@@ -537,23 +541,42 @@ int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {
 	return 0;
 }
 
-void Wasabi::SetupComponents() {
-	Renderer = new WForwardRenderer(this);
-	SoundComponent = new WSoundComponent(this);
-	TextComponent = new WTextComponent(this);
+WRenderer* Wasabi::CreateRenderer() {
+	return new WDeferredRenderer(this);
+}
+
+WSoundComponent* Wasabi::CreateSoundComponent() {
+	return new WSoundComponent(this);
+}
+
+WTextComponent* Wasabi::CreateTextComponent() {
+	WTextComponent* tc = new WTextComponent(this);
 
 #ifdef _WIN32
-	WindowComponent = new WWC_Win32(this);
-	InputComponent = new WIC_Win32(this);
 	char dir[MAX_PATH];
 	int size = MAX_PATH;
 	GetWindowsDirectoryA(dir, size);
 	std::string s = dir;
 	if (s[s.length() - 1] != '/' && s[s.length() - 1] != '\\')
 		s += '/';
-	TextComponent->AddFontDirectory(s + "fonts");
+	tc->AddFontDirectory(s + "fonts");
 #elif defined(__linux__)
-	WindowComponent = new WWC_Linux(this);
-	InputComponent = new WIC_Linux(this);
+#endif
+	return tc;
+}
+
+WWindowComponent* Wasabi::CreateWindowComponent() {
+#ifdef _WIN32
+	return new WWC_Win32(this);
+#elif defined(__linux__)
+	return new WWC_Linux(this);
+#endif
+}
+
+WInputComponent* Wasabi::CreateInputComponent() {
+#ifdef _WIN32
+	return new WIC_Win32(this);
+#elif defined(__linux__)
+	return new WIC_Linux(this);
 #endif
 }

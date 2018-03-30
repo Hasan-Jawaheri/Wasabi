@@ -1,8 +1,9 @@
 #pragma once
 
 #include "../TestSuite.hpp"
+#include <Renderers/WForwardRenderer.h>
 
-class InstancingDemo : public WGameState {
+class InstancingDemo : public WTestState {
 	WObject* character;
 	WGeometry* geometry;
 	WImage* texture;
@@ -14,4 +15,6 @@ public:
 	virtual void Load();
 	virtual void Update(float fDeltaTime);
 	virtual void Cleanup();
+
+	virtual WRenderer* CreateRenderer() { return new WForwardRenderer(m_app); }
 };

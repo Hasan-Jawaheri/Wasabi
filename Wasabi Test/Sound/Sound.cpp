@@ -2,7 +2,7 @@
 
 #include "Sound.hpp"
 
-SoundDemo::SoundDemo(Wasabi* const app) : WGameState(app) {}
+SoundDemo::SoundDemo(Wasabi* const app) : WTestState(app) {}
 
 void SoundDemo::Load() {
 	m_sound = new WSound(m_app);

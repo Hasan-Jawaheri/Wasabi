@@ -80,7 +80,9 @@ WasabiTester::WasabiTester() : Wasabi() {
 }
 
 WError WasabiTester::Setup() {
+	WTestState* state = new _DEMO_STATE_CLASSNAME_(this);
 	this->maxFPS = 0;
+	this->m_renderer = state->CreateRenderer();
 	WError ret = StartEngine(640, 480);
 	if (!ret) {
 		MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
@@ -89,10 +91,11 @@ WError WasabiTester::Setup() {
 
 	LightManager->GetDefaultLight()->Point(0, -1, -1);
 
-	SwitchState(new _DEMO_STATE_CLASSNAME_(this));
+	SwitchState(state);
 
 	return ret;
 }
+
 bool WasabiTester::Loop(float fDeltaTime) {
 	ApplyMousePivot();
 
@@ -102,8 +105,13 @@ bool WasabiTester::Loop(float fDeltaTime) {
 
 	return true;
 }
+
 void WasabiTester::Cleanup() {
 	SwitchState(nullptr);
+}
+
+WRenderer* WasabiTester::CreateRenderer() {
+	return this->m_renderer;
 }
 
 void WasabiTester::SetCameraPosition(WVector3 pos) {
