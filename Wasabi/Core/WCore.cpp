@@ -138,6 +138,8 @@ Wasabi::Wasabi() {
 
 	m_copyCommandBuffer = VK_NULL_HANDLE;
 
+	curState = nullptr;
+	__EXIT = false;
 	maxFPS = 60.0f;
 }
 Wasabi::~Wasabi() {
