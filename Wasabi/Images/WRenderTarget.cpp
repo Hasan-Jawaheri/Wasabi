@@ -20,6 +20,7 @@ WRenderTarget::WRenderTarget(Wasabi* const app, unsigned int ID) : WBase(app, ID
 	m_depthStencil.mem = VK_NULL_HANDLE;
 	m_currentFrameBuffer = 0;
 	m_camera = m_app->CameraManager->GetDefaultCamera();
+	m_target = NULL;
 
 	m_clearColor = { { 0.425f, 0.425f, 0.425f, 1.0f } };
 	m_renderCmdBuffer = VK_NULL_HANDLE;
@@ -77,8 +78,7 @@ void WRenderTarget::_DestroyResources() {
 	m_depthStencil.image = VK_NULL_HANDLE;
 	m_depthStencil.mem = VK_NULL_HANDLE;
 
-	if (m_target)
-		W_SAFE_REMOVEREF(m_target);
+	W_SAFE_REMOVEREF(m_target);
 }
 
 WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* target, bool bDepth, VkFormat depthFormat) {

@@ -18,8 +18,91 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Animations\WAnimation.cpp" />
+    <ClCompile Include="Animations\WSkeletalAnimation.cpp" />
+    <ClCompile Include="Cameras\WCamera.cpp" />
+    <ClCompile Include="Core\VkTools\vulkantools.cpp" />
+    <ClCompile Include="Core\WBase.cpp" />
+    <ClCompile Include="Core\WCore.cpp" />
+    <ClCompile Include="Core\WError.cpp" />
+    <ClCompile Include="Core\WMath.cpp" />
+    <ClCompile Include="Core\WOrientation.cpp" />
+    <ClCompile Include="Core\WTimer.cpp" />
+    <ClCompile Include="Core\WUtilities.cpp" />
+    <ClCompile Include="Geometries\WGeometry.cpp" />
+    <ClCompile Include="Images\WImage.cpp" />
+    <ClCompile Include="Images\WRenderTarget.cpp" />
+    <ClCompile Include="Input\Windows\WIC_Win32.cpp" />
+    <ClCompile Include="Lights\WLight.cpp" />
+    <ClCompile Include="Materials\WEffect.cpp" />
+    <ClCompile Include="Materials\WMaterial.cpp" />
+    <ClCompile Include="Objects\WObject.cpp" />
+    <ClCompile Include="Physics\Havok\WHavokPhysics.cpp" />
+    <ClCompile Include="Renderers\WDeferredRenderer.cpp" />
+    <ClCompile Include="Renderers\WForwardRenderer.cpp" />
+    <ClCompile Include="Renderers\WRenderer.cpp" />
+    <ClCompile Include="Sounds\WSound.cpp" />
+    <ClCompile Include="Sprites\WSprite.cpp" />
+    <ClCompile Include="stb\stb_vorbis.c" />
+    <ClCompile Include="Texts\WText.cpp" />
+    <ClCompile Include="Windows\Windows\WWC_Win32.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Animations\WAnimation.h" />
+    <ClInclude Include="Animations\WSkeletalAnimation.h" />
+    <ClInclude Include="Cameras\WCamera.h" />
+    <ClInclude Include="Core\VkTools\vulkanswapchain.hpp" />
+    <ClInclude Include="Core\VkTools\vulkantools.h" />
+    <ClInclude Include="Core\WBase.h" />
+    <ClInclude Include="Core\WCore.h" />
+    <ClInclude Include="Core\WError.h" />
+    <ClInclude Include="Core\WManager.h" />
+    <ClInclude Include="Core\WMath.h" />
+    <ClInclude Include="Core\WOrientation.h" />
+    <ClInclude Include="Core\WTimer.h" />
+    <ClInclude Include="Core\WUtilities.h" />
+    <ClInclude Include="Geometries\WGeometry.h" />
+    <ClInclude Include="Images\WImage.h" />
+    <ClInclude Include="Images\WRenderTarget.h" />
+    <ClInclude Include="Input\Windows\WIC_Win32.h" />
+    <ClInclude Include="Input\WInputComponent.h" />
+    <ClInclude Include="Lights\WLight.h" />
+    <ClInclude Include="Materials\WEffect.h" />
+    <ClInclude Include="Materials\WMaterial.h" />
+    <ClInclude Include="Objects\WObject.h" />
+    <ClInclude Include="Physics\Havok\WHavokPhysics.h" />
+    <ClInclude Include="Physics\WPhysicsComponent.h" />
+    <ClInclude Include="Renderers\WDeferredRenderer.h" />
+    <ClInclude Include="Renderers\WForwardRenderer.h" />
+    <ClInclude Include="Renderers\WRenderer.h" />
+    <ClInclude Include="Sounds\WSound.h" />
+    <ClInclude Include="Sprites\WSprite.h" />
+    <ClInclude Include="stb\stb.h" />
+    <ClInclude Include="stb\stb_connected_components.h" />
+    <ClInclude Include="stb\stb_c_lexer.h" />
+    <ClInclude Include="stb\stb_divide.h" />
+    <ClInclude Include="stb\stb_dxt.h" />
+    <ClInclude Include="stb\stb_easy_font.h" />
+    <ClInclude Include="stb\stb_herringbone_wang_tile.h" />
+    <ClInclude Include="stb\stb_image.h" />
+    <ClInclude Include="stb\stb_image_resize.h" />
+    <ClInclude Include="stb\stb_image_write.h" />
+    <ClInclude Include="stb\stb_leakcheck.h" />
+    <ClInclude Include="stb\stb_perlin.h" />
+    <ClInclude Include="stb\stb_rect_pack.h" />
+    <ClInclude Include="stb\stb_textedit.h" />
+    <ClInclude Include="stb\stb_tilemap_editor.h" />
+    <ClInclude Include="stb\stb_truetype.h" />
+    <ClInclude Include="stb\stb_voxel_render.h" />
+    <ClInclude Include="stb\stretchy_buffer.h" />
+    <ClInclude Include="Texts\WText.h" />
+    <ClInclude Include="Wasabi.h" />
+    <ClInclude Include="Windows\Windows\WWC_Win32.h" />
+    <ClInclude Include="Windows\WWindowComponent.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1889E258-3135-46CF-BF68-60C8439971CE}</ProjectGuid>
+    <ProjectGuid>{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Wasabi</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
@@ -70,30 +153,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;C:\Program Files (x86)\Havok 710r1\Source;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;C:\Program Files %28x86%29\Havok 710r1\Lib\win32_net_9-0\debug_multithreaded_dll;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(VC_SourcePath)\stb\;$(SourcePath)</SourcePath>
-    <TargetExt>.lib</TargetExt>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64;$(LibraryPath)</LibraryPath>
-    <TargetExt>.lib</TargetExt>
+    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Bin32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(VK_SDK_PATH)\include\;$(VC_IncludePath)\stb\;C:\Program Files %28x86%29\Havok 710r1\Source;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;C:\Program Files (x86)\Havok 710r1\Lib\win32_net_9-0\release_multithreaded_dll;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(VC_IncludePath)\stb\;$(SourcePath)</SourcePath>
-    <TargetExt>.lib</TargetExt>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32;$(LibraryPath)</LibraryPath>
-    <TargetExt>.lib</TargetExt>
+    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Bin32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -101,28 +166,23 @@
       </PrecompiledHeader>
       <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level1</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>
-      </SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -133,119 +193,31 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level1</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>
-      </SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Animations\WAnimation.cpp" />
-    <ClCompile Include="Animations\WSkeletalAnimation.cpp" />
-    <ClCompile Include="Cameras\WCamera.cpp" />
-    <ClCompile Include="Core\VkTools\vulkantools.cpp" />
-    <ClCompile Include="Core\WCore.cpp" />
-    <ClCompile Include="Core\WBase.cpp" />
-    <ClCompile Include="Core\WError.cpp" />
-    <ClCompile Include="Core\WMath.cpp" />
-    <ClCompile Include="Core\WOrientation.cpp" />
-    <ClCompile Include="Core\WTimer.cpp" />
-    <ClCompile Include="Core\WUtilities.cpp" />
-    <ClCompile Include="Geometries\WGeometry.cpp" />
-    <ClCompile Include="Images\WImage.cpp" />
-    <ClCompile Include="Images\WRenderTarget.cpp" />
-    <ClCompile Include="Input\Windows\WIC_Win32.cpp" />
-    <ClCompile Include="Lights\WLight.cpp" />
-    <ClCompile Include="Materials\WEffect.cpp" />
-    <ClCompile Include="Materials\WMaterial.cpp" />
-    <ClCompile Include="Objects\WObject.cpp" />
-    <ClCompile Include="Physics\Havok\WHavokPhysics.cpp" />
-    <ClCompile Include="Renderers\WDeferredRenderer.cpp" />
-    <ClCompile Include="Renderers\WForwardRenderer.cpp" />
-    <ClCompile Include="Renderers\WRenderer.cpp" />
-    <ClCompile Include="Sounds\WSound.cpp" />
-    <ClCompile Include="Sprites\WSprite.cpp" />
-    <ClCompile Include="stb\stb_vorbis.c" />
-    <ClCompile Include="Texts\WText.cpp" />
-    <ClCompile Include="Windows\Windows\WWC_Win32.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Animations\WAnimation.h" />
-    <ClInclude Include="Animations\WSkeletalAnimation.h" />
-    <ClInclude Include="Cameras\WCamera.h" />
-    <ClInclude Include="Core\WCore.h" />
-    <ClInclude Include="Core\VkTools\vulkanswapchain.hpp" />
-    <ClInclude Include="Core\VkTools\vulkantools.h" />
-    <ClInclude Include="Core\WBase.h" />
-    <ClInclude Include="Core\WError.h" />
-    <ClInclude Include="Core\WManager.h" />
-    <ClInclude Include="Core\WMath.h" />
-    <ClInclude Include="Core\WOrientation.h" />
-    <ClInclude Include="Core\WTimer.h" />
-    <ClInclude Include="Core\WUtilities.h" />
-    <ClInclude Include="Geometries\WGeometry.h" />
-    <ClInclude Include="Images\WImage.h" />
-    <ClInclude Include="Images\WRenderTarget.h" />
-    <ClInclude Include="Input\Windows\WIC_Win32.h" />
-    <ClInclude Include="Input\WInputComponent.h" />
-    <ClInclude Include="Lights\WLight.h" />
-    <ClInclude Include="Materials\WEffect.h" />
-    <ClInclude Include="Materials\WMaterial.h" />
-    <ClInclude Include="Objects\WObject.h" />
-    <ClInclude Include="Physics\Havok\WHavokPhysics.h" />
-    <ClInclude Include="Physics\WPhysicsComponent.h" />
-    <ClInclude Include="Renderers\WDeferredRenderer.h" />
-    <ClInclude Include="Renderers\WForwardRenderer.h" />
-    <ClInclude Include="Renderers\WRenderer.h" />
-    <ClInclude Include="Sounds\WSound.h" />
-    <ClInclude Include="Sprites\WSprite.h" />
-    <ClInclude Include="stb\stb.h" />
-    <ClInclude Include="stb\stb_connected_components.h" />
-    <ClInclude Include="stb\stb_c_lexer.h" />
-    <ClInclude Include="stb\stb_divide.h" />
-    <ClInclude Include="stb\stb_dxt.h" />
-    <ClInclude Include="stb\stb_easy_font.h" />
-    <ClInclude Include="stb\stb_herringbone_wang_tile.h" />
-    <ClInclude Include="stb\stb_image.h" />
-    <ClInclude Include="stb\stb_image_resize.h" />
-    <ClInclude Include="stb\stb_image_write.h" />
-    <ClInclude Include="stb\stb_leakcheck.h" />
-    <ClInclude Include="stb\stb_perlin.h" />
-    <ClInclude Include="stb\stb_rect_pack.h" />
-    <ClInclude Include="stb\stb_textedit.h" />
-    <ClInclude Include="stb\stb_tilemap_editor.h" />
-    <ClInclude Include="stb\stb_truetype.h" />
-    <ClInclude Include="stb\stb_voxel_render.h" />
-    <ClInclude Include="stb\stretchy_buffer.h" />
-    <ClInclude Include="Texts\WText.h" />
-    <ClInclude Include="Wasabi.h" />
-    <ClInclude Include="Windows\Windows\WWC_Win32.h" />
-    <ClInclude Include="Windows\WWindowComponent.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

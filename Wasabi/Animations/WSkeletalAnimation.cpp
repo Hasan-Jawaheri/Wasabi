@@ -125,7 +125,7 @@ WError WBone::LoadFromWA(basic_filebuf<char>* buff, unsigned int pos) {
 	fstream file;
 	if (!buff)
 		return WError(W_FILENOTFOUND);
-	file.rdbuf(buff);
+	file.set_rdbuf(buff);
 	file.seekg(pos);
 
 	WVector3 posULR[4];

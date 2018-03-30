@@ -19,11 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{72B794B2-E5E3-452A-B820-0744DC017918}</ProjectGuid>
+    <ProjectGuid>{30590253-039B-44AC-BD85-4E54569227C6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>FBXLoader</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>FBXLoader</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,16 +71,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(ProjectDir)\..\Wasabi\;C:\Program Files\Autodesk\FBX\FBX SDK\2016.1.1\include;$(VK_SDK_PATH)\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;$(ProjectDir)\..\Debug\;C:\Program Files\Autodesk\FBX\FBX SDK\2016.1.1\lib\vs2015\x86\debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(SolutionDir)\Wasabi\;$(FBX_SDK)\include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Bin32;$(OPENAL_SDK)\libs\Win32\;$(SolutionDir)\Debug\;$(FBX_SDK)\lib\vs2015\x86\debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\OpenAL 1.1 SDK\include;$(ProjectDir)\..\Wasabi\;$(VK_SDK_PATH)\include\;C:\Program Files\Autodesk\FBX\FBX SDK\2016.1.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;$(VK_SDK_PATH)\bin32;$(ProjectDir)\..\Release\;C:\Program Files\Autodesk\FBX\FBX SDK\2016.1.1\lib\vs2015\x86\release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(SolutionDir)\Wasabi\;$(FBX_SDK)\include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Bin32;$(OPENAL_SDK)\libs\Win32\;$(SolutionDir)\Release\;$(FBX_SDK)\lib\vs2015\x86\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -93,7 +92,7 @@
       <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -104,10 +103,9 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level1</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,7 +121,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,7 +139,6 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

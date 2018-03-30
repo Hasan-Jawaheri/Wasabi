@@ -20,7 +20,7 @@ using std::ios;
 using std::vector;
 using std::string;
 
-#ifndef max
+#ifndef fmax
 #define fmax(a,b) ((a) > (b) ? (a) : (b))
 #endif
 

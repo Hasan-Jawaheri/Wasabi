@@ -65,8 +65,6 @@ using std::array;
 #define ZeroMemory(x,y) memset(x, 0, y)
 #endif
 
-typedef unsigned int uint;
-
 /**
  * Wrapper for a Vulkan buffer an its backing memory.
  */
