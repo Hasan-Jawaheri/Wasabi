@@ -1,9 +1,4 @@
 #include "TestSuite.hpp"
-#include "RenderTargetTexture.hpp"
-#include "Animation.hpp"
-#include "Instancing.hpp"
-#include "Lights.hpp"
-#include "Sound.hpp"
 
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
@@ -17,6 +12,12 @@
  * - InstancingDemo
  * - LightsDemo
  ******************************************************************/
+
+#include "RenderTargetTexture/RenderTargetTexture.hpp"
+#include "Animation/Animation.hpp"
+#include "Sound/Sound.hpp"
+#include "Instancing/Instancing.hpp"
+#include "Lights/Lights.hpp"
 
 void WasabiTester::ApplyMousePivot() {
 	WCamera* cam = CameraManager->GetDefaultCamera();
