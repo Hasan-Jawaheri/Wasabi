@@ -154,11 +154,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Bin32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Bin32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

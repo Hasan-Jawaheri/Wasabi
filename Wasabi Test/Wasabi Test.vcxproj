@@ -72,7 +72,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(SolutionDir)\Wasabi\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Bin32;$(OPENAL_SDK)\libs\Win32;$(SolutionDir)\Debug\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(SolutionDir)\Debug\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -80,7 +80,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(SolutionDir)\Wasabi\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Bin32;$(OPENAL_SDK)\libs\Win32;$(SolutionDir)\Release\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(SolutionDir)\Release\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
