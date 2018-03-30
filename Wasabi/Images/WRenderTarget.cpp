@@ -82,6 +82,7 @@ void WRenderTarget::_DestroyResources() {
 	for (auto it = m_targets.begin(); it != m_targets.end(); it++)
 		W_SAFE_REMOVEREF((*it));
 	m_targets.clear();
+	m_colorFormats.clear();
 }
 
 WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* target, bool bDepth, VkFormat depthFormat) {
