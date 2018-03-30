@@ -42,7 +42,7 @@ To run Wasabi, you will need the following:
 * LunarG Vulkan SDK (https://lunarg.com/vulkan-sdk/)
 * OpenAL SDK (for Windows) (https://www.openal.org/downloads/)
 
-With the above installed, Wasabi should compile with Visual Studio using **x86 configuration (NOT x64)**. For other compilers, you need to add the include path and library path of OpenAL and LunarG SDK. Those can be usually found in C:/VulkanSDK/<version>/include, C:/VulkanSDK/<version>/bin32, C:\Program Files (x86)\OpenAL 1.1 SDK\include, C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\ on Windows.
+With the above installed, Wasabi should compile with Visual Studio using **x86 configuration (NOT x64)**. For other compilers, you need to add the include path and library path of OpenAL and LunarG SDK as the environment variables VULKAN_SDK and OPENAL_SDK (and optionally FBX_SDK for FBX Loader project). Those can be usually found in C:/VulkanSDK/<version>, C:\Program Files (x86)\OpenAL 1.1 SDK on Windows and C:\Program Files\Autodesk\FBX\FBX SDK\<version>\include.
 
 On linux, you will need
 ```

@@ -29,6 +29,8 @@
 #include <android/asset_manager.h>
 #endif
 
+typedef unsigned int uint;
+
 // Custom define for better code readability
 #define VK_FLAGS_NONE 0
 // Default fence timeout in nanoseconds

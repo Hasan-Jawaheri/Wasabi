@@ -3,6 +3,7 @@
 #include "../Windows/WWindowComponent.h"
 
 WRenderer::WRenderer(Wasabi* const app) : m_app(app) {
+	m_renderTarget = NULL;
 	m_semaphores.presentComplete = VK_NULL_HANDLE;
 	m_semaphores.renderComplete = VK_NULL_HANDLE;
 }
