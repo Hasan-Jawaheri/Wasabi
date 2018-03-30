@@ -6,10 +6,10 @@ T BytesTo(char* bytes, bool bLittleEndian = false) {
 
 	if (bLittleEndian)
 		for (uint i = sizeof(bytes) - 1; i >= 0 && i != UINT_MAX; i--)
-			ret = (ret << 8) + bytes[i];
+			ret = (ret << 8) + (unsigned char)bytes[i];
 	else
 		for (uint i = 0; i < sizeof(bytes); i++)
-			ret = (ret << 8) + bytes[i];
+			ret = (ret << 8) + (unsigned char)bytes[i];
 
 	return ret;
 };
@@ -224,7 +224,7 @@ WError WSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) {
 	//frequency at offset 24 (4 bytes long)
 	file.seekg(24);
 	file.read(buffer4Bytes, 4);
-	freq = BytesTo<int>((char*)buffer4Bytes, bLittleEndian);
+	freq = BytesTo<uint>((char*)buffer4Bytes, bLittleEndian);
 
 	//data size at offset 22 (2 bytes long)
 	file.seekg(22);
