@@ -1,50 +1,56 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Animation">
-      <UniqueIdentifier>{cb86eed5-3b76-420b-8037-dcd3d751bcc8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Instancing">
-      <UniqueIdentifier>{88dff606-44a3-4e5a-a39b-1f2fe45d8625}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Lights">
-      <UniqueIdentifier>{623d3f7c-1884-4ee0-bce8-e022688fae0e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="RenderTargetTexture">
-      <UniqueIdentifier>{48a49b51-14cf-4ca5-a361-e84e6f802ad1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="TestSuite">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Sound">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="TestSuite.cpp">
-      <Filter>TestSuite</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderTargetTexture.hpp">
-      <Filter>RenderTargetTexture</Filter>
-    </ClCompile>
-    <ClCompile Include="Lights.hpp">
+    <ClCompile Include="TestSuite.cpp" />
+    <ClCompile Include="Lights\Lights.cpp">
       <Filter>Lights</Filter>
     </ClCompile>
-    <ClCompile Include="Instancing.hpp">
+    <ClCompile Include="RenderTargetTexture\RenderTargetTexture.cpp">
+      <Filter>RenderTargetTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound\Sound.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="Instancing\Instancing.cpp">
       <Filter>Instancing</Filter>
     </ClCompile>
-    <ClCompile Include="Animation.hpp">
+    <ClCompile Include="Animation\Animation.cpp">
       <Filter>Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Sound.hpp">
-      <Filter>Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TestSuite.hpp">
-      <Filter>TestSuite</Filter>
+    <ClInclude Include="TestSuite.hpp" />
+    <ClInclude Include="Lights\Lights.hpp">
+      <Filter>Lights</Filter>
     </ClInclude>
+    <ClInclude Include="Instancing\Instancing.hpp">
+      <Filter>Instancing</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation\Animation.hpp">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderTargetTexture\RenderTargetTexture.hpp">
+      <Filter>RenderTargetTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound\Sound.hpp">
+      <Filter>Sound</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Lights">
+      <UniqueIdentifier>{10ce6e58-037a-4bc9-a93d-63287604c98e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation">
+      <UniqueIdentifier>{81cbb601-5b9f-45e0-9678-435089b9c4cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Instancing">
+      <UniqueIdentifier>{ed23f2e4-4241-403a-b4e8-b948e969cf2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderTargetTexture">
+      <UniqueIdentifier>{ed316935-d678-41fc-bd73-60aa7829de01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound">
+      <UniqueIdentifier>{9e80c4e9-6e2b-4630-ae4e-d57c555319d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

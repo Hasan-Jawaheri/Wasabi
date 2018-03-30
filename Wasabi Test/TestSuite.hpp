@@ -17,3 +17,4 @@ public:
 	void SetCameraPosition(WVector3 pos);
 	void SetZoom(float d);
 };
+

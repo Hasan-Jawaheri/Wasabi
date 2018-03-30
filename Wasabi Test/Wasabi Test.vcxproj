@@ -87,12 +87,14 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level1</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>Full</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <PrecompiledHeaderFile />
+      <PrecompiledHeaderOutputFile />
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -115,8 +117,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -148,14 +149,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Animation.hpp" />
-    <ClCompile Include="Instancing.hpp" />
-    <ClCompile Include="Lights.hpp" />
-    <ClCompile Include="RenderTargetTexture.hpp" />
-    <ClCompile Include="Sound.hpp" />
+    <ClCompile Include="Animation\Animation.cpp" />
+    <ClCompile Include="Instancing\Instancing.cpp" />
+    <ClCompile Include="Lights\Lights.cpp" />
+    <ClCompile Include="RenderTargetTexture\RenderTargetTexture.cpp" />
+    <ClCompile Include="Sound\Sound.cpp" />
     <ClCompile Include="TestSuite.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animation\Animation.hpp" />
+    <ClInclude Include="Instancing\Instancing.hpp" />
+    <ClInclude Include="Lights\Lights.hpp" />
+    <ClInclude Include="RenderTargetTexture\RenderTargetTexture.hpp" />
+    <ClInclude Include="Sound\Sound.hpp" />
     <ClInclude Include="TestSuite.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
