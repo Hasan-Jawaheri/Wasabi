@@ -6,6 +6,7 @@
 
 WIC_Win32::WIC_Win32(Wasabi* const app) : WInputComponent(app) {
 	m_rightClick = m_leftClick = m_middleClick = false;
+	m_mouseZ = 0;
 	m_escapeE = true;
 	for (uint i = 0; i < 256; i++)
 		m_keyDown[i] = false;

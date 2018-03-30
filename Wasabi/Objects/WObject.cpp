@@ -264,7 +264,7 @@ std::string WObject::GetTypeName() const {
 
 bool WObject::Valid() const {
 	if (m_geometry && m_material && m_geometry->Valid() && m_material->Valid())
-		if (m_geometry->GetVertexDescription(0).GetSize() != m_material->GetEffect()->GetInputLayout(0).GetSize())
+		if (m_geometry->GetVertexDescription(0).GetSize() == m_material->GetEffect()->GetInputLayout(0).GetSize())
 			return true;
 
 		return false;
