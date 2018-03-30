@@ -1,4 +1,6 @@
-#include "TestSuite.h"
+#pragma once
+
+#include "TestSuite.hpp"
 
 class SoundDemo : public WGameState {
 	WSound* m_sound;

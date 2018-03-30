@@ -17,8 +17,3 @@ public:
 	void SetCameraPosition(WVector3 pos);
 	void SetZoom(float d);
 };
-
-#include "RenderTargetTexture.cpp"
-#include "Animation.cpp"
-#include "Instancing.cpp"
-#include "Sound.cpp"

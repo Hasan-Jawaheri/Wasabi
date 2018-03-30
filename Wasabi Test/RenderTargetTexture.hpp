@@ -1,4 +1,6 @@
-#include "TestSuite.h"
+#pragma once
+
+#include "TestSuite.hpp"
 
 class RenderTargetTextureDemo : public WGameState {
 	WObject *o, *o2, *o3;
