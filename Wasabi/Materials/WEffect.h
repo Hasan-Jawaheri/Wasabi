@@ -386,6 +386,20 @@ public:
  * graphics (or compute) pipeline. An effect specifies how rendering of
  * geometry is to be done. More generally, an effect controls all stages of a
  * Vulkan pipeline.
+ *
+ * Example:
+ * @code
+ * WShader* vs = new MyVertexShader(m_app);
+ * vs->Load();
+ * WShader* ps = new MyPixelShader(m_app);
+ * ps->Load();
+ * WEffect* myFX = new WEffect(m_app);
+ * myFX->BindShader(vs);
+ * myFX->BindShader(ps);
+ * myFX->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
+ * vs->RemoveReference();
+ * ps->RemoveReference();
+ * @endcode
  */
 class WEffect : public WBase {
 	friend class WMaterial;

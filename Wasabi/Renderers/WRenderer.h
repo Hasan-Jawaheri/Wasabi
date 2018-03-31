@@ -77,6 +77,13 @@ public:
 	virtual WError Initiailize() = 0;
 
 	/**
+	 * Called during Wasabi's Wasabi::StartEngine() call after WRenderer::Initialize()
+	 * and after initialization of managers.
+	 * @return Error code, see WError.h
+	 */
+	virtual WError LoadDependantResources();
+
+	/**
 	 * Renders the scene to a certain render target. This function should be
 	 * implemented by a child class and it should perform the child-specific
 	 * rendering procedure. For a renderer bound to Wasabi, this function will be

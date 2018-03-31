@@ -168,7 +168,7 @@ public:
 			""
 			"void main() {\n"
 			"	outColor = texture(samplerColor, inUV);\n"
-			"	outNormals = vec4(inWorldNorm, 1.0);\n"
+			"	outNormals = vec4((inWorldNorm + 1.0) / 2.0, 1.0);\n"
 			"}\n"
 		);
 	}
@@ -181,6 +181,7 @@ public:
 	virtual void Load() {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 0),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 		};
 		LoadCodeGLSL(
@@ -188,13 +189,16 @@ public:
 			"#extension GL_ARB_separate_shader_objects : enable\n"
 			"#extension GL_ARB_shading_language_420pack : enable\n"
 			""
-			"layout(binding = 1) uniform sampler2D sampler;\n"
+			"layout(binding = 0) uniform sampler2D colorSampler;\n"
+			"layout(binding = 1) uniform sampler2D normalSampler;\n"
 			"layout(location = 0) in vec2 inUV;\n"
 			"layout(location = 0) out vec4 outFragColor;\n"
 			""
 			"void main() {\n"
-			"	vec4 c = texture(sampler, inUV);\n"
+			"	vec4 c = texture(colorSampler, inUV);\n"
+			"   vec4 n = texture(normalSampler, inUV);\n"
 			"	outFragColor = vec4(c.rgba);\n"
+			"   outFragColor.rgb = mix(outFragColor.rgb, n.rgb, 0.5f);\n"
 			"}\n"
 		);
 	}
@@ -207,6 +211,7 @@ WDeferredRenderer::WDeferredRenderer(Wasabi* const app) : WRenderer(app) {
 	m_GBufferColor = nullptr;
 	m_GBufferNormal = nullptr;
 	m_masterRenderSprite = nullptr;
+	m_compositionMaterial = nullptr;
 }
 
 WError WDeferredRenderer::Initiailize() {
@@ -263,13 +268,66 @@ WError WDeferredRenderer::Initiailize() {
 			if (werr == W_SUCCEEDED) {
 				m_GBuffer = new WRenderTarget(m_app);
 				werr = m_GBuffer->Create(m_width, m_height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }));
+			}
+		}
+	}
+
+	if (werr != W_SUCCEEDED)
+		Cleanup();
+
+	return werr;
+}
+
+WError WDeferredRenderer::LoadDependantResources() {
+	//
+	// Create the final composition material
+	//
+
+	WShader* compositionVS = m_app->SpriteManager->GetSpriteVertexShader();
+	WShader* compositionPS = new SceneCompositionPS(m_app);
+	compositionPS->Load();
+	WEffect* compositionFX = new WEffect(m_app);
+	WError werr = compositionFX->BindShader(compositionVS);
+	if (werr == W_SUCCEEDED) {
+		werr = compositionFX->BindShader(compositionPS);
+		if (werr == W_SUCCEEDED) {
+			VkPipelineColorBlendAttachmentState bs;
+			bs.colorWriteMask = 0xf;
+			bs.blendEnable = VK_FALSE;
+			bs.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			compositionFX->SetBlendingState(bs);
+
+			VkPipelineDepthStencilStateCreateInfo dss = {};
+			dss.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+			dss.depthTestEnable = VK_FALSE;
+			dss.depthWriteEnable = VK_FALSE;
+			dss.depthBoundsTestEnable = VK_FALSE;
+			dss.stencilTestEnable = VK_FALSE;
+			dss.front = dss.back;
+			compositionFX->SetDepthStencilState(dss);
+
+			werr = compositionFX->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
+
+			if (werr == W_SUCCEEDED) {
+				m_compositionMaterial = new WMaterial(m_app);
+				werr = m_compositionMaterial->SetEffect(compositionFX);
 				if (werr == W_SUCCEEDED) {
-					m_masterRenderSprite = new WSprite(m_app);
-					m_masterRenderSprite->SetImage(m_GBufferColor);
+					werr = m_compositionMaterial->SetTexture(0, m_GBufferColor);
+					if (werr == W_SUCCEEDED) {
+						werr = m_compositionMaterial->SetTexture(1, m_GBufferNormal);
+						if (werr == W_SUCCEEDED) {
+							m_masterRenderSprite = new WSprite(m_app);
+							m_masterRenderSprite->SetMaterial(m_compositionMaterial);
+							m_masterRenderSprite->SetSize(m_width, m_height);
+						}
+					}
 				}
 			}
 		}
 	}
+
+	compositionFX->RemoveReference();
+	compositionPS->RemoveReference();
 
 	if (werr != W_SUCCEEDED)
 		Cleanup();
@@ -288,10 +346,8 @@ WError WDeferredRenderer::Resize(unsigned int width, unsigned int height) {
 				werr = m_GBuffer->Create(width, height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }));
 			}
 		}
-		if (werr == W_SUCCEEDED) {
+		if (werr == W_SUCCEEDED)
 			m_masterRenderSprite->SetSize(width, height);
-			m_masterRenderSprite->SetImage(m_GBufferColor);
-		}
 	}
 
 	return werr;
@@ -346,6 +402,7 @@ void WDeferredRenderer::Cleanup() {
 	W_SAFE_REMOVEREF(m_GBufferColor);
 	W_SAFE_REMOVEREF(m_GBufferNormal);
 	W_SAFE_REMOVEREF(m_masterRenderSprite);
+	W_SAFE_REMOVEREF(m_compositionMaterial);
 }
 
 class WMaterial* WDeferredRenderer::CreateDefaultMaterial() {

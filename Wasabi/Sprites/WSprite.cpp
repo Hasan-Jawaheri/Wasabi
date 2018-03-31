@@ -91,32 +91,36 @@ std::string WSpriteManager::GetTypeName() const {
 
 WSpriteManager::WSpriteManager(class Wasabi* const app) : WManager<WSprite>(app) {
 	m_spriteGeometry = nullptr;
+	m_spriteFullscreenGeometry = nullptr;
 	m_spriteMaterial = nullptr;
+	m_spriteVertexShader = nullptr;
 }
 
 WSpriteManager::~WSpriteManager() {
 	W_SAFE_REMOVEREF(m_spriteGeometry);
+	W_SAFE_REMOVEREF(m_spriteFullscreenGeometry);
 	W_SAFE_REMOVEREF(m_spriteMaterial);
+	W_SAFE_REMOVEREF(m_spriteVertexShader);
 }
 
 WError WSpriteManager::Load() {
-	WShader* vs = new SpriteVS(m_app);
-	vs->Load();
+	m_spriteVertexShader = new SpriteVS(m_app);
+	m_spriteVertexShader->Load();
 	WShader* ps = new SpritePS(m_app);
 	ps->Load();
-	WEffect* textFX = new WEffect(m_app);
-	WError err = textFX->BindShader(vs);
+	WEffect* spriteFX = new WEffect(m_app);
+	WError err = spriteFX->BindShader(m_spriteVertexShader);
 	if (!err) {
-		vs->RemoveReference();
+		m_spriteVertexShader->RemoveReference();
 		ps->RemoveReference();
-		textFX->RemoveReference();
+		spriteFX->RemoveReference();
 		return err;
 	}
-	err = textFX->BindShader(ps);
+	err = spriteFX->BindShader(ps);
 	if (!err) {
-		vs->RemoveReference();
+		m_spriteVertexShader->RemoveReference();
 		ps->RemoveReference();
-		textFX->RemoveReference();
+		spriteFX->RemoveReference();
 		return err;
 	}
 
@@ -130,7 +134,7 @@ WError WSpriteManager::Load() {
 	bs.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	bs.alphaBlendOp = VK_BLEND_OP_ADD;
 	bs.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	textFX->SetBlendingState(bs);
+	spriteFX->SetBlendingState(bs);
 
 	VkPipelineDepthStencilStateCreateInfo dss = {};
 	dss.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -139,52 +143,63 @@ WError WSpriteManager::Load() {
 	dss.depthBoundsTestEnable = VK_FALSE;
 	dss.stencilTestEnable = VK_FALSE;
 	dss.front = dss.back;
-	textFX->SetDepthStencilState(dss);
+	spriteFX->SetDepthStencilState(dss);
 
-	err = textFX->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
-	vs->RemoveReference();
+	err = spriteFX->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
 	ps->RemoveReference();
 
 	if (!err) {
-		textFX->RemoveReference();
+		spriteFX->RemoveReference();
 		return err;
 	}
 
 	m_spriteMaterial = new WMaterial(m_app);
-	err = m_spriteMaterial->SetEffect(textFX);
-	textFX->RemoveReference();
+	err = m_spriteMaterial->SetEffect(spriteFX);
+	spriteFX->RemoveReference();
 
-	if (!err) {
-		W_SAFE_REMOVEREF(m_spriteMaterial);
-		return err;
+	if (err == W_SUCCEEDED) {
+		unsigned int num_verts = 4;
+		unsigned int num_indices = 6;
+		SpriteVertex* vb = new SpriteVertex[num_verts];
+		uint* ib = new uint[num_indices];
+
+		vb[0].pos = WVector2(-1, -1);
+		vb[0].uv = WVector2(0, 0);
+		vb[1].pos = WVector2(1, -1);
+		vb[1].uv = WVector2(1, 0);
+		vb[2].pos = WVector2(-1, 1);
+		vb[2].uv = WVector2(0, 1);
+		vb[3].pos = WVector2(1, 1);
+		vb[3].uv = WVector2(1, 1);
+
+		// tri 1
+		ib[0] = 0;
+		ib[1] = 1;
+		ib[2] = 2;
+		// tri 2
+		ib[3] = 1;
+		ib[4] = 3;
+		ib[5] = 2;
+
+		m_spriteGeometry = new SpriteGeometry(m_app);
+		err = m_spriteGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
+
+		m_spriteFullscreenGeometry = new SpriteGeometry(m_app);
+		if (err == W_SUCCEEDED) {
+			err = m_spriteFullscreenGeometry->CreateFromData(vb, num_verts, ib, num_indices);
+		}
+		delete[] vb;
+		delete[] ib;
 	}
 
-	unsigned int num_verts = 4;
-	unsigned int num_indices = 6;
-	SpriteVertex* vb = new SpriteVertex[num_verts];
-	uint* ib = new uint[num_indices];
-
-	// tri 1
-	ib[0] = 0;
-	ib[1] = 1;
-	ib[2] = 2;
-	// tri 2
-	ib[3] = 1;
-	ib[4] = 3;
-	ib[5] = 2;
-
-	m_spriteGeometry = new SpriteGeometry(m_app);
-	err = m_spriteGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
-	delete[] vb;
-	delete[] ib;
-
-	if (!err) {
+	if (err != W_SUCCEEDED) {
+		W_SAFE_REMOVEREF(m_spriteVertexShader);
 		W_SAFE_REMOVEREF(m_spriteMaterial);
 		W_SAFE_REMOVEREF(m_spriteGeometry);
-		return err;
+		W_SAFE_REMOVEREF(m_spriteFullscreenGeometry);
 	}
 
-	return WError(W_SUCCEEDED);
+	return err;
 }
 
 void WSpriteManager::Render(WRenderTarget* rt) {
@@ -195,6 +210,10 @@ void WSpriteManager::Render(WRenderTarget* rt) {
 	}
 }
 
+WShader* WSpriteManager::GetSpriteVertexShader() const {
+	return m_spriteVertexShader;
+}
+
 std::string WSprite::GetTypeName() const {
 	return "Sprite";
 }
@@ -202,6 +221,7 @@ std::string WSprite::GetTypeName() const {
 WSprite::WSprite(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_hidden = false;
 	m_img = nullptr;
+	m_customMaterial = nullptr;
 	m_angle = 0.0f;
 	m_pos = WVector2();
 	m_size = WVector2();
@@ -213,21 +233,29 @@ WSprite::WSprite(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 }
 
 WSprite::~WSprite() {
-	if (m_img)
-		m_img->RemoveReference();
+	W_SAFE_REMOVEREF(m_img);
+	W_SAFE_REMOVEREF(m_customMaterial);
 
 	m_app->SpriteManager->RemoveEntity(this);
 }
 
 void WSprite::SetImage(WImage* img) {
-	if (m_img)
-		m_img->RemoveReference();
+	W_SAFE_REMOVEREF(m_img);
 
 	m_img = img;
 
 	if (img) {
 		SetSize(img->GetWidth(), img->GetHeight());
 		img->AddReference();
+	}
+}
+
+void WSprite::SetMaterial(WMaterial* mat) {
+	W_SAFE_REMOVEREF(m_customMaterial);
+
+	if (mat) {
+		m_customMaterial = mat;
+		mat->AddReference();
 	}
 }
 
@@ -277,36 +305,45 @@ void WSprite::SetAlpha(float fAlpha) {
 }
 
 void WSprite::Render(WRenderTarget* rt) {
-	float scrWidth = m_app->WindowComponent->GetWindowWidth();
-	float scrHeight = m_app->WindowComponent->GetWindowHeight();
+	WVector2 screenDimensions = WVector2(m_app->WindowComponent->GetWindowWidth(),
+										 m_app->WindowComponent->GetWindowHeight());
 	if (!m_hidden && Valid()) {
-		SpriteVertex* vb;
-		m_app->SpriteManager->m_spriteGeometry->MapVertexBuffer((void**)&vb);
+		WGeometry* geometry = m_app->SpriteManager->m_spriteGeometry;
+		WMaterial* material = m_app->SpriteManager->m_spriteMaterial;
 
-		WVector2 rc = m_rotationCenter + m_pos;
+		if (WVec2LengthSq(m_pos) < 0.1f && WVec2LengthSq(m_size - screenDimensions) < 0.1f && fabs(m_angle) < 0.001f) {
+			geometry = m_app->SpriteManager->m_spriteFullscreenGeometry;
+		} else {
+			SpriteVertex* vb;
+			geometry->MapVertexBuffer((void**)&vb);
 
-		vb[0].pos = m_pos - rc;
-		vb[0].uv = WVector2(0, 0);
-		vb[1].pos = m_pos + WVector2(m_size.x, 0) - rc;
-		vb[1].uv = WVector2(1, 0);
-		vb[2].pos = m_pos + WVector2(0, m_size.y) - rc;
-		vb[2].uv = WVector2(0, 1);
-		vb[3].pos = m_pos + WVector2(m_size.x, m_size.y) - rc;
-		vb[3].uv = WVector2(1, 1);
+			WVector2 rc = m_rotationCenter + m_pos;
 
-		WMatrix rotMtx = WRotationMatrixZ(m_angle) * WTranslationMatrix(rc.x, rc.y, 0);
-		for (int i = 0; i < 4; i++) {
-			WVector3 pos = WVector3(vb[i].pos.x, vb[i].pos.y, 0.0f);
-			pos = WVec3TransformCoord(pos, rotMtx);
-			vb[i].pos = WVector2(pos.x, pos.y);
-			vb[i].pos = vb[i].pos * 2.0f / WVector2(scrWidth, scrHeight) - WVector2(1, 1);
+			vb[0].pos = m_pos - rc;
+			vb[1].pos = m_pos + WVector2(m_size.x, 0) - rc;
+			vb[2].pos = m_pos + WVector2(0, m_size.y) - rc;
+			vb[3].pos = m_pos + WVector2(m_size.x, m_size.y) - rc;
+
+			WMatrix rotMtx = WRotationMatrixZ(m_angle) * WTranslationMatrix(rc.x, rc.y, 0);
+			for (int i = 0; i < 4; i++) {
+				WVector3 pos = WVector3(vb[i].pos.x, vb[i].pos.y, 0.0f);
+				pos = WVec3TransformCoord(pos, rotMtx);
+				vb[i].pos = WVector2(pos.x, pos.y);
+				vb[i].pos = vb[i].pos * 2.0f / screenDimensions - WVector2(1, 1);
+			}
+
+			geometry->UnmapVertexBuffer();
 		}
 
-		m_app->SpriteManager->m_spriteGeometry->UnmapVertexBuffer();
-		m_app->SpriteManager->m_spriteMaterial->SetVariableFloat("alpha", m_alpha);
-		m_app->SpriteManager->m_spriteMaterial->SetTexture(1, m_img);
-		m_app->SpriteManager->m_spriteMaterial->Bind(rt);
-		m_app->SpriteManager->m_spriteGeometry->Draw(rt);
+		if (m_customMaterial) {
+			material = m_customMaterial;
+		} else {
+			material->SetVariableFloat("alpha", m_alpha);
+			material->SetTexture(1, m_img);
+		}
+
+		material->Bind(rt);
+		geometry->Draw(rt);
 	}
 }
 
@@ -356,5 +393,5 @@ unsigned int WSprite::GetPriority() const {
 
 
 bool WSprite::Valid() const {
-	return m_img && m_img->Valid() && m_size.x > 0.0f && m_size.y >= 0.0f;
+	return ((m_img && m_img->Valid()) || (m_customMaterial && m_customMaterial->Valid())) && m_size.x > 0.0f && m_size.y >= 0.0f;
 }

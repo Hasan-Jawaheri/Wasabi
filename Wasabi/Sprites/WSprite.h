@@ -36,16 +36,18 @@ class WSprite : public WBase {
 	WVector2 m_pos;
 	/** Size of the sprite, in pixels */
 	WVector2 m_size;
-	/** Rotation center of the sprite relative to the top-left corner, in pixels
-	*/
+	/** Rotation center of the sprite relative to top-left corner, in pixels */
 	WVector2 m_rotationCenter;
 	/** Angle of the sprite, in radians */
 	float m_angle;
 	/** Priority of the sprite, higher priority sprites render over lower ones */
 	unsigned int m_priority;
 	/** Alpha (transparency) of the sprite, 0 being fully transparent and 1 being
-	fully opaque */
+	    fully opaque */
 	float m_alpha;
+
+	/** Custom material for this sprite (if provided) */
+	class WMaterial* m_customMaterial;
 
 public:
 	WSprite(Wasabi* const app, unsigned int ID = 0);
@@ -56,6 +58,20 @@ public:
 	 * @param img Texture to use
 	 */
 	void SetImage(class WImage* img);
+
+	/**
+	 * Sets a custom material to be used for rendering the sprite. The material's
+	 * effect should use a vertex shader with the following input layout:
+	 * Layout:
+	 * - W_VERTEX_ATTRIBUTE("pos2", 2)
+	 * - W_ATTRIBUTE_UV
+	 * The default vertex shader can be used from
+	 * WSpriteManager::GetSpriteVertexShader().
+	 * The input geometry is 2 triangles with 4 vertices.
+	 *
+	 * @param mat Material to set
+	 */
+	void SetMaterial(class WMaterial* mat);
 
 	/**
 	 * Sets the position of the sprite in screen-space.
@@ -228,8 +244,12 @@ class WSpriteManager : public WManager<WSprite> {
 
 	/** Geometry used to render sprites */
 	class WGeometry* m_spriteGeometry;
+	/** Geometry used to render full-screen sprites */
+	class WGeometry* m_spriteFullscreenGeometry;
 	/** Material used to render sprites */
 	class WMaterial* m_spriteMaterial;
+	/** Vertex shader used by all sprites */
+	class WShader* m_spriteVertexShader;
 
 public:
 	WSpriteManager(class Wasabi* const app);
@@ -246,4 +266,10 @@ public:
 	 * @param rt Render target to render to
 	 */
 	void Render(class WRenderTarget* rt);
+
+	/**
+	 * Retrieves the default vertex shader that sprites use.
+	 * @return Default vertex shader that sprites use
+	 */
+	class WShader* GetSpriteVertexShader() const;
 };
