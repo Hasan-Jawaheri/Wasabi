@@ -21,6 +21,10 @@ void WRenderer::_Cleanup() {
 	Cleanup();
 }
 
+WError WRenderer::LoadDependantResources() {
+	return W_SUCCEEDED;
+}
+
 WError WRenderer::_Initialize() {
 	_Cleanup();
 

@@ -45,11 +45,14 @@ class WDeferredRenderer : public WRenderer {
 	WImage* m_GBufferNormal;
 	/** Sprite used to render the final composition */
 	WSprite* m_masterRenderSprite;
+	/** Final composition material */
+	WMaterial* m_compositionMaterial;
 
 public:
 	WDeferredRenderer(Wasabi* const app);
 
 	virtual WError Initiailize();
+	virtual WError LoadDependantResources();
 	virtual void Render(class WRenderTarget* rt, unsigned int filter = -1);
 	virtual void Cleanup();
 	virtual WError Resize(unsigned int width, unsigned int height);

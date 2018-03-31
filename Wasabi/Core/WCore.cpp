@@ -462,6 +462,12 @@ WError Wasabi::StartEngine(int width, int height) {
 		return WError(W_ERRORUNK);
 	}
 
+	werr = Renderer->LoadDependantResources();
+	if (!werr) {
+		_DestroyResources();
+		return werr;
+	}
+
 	return WError(W_SUCCEEDED);
 }
 
