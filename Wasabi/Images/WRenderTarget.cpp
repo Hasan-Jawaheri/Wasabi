@@ -125,38 +125,32 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 	//
 	// Create the render pass
 	//
-	vector<VkAttachmentDescription> attachments;
+	vector<VkAttachmentDescription> attachmentDescs;
+	VkAttachmentDescription attachment = {};
+	attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	// Color attachment
+	// Color attachments
 	for (auto it = targets.begin(); it != targets.end(); it++) {
-		VkAttachmentDescription attachment = {};
 		attachment.format = (*it)->GetFormat();
-		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		attachments.push_back(attachment);
+		attachmentDescs.push_back(attachment);
 	}
 
 	if (bDepth) {
 		// Depth attachment
-		VkAttachmentDescription attachment = {};
 		attachment.format = depthFormat;
-		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		attachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		attachments.push_back(attachment);
+		attachmentDescs.push_back(attachment);
 	}
 
 	vector<VkAttachmentReference> colorReferences;
-	for (auto it = attachments.begin(); it != attachments.end(); it++) {
+	for (auto it = targets.begin(); it != targets.end(); it++) {
 		VkAttachmentReference attachmentRef = {};
 		attachmentRef.attachment = colorReferences.size();
 		attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -165,7 +159,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 
 	VkAttachmentReference depthReference = {};
 	if (bDepth) {
-		depthReference.attachment = attachments.size()-1;
+		depthReference.attachment = targets.size();
 		depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 	}
 
@@ -175,7 +169,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 	subpass.inputAttachmentCount = 0;
 	subpass.pInputAttachments = NULL;
 	subpass.colorAttachmentCount = colorReferences.size();
-	subpass.pColorAttachments = &colorReferences[0];
+	subpass.pColorAttachments = colorReferences.data();
 	subpass.pResolveAttachments = NULL;
 	subpass.pDepthStencilAttachment = bDepth ? &depthReference : NULL;
 	subpass.preserveAttachmentCount = 0;
@@ -184,8 +178,8 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.pNext = NULL;
-	renderPassInfo.attachmentCount = attachments.size();
-	renderPassInfo.pAttachments = &attachments[0];
+	renderPassInfo.attachmentCount = attachmentDescs.size();
+	renderPassInfo.pAttachments = attachmentDescs.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
 	renderPassInfo.dependencyCount = 0;
@@ -286,7 +280,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 	frameBufferCreateInfo.pNext = NULL;
 	frameBufferCreateInfo.renderPass = m_renderPass;
 	frameBufferCreateInfo.attachmentCount = imageViews.size();
-	frameBufferCreateInfo.pAttachments = &imageViews[0];
+	frameBufferCreateInfo.pAttachments = imageViews.data();
 	frameBufferCreateInfo.width = width;
 	frameBufferCreateInfo.height = height;
 	frameBufferCreateInfo.layers = 1;
@@ -640,6 +634,14 @@ VkPipelineCache WRenderTarget::GetPipelineCache() const {
 
 VkCommandBuffer WRenderTarget::GetCommnadBuffer() const {
 	return m_renderCmdBuffer;
+}
+
+int WRenderTarget::GetNumColorOutputs() const {
+	return m_colorFormats.size();
+}
+
+bool WRenderTarget::HasDepthOutput() const {
+	return m_depthStencil.view != NULL;
 }
 
 WCamera* WRenderTarget::GetCamera() const {

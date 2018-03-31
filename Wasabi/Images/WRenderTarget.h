@@ -154,6 +154,18 @@ public:
 	VkCommandBuffer GetCommnadBuffer() const;
 
 	/**
+	 * Retrieves the number of color output attachments.
+	 * @return The number of color output attachments
+	 */
+	int GetNumColorOutputs() const;
+
+	/**
+	 * Checks whether or not the render target has a depth attachment.
+	 * @return True if the render target has a depth attachment, false otherwise
+	 */
+	bool HasDepthOutput() const;
+
+	/**
 	 * Retrieve the camera for this render target.
 	 * @return Pointer to the camera of this render target
 	 */

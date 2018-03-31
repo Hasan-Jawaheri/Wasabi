@@ -168,7 +168,7 @@ public:
 			""
 			"void main() {\n"
 			"	outColor = texture(samplerColor, inUV);\n"
-			"	outNormals = vec4((inWorldNorm + 1.0) / 2.0, 1.0);\n"
+			"	outNormals = vec4(inWorldNorm, 1.0);\n"
 			"}\n"
 		);
 	}
@@ -197,6 +197,7 @@ public:
 			"void main() {\n"
 			"	vec4 c = texture(colorSampler, inUV);\n"
 			"   vec4 n = texture(normalSampler, inUV);\n"
+			"   n.rgb = (n.rgb + 1.0) / 2.0;\n"
 			"	outFragColor = vec4(c.rgba);\n"
 			"   outFragColor.rgb = mix(outFragColor.rgb, n.rgb, 0.5f);\n"
 			"}\n"
@@ -242,34 +243,36 @@ WError WDeferredRenderer::Initiailize() {
 		return WError(W_OUTOFMEMORY);
 	}
 
-	//
-	// Create the default effect for rendering
-	//
-	WShader* vs = new DeferredRendererVS(m_app);
-	vs->Load();
-	WShader* ps = new DeferredRendererPS(m_app);
-	ps->Load();
-	m_default_fx = new WEffect(m_app);
-	m_default_fx->BindShader(vs);
-	m_default_fx->BindShader(ps);
-	WError werr = m_default_fx->BuildPipeline(m_renderTarget);
-	vs->RemoveReference();
-	ps->RemoveReference();
+	WError werr;
 
 	//
 	// Create the GBuffer
 	//
+	m_GBufferColor = new WImage(m_app);
+	werr = m_GBufferColor->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
 	if (werr == W_SUCCEEDED) {
-		m_GBufferColor = new WImage(m_app);
-		werr = m_GBufferColor->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+		m_GBufferNormal = new WImage(m_app);
+		werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
 		if (werr == W_SUCCEEDED) {
-			m_GBufferNormal = new WImage(m_app);
-			werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
-			if (werr == W_SUCCEEDED) {
-				m_GBuffer = new WRenderTarget(m_app);
-				werr = m_GBuffer->Create(m_width, m_height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }));
-			}
+			m_GBuffer = new WRenderTarget(m_app);
+			werr = m_GBuffer->Create(m_width, m_height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }));
 		}
+	}
+
+	//
+	// Create the default effect for rendering
+	//
+	if (werr == W_SUCCEEDED) {
+		WShader* vs = new DeferredRendererVS(m_app);
+		vs->Load();
+		WShader* ps = new DeferredRendererPS(m_app);
+		ps->Load();
+		m_default_fx = new WEffect(m_app);
+		m_default_fx->BindShader(vs);
+		m_default_fx->BindShader(ps);
+		werr = m_default_fx->BuildPipeline(m_GBuffer);
+		vs->RemoveReference();
+		ps->RemoveReference();
 	}
 
 	if (werr != W_SUCCEEDED)
@@ -306,7 +309,7 @@ WError WDeferredRenderer::LoadDependantResources() {
 			dss.front = dss.back;
 			compositionFX->SetDepthStencilState(dss);
 
-			werr = compositionFX->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
+			werr = compositionFX->BuildPipeline(m_renderTarget);
 
 			if (werr == W_SUCCEEDED) {
 				m_compositionMaterial = new WMaterial(m_app);

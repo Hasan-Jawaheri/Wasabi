@@ -443,6 +443,14 @@ public:
 	void SetBlendingState(VkPipelineColorBlendAttachmentState state);
 
 	/**
+	 * Sets multiple blending states in the Vulkan pipeline. Multiple blend states
+	 * are used when the render target has multiple output attachments. This needs
+	 * to be called before BuildPipeline() for changes to be effective.
+	 * @param state The new Vulkan Blend state
+	 */
+	void SetBlendingStates(vector<VkPipelineColorBlendAttachmentState> states);
+
+	/**
 	 * Sets the depth stencil state in the Vulkan pipeline. This needs to be
 	 * called before BuildPipeline() for changes to be effective.
 	 * @param state The new Vulkan depth stencil state
@@ -533,7 +541,7 @@ private:
 	/** Vulkan primitive topology to use for the next pipeline generation */
 	VkPrimitiveTopology m_topology;
 	/** Vulkan blend state to use for the next pipeline generation */
-	VkPipelineColorBlendAttachmentState m_blendState;
+	vector<VkPipelineColorBlendAttachmentState> m_blendStates;
 	/** Vulkan depth stencil state to use for the next pipeline generation */
 	VkPipelineDepthStencilStateCreateInfo m_depthStencilState;
 	/** Vulkan rasterization state to use for the next pipeline generation */
