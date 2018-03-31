@@ -83,6 +83,7 @@ void WRenderTarget::_DestroyResources() {
 		W_SAFE_REMOVEREF((*it));
 	m_targets.clear();
 	m_colorFormats.clear();
+	m_clearValues.clear();
 }
 
 WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* target, bool bDepth, VkFormat depthFormat) {
@@ -308,6 +309,18 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 		(*it)->AddReference();
 	}
 
+	m_clearValues.clear();
+	VkClearValue v = { 0 };
+	for (auto it = m_colorFormats.begin(); it != m_colorFormats.end(); it++) {
+		v.color = m_clearColor;
+		m_clearValues.push_back(v);
+	}
+	if (m_depthStencil.image) {
+		v = { 0 };
+		v.depthStencil = { 1.0f, 0 };
+		m_clearValues.push_back(v);
+	}
+
 	return WError(W_SUCCEEDED);
 }
 
@@ -508,6 +521,18 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	m_depthFormat = depthFormat;
 	m_colorFormats.push_back(colorFormat);
 
+	m_clearValues.clear();
+	VkClearValue v = { 0 };
+	for (auto it = m_colorFormats.begin(); it != m_colorFormats.end(); it++) {
+		v.color = m_clearColor;
+		m_clearValues.push_back(v);
+	}
+	if (m_depthStencil.image) {
+		v = { 0 };
+		v.depthStencil = { 1.0f, 0 };
+		m_clearValues.push_back(v);
+	}
+
 	return WError(W_SUCCEEDED);
 }
 
@@ -523,26 +548,14 @@ WError WRenderTarget::UseFrameBuffer(unsigned int index) {
 WError WRenderTarget::Begin() {
 	VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
 
-	vector<VkClearValue> clearValues;
-	VkClearValue v = {0};
-	for (auto it = m_colorFormats.begin(); it != m_colorFormats.end(); it++) {
-		v.color = m_clearColor;
-		clearValues.push_back(v);
-	}
-	if (m_depthStencil.image) {
-		v = {0};
-		v.depthStencil = { 1.0f, 0 };
-		clearValues.push_back(v);
-	}
-
 	VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
 	renderPassBeginInfo.renderPass = m_renderPass;
 	renderPassBeginInfo.renderArea.offset.x = 0;
 	renderPassBeginInfo.renderArea.offset.y = 0;
 	renderPassBeginInfo.renderArea.extent.width = m_width;
 	renderPassBeginInfo.renderArea.extent.height = m_height;
-	renderPassBeginInfo.clearValueCount = m_colorFormats.size() + (m_depthStencil.image ? 1 : 0);
-	renderPassBeginInfo.pClearValues = &clearValues[0];
+	renderPassBeginInfo.clearValueCount = m_clearValues.size();
+	renderPassBeginInfo.pClearValues = m_clearValues.data();
 
 	// Set target frame buffer
 	renderPassBeginInfo.framebuffer = m_frameBuffers[m_currentFrameBuffer];

@@ -135,6 +135,7 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 			}
 		}
 	}
+	m_writeDescriptorSets = vector<VkWriteDescriptorSet>(m_sampler_info.size());
 
 	//
 	// Create descriptor pool
@@ -235,7 +236,7 @@ WError WMaterial::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	vector<VkWriteDescriptorSet> writeDescriptorSets;
+	int curDSIndex = 0;
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
 		if (m_sampler_info[i].img && m_sampler_info[i].img->Valid()) {
@@ -249,61 +250,61 @@ WError WMaterial::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
 			writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
 			writeDescriptorSet.dstBinding = info->binding_index;
 
-			writeDescriptorSets.push_back(writeDescriptorSet);
+			m_writeDescriptorSets[curDSIndex++] = writeDescriptorSet;
 		}
 	}
-	if (writeDescriptorSets.size())
-		vkUpdateDescriptorSets(device, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+	if (curDSIndex)
+		vkUpdateDescriptorSets(device, curDSIndex, m_writeDescriptorSets.data(), 0, NULL);
 
 	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *m_effect->GetPipelineLayout(), 0, 1, &m_descriptorSet, 0, NULL);
 
 	return m_effect->Bind(rt, num_vertex_buffers);
 }
 
-WError WMaterial::SetVariableFloat(std::string varName, float fVal) {
+WError WMaterial::SetVariableFloat(const char* varName, float fVal) {
 	return SetVariableData(varName, &fVal, sizeof(float));
 }
 
-WError WMaterial::SetVariableFloatArray(std::string varName, float* fArr, int num_elements) {
+WError WMaterial::SetVariableFloatArray(const char* varName, float* fArr, int num_elements) {
 	return SetVariableData(varName, fArr, sizeof(float) * num_elements);
 }
 
-WError WMaterial::SetVariableInt(std::string varName, int iVal) {
+WError WMaterial::SetVariableInt(const char* varName, int iVal) {
 	return SetVariableData(varName, &iVal, sizeof(int));
 }
 
-WError WMaterial::SetVariableIntArray(std::string varName, int* iArr, int num_elements) {
+WError WMaterial::SetVariableIntArray(const char* varName, int* iArr, int num_elements) {
 	return SetVariableData(varName, iArr, sizeof(int) * num_elements);
 }
 
-WError WMaterial::SetVariableMatrix(std::string varName, WMatrix mtx) {
+WError WMaterial::SetVariableMatrix(const char* varName, WMatrix mtx) {
 	return SetVariableData(varName, &mtx, sizeof(float) * 4 * 4);
 }
 
-WError WMaterial::SetVariableVector2(std::string varName, WVector2 vec) {
+WError WMaterial::SetVariableVector2(const char* varName, WVector2 vec) {
 	return SetVariableData(varName, &vec, sizeof(WVector2));
 }
 
-WError WMaterial::SetVariableVector3(std::string varName, WVector3 vec) {
+WError WMaterial::SetVariableVector3(const char* varName, WVector3 vec) {
 	return SetVariableData(varName, &vec, sizeof(WVector3));
 }
 
-WError WMaterial::SetVariableVector4(std::string varName, WVector4 vec) {
+WError WMaterial::SetVariableVector4(const char* varName, WVector4 vec) {
 	return SetVariableData(varName, &vec, sizeof(WVector4));
 }
 
-WError WMaterial::SetVariableColor(std::string varName, WColor col) {
+WError WMaterial::SetVariableColor(const char* varName, WColor col) {
 	return SetVariableData(varName, &col, sizeof(WColor));
 }
 
-WError WMaterial::SetVariableData(std::string varName, void* data, int len) {
+WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 	VkDevice device = m_app->GetVulkanDevice();
 	bool isFound = false;
 	for (int i = 0; i < m_uniformBuffers.size(); i++) {
 		W_BOUND_RESOURCE* info = m_uniformBuffers[i].ubo_info;
 		size_t cur_offset = 0;
 		for (int j = 0; j < info->variables.size(); j++) {
-			if (info->variables[j].name == varName) {
+			if (strcmp(info->variables[j].name.c_str(), varName) == 0) {
 				if (info->variables[j].GetSize() < len)
 					return WError(W_INVALIDPARAM);
 				uint8_t *pData;
