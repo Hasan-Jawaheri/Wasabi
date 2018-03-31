@@ -121,8 +121,10 @@ WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_pipelineLayout = VK_NULL_HANDLE;
 	m_descriptorSetLayout = VK_NULL_HANDLE;
 
-	m_blendState.colorWriteMask = 0xf;
-	m_blendState.blendEnable = VK_FALSE;
+	VkPipelineColorBlendAttachmentState blendState;
+	blendState.colorWriteMask = 0xf;
+	blendState.blendEnable = VK_FALSE;
+	m_blendStates.push_back(blendState);
 
 	m_depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	m_depthStencilState.depthTestEnable = VK_TRUE;
@@ -238,7 +240,11 @@ void WEffect::_DestroyPipeline() {
 }
 
 void WEffect::SetBlendingState(VkPipelineColorBlendAttachmentState state) {
-	m_blendState = state;
+	SetBlendingStates(vector<VkPipelineColorBlendAttachmentState>({ state }));
+}
+
+void WEffect::SetBlendingStates(vector<VkPipelineColorBlendAttachmentState> states) {
+	m_blendStates = states;
 }
 
 void WEffect::SetDepthStencilState(VkPipelineDepthStencilStateCreateInfo state) {
@@ -295,8 +301,6 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 
 	// Create the pipeline layout that is used to generate the rendering pipelines that
 	// are based on this descriptor set layout
-	// In a more complex scenario you would have different pipeline layouts for different
-	// descriptor set layouts that could be reused
 	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
 	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pPipelineLayoutCreateInfo.pNext = NULL;
@@ -316,14 +320,16 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 	// Color blend state
-	// Describes blend modes and color masks
 	VkPipelineColorBlendStateCreateInfo colorBlendState = {};
 	colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	// One blend attachment state
-	// Blending is not used in this example
-	VkPipelineColorBlendAttachmentState blendAttachmentState[1] = { m_blendState };
-	colorBlendState.attachmentCount = 1;
-	colorBlendState.pAttachments = blendAttachmentState;
+	vector<VkPipelineColorBlendAttachmentState> blendAttachmentStates;
+	if (m_blendStates.size()) {
+		for (int i = 0; i < rt->GetNumColorOutputs(); i++)
+			blendAttachmentStates.push_back(i < m_blendStates.size() ? m_blendStates[i] : m_blendStates[0]);
+		colorBlendState.attachmentCount = blendAttachmentStates.size();
+		colorBlendState.pAttachments = blendAttachmentStates.data();
+	}
 
 	// Enable dynamic states
 	// Describes the dynamic states to be used with this pipeline
@@ -343,8 +349,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	VkPipelineMultisampleStateCreateInfo multisampleState = {};
 	multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampleState.pSampleMask = NULL;
-	// No multi sampling used in this example
-	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT; // No multi sampling
 
 	// Viewport state
 	VkPipelineViewportStateCreateInfo viewportState = {};
