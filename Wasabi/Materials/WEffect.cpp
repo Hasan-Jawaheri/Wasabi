@@ -504,3 +504,9 @@ W_INPUT_LAYOUT WEffect::GetInputLayout(unsigned int layout_index) const {
 		return m_shaders[m_vertexShaderIndex]->m_desc.input_layouts[layout_index];
 	return W_INPUT_LAYOUT();
 }
+
+size_t WEffect::GetInputLayoutSize(unsigned int layout_index) const {
+	if (m_vertexShaderIndex >= 0 && layout_index < m_shaders[m_vertexShaderIndex]->m_desc.input_layouts.size())
+		return m_shaders[m_vertexShaderIndex]->m_desc.input_layouts[layout_index].GetSize();
+	return 0;
+}

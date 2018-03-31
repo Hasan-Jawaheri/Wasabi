@@ -1,6 +1,18 @@
 #include "WGeometry.h"
 #include "../Images/WRenderTarget.h"
 
+const W_VERTEX_DESCRIPTION g_defaultVertexDescriptions[] = {
+	W_VERTEX_DESCRIPTION({ // Vertex buffer
+		W_ATTRIBUTE_POSITION,
+		W_ATTRIBUTE_TANGENT,
+		W_ATTRIBUTE_NORMAL,
+		W_ATTRIBUTE_UV,
+	}), W_VERTEX_DESCRIPTION({ // Animation buffer
+		W_ATTRIBUTE_BONE_INDEX,
+		W_ATTRIBUTE_BONE_WEIGHT,
+	})
+};
+
 static void ConvertVertices(void* vbFrom, void* vbTo, unsigned int num_verts,
 							W_VERTEX_DESCRIPTION vtx_from, W_VERTEX_DESCRIPTION vtx_to) {
 
@@ -90,19 +102,15 @@ bool WGeometry::Valid() const {
 }
 
 W_VERTEX_DESCRIPTION WGeometry::GetVertexDescription(unsigned int layout_index) const {
-	if (layout_index >= 2)
+	if (layout_index >= sizeof(g_defaultVertexDescriptions)/sizeof(W_VERTEX_DESCRIPTION))
 		layout_index = 0;
-	static const W_VERTEX_DESCRIPTION VD[] =
-	{ W_VERTEX_DESCRIPTION({ // Vertex buffer
-		W_ATTRIBUTE_POSITION,
-		W_ATTRIBUTE_TANGENT,
-		W_ATTRIBUTE_NORMAL,
-		W_ATTRIBUTE_UV,
-	}), W_VERTEX_DESCRIPTION({ // Animation buffer
-		W_ATTRIBUTE_BONE_INDEX,
-		W_ATTRIBUTE_BONE_WEIGHT,
-	}) };
-	return VD[layout_index];
+	return g_defaultVertexDescriptions[layout_index];
+}
+
+size_t WGeometry::GetVertexDescriptionSize(unsigned int layout_index) const {
+	if (layout_index >= sizeof(g_defaultVertexDescriptions) / sizeof(W_VERTEX_DESCRIPTION))
+		layout_index = 0;
+	return g_defaultVertexDescriptions[layout_index].GetSize();
 }
 
 void WGeometry::_DestroyResources() {

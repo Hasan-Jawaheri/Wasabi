@@ -490,6 +490,13 @@ public:
 	W_INPUT_LAYOUT GetInputLayout(unsigned int layout_index = 0) const;
 
 	/**
+	 * Retrieves the size of the input layout at the given index.
+	 * @param  layout_index Index of the layout requested
+	 * @return              The size of the input layout at the given index
+	 */
+	size_t GetInputLayoutSize(unsigned int layout_index = 0) const;
+
+	/**
 	 * Checks the validity of the effect. An effect is valid if it has at least
 	 * one pipeline created and has a bound vertex shader that supplies a valid
 	 * input layout.
