@@ -20,10 +20,12 @@ static void ConvertVertices(void* vbFrom, void* vbTo, unsigned int num_verts,
 }
 
 size_t W_VERTEX_DESCRIPTION::GetSize() const {
-	size_t s = 0;
-	for (int i = 0; i < attributes.size(); i++)
-		s += 4 * attributes[i].num_components;
-	return s;
+	if (_size == -1) {
+		_size = 0;
+		for (int i = 0; i < attributes.size(); i++)
+			_size += 4 * attributes[i].num_components;
+	}
+	return _size;
 }
 
 size_t W_VERTEX_DESCRIPTION::GetOffset(unsigned int attrib_index) const {
@@ -85,6 +87,22 @@ std::string WGeometry::GetTypeName() const {
 
 bool WGeometry::Valid() const {
 	return m_indices.buffer.buf && m_vertices.buffer.buf;
+}
+
+W_VERTEX_DESCRIPTION WGeometry::GetVertexDescription(unsigned int layout_index) const {
+	if (layout_index >= 2)
+		layout_index = 0;
+	static const W_VERTEX_DESCRIPTION VD[] =
+	{ W_VERTEX_DESCRIPTION({ // Vertex buffer
+		W_ATTRIBUTE_POSITION,
+		W_ATTRIBUTE_TANGENT,
+		W_ATTRIBUTE_NORMAL,
+		W_ATTRIBUTE_UV,
+	}), W_VERTEX_DESCRIPTION({ // Animation buffer
+		W_ATTRIBUTE_BONE_INDEX,
+		W_ATTRIBUTE_BONE_WEIGHT,
+	}) };
+	return VD[layout_index];
 }
 
 void WGeometry::_DestroyResources() {

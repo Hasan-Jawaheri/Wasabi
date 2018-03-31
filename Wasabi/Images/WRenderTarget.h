@@ -191,6 +191,8 @@ private:
 	VkCommandBuffer m_renderCmdBuffer;
 	/** Clear color */
 	VkClearColorValue m_clearColor;
+	/** Clear values to be used by Vulkan */
+	vector<VkClearValue> m_clearValues;
 	/** Width of the render target */
 	unsigned int m_width;
 	/** Height of the render target */

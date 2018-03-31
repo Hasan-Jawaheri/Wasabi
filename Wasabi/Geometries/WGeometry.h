@@ -44,10 +44,12 @@ struct W_VERTEX_ATTRIBUTE {
  */
 struct W_VERTEX_DESCRIPTION {
 	W_VERTEX_DESCRIPTION(std::vector<W_VERTEX_ATTRIBUTE> attribs = {})
-		: attributes(attribs) {}
+		: attributes(attribs), _size(-1) {}
 
 	/** A list of attributes for the vertex */
 	std::vector<W_VERTEX_ATTRIBUTE> attributes;
+	/** Cached size of a vertex */
+	mutable size_t _size;
 
 	/**
 	 * Retrieves the size (in bytes) of a vertex of this description.
@@ -154,28 +156,24 @@ public:
 
 	/**
 	 * Retrieves the vertex description of a vertex buffer. Should return valid
-	 * descriptions for all \a layout_index values between 0 and
+	 * descriptions for all layout_index values between 0 and
 	 * GetVertexBufferCount()-1.
+	 *
+	 * The default vertex description (for default geometry) is:
+	 * - layout 0:
+	 *   - W_ATTRIBUTE_POSITION
+	 *   - W_ATTRIBUTE_TANGENT
+	 *   - W_ATTRIBUTE_NORMAL
+	 *   - W_ATTRIBUTE_UV
+	 * - layout 1:
+	 *   - W_ATTRIBUTE_BONE_INDEX
+	 *   - W_ATTRIBUTE_BONE_WEIGHT
 	 * @param  layout_index Index of the vertex buffer
 	 * @return              The description of a vertex in the <a>layout_index
 	 *                      </a>'th vertex buffer
 	 */
 	virtual W_VERTEX_DESCRIPTION GetVertexDescription(
-		unsigned int layout_index = 0) const {
-		if (layout_index >= 2)
-			layout_index = 0;
-		vector<W_VERTEX_DESCRIPTION> VD =
-		{   W_VERTEX_DESCRIPTION({ // Vertex buffer
-			W_ATTRIBUTE_POSITION,
-			W_ATTRIBUTE_TANGENT,
-			W_ATTRIBUTE_NORMAL,
-			W_ATTRIBUTE_UV,
-		}), W_VERTEX_DESCRIPTION({ // Animation buffer
-			W_ATTRIBUTE_BONE_INDEX,
-			W_ATTRIBUTE_BONE_WEIGHT,
-		})};
-		return VD[layout_index];
-	}
+		unsigned int layout_index = 0) const;
 
 	/**
 	 * Creates a geometry from buffers in memory. The buffers must be formatted

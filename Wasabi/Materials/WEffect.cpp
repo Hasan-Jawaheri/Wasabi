@@ -1,11 +1,13 @@
 #include "WEffect.h"
 #include "../Images/WRenderTarget.h"
 
-size_t W_SHADER_VARIABLE_INFO::GetSize() {
-	return 4 * num_elems;
+size_t W_SHADER_VARIABLE_INFO::GetSize() const {
+	if (_size == -1)
+		_size = 4 * num_elems;
+	return _size;
 }
 
-VkFormat W_SHADER_VARIABLE_INFO::GetFormat() {
+VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
 	if (type == W_TYPE_FLOAT) {
 		switch (num_elems) {
 		case 1: return VK_FORMAT_R32_SFLOAT;
@@ -34,18 +36,22 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() {
 	return VK_FORMAT_UNDEFINED;
 }
 
-size_t W_BOUND_RESOURCE::GetSize() {
-	size_t s = 0;
-	for (int i = 0; i < variables.size(); i++)
-		s += variables[i].GetSize();
-	return s;
+size_t W_BOUND_RESOURCE::GetSize() const {
+	if (_size == -1) {
+		_size = 0;
+		for (int i = 0; i < variables.size(); i++)
+			_size += variables[i].GetSize();
+	}
+	return _size;
 }
 
-size_t W_INPUT_LAYOUT::GetSize() {
-	size_t s = 0;
-	for (int i = 0; i < attributes.size(); i++)
-		s += attributes[i].GetSize();
-	return s;
+size_t W_INPUT_LAYOUT::GetSize() const {
+	if (_size == -1) {
+		_size = 0;
+		for (int i = 0; i < attributes.size(); i++)
+			_size += attributes[i].GetSize();
+	}
+	return _size;
 }
 
 std::string WShaderManager::GetTypeName(void) const {
@@ -108,6 +114,8 @@ WEffectManager::WEffectManager(class Wasabi* const app) : WManager<WEffect>(app)
 }
 
 WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+	m_vertexShaderIndex = -1;
+
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 	m_pipelineLayout = VK_NULL_HANDLE;
@@ -146,6 +154,7 @@ WEffect::~WEffect() {
 		m_shaders[i]->RemoveReference();
 	}
 	m_shaders.clear();
+	m_vertexShaderIndex = -1;
 
 	_DestroyPipeline();
 
@@ -186,6 +195,9 @@ WError WEffect::BindShader(WShader* shader) {
 	m_shaders.push_back(shader);
 	shader->AddReference();
 
+	if (shader->m_desc.type == W_VERTEX_SHADER)
+		m_vertexShaderIndex = m_shaders.size() - 1;
+
 	return WError(W_SUCCEEDED);
 }
 
@@ -194,6 +206,11 @@ WError WEffect::UnbindShader(W_SHADER_TYPE type) {
 		if (m_shaders[i]->m_desc.type == type) {
 			m_shaders[i]->RemoveReference();
 			m_shaders.erase(m_shaders.begin() + i);
+
+			// if vertex shader was removed, make sure to remove its cached index
+			if (i == m_vertexShaderIndex)
+				m_vertexShaderIndex = -1;
+
 			return WError(W_SUCCEEDED);
 		}
 	}
@@ -483,15 +500,7 @@ VkDescriptorSetLayout* WEffect::GetDescriptorSetLayout() {
 }
 
 W_INPUT_LAYOUT WEffect::GetInputLayout(unsigned int layout_index) const {
-	W_INPUT_LAYOUT l;
-	for (int i = 0; i < m_shaders.size(); i++) {
-		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER) {
-			if (m_shaders[i]->m_desc.input_layouts.size() > layout_index) {
-				l = m_shaders[i]->m_desc.input_layouts[layout_index];
-				break;
-			} else
-				layout_index -= m_shaders[i]->m_desc.input_layouts.size();
-		}
-	}
-	return l;
+	if (m_vertexShaderIndex >= 0 && layout_index < m_shaders[m_vertexShaderIndex]->m_desc.input_layouts.size())
+		return m_shaders[m_vertexShaderIndex]->m_desc.input_layouts[layout_index];
+	return W_INPUT_LAYOUT();
 }

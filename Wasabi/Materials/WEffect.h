@@ -70,7 +70,7 @@ enum W_VERTEX_INPUT_RATE {
 typedef struct W_SHADER_VARIABLE_INFO {
 	W_SHADER_VARIABLE_INFO(W_SHADER_VARIABLE_TYPE _type,
 						   int _num_elems, std::string _name = "")
-		: type(_type), num_elems(_num_elems), name(_name) {
+		: type(_type), num_elems(_num_elems), name(_name), _size(-1) {
 	}
 
 	/** Type of the variable */
@@ -80,19 +80,21 @@ typedef struct W_SHADER_VARIABLE_INFO {
 	/** Given name for the variable, which is used by materials to set its value
 	*/
 	std::string name;
+	/** Cached size of the variable */
+	mutable size_t _size;
 
 	/**
 	 * Retrieves the size of the variable, in bytes. This is calculated as the
 	 * size of type multiplied by num_elems.
 	 * @return Size, in bytes, of this shader variable
 	 */
-	size_t GetSize();
+	size_t GetSize() const;
 
 	/**
 	 * Retrieves the Vulkan format corresponding to this variable.
 	 * @return Format of the the variable
 	 */
-	VkFormat GetFormat();
+	VkFormat GetFormat() const;
 } W_SHADER_VARIABLE_INFO;
 
 /**
@@ -106,7 +108,7 @@ typedef struct W_BOUND_RESOURCE {
 					 unsigned int index,
 					 std::vector<W_SHADER_VARIABLE_INFO> v =
 					 std::vector<W_SHADER_VARIABLE_INFO>())
-		: variables(v), type(t), binding_index(index) {
+		: variables(v), type(t), binding_index(index), _size(-1) {
 	}
 
 	/** Type of this resource */
@@ -116,13 +118,15 @@ typedef struct W_BOUND_RESOURCE {
 	/** Variables of this resource (in case of a UBO), which is empty for
 			textures */
 	std::vector<W_SHADER_VARIABLE_INFO> variables;
+	/** Cached size of the variables */
+	mutable size_t _size;
 
 	/**
 	 * Retrieves the total size, in bytes, of the variables it contains. This
 	 * is not relevant for texture resources.
 	 * @return Size of all variables, in bytes
 	 */
-	size_t GetSize();
+	size_t GetSize() const;
 } W_BOUND_RESOURCE;
 
 /**
@@ -135,22 +139,24 @@ typedef struct W_BOUND_RESOURCE {
 typedef struct W_INPUT_LAYOUT {
 	W_INPUT_LAYOUT(std::vector<W_SHADER_VARIABLE_INFO> a,
 				   W_VERTEX_INPUT_RATE r = W_INPUT_RATE_PER_VERTEX)
-		: attributes(a), input_rate(r) {
+		: attributes(a), input_rate(r), _size(-1) {
 	}
-	W_INPUT_LAYOUT() : attributes({}) {}
+	W_INPUT_LAYOUT() : attributes({}), _size(-1) {}
 
 	/** Attributes of a single "vertex" (or instance, depending on input_rate) */
 	std::vector<W_SHADER_VARIABLE_INFO> attributes;
 	/** Rate at which memory is read from the vertex buffer to use as attributes
 	 */
 	W_VERTEX_INPUT_RATE input_rate;
+	/** Cached size of the input layout */
+	mutable size_t _size;
 
 	/**
 	 * Retrieves the size (or stride), in bytes, of this input layout. The size
 	 * is calculated as the sum of the sizes of the attributes.
 	 * @return The size (or stride), in bytes, of this input layout
 	 */
-	size_t GetSize();
+	size_t GetSize() const;
 } W_INPUT_LAYOUT;
 
 /**
@@ -496,6 +502,8 @@ private:
 	std::vector<VkPipeline> m_pipelines;
 	/** List of bound shaders */
 	std::vector<WShader*> m_shaders;
+	/** Index of the bound vertex shader (-1 if none is bound) */
+	unsigned int m_vertexShaderIndex;
 	/** Vulkan pipeline layout used for the pipelines creation */
 	VkPipelineLayout m_pipelineLayout;
 	/** Descriptor set layout that can be used to make descriptor sets */

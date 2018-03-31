@@ -65,7 +65,7 @@ public:
 	 * @param  fVal    Value to set
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableFloat(string varName, float fVal);
+	WError SetVariableFloat(const char* varName, float fVal);
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -76,7 +76,7 @@ public:
 	 * @param  num_elements Number of elements in fArr
 	 * @return              Error code, see WError.h
 	 */
-	WError SetVariableFloatArray(string varName, float* fArr, int num_elements);
+	WError SetVariableFloatArray(const char* varName, float* fArr, int num_elements);
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -86,7 +86,7 @@ public:
 	 * @param  iVal    Value to set
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableInt(string varName, int iVal);
+	WError SetVariableInt(const char* varName, int iVal);
 	
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -97,7 +97,7 @@ public:
 	 * @param  num_elements Number of elements in fArr
 	 * @return              Error code, see WError.h
 	 */
-	WError SetVariableIntArray(string varName, int* iArr, int num_elements);
+	WError SetVariableIntArray(const char* varName, int* iArr, int num_elements);
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -107,7 +107,7 @@ public:
 	 * @param  mtx     Value to set
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableMatrix(string varName, WMatrix mtx);
+	WError SetVariableMatrix(const char* varName, WMatrix mtx);
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -117,7 +117,7 @@ public:
 	 * @param  vec     Value to set
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableVector2(string varName, WVector2 vec);
+	WError SetVariableVector2(const char* varName, WVector2 vec);
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -127,7 +127,7 @@ public:
 	 * @param  vec     Value to set
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableVector3(string varName, WVector3 vec);
+	WError SetVariableVector3(const char* varName, WVector3 vec);
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -137,7 +137,7 @@ public:
 	 * @param  vec     Value to set
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableVector4(string varName, WVector4 vec);
+	WError SetVariableVector4(const char* varName, WVector4 vec);
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -147,7 +147,7 @@ public:
 	 * @param  col     Value to set
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableColor(string varName, WColor col);
+	WError SetVariableColor(const char* varName, WColor col);
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -159,7 +159,7 @@ public:
 	 * @param  len     Length of data, in bytes
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableData(string varName, void* data, int len);
+	WError SetVariableData(const char* varName, void* data, int len);
 
 	/**
 	 * Sets a texture in the bound effect.
@@ -203,6 +203,9 @@ private:
 	VkDescriptorPool m_descriptorPool;
 	/** The Vulkan descriptor set object */
 	VkDescriptorSet m_descriptorSet;
+	/** An array to hold write descriptor sets (filled/initialized on every
+	    Bind() call) */
+	vector<VkWriteDescriptorSet> m_writeDescriptorSets;
 
 	struct UNIFORM_BUFFER_INFO {
 		/** Uniform buffer handle */
