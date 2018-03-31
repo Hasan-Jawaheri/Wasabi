@@ -156,16 +156,16 @@ public:
 
 	/**
 	 * Retrieves the vertex description of a vertex buffer. Should return valid
-	 * descriptions for all layout_index values between 0 and
+	 * descriptions for all <a>layout_index</a> values between 0 and
 	 * GetVertexBufferCount()-1.
 	 *
 	 * The default vertex description (for default geometry) is:
-	 * - layout 0:
+	 * - layout 0: (vertex buffer)
 	 *   - W_ATTRIBUTE_POSITION
 	 *   - W_ATTRIBUTE_TANGENT
 	 *   - W_ATTRIBUTE_NORMAL
 	 *   - W_ATTRIBUTE_UV
-	 * - layout 1:
+	 * - layout 1: (animation buffer)
 	 *   - W_ATTRIBUTE_BONE_INDEX
 	 *   - W_ATTRIBUTE_BONE_WEIGHT
 	 * @param  layout_index Index of the vertex buffer
@@ -174,6 +174,14 @@ public:
 	 */
 	virtual W_VERTEX_DESCRIPTION GetVertexDescription(
 		unsigned int layout_index = 0) const;
+
+	/**
+	* Retrieves the size of the vertex description at the given index.
+	*
+	* @param  layout_index Index of the vertex buffer
+	* @return              The size of the vertex description at the given index
+	*/
+	virtual size_t GetVertexDescriptionSize(unsigned int layout_index = 0) const;
 
 	/**
 	 * Creates a geometry from buffers in memory. The buffers must be formatted
