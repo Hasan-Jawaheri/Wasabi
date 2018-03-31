@@ -57,6 +57,10 @@ void LightsDemo::Load() {
 }
 
 void LightsDemo::Update(float fDeltaTime) {
+	for (auto it = m_boxes.begin(); it != m_boxes.end(); it++) {
+		WObject* box = *it;
+		box->Yaw(10.0f * fDeltaTime);
+	}
 }
 
 void LightsDemo::Cleanup() {

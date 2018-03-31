@@ -249,10 +249,10 @@ WError WDeferredRenderer::Initiailize() {
 	// Create the GBuffer
 	//
 	m_GBufferColor = new WImage(m_app);
-	werr = m_GBufferColor->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+	werr = m_GBufferColor->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R8G8B8A8_UNORM, 4);
 	if (werr == W_SUCCEEDED) {
 		m_GBufferNormal = new WImage(m_app);
-		werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+		werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R16G16B16A16_SFLOAT, 4);
 		if (werr == W_SUCCEEDED) {
 			m_GBuffer = new WRenderTarget(m_app);
 			werr = m_GBuffer->Create(m_width, m_height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }));
