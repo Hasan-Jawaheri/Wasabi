@@ -13,7 +13,7 @@ void RenderTargetTextureDemo::Load() {
 
 	WGeometry* g = new WGeometry(m_app);
 	if (g->CreateSphere(1, 15, 15)) {
-		g->Scale(1.4);
+		g->Scale(1.4f);
 
 		o2->SetGeometry(g);
 		o2->SetName("sphere");
@@ -54,7 +54,7 @@ void RenderTargetTextureDemo::Load() {
 	rt = new WRenderTarget(m_app);
 	rt->SetName("Falla RT");
 	rt->Create(640, 480, rtImg, false);
-	rt->SetClearColor(WColor(0.2, 0, 0));
+	rt->SetClearColor(WColor(0.2f, 0, 0));
 	((WFRMaterial*)o->GetMaterial())->Texture(rtImg);
 }
 

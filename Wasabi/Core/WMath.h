@@ -11,7 +11,7 @@
 #include <cmath>
 
 #define W_EPSILON 0.0001f
-#define W_PI (3.14159265358979323846)
+#define W_PI (3.14159265358979323846f)
 #define W_RADTODEG(rad) ((rad)*(180.0f/W_PI))
 #define W_DEGTORAD(deg) ((deg)*(W_PI/180.0f))
 

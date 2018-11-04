@@ -61,7 +61,7 @@ void WasabiTester::ApplyMousePivot() {
 		}
 	}
 
-	float fMouseZ = InputComponent->MouseZ();
+	float fMouseZ = (float)InputComponent->MouseZ();
 	fDist += (fMouseZ / 120.0f) * (abs(fDist) / 10.0f);
 	InputComponent->SetMouseZ(0);
 	fDist = min(-1, fDist);
