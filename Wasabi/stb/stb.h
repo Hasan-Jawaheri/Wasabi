@@ -6915,9 +6915,9 @@ static void stb__dirtree_scandir(char *path, time_t last_time, stb_dirtree *acti
 
    has_slash = (path[0] && path[strlen(path)-1] == '/');
    if (has_slash)
-      swprintf((wchar_t *)full_path, L"%s*", stb__from_utf8(path));
+      swprintf((wchar_t *)full_path, L"%s*", (wchar_t*)stb__from_utf8(path));
    else
-      swprintf((wchar_t *)full_path, L"%s/*", stb__from_utf8(path));
+      swprintf((wchar_t *)full_path, L"%s/*", (wchar_t*)stb__from_utf8(path));
 
    // it's possible this directory is already present: that means it was in the
    // cache, but its parent wasn't... in that case, we're done with it
@@ -9016,7 +9016,7 @@ static void stb__add_epsilon(stb_matcher *matcher, int from, int to)
 
 static void stb__add_edge(stb_matcher *matcher, int from, int to, int type)
 {
-   stb_nfa_edge z = { type, to };
+   stb_nfa_edge z = { (stb_int16)type, (stb_UINT16)to };
    if (matcher->nodes[from].out == NULL)
       stb_arr_malloc((void **) &matcher->nodes[from].out, matcher);
    stb_arr_push(matcher->nodes[from].out, z);
@@ -10518,7 +10518,7 @@ static size_t stb_out_backpatch_id(void)
 
 static void stb_out_backpatch(size_t id, stb_UINT value)
 {
-   stb_uchar data[4] = { value >> 24, value >> 16, value >> 8, value };
+   stb_uchar data[4] = { (stb_uchar)(value >> 24), (stb_uchar)(value >> 16), (stb_uchar)(value >> 8), (stb_uchar)value };
    if (stb__out) {
       memcpy((void *) id, data, 4);
    } else {

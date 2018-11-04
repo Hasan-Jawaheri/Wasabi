@@ -18,7 +18,7 @@ void InstancingDemo::Load() {
 
 	if (instancing) {
 		int nx = 20, nz = 80;
-		float width = 3 * nx, depth = nz;
+		float width = 3.0f * nx, depth = (float)nz;
 		((WasabiTester*)m_app)->SetZoom(-depth * 1.2f);
 		if (instancing == 2)
 			character->InitInstancing(nx * nz);
@@ -50,6 +50,6 @@ void InstancingDemo::Cleanup() {
 	character->RemoveReference();
 	geometry->RemoveReference();
 	texture->RemoveReference();
-	for (int i = 0; i < objectsV.size(); i++)
+	for (unsigned int i = 0; i < objectsV.size(); i++)
 		objectsV[i]->RemoveReference();
 }
