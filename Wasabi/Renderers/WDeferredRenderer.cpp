@@ -118,7 +118,7 @@ WError WDeferredRenderer::Initiailize() {
 	// Create the GBuffer
 	//
 	m_GBufferDepth = new WImage(m_app);
-	werr = m_GBufferDepth->CreateFromPixelsArray(nullptr, m_width, m_height, false, 1, VK_FORMAT_D32_SFLOAT, 4, true);
+	werr = m_GBufferDepth->CreateFromPixelsArray(nullptr, m_width, m_height, false, 1, VK_FORMAT_D32_SFLOAT, 4);
 	if (werr == W_SUCCEEDED) {
 		m_GBufferColor = new WImage(m_app);
 		werr = m_GBufferColor->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R8G8B8A8_UNORM, 4);
@@ -215,7 +215,7 @@ WError WDeferredRenderer::Resize(unsigned int width, unsigned int height) {
 	WError werr = WRenderer::Resize(width, height);
 
 	if (werr == W_SUCCEEDED && m_GBuffer) {
-		werr = m_GBufferDepth->CreateFromPixelsArray(nullptr, m_width, m_height, false, 1, VK_FORMAT_D32_SFLOAT, 4, true);
+		werr = m_GBufferDepth->CreateFromPixelsArray(nullptr, m_width, m_height, false, 1, VK_FORMAT_D32_SFLOAT, 4);
 		if (werr == W_SUCCEEDED) {
 			werr = m_GBufferColor->CreateFromPixelsArray(nullptr, width, height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
 			if (werr == W_SUCCEEDED) {
