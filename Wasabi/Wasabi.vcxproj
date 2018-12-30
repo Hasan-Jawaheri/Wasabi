@@ -101,6 +101,13 @@
     <ClInclude Include="Windows\Windows\WWC_Win32.h" />
     <ClInclude Include="Windows\WWindowComponent.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Renderers\Shaders\Deferred\pixel_shader.glsl" />
+    <None Include="Renderers\Shaders\Deferred\scene_composition_ps.glsl" />
+    <None Include="Renderers\Shaders\Deferred\vertex_shader.glsl" />
+    <None Include="Renderers\Shaders\Forward\pixel_shader.glsl" />
+    <None Include="Renderers\Shaders\Forward\vertex_shader.glsl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

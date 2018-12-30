@@ -12,6 +12,8 @@
 
 #include "../Core/WCore.h"
 
+#define STRINGIFY_INCLUDE(src) #src
+
 /** Specifies which components are to be rendered. The fields can be bitwise
 		OR'ed (e.g. RENDER_FILTER_OBJECTS | RENDER_FILTER_PARTICLES) to add
 		multiple filters. */
