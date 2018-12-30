@@ -14,6 +14,26 @@
 #include "../Core/WCore.h"
 
 /**
+ * This class represents a depth stencil buffer without a backing WImage, used when a render
+ * target is created for a swap chain buffer (by providing raw views, not WImage's, to Create())
+ */
+class SwapChainRenderTargetDepthStencil {
+public:
+	SwapChainRenderTargetDepthStencil();
+	WError Create(class Wasabi* app, unsigned int width, unsigned int height, VkFormat format);
+	void Cleanup(VkDevice device);
+
+	struct {
+		/** Depth image buffer */
+		VkImage image;
+		/** Memory backing the depth image */
+		VkDeviceMemory mem;
+		/** Depth image view */
+		VkImageView view;
+	} m_depthStencil;
+};
+
+/**
  * @ingroup engineclass
  *
  * This class represents a render target, which can be used to render things
@@ -52,15 +72,12 @@ public:
 	 * @param  width       Width of the render target
 	 * @param  height      Height of the render target
 	 * @param  target      A pointer to a WImage backing the render target
-	 * @param  bDepth      true if the render target needs a depth attachment,
-	 *                     false otherwise
-	 * @param  depthFormat Format for the depth attachment, if bDepth == true
+	 * @param  depth       A WImage backing the created depth attachment (can be null)
 	 * @return             Error code, see WError.h
 	 */
 	WError Create(unsigned int width, unsigned int height,
 				  class WImage* target,
-				  bool bDepth = true,
-				  VkFormat depthFormat = VK_FORMAT_D32_SFLOAT_S8_UINT);
+				  class WImage* depth);
 
 	/**
 	 * Create a render target with a multiple color attachments, each backed by a WImage.
@@ -71,15 +88,12 @@ public:
 	 * @param  width       Width of the render target
 	 * @param  height      Height of the render target
 	 * @param  targets     An array of WImage's backing the created render target attachments
-	 * @param  bDepth      true if the render target needs a depth attachment,
-	 *                     false otherwise
-	 * @param  depthFormat Format for the depth attachment, if bDepth == true
+	 * @param  depth       A WImage backing the created depth attachment (can be null)
 	 * @return             Error code, see WError.h
 	 */
 	WError Create(unsigned int width, unsigned int height,
 				  vector<class WImage*> targets,
-				  bool bDepth = true,
-				  VkFormat depthFormat = VK_FORMAT_D32_SFLOAT_S8_UINT);
+				  class WImage* depth);
 
 	/**
 	 * Create a render target backed by VkImageViews (such as the frame buffer).
@@ -179,22 +193,18 @@ public:
 	virtual bool Valid() const;
 
 private:
-	struct {
-		/** Depth image buffer */
-		VkImage image;
-		/** Memory backing the depth image */
-		VkDeviceMemory mem;
-		/** Depth image view */
-		VkImageView view;
-	} m_depthStencil;
 	/** List of frame buffers */
 	std::vector<VkFramebuffer> m_frameBuffers;
 	/** Format of the depth image */
 	VkFormat m_depthFormat;
 	/** Formats of the views in the attachments of the render target */
 	vector<VkFormat> m_colorFormats;
+	/** WImage backing the frame buffer depth attachment (if available) */
+	WImage* m_depthTarget;
 	/** WImage's backing the frame buffer attachments (if available) */
 	vector<class WImage*> m_targets;
+	/** Swapchain-specific depth-stencil info */
+	SwapChainRenderTargetDepthStencil* m_swapChainDepthStencil;
 	/** Render pass associated with this render target */
 	VkRenderPass m_renderPass;
 	/** A pipeline cache */
