@@ -121,8 +121,8 @@ WError WImage::CreateFromPixelsArray(
 	unsigned int	height,
 	bool			bDynamic,
 	unsigned int	num_components,
-	VkFormat fmt,
-	size_t comp_size) {
+	VkFormat		fmt,
+	size_t			comp_size) {
 
 	VkDevice device = m_app->GetVulkanDevice();
 	VkResult err;

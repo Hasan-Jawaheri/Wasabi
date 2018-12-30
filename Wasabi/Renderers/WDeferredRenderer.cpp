@@ -117,14 +117,18 @@ WError WDeferredRenderer::Initiailize() {
 	//
 	// Create the GBuffer
 	//
-	m_GBufferColor = new WImage(m_app);
-	werr = m_GBufferColor->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R8G8B8A8_UNORM, 4);
+	m_GBufferDepth = new WImage(m_app);
+	werr = m_GBufferDepth->CreateFromPixelsArray(nullptr, m_width, m_height, false, 1, VK_FORMAT_D32_SFLOAT, 4, true);
 	if (werr == W_SUCCEEDED) {
-		m_GBufferNormal = new WImage(m_app);
-		werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R16G16B16A16_SFLOAT, 4);
+		m_GBufferColor = new WImage(m_app);
+		werr = m_GBufferColor->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R8G8B8A8_UNORM, 4);
 		if (werr == W_SUCCEEDED) {
-			m_GBuffer = new WRenderTarget(m_app);
-			werr = m_GBuffer->Create(m_width, m_height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }));
+			m_GBufferNormal = new WImage(m_app);
+			werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R16G16B16A16_SFLOAT, 4);
+			if (werr == W_SUCCEEDED) {
+				m_GBuffer = new WRenderTarget(m_app);
+				werr = m_GBuffer->Create(m_width, m_height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }), m_GBufferDepth);
+			}
 		}
 	}
 
@@ -211,11 +215,14 @@ WError WDeferredRenderer::Resize(unsigned int width, unsigned int height) {
 	WError werr = WRenderer::Resize(width, height);
 
 	if (werr == W_SUCCEEDED && m_GBuffer) {
-		werr = m_GBufferColor->CreateFromPixelsArray(nullptr, width, height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+		werr = m_GBufferDepth->CreateFromPixelsArray(nullptr, m_width, m_height, false, 1, VK_FORMAT_D32_SFLOAT, 4, true);
 		if (werr == W_SUCCEEDED) {
-			werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, width, height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+			werr = m_GBufferColor->CreateFromPixelsArray(nullptr, width, height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
 			if (werr == W_SUCCEEDED) {
-				werr = m_GBuffer->Create(width, height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }));
+				werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, width, height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+				if (werr == W_SUCCEEDED) {
+					werr = m_GBuffer->Create(width, height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }), m_GBufferDepth);
+				}
 			}
 		}
 		if (werr == W_SUCCEEDED)

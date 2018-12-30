@@ -39,6 +39,8 @@ class WDeferredRenderer : public WRenderer {
 	class WEffect* m_default_fx;
 	/** GBuffer to store normals, depth and color */
 	WRenderTarget* m_GBuffer;
+	/** Depth attachment in the GBuffer */
+	WImage* m_GBufferDepth;
 	/** Color attachment in the GBuffer */
 	WImage* m_GBufferColor;
 	/** Normal attachment in the GBuffer */

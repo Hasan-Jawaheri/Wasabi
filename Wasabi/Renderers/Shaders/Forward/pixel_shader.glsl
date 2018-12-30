@@ -18,7 +18,7 @@ layout(binding = 4) uniform UBO {
 } ubo;
 layout(binding = 5) uniform LUBO {
 	int numLights;
-	Light lights[ + std::to_string(maxLights) + ];
+	Light lights[~~~~maxLights~~~~];
 } lubo;
 layout(binding = 6) uniform CAM {
 	vec3 gCamPos;

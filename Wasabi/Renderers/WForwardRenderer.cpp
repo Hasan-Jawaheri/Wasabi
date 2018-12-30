@@ -17,6 +17,27 @@ struct LightStruct {
 	float pad[3];
 };
 
+void stringReplaceAll(std::string& source, const std::string& from, const std::string& to)
+{
+	std::string newString;
+	newString.reserve(source.length());  // avoids a few memory allocations
+
+	std::string::size_type lastPos = 0;
+	std::string::size_type findPos;
+
+	while (std::string::npos != (findPos = source.find(from, lastPos)))
+	{
+		newString.append(source, lastPos, findPos - lastPos);
+		newString += to;
+		lastPos = findPos + from.length();
+	}
+
+	// Care for the rest after last occurrence
+	newString += source.substr(lastPos);
+
+	source.swap(newString);
+}
+
 class ForwardRendererVS : public WShader {
 public:
 	ForwardRendererVS(class Wasabi* const app) : WShader(app) {}
@@ -75,9 +96,11 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "gCamPos"),
 			}),
 		};
-		LoadCodeGLSL(
+		std::string code =
 			#include "Shaders/Forward/pixel_shader.glsl"
-		);
+		;
+		stringReplaceAll(code, "~~~~maxLights~~~~", std::to_string(maxLights));
+		LoadCodeGLSL(code);
 	}
 };
 
