@@ -52,6 +52,15 @@
     <Filter Include="stb">
       <UniqueIdentifier>{a78cb392-40c1-4e4f-b5d1-9c98ffb11259}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Renderers\Shaders">
+      <UniqueIdentifier>{e1a75d12-9e6f-4bdb-8c1e-d6f2e6c5c119}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\Shaders\Deferred">
+      <UniqueIdentifier>{fac9b771-a53d-45f6-a098-09bd2e17101f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\Shaders\Forward">
+      <UniqueIdentifier>{ecd66444-6b37-4f17-b4f7-4b034dca838d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -291,5 +300,22 @@
       <Filter>stb</Filter>
     </ClInclude>
     <ClInclude Include="Wasabi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Renderers\Shaders\Deferred\scene_composition_ps.glsl">
+      <Filter>Renderers\Shaders\Deferred</Filter>
+    </None>
+    <None Include="Renderers\Shaders\Deferred\vertex_shader.glsl">
+      <Filter>Renderers\Shaders\Deferred</Filter>
+    </None>
+    <None Include="Renderers\Shaders\Deferred\pixel_shader.glsl">
+      <Filter>Renderers\Shaders\Deferred</Filter>
+    </None>
+    <None Include="Renderers\Shaders\Forward\pixel_shader.glsl">
+      <Filter>Renderers\Shaders\Forward</Filter>
+    </None>
+    <None Include="Renderers\Shaders\Forward\vertex_shader.glsl">
+      <Filter>Renderers\Shaders\Forward</Filter>
+    </None>
   </ItemGroup>
 </Project>
