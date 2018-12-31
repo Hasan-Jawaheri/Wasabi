@@ -33,22 +33,56 @@
  * @endcode
  */
 class WDeferredRenderer : public WRenderer {
+	/** Represents the GBuffer rendering stage in a WDeferredRenderer */
+	class GBufferStage {
+		friend class WDeferredRenderer;
+
+		/** Pointer to the owner renderer */
+		WDeferredRenderer* m_renderer;
+		/** GBuffer to store normals, depth and color */
+		WRenderTarget* m_renderTarget;
+		/** Depth attachment in the GBuffer */
+		WImage* m_depthTarget;
+		/** Color attachment in the GBuffer */
+		WImage* m_colorTarget;
+		/** Normal attachment in the GBuffer */
+		WImage* m_normalTarget;
+
+	public:
+		GBufferStage(WDeferredRenderer* renderer);
+		~GBufferStage();
+
+		WError Initialize(unsigned int width, unsigned int height);
+		WError Render(class WCamera* cam);
+		void Cleanup();
+		WError Resize(unsigned int width, unsigned int height);
+	} m_GBuffer;
+
+	/** Represents the LightBuffer rendering stage in a WDeferredRenderer */
+	class LightBufferStage {
+		friend class WDeferredRenderer;
+
+		/** Pointer to the owner renderer */
+		WDeferredRenderer* m_renderer;
+		/** LightBuffer to store lighting information */
+		WRenderTarget* m_renderTarget;
+		/** Light buffer attachment that will hold the rendered lighting output */
+		WImage* m_outputTarget;
+
+	public:
+		LightBufferStage(WDeferredRenderer* renderer);
+		~LightBufferStage();
+
+		WError Initialize(unsigned int width, unsigned int height);
+		WError Render(class WCamera* cam);
+		void Cleanup();
+		WError Resize(unsigned int width, unsigned int height);
+	} m_LightBuffer;
+
 	/** Default Vulkan sampler */
 	VkSampler m_sampler;
 	/** Default effect used to create materials */
 	class WEffect* m_default_fx;
-	/** GBuffer to store normals, depth and color */
-	WRenderTarget* m_GBuffer;
-	/** Depth attachment in the GBuffer */
-	WImage* m_GBufferDepth;
-	/** Color attachment in the GBuffer */
-	WImage* m_GBufferColor;
-	/** Normal attachment in the GBuffer */
-	WImage* m_GBufferNormal;
-	/** LightBuffer to store lighting information */
-	WRenderTarget* m_LightBuffer;
-	/** Light buffer attachment that will hold the rendered lighting output */
-	WImage* m_LightBufferOutput;
 	/** Sprite used to render the final composition */
 	WSprite* m_masterRenderSprite;
 	/** Final composition material */
