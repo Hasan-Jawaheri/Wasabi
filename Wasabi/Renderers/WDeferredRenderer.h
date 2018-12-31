@@ -45,6 +45,10 @@ class WDeferredRenderer : public WRenderer {
 	WImage* m_GBufferColor;
 	/** Normal attachment in the GBuffer */
 	WImage* m_GBufferNormal;
+	/** LightBuffer to store lighting information */
+	WRenderTarget* m_LightBuffer;
+	/** Light buffer attachment that will hold the rendered lighting output */
+	WImage* m_LightBufferOutput;
 	/** Sprite used to render the final composition */
 	WSprite* m_masterRenderSprite;
 	/** Final composition material */
@@ -58,6 +62,8 @@ public:
 	virtual void Render(class WRenderTarget* rt, unsigned int filter = -1);
 	virtual void Cleanup();
 	virtual WError Resize(unsigned int width, unsigned int height);
+
+	void RenderLight(class WLight* light);
 
 	virtual class WMaterial* CreateDefaultMaterial();
 	virtual VkSampler GetDefaultSampler() const;

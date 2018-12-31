@@ -80,6 +80,9 @@ WDeferredRenderer::WDeferredRenderer(Wasabi* const app) : WRenderer(app) {
 	m_GBuffer = nullptr;
 	m_GBufferColor = nullptr;
 	m_GBufferNormal = nullptr;
+	m_GBufferDepth = nullptr;
+	m_LightBuffer = nullptr;
+	m_LightBufferOutput = nullptr;
 	m_masterRenderSprite = nullptr;
 	m_compositionMaterial = nullptr;
 }
@@ -126,8 +129,16 @@ WError WDeferredRenderer::Initiailize() {
 			m_GBufferNormal = new WImage(m_app);
 			werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R16G16B16A16_SFLOAT, 4);
 			if (werr == W_SUCCEEDED) {
-				m_GBuffer = new WRenderTarget(m_app);
-				werr = m_GBuffer->Create(m_width, m_height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }), m_GBufferDepth);
+				m_LightBufferOutput = new WImage(m_app);
+				werr = m_LightBufferOutput->CreateFromPixelsArray(nullptr, m_width, m_height, false, 4, VK_FORMAT_R8G8B8A8_UNORM, 4);
+				if (werr == W_SUCCEEDED) {
+					m_GBuffer = new WRenderTarget(m_app);
+					werr = m_GBuffer->Create(m_width, m_height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }), m_GBufferDepth);
+					if (werr == W_SUCCEEDED) {
+						m_LightBuffer = new WRenderTarget(m_app);
+						werr = m_LightBuffer->Create(m_width, m_height, m_LightBufferOutput);
+					}
+				}
 			}
 		}
 	}
@@ -221,7 +232,13 @@ WError WDeferredRenderer::Resize(unsigned int width, unsigned int height) {
 			if (werr == W_SUCCEEDED) {
 				werr = m_GBufferNormal->CreateFromPixelsArray(nullptr, width, height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
 				if (werr == W_SUCCEEDED) {
-					werr = m_GBuffer->Create(width, height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }), m_GBufferDepth);
+					werr = m_LightBufferOutput->CreateFromPixelsArray(nullptr, width, height, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+					if (werr == W_SUCCEEDED) {
+						werr = m_GBuffer->Create(width, height, vector<WImage*>({ m_GBufferColor, m_GBufferNormal }), m_GBufferDepth);
+						if (werr == W_SUCCEEDED) {
+							werr = m_LightBuffer->Create(width, height, m_LightBufferOutput);
+						}
+					}
 				}
 			}
 		}
@@ -249,6 +266,26 @@ void WDeferredRenderer::Render(WRenderTarget* rt, unsigned int filter) {
 	werr = m_GBuffer->End();
 	if (werr != W_SUCCEEDED)
 		return;
+	
+	//
+	// Render to the LightBuffer
+	//
+	m_LightBuffer->SetCamera(rt->GetCamera());
+	werr = m_LightBuffer->Begin();
+	if (werr != W_SUCCEEDED)
+		return;
+
+	if (filter & RENDER_FILTER_OBJECTS) {
+		unsigned int num_lights = m_app->LightManager->GetEntitiesCount();
+		for (unsigned int i = 0; i < num_lights; i++) {
+			WLight* light = m_app->LightManager->GetEntityByIndex(i);
+			RenderLight(light);
+		}
+	}
+
+	werr = m_LightBuffer->End();
+	if (werr != W_SUCCEEDED)
+		return;
 
 	//
 	// Compose the GBuffer onto the final render target
@@ -274,6 +311,10 @@ void WDeferredRenderer::Render(WRenderTarget* rt, unsigned int filter) {
 	rt->End(false);
 }
 
+void WDeferredRenderer::RenderLight(class WLight* light) {
+
+}
+
 void WDeferredRenderer::Cleanup() {
 	if (m_sampler)
 		vkDestroySampler(m_device, m_sampler, nullptr);
@@ -283,6 +324,9 @@ void WDeferredRenderer::Cleanup() {
 	W_SAFE_REMOVEREF(m_GBuffer);
 	W_SAFE_REMOVEREF(m_GBufferColor);
 	W_SAFE_REMOVEREF(m_GBufferNormal);
+	W_SAFE_REMOVEREF(m_GBufferDepth);
+	W_SAFE_REMOVEREF(m_LightBuffer);
+	W_SAFE_REMOVEREF(m_LightBufferOutput);
 	W_SAFE_REMOVEREF(m_masterRenderSprite);
 	W_SAFE_REMOVEREF(m_compositionMaterial);
 }
