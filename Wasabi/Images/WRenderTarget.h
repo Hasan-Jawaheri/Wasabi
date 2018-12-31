@@ -77,7 +77,7 @@ public:
 	 */
 	WError Create(unsigned int width, unsigned int height,
 				  class WImage* target,
-				  class WImage* depth);
+				  class WImage* depth = nullptr);
 
 	/**
 	 * Create a render target with a multiple color attachments, each backed by a WImage.
@@ -93,7 +93,7 @@ public:
 	 */
 	WError Create(unsigned int width, unsigned int height,
 				  vector<class WImage*> targets,
-				  class WImage* depth);
+				  class WImage* depth = nullptr);
 
 	/**
 	 * Create a render target backed by VkImageViews (such as the frame buffer).
