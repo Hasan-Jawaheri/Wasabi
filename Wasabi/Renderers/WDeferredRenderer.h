@@ -19,7 +19,11 @@
 #include "../Materials/WMaterial.h"
 #include "../Images/WImage.h"
 #include "../Images/WRenderTarget.h"
+#include "../Geometries/WGeometry.h"
 #include "../Sprites/WSprite.h"
+
+#include <unordered_map>
+using std::unordered_map;
 
 /**
  * @ingroup engineclass
@@ -52,9 +56,13 @@ class WDeferredRenderer : public WRenderer {
 		GBufferStage(WDeferredRenderer* renderer);
 		~GBufferStage();
 
+		/** Initialize the GBuffer */
 		WError Initialize(unsigned int width, unsigned int height);
+		/** Render the GBuffer stage (renders 3D objects onto the GBuffer) */
 		WError Render(class WCamera* cam);
+		/** Cleanup the GBuffer resources */
 		void Cleanup();
+		/** Resizes the GBuffer dimensions */
 		WError Resize(unsigned int width, unsigned int height);
 	} m_GBuffer;
 
@@ -69,13 +77,42 @@ class WDeferredRenderer : public WRenderer {
 		/** Light buffer attachment that will hold the rendered lighting output */
 		WImage* m_outputTarget;
 
+		/** Assets required to render a light onto the light map */
+		struct LightTypeAssets {
+			/** Light's geometry, only one of fullscreen_sprite and geometry is not null */
+			class WGeometry* geometry;
+			/** A sprite that renders at full-screen (for directional lights), only one of fullscreen_sprite and geometry is not null */
+			class WSprite* fullscreen_sprite;
+			/** Render material */
+			class WMaterial* material;
+
+			LightTypeAssets() : geometry(nullptr), fullscreen_sprite(nullptr), material(nullptr) {}
+
+			/** Free the resources of this object */
+			void Destroy() {
+				W_SAFE_REMOVEREF(geometry);
+				W_SAFE_REMOVEREF(fullscreen_sprite);
+				W_SAFE_REMOVEREF(material);
+			}
+		};
+		/** Map of light type -> <geometry (shape of light type), material for rendering> to render that light */
+		std::unordered_map<int, LightTypeAssets> m_lightRenderingAssets;
+
+		WError _LoadPointLightsAssets();
+		WError _LoadSpotLightsAssets();
+		WError _LoadDirectionalLightsAssets();
+
 	public:
 		LightBufferStage(WDeferredRenderer* renderer);
 		~LightBufferStage();
 
+		/** Initialize the LightBuffer */
 		WError Initialize(unsigned int width, unsigned int height);
+		/** Render the LightBuffer stage (renders lights onto the lights as objects onto the light buffer) */
 		WError Render(class WCamera* cam);
+		/** Cleanup the LightBuffer resources */
 		void Cleanup();
+		/** Resizes the LightBuffer dimensions */
 		WError Resize(unsigned int width, unsigned int height);
 	} m_LightBuffer;
 

@@ -311,7 +311,7 @@ public:
 	 *                  modifications, false otherwise
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateSphere(float Radius, unsigned int VRes, unsigned int URes,
+	WError CreateSphere(float Radius, unsigned int VRes = 12, unsigned int URes = 12,
 						bool bDynamic = false);
 
 	/**

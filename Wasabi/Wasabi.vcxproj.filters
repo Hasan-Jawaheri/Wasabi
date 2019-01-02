@@ -317,5 +317,8 @@
     <None Include="Renderers\Shaders\Forward\vertex_shader.glsl">
       <Filter>Renderers\Shaders\Forward</Filter>
     </None>
+    <None Include="Renderers\Shaders\Deferred\directional_light_ps.glsl">
+      <Filter>Renderers\Shaders\Deferred</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -30,27 +30,27 @@ layout(location = 2) in vec3 inWorldNorm;
 
 layout(location = 0) out vec4 outFragColor;
 
- // DIRECTIONAL LIGHT CODE
+// DIRECTIONAL LIGHT CODE
 vec3 DirectionalLight(in vec3 dir, in vec3 col, in float intensity) {
-  // N dot L lighting term
+	// N dot L lighting term
 	vec3 lDir = -normalize(dir); 
 	float nl = clamp(dot(inWorldNorm, lDir), 0, 1);
 	vec3 camDir = normalize(cam.gCamPos - inWorldPos);
-  // Calculate specular term
+	// Calculate specular term
 	float spec = max (dot(reflect(-lDir, inWorldNorm), camDir), 0.0f);
 	vec3 unspecced = vec3(col * nl) * intensity;
 	return unspecced * spec;
 }
 
- // POINT LIGHT CODE
+// POINT LIGHT CODE
 vec3 PointLight(in vec3 pos, in vec3 col, in float intensity, in float range) {
-  // The distance from surface to light
+	// The distance from surface to light
 	vec3 lightVec = pos - inWorldPos;
 	float d = length (lightVec);
-  // N dot L lighting term
+	// N dot L lighting term
 	vec3 lDir = normalize(lightVec);
 	float nl = clamp(dot(inWorldNorm, lDir), 0, 1);
-  // Calculate specular term
+	// Calculate specular term
 	vec3 camDir = normalize(cam.gCamPos - inWorldPos);
 	vec3 h = normalize(lDir + camDir);
 	float spec = clamp(dot(inWorldNorm, h), 0, 1);
@@ -59,15 +59,14 @@ vec3 PointLight(in vec3 pos, in vec3 col, in float intensity, in float range) {
 	return vec3(col * xVal * spec * nl * intensity);
 }
 
- // SPOT LIGHT CODE
+// SPOT LIGHT CODE
 vec3 SpotLight(in vec3 pos, in vec3 dir, in vec3 col, in float intensity, in float range, float minCos) {
 	vec3 color = PointLight(pos, col, intensity, range);
-  // The vector from the surface to the light
+	// The vector from the surface to the light
 	vec3 lightVec = normalize(pos - inWorldPos);
 
 	float cosAngle = dot(-lightVec, dir);
-	color *= max ((cosAngle - minCos) / (1.0f-minCos), 0);
-  // Scale color by spotlight factor
+	color *= max ((cosAngle - minCos) / (1.0f-minCos), 0); // Scale color by spotlight factor
 	return color;
 }
 

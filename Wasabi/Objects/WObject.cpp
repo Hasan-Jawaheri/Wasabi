@@ -275,9 +275,8 @@ void WObject::Render(WRenderTarget* rt) {
 		WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();
 		if (m_bFrustumCull) {
-			WMatrix wmtx = GetWorldMatrix();
-			WVector3 min = WVec3TransformCoord(m_geometry->GetMinPoint(), wmtx);
-			WVector3 max = WVec3TransformCoord(m_geometry->GetMaxPoint(), wmtx);
+			WVector3 min = WVec3TransformCoord(m_geometry->GetMinPoint(), worldM);
+			WVector3 max = WVec3TransformCoord(m_geometry->GetMaxPoint(), worldM);
 			WVector3 pos = (max + min) / 2.0f;
 			WVector3 size = (max - min) / 2.0f;
 			if (!cam->CheckBoxInFrustum(pos, size))

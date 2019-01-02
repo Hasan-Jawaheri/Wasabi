@@ -137,9 +137,14 @@ public:
 	/**
 	 * Sets the color to use when the render target is cleared upon calling
 	 * Begin().
-	 * @param col Clear color to use
+	 * @param col   Clear color to use
+	 * @param index Attachment index (as supplied to Create()). The depth target attachment
+	 *              index is the last one (so if this render target has 1 color attachment and
+	 *              one depth attachment, they will have indices 0 and 1 respectively) and
+	 *              the clear value of the depth attachment will only use the red component of
+	 *              the supplied WColor (the stencil will be green component)
 	 */
-	void SetClearColor(WColor col);
+	void SetClearColor(WColor col, unsigned int index = 0);
 
 	/**
 	 * Sets the camera that will be used when things are rendered using this
@@ -211,8 +216,6 @@ private:
 	VkPipelineCache m_pipelineCache;
 	/** The command buffer used for rendering on this render target */
 	VkCommandBuffer m_renderCmdBuffer;
-	/** Clear color */
-	VkClearColorValue m_clearColor;
 	/** Clear values to be used by Vulkan */
 	vector<VkClearValue> m_clearValues;
 	/** Width of the render target */

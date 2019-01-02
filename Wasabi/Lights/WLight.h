@@ -56,7 +56,7 @@ public:
 
 	/**
 	 * Sets the color of this light
-	 * @param col New color
+	 * @param col New color, alpha component will be used as light specular power
 	 */
 	void SetColor(WColor col);
 

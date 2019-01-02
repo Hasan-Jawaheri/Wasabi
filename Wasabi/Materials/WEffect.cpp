@@ -39,8 +39,13 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
 size_t W_BOUND_RESOURCE::GetSize() const {
 	if (_size == -1) {
 		_size = 0;
-		for (int i = 0; i < variables.size(); i++)
-			_size += variables[i].GetSize();
+		for (int i = 0; i < variables.size(); i++) {
+			int varsize = variables[i].GetSize();
+			int ramining_bytes_in_alignment_slot = 16 - (_size % 16);
+			if (varsize > ramining_bytes_in_alignment_slot && ramining_bytes_in_alignment_slot < 16)
+				_size += ramining_bytes_in_alignment_slot;
+			_size += varsize;
+		}
 	}
 	return _size;
 }

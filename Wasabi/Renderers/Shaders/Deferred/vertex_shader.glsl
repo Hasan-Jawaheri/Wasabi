@@ -5,8 +5,8 @@ R"(
 #extension GL_ARB_shading_language_420pack : enable
 
 layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec3 inNorm;
-layout(location = 2) in vec3 inTang;
+layout(location = 1) in vec3 inTang;
+layout(location = 2) in vec3 inNorm;
 layout(location = 3) in vec2 inUV;
 layout(location = 4) in uvec4 boneIndex;
 layout(location = 5) in vec4 boneWeight;
