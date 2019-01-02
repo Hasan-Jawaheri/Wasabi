@@ -15,6 +15,6 @@ layout(location = 1) out vec4 outNormals;
 
 void main() {
 	outColor = texture(samplerColor, inUV);
-	outNormals = vec4(inWorldNorm, 1.0);
+	outNormals = (vec4(inWorldNorm, 1.0) + 1) / 2;
 }
 )"

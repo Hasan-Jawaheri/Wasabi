@@ -304,6 +304,11 @@ WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 		W_BOUND_RESOURCE* info = m_uniformBuffers[i].ubo_info;
 		size_t cur_offset = 0;
 		for (int j = 0; j < info->variables.size(); j++) {
+			int varsize = info->variables[j].GetSize();
+			// the data is 16-byte aligned, so if this variable doesn't fit in the current 16-byte-aligned-slot, move to the next 16 bytes block
+			int ramining_bytes_in_alignment_slot = 16 - (cur_offset % 16);
+			if (varsize > ramining_bytes_in_alignment_slot && ramining_bytes_in_alignment_slot < 16)
+				cur_offset += ramining_bytes_in_alignment_slot;
 			if (strcmp(info->variables[j].name.c_str(), varName) == 0) {
 				if (info->variables[j].GetSize() < len)
 					return WError(W_INVALIDPARAM);
@@ -316,7 +321,7 @@ WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 
 				isFound = true;
 			}
-			cur_offset += info->variables[j].GetSize();
+			cur_offset += varsize;
 		}
 	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);

@@ -110,7 +110,6 @@ WRenderTarget::WRenderTarget(Wasabi* const app, unsigned int ID) : WBase(app, ID
 
 	m_swapChainDepthStencil = nullptr;
 	m_depthTarget = nullptr;
-	m_clearColor = { { 0.425f, 0.425f, 0.425f, 1.0f } };
 	m_renderCmdBuffer = VK_NULL_HANDLE;
 	m_renderPass = VK_NULL_HANDLE;
 	m_pipelineCache = VK_NULL_HANDLE;
@@ -162,7 +161,6 @@ void WRenderTarget::_DestroyResources() {
 		W_SAFE_REMOVEREF((*it));
 	m_targets.clear();
 	m_colorFormats.clear();
-	m_clearValues.clear();
 }
 
 WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* target, WImage* depth) {
@@ -310,17 +308,11 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 		(*it)->AddReference();
 	}
 
-	m_clearValues.clear();
-	VkClearValue v = { 0 };
-	for (auto it = m_colorFormats.begin(); it != m_colorFormats.end(); it++) {
-		v.color = m_clearColor;
-		m_clearValues.push_back(v);
+	for (unsigned int i = 0; i < m_colorFormats.size(); i++) {
+		SetClearColor(WColor(0.425f, 0.425f, 0.425f), i);
 	}
-	if (depth) {
-		v = { 0 };
-		v.depthStencil = { 1.0f, 0 };
-		m_clearValues.push_back(v);
-	}
+	if (m_depthTarget)
+		SetClearColor(WColor(1, 0, 0), m_colorFormats.size());
 
 	return WError(W_SUCCEEDED);
 }
@@ -459,17 +451,8 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	m_depthFormat = depthFormat;
 	m_colorFormats.push_back(colorFormat);
 
-	m_clearValues.clear();
-	VkClearValue v = { 0 };
-	for (auto it = m_colorFormats.begin(); it != m_colorFormats.end(); it++) {
-		v.color = m_clearColor;
-		m_clearValues.push_back(v);
-	}
-	if (m_swapChainDepthStencil->m_depthStencil.image) {
-		v = { 0 };
-		v.depthStencil = { 1.0f, 0 };
-		m_clearValues.push_back(v);
-	}
+	SetClearColor(WColor(0.425f, 0.425f, 0.425f, 0.0f), 0);
+	SetClearColor(WColor(1.0f, 0.0f, 0, 0.0f), 1);
 
 	return WError(W_SUCCEEDED);
 }
@@ -556,8 +539,20 @@ WError WRenderTarget::End(bool bSubmit) {
 	return WError(W_SUCCEEDED);
 }
 
-void WRenderTarget::SetClearColor(WColor  col) {
-	m_clearColor = { { col.r, col.g, col.b, col.a } };
+void WRenderTarget::SetClearColor(WColor col, unsigned int index) {
+	if (index >= m_clearValues.size() && index < 100 /* some reasonable upper bound to protect against invalid input */) {
+		for (unsigned int i = m_clearValues.size(); i < index+1; i++) {
+			VkClearValue v = { 0 };
+			m_clearValues.push_back(v);
+		}
+	}
+	else if (index >= m_clearValues.size())
+		return;
+
+	if ((m_depthTarget || m_swapChainDepthStencil) && index == m_colorFormats.size())
+		m_clearValues[index].depthStencil = { col.r, (unsigned int)col.g };
+	else
+		m_clearValues[index].color = { { col.r, col.g, col.b, col.a } };
 }
 
 void WRenderTarget::SetCamera(WCamera* cam) {
