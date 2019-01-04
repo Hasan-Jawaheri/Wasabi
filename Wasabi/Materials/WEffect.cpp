@@ -1,6 +1,9 @@
 #include "WEffect.h"
 #include "../Images/WRenderTarget.h"
 
+#include <unordered_map>
+using std::unordered_map;
+
 size_t W_SHADER_VARIABLE_INFO::GetSize() const {
 	if (_size == -1)
 		_size = 4 * num_elems;
@@ -48,6 +51,16 @@ size_t W_BOUND_RESOURCE::GetSize() const {
 		}
 	}
 	return _size;
+}
+
+bool W_BOUND_RESOURCE::IsSimilarTo(W_BOUND_RESOURCE resource) {
+	if (type != resource.type || binding_index != resource.binding_index || variables.size() != resource.variables.size())
+		return false;
+	for (int i = 0; i < variables.size(); i++) {
+		if (variables[i].type != resource.variables[i].type || variables[i].GetSize() != resource.variables[i].GetSize() || variables[i].num_elems != resource.variables[i].num_elems)
+			return false;
+	}
+	return true;
 }
 
 size_t W_INPUT_LAYOUT::GetSize() const {
@@ -118,7 +131,7 @@ std::string WEffectManager::GetTypeName(void) const {
 WEffectManager::WEffectManager(class Wasabi* const app) : WManager<WEffect>(app) {
 }
 
-WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_depthStencilState({}) {
 	m_vertexShaderIndex = -1;
 
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -126,7 +139,7 @@ WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_pipelineLayout = VK_NULL_HANDLE;
 	m_descriptorSetLayout = VK_NULL_HANDLE;
 
-	VkPipelineColorBlendAttachmentState blendState;
+	VkPipelineColorBlendAttachmentState blendState = {};
 	blendState.colorWriteMask = 0xf;
 	blendState.blendEnable = VK_FALSE;
 	m_blendStates.push_back(blendState);
@@ -271,6 +284,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	//
 	// Create descriptor set layout
 	//
+	unordered_map<int, W_BOUND_RESOURCE> used_bindings;
 	vector<VkDescriptorSetLayoutBinding> layoutBindings;
 	for (int i = 0; i < m_shaders.size(); i++) {
 		if (m_shaders[i]->m_desc.bound_resources.size()) {
@@ -278,11 +292,27 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 				VkDescriptorSetLayoutBinding layoutBinding = {};
 				layoutBinding.stageFlags = (VkShaderStageFlagBits)m_shaders[i]->m_desc.type;
 				layoutBinding.pImmutableSamplers = NULL;
+
+				auto used_bindings_iter = used_bindings.find(m_shaders[i]->m_desc.bound_resources[j].binding_index);
+				if (used_bindings_iter != used_bindings.end()) {
+					// repeated binding index, don't add it to the layoutBindings again and make sure it's the same UBO if it's a UBO
+					if (m_shaders[i]->m_desc.bound_resources[j].type == W_TYPE_UBO && used_bindings_iter->second.type == W_TYPE_UBO) {
+						if (!used_bindings_iter->second.IsSimilarTo(m_shaders[i]->m_desc.bound_resources[j]))
+							return WError(W_INVALIDREPEATEDBINDINGINDEX);
+					}
+					// add this shader stage to the possible stages for that binding index
+					for (int k = 0; k < layoutBindings.size(); k++)
+						if (layoutBindings[k].binding == m_shaders[i]->m_desc.bound_resources[j].binding_index)
+							layoutBindings[k].stageFlags |= m_shaders[i]->m_desc.type;
+					continue;
+				}
+
 				if (m_shaders[i]->m_desc.bound_resources[j].type == W_TYPE_UBO) {
 					layoutBinding.binding = m_shaders[i]->m_desc.bound_resources[j].binding_index;
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 					layoutBinding.descriptorCount = 1;
 					layoutBindings.push_back(layoutBinding);
+					used_bindings.insert(std::pair<int, W_BOUND_RESOURCE>(m_shaders[i]->m_desc.bound_resources[j].binding_index, m_shaders[i]->m_desc.bound_resources[j]));
 				} else if (m_shaders[i]->m_desc.bound_resources[j].type == W_TYPE_SAMPLER) {
 					layoutBinding.binding = m_shaders[i]->m_desc.bound_resources[j].binding_index;
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;

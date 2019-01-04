@@ -14,7 +14,7 @@ std::string WLightManager::GetTypeName() const {
 }
 
 WError WLightManager::Load() {
-	m_defaultLight = new WLight(m_app);
+	m_defaultLight = new WDirectionalLight(m_app);
 	m_defaultLight->SetPosition(0, 1, 0);
 	m_defaultLight->Point(0, 0, 0);
 	return WError(W_SUCCEEDED);
@@ -24,9 +24,9 @@ WLight* WLightManager::GetDefaultLight() const {
 	return m_defaultLight;
 }
 
-WLight::WLight(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WLight::WLight(Wasabi* const app, W_LIGHT_TYPE type, unsigned int ID) : WBase(app, ID) {
 	m_hidden = false;
-	m_type = W_LIGHT_DIRECTIONAL;
+	m_type = type;
 	m_range = 50.0f;
 	m_color = WColor(1, 1, 1);
 	m_intensity = 1.0f;
@@ -44,10 +44,6 @@ std::string WLight::GetTypeName() const {
 
 bool WLight::Valid() const {
 	return true;
-}
-
-void WLight::SetType(W_LIGHT_TYPE type) {
-	m_type = type;
 }
 
 void WLight::SetColor(WColor col) {

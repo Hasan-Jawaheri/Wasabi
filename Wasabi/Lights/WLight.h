@@ -44,15 +44,11 @@ class WLight : public WBase, public WOrientation {
 	 */
 	virtual std::string GetTypeName() const;
 
-public:
-	WLight(class Wasabi* const app, unsigned int ID = 0);
-	~WLight();
+protected:
+	WLight(class Wasabi* const app, W_LIGHT_TYPE type, unsigned int ID = 0);
 
-	/**
-	 * Sets the type of this light.
-	 * @param type Light type
-	 */
-	void SetType(W_LIGHT_TYPE type);
+public:
+	~WLight();
 
 	/**
 	 * Sets the color of this light
@@ -172,6 +168,24 @@ private:
 	float m_intensity;
 	/** Cosine of half the emission angle */
 	float m_cosAngle;
+};
+
+class WDirectionalLight : public WLight {
+public:
+	WDirectionalLight(class Wasabi* const app, unsigned int ID = 0)
+		: WLight(app, W_LIGHT_DIRECTIONAL, ID) {}
+};
+
+class WPointLight : public WLight {
+public:
+	WPointLight(class Wasabi* const app, unsigned int ID = 0)
+		: WLight(app, W_LIGHT_POINT, ID) {}
+};
+
+class WSpotLight : public WLight {
+public:
+	WSpotLight(class Wasabi* const app, unsigned int ID = 0)
+		: WLight(app, W_LIGHT_SPOT, ID) {}
 };
 
 /**

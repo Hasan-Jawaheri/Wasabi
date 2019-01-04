@@ -40,10 +40,9 @@ void RenderTargetTextureDemo::Load() {
 	img->Load("Media/dummy.bmp", true);
 	img->RemoveReference();
 
-	l = new WLight(m_app);
+	l = new WPointLight(m_app);
 	l->SetPosition(-5, 2, 0);
 	l->Point(0, 0, 0);
-	l->SetType(W_LIGHT_POINT);
 	l->SetRange(10);
 	l->SetIntensity(4.0f);
 

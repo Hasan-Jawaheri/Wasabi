@@ -16,9 +16,13 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <functional>
+#include <unordered_map>
 using std::ios;
 using std::vector;
 using std::string;
+using std::function;
+using std::unordered_map;
 
 #ifndef fmax
 #define fmax(a,b) ((a) > (b) ? (a) : (b))
@@ -46,7 +50,7 @@ protected:
 	 * This function must be implemented by a child class. It should return the
 	 * name of the object that it is managing, which can be used for debugging
 	 * purposes.
-	 * @return  [description]
+	 * @return  The name of the object being managed
 	 */
 	virtual std::string GetTypeName() const = 0;
 
@@ -63,6 +67,32 @@ public:
 	}
 
 	/**
+	 * Registers a function to be called when an entity is added or removed
+	 * @param name      Name given to the callback, can be used to remove it (name must
+	 *                  be unique)
+	 * @param callback  A function pointer, called when an entity is added (with the
+	 *                  pointer to the entity and true as arguments) or removed (with
+	 *                  the pointer to the entity and false as arguments)
+	 * @return          True iff the callback was registered
+	 */
+	bool RegisterChangeCallback(std::string name, std::function<void(T*, bool)> callback) {
+		if (m_changeCallbacks.find(name) != m_changeCallbacks.end())
+			return false;
+		m_changeCallbacks.insert(std::pair<std::string, std::function<void(T*, bool)>>(name, callback));
+		return true;
+	}
+
+	/**
+	 * Removes a callback previously registered by RegisterChangeCallback()
+	 * @param name  Callback name passed to RegisterChangeCallback()
+	 */
+	void RemoveChangeCallback(std::string name) {
+		if (m_changeCallbacks.find(name) != m_changeCallbacks.end()) {
+			m_changeCallbacks.erase(name);
+		}
+	}
+
+	/**
 	 * Registers an entity in the manager.
 	 * @param entity Pointer to the entity to register
 	 */
@@ -72,6 +102,8 @@ public:
 		m_entities[W_HASH(entity->GetID())].push_back(entity);
 		entity->SetManager((void*)this);
 		std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Added to the manager.\n";
+		for (auto it = m_changeCallbacks.begin(); it != m_changeCallbacks.end(); it++)
+			it->second(entity, true);
 	}
 
 	/**
@@ -89,6 +121,9 @@ public:
 					std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Removed from manager.\n";
 
 				m_entities[tableIndex].erase(m_entities[tableIndex].begin() + i);
+
+				for (auto it = m_changeCallbacks.begin(); it != m_changeCallbacks.end(); it++)
+					it->second(entity, false);
 				return true;
 			}
 		return false;
@@ -156,4 +191,6 @@ public:
 private:
 	/** A debug value, used to block out printing during manager destruction */
 	bool __bDbgDestructing;
+	/** Callbacks for when a new entity is added or deleted */
+	unordered_map<std::string, std::function<void(T*, bool)>> m_changeCallbacks;
 };

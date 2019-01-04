@@ -16,6 +16,7 @@
 
 #include "../Core/WCore.h"
 #include "WRenderer.h"
+#include "../Materials/WEffect.h"
 #include "../Materials/WMaterial.h"
 #include "../Images/WImage.h"
 #include "../Images/WRenderTarget.h"
@@ -76,31 +77,48 @@ class WDeferredRenderer : public WRenderer {
 		WRenderTarget* m_renderTarget;
 		/** Light buffer attachment that will hold the rendered lighting output */
 		WImage* m_outputTarget;
+		/** blend state used for all light renders */
+		VkPipelineColorBlendAttachmentState m_blendState;
+		/** Rasterization state used for all light renders */
+		VkPipelineRasterizationStateCreateInfo m_rasterizationState;
 
 		/** Assets required to render a light onto the light map */
 		struct LightTypeAssets {
 			/** Light's geometry, only one of fullscreen_sprite and geometry is not null */
 			class WGeometry* geometry;
+			/** Effect used to build materials */
+			class WEffect* effect;
 			/** A sprite that renders at full-screen (for directional lights), only one of fullscreen_sprite and geometry is not null */
 			class WSprite* fullscreen_sprite;
 			/** Render material */
-			class WMaterial* material;
+			unordered_map<class WLight*, class WMaterial*> material_map;
 
-			LightTypeAssets() : geometry(nullptr), fullscreen_sprite(nullptr), material(nullptr) {}
+			LightTypeAssets() : geometry(nullptr), fullscreen_sprite(nullptr), effect(nullptr) {}
 
 			/** Free the resources of this object */
 			void Destroy() {
+				for (auto it = material_map.begin(); it != material_map.end(); it++)
+					W_SAFE_REMOVEREF(it->second);
 				W_SAFE_REMOVEREF(geometry);
+				W_SAFE_REMOVEREF(effect);
 				W_SAFE_REMOVEREF(fullscreen_sprite);
-				W_SAFE_REMOVEREF(material);
+				material_map.clear();
 			}
 		};
 		/** Map of light type -> <geometry (shape of light type), material for rendering> to render that light */
 		std::unordered_map<int, LightTypeAssets> m_lightRenderingAssets;
 
+		/** Initializes point lights assets */
 		WError _LoadPointLightsAssets();
+		/** Initializes spot light assets */
 		WError _LoadSpotLightsAssets();
+		/** Initializes directional lights assets */
 		WError _LoadDirectionalLightsAssets();
+
+		/**
+		 * Callback called whenever a light is added/removed from the lights manager
+		 */
+		void OnLightsChange(class WLight* light, bool is_added);
 
 	public:
 		LightBufferStage(WDeferredRenderer* renderer);
@@ -125,6 +143,9 @@ class WDeferredRenderer : public WRenderer {
 	/** Final composition material */
 	WMaterial* m_compositionMaterial;
 
+	/** Ambient light in the final composition (default is (0.3, 0.3, 0.3)) */
+	WColor m_ambientColor;
+
 public:
 	WDeferredRenderer(Wasabi* const app);
 
@@ -134,7 +155,11 @@ public:
 	virtual void Cleanup();
 	virtual WError Resize(unsigned int width, unsigned int height);
 
-	void RenderLight(class WLight* light);
+	/**
+	 * Sets the ambient light in the scene, default value is WColor(0.3, 0.3, 0.3)
+	 * @param color  New ambient color
+	 */
+	void SetAmbientLight(WColor color);
 
 	virtual class WMaterial* CreateDefaultMaterial();
 	virtual VkSampler GetDefaultSampler() const;

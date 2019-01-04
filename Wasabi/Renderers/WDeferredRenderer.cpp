@@ -10,6 +10,9 @@
 #include "../Sprites/WSprite.h"
 #include "../Texts/WText.h"
 
+#include <functional>
+using std::function;
+
 class DeferredRendererVS : public WShader {
 public:
 	DeferredRendererVS(class Wasabi* const app) : WShader(app) {}
@@ -29,6 +32,8 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
 		};
+		m_desc.animation_texture_index = 1;
+		m_desc.instancing_texture_index = 2;
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // normal
@@ -51,10 +56,114 @@ public:
 	virtual void Load() {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 3),
 		};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/pixel_shader.glsl"
+		);
+	}
+};
+
+class SpotLightVS : public WShader {
+public:
+	SpotLightVS(class Wasabi* const app) : WShader(app) {}
+
+	static vector<W_BOUND_RESOURCE> GetBoundResources() {
+		return {
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0,{
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "wvp"), // world * view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightDir"), // light direction (L vector)
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "lightSpec"), // light specular
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightColor"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "intensity"), // light intensity
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "position"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "range"), // light range
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "minCosAngle"), // used for spot light (angle of beam precomputed)
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "spotRadius"), // radius of the circle at the end of the cone
+			}),
+		};
+	}
+
+	virtual void Load() {
+		m_desc.type = W_VERTEX_SHADER;
+		m_desc.bound_resources = GetBoundResources();
+		m_desc.input_layouts = {W_INPUT_LAYOUT({
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
+		})};
+		LoadCodeGLSL(
+			#include "Shaders/Deferred/spot_light_vs.glsl"
+		);
+	}
+};
+
+class SpotLightPS : public WShader {
+public:
+	SpotLightPS(class Wasabi* const app) : WShader(app) {}
+
+	virtual void Load() {
+		m_desc.type = W_FRAGMENT_SHADER;
+		m_desc.bound_resources = {
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
+			SpotLightVS::GetBoundResources()[0],
+			W_BOUND_RESOURCE(W_TYPE_UBO, 3, {
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "viewProjInv"), // view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "eyePosW"), // camera position
+			}),
+		};
+		LoadCodeGLSL(
+			#include "Shaders/Deferred/spot_light_ps.glsl"
+		);
+	}
+};
+
+class PointLightVS : public WShader {
+public:
+	PointLightVS(class Wasabi* const app) : WShader(app) {}
+
+	static vector<W_BOUND_RESOURCE> GetBoundResources() {
+		return {
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "wvp"), // world * view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightDir"), // light direction (L vector)
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "lightSpec"), // light specular
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightColor"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "intensity"), // light intensity
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "position"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "range"), // light range
+			}),
+		};
+	}
+
+	virtual void Load() {
+		m_desc.type = W_VERTEX_SHADER;
+		m_desc.bound_resources = GetBoundResources();
+		m_desc.input_layouts = { W_INPUT_LAYOUT({
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
+		}) };
+		LoadCodeGLSL(
+			#include "Shaders/Deferred/point_light_vs.glsl"
+		);
+	}
+};
+
+class PointLightPS : public WShader {
+public:
+	PointLightPS(class Wasabi* const app) : WShader(app) {}
+
+	virtual void Load() {
+		m_desc.type = W_FRAGMENT_SHADER;
+		m_desc.bound_resources = {
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
+			PointLightVS::GetBoundResources()[0],
+			W_BOUND_RESOURCE(W_TYPE_UBO, 3, {
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "viewProjInv"), // view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "eyePosW"), // camera position
+			}),
+		};
+		LoadCodeGLSL(
+			#include "Shaders/Deferred/point_light_ps.glsl"
 		);
 	}
 };
@@ -66,17 +175,21 @@ public:
 	virtual void Load() {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 0),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
-			W_BOUND_RESOURCE(W_TYPE_UBO, 2, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "viewProjInv"), // view * projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "eyePosW"), // camera position
+			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "wvp"), // world * view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightDir"), // light direction (L vector)
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "lightSpec"), // light specular
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightColor"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "intensity"), // light intensity
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "position"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "range"), // light range
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "minCosAngle"), // used for spot light (angle of beam precomputed)
 			}),
 			W_BOUND_RESOURCE(W_TYPE_UBO, 3, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightDir"), // light direction (L vector)
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightColor"), // light color
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "lightSpec"), // light specular
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "intensity"), // light intensity
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "viewProjInv"), // view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "eyePosW"), // camera position
 			}),
 		};
 		LoadCodeGLSL(
@@ -94,10 +207,37 @@ public:
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 0),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+			W_BOUND_RESOURCE(W_TYPE_UBO, 2, {
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4, "ambient"), // light ambient color
+			}),
 		};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/scene_composition_ps.glsl"
 		);
+	}
+};
+
+class OnlyPositionGeometry : public WGeometry {
+	const W_VERTEX_DESCRIPTION m_desc = W_VERTEX_DESCRIPTION({W_ATTRIBUTE_POSITION});
+
+public:
+	OnlyPositionGeometry(Wasabi* const app, unsigned int ID = 0) : WGeometry(app, ID) {}
+
+	virtual unsigned int GetVertexBufferCount() const {
+		return 1;
+	}
+	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int layout_index = 0) const {
+		return m_desc;
+	}
+	virtual size_t GetVertexDescriptionSize(unsigned int layout_index = 0) const {
+		return m_desc.GetSize();
+	}
+
+	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint>& indices, bool bDynamic) {
+		vector<WVector3> custom_verts(default_vertices.size());
+		for (unsigned int i = 0; i < default_vertices.size(); i++)
+			custom_verts[i] = default_vertices[i].pos;
+		return CreateFromData(custom_verts.data(), custom_verts.size(), indices.data(), indices.size(), bDynamic);
 	}
 };
 
@@ -106,6 +246,7 @@ WDeferredRenderer::WDeferredRenderer(Wasabi* const app) : WRenderer(app), m_GBuf
 	m_default_fx = nullptr;
 	m_masterRenderSprite = nullptr;
 	m_compositionMaterial = nullptr;
+	m_ambientColor = WColor(0.3f, 0.3f, 0.3f);
 }
 
 WError WDeferredRenderer::Initiailize() {
@@ -167,6 +308,8 @@ WError WDeferredRenderer::Initiailize() {
 WError WDeferredRenderer::LoadDependantResources() {
 	VkPipelineColorBlendAttachmentState bs = {};
 	VkPipelineDepthStencilStateCreateInfo dss = {};
+	WShader* compositionPS = nullptr;
+	WEffect* compositionFX = nullptr;
 
 	//
 	// Create the LightBuffer
@@ -180,9 +323,9 @@ WError WDeferredRenderer::LoadDependantResources() {
 	//
 
 	WShader* compositionVS = m_app->SpriteManager->GetSpriteVertexShader();
-	WShader* compositionPS = new SceneCompositionPS(m_app);
+	compositionPS = new SceneCompositionPS(m_app);
 	compositionPS->Load();
-	WEffect* compositionFX = new WEffect(m_app);
+	compositionFX = new WEffect(m_app);
 	werr = compositionFX->BindShader(compositionVS);
 	if (!werr)
 		goto error;
@@ -225,6 +368,8 @@ WError WDeferredRenderer::LoadDependantResources() {
 	m_masterRenderSprite->SetMaterial(m_compositionMaterial);
 	m_masterRenderSprite->SetSize(m_width, m_height);
 	m_masterRenderSprite->Hide();
+
+	SetAmbientLight(m_ambientColor);
 
 	goto success;
 
@@ -291,10 +436,6 @@ void WDeferredRenderer::Render(WRenderTarget* rt, unsigned int filter) {
 	rt->End(false);
 }
 
-void WDeferredRenderer::RenderLight(class WLight* light) {
-
-}
-
 void WDeferredRenderer::Cleanup() {
 	if (m_sampler)
 		vkDestroySampler(m_device, m_sampler, nullptr);
@@ -315,6 +456,12 @@ class WMaterial* WDeferredRenderer::CreateDefaultMaterial() {
 
 VkSampler WDeferredRenderer::GetDefaultSampler() const {
 	return m_sampler;
+}
+
+void WDeferredRenderer::SetAmbientLight(WColor col) {
+	m_ambientColor = col;
+	if (m_compositionMaterial)
+		m_compositionMaterial->SetVariableColor("ambient", col);
 }
 
 WDeferredRenderer::GBufferStage::GBufferStage(WDeferredRenderer* renderer) : m_renderer(renderer) {
@@ -388,7 +535,7 @@ WError WDeferredRenderer::GBufferStage::Resize(unsigned int width, unsigned int 
 	return werr;
 }
 
-WDeferredRenderer::LightBufferStage::LightBufferStage(WDeferredRenderer* renderer) : m_renderer(renderer) {
+WDeferredRenderer::LightBufferStage::LightBufferStage(WDeferredRenderer* renderer) : m_renderer(renderer), m_blendState({}), m_rasterizationState({}) {
 	m_renderTarget = nullptr;
 	m_outputTarget = nullptr;
 }
@@ -398,6 +545,7 @@ WDeferredRenderer::LightBufferStage::~LightBufferStage() {
 }
 
 void WDeferredRenderer::LightBufferStage::Cleanup() {
+	m_renderer->m_app->LightManager->RemoveChangeCallback("renderer");
 	for (auto iter = m_lightRenderingAssets.begin(); iter != m_lightRenderingAssets.end(); iter++)
 		iter->second.Destroy();
 	m_lightRenderingAssets.clear();
@@ -411,7 +559,30 @@ WError WDeferredRenderer::LightBufferStage::Initialize(unsigned int width, unsig
 	m_outputTarget = new WImage(m_renderer->m_app);
 	m_renderTarget = new WRenderTarget(m_renderer->m_app);
 
-	WError werr = _LoadDirectionalLightsAssets();
+	WError werr = Resize(m_renderer->m_width, m_renderer->m_height);
+	if (!werr)
+		return werr;
+
+	m_blendState.colorWriteMask = 0xff;
+	m_blendState.blendEnable = VK_TRUE;
+	m_blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	m_blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+	m_blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+	m_blendState.colorBlendOp = VK_BLEND_OP_ADD;
+	m_blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	m_blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	m_blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+
+	m_rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	m_rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
+	m_rasterizationState.cullMode = VK_CULL_MODE_NONE;
+	m_rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	m_rasterizationState.depthClampEnable = VK_FALSE;
+	m_rasterizationState.rasterizerDiscardEnable = VK_FALSE;
+	m_rasterizationState.depthBiasEnable = VK_FALSE;
+	m_rasterizationState.lineWidth = 1.0f;
+
+	werr = _LoadDirectionalLightsAssets();
 	if (!werr)
 		return werr;
 
@@ -423,21 +594,105 @@ WError WDeferredRenderer::LightBufferStage::Initialize(unsigned int width, unsig
 	if (!werr)
 		return werr;
 
-	return Resize(m_renderer->m_width, m_renderer->m_height);
+	// Call OnLightsChange for all current lights and register a callback to catch all future changes
+	for (unsigned int i = 0; i < m_renderer->m_app->LightManager->GetEntitiesCount(); i++)
+		OnLightsChange(m_renderer->m_app->LightManager->GetEntityByIndex(i), true);
+	m_renderer->m_app->LightManager->RegisterChangeCallback("renderer", [this](WLight* l, bool add) { this->OnLightsChange(l, add); });
+
+	return werr;
+}
+
+void WDeferredRenderer::LightBufferStage::OnLightsChange(class WLight* light, bool is_added) {
+	auto iter = m_lightRenderingAssets.find(light->GetType());
+	if (iter == m_lightRenderingAssets.end())
+		return;
+	WDeferredRenderer::LightBufferStage::LightTypeAssets assets = iter->second;
+
+	if (is_added) {
+		WMaterial* material = new WMaterial(m_renderer->m_app);
+		WError werr = material->SetEffect(assets.effect);
+		if (werr == W_SUCCEEDED) {
+			material->SetTexture(1, m_renderer->m_GBuffer.m_normalTarget);
+			material->SetTexture(2, m_renderer->m_GBuffer.m_depthTarget);
+		}
+		iter->second.material_map.insert(std::pair<class WLight*, class WMaterial*>(light, material));
+	}
+	else {
+		auto it = assets.material_map.find(light);
+		if (it != assets.material_map.end()) {
+			W_SAFE_REMOVEREF(it->second);
+			iter->second.material_map.erase(light);
+		}
+	}
 }
 
 WError WDeferredRenderer::LightBufferStage::_LoadPointLightsAssets() {
 	LightTypeAssets assets;
+	WShader* vertex_shader = new PointLightVS(m_renderer->m_app);
+	vertex_shader->Load();
+	WShader* pixel_shader = new PointLightPS(m_renderer->m_app);
+	pixel_shader->Load();
+	assets.effect = new WEffect(m_renderer->m_app);
+	WError werr = assets.effect->BindShader(vertex_shader);
+	if (!werr)
+		goto error;
+
+	werr = assets.effect->BindShader(pixel_shader);
+	if (!werr)
+		goto error;
+
+	assets.effect->SetBlendingState(m_blendState);
+	assets.effect->SetRasterizationState(m_rasterizationState);
 	
+	werr = assets.effect->BuildPipeline(m_renderTarget);
+	if (!werr)
+		goto error;
+
+	assets.geometry = new OnlyPositionGeometry(m_renderer->m_app);
+	assets.geometry->CreateSphere(1.0f, 10, 10);
+
 	m_lightRenderingAssets.insert(std::pair<int, LightTypeAssets>((int)W_LIGHT_POINT, assets));
-	return WError(W_SUCCEEDED);
+
+error:
+	W_SAFE_REMOVEREF(pixel_shader);
+	W_SAFE_REMOVEREF(vertex_shader);
+
+	return werr;
 }
 
 WError WDeferredRenderer::LightBufferStage::_LoadSpotLightsAssets() {
 	LightTypeAssets assets;
+	WShader* vertex_shader = new SpotLightVS(m_renderer->m_app);
+	vertex_shader->Load();
+	WShader* pixel_shader = new SpotLightPS(m_renderer->m_app);
+	pixel_shader->Load();
+	assets.effect = new WEffect(m_renderer->m_app);
+	WError werr = assets.effect->BindShader(vertex_shader);
+	if (!werr)
+		goto error;
+
+	werr = assets.effect->BindShader(pixel_shader);
+	if (!werr)
+		goto error;
+
+	assets.effect->SetBlendingState(m_blendState);
+	assets.effect->SetRasterizationState(m_rasterizationState);
+
+	werr = assets.effect->BuildPipeline(m_renderTarget);
+	if (!werr)
+		goto error;
+
+	assets.geometry = new OnlyPositionGeometry(m_renderer->m_app);
+	assets.geometry->CreateCone(1.0f, 1.0f, 0, 16);
+	assets.geometry->ApplyTransformation(WTranslationMatrix(0, -0.5, 0) * WRotationMatrixX(W_DEGTORAD(-90)));
 
 	m_lightRenderingAssets.insert(std::pair<int, LightTypeAssets>((int)W_LIGHT_SPOT, assets));
-	return WError(W_SUCCEEDED);
+
+error:
+	W_SAFE_REMOVEREF(pixel_shader);
+	W_SAFE_REMOVEREF(vertex_shader);
+
+	return werr;
 }
 
 WError WDeferredRenderer::LightBufferStage::_LoadDirectionalLightsAssets() {
@@ -445,40 +700,23 @@ WError WDeferredRenderer::LightBufferStage::_LoadDirectionalLightsAssets() {
 	WShader* vertex_shader = m_renderer->m_app->SpriteManager->GetSpriteVertexShader();
 	WShader* pixel_shader = new DirectionalLightPS(m_renderer->m_app);
 	pixel_shader->Load();
-	WEffect* effect = new WEffect(m_renderer->m_app);
-	WError werr = effect->BindShader(vertex_shader);
+	assets.effect = new WEffect(m_renderer->m_app);
+	WError werr = assets.effect->BindShader(vertex_shader);
 	if (!werr)
 		goto error;
 
-	werr = effect->BindShader(pixel_shader);
+	werr = assets.effect->BindShader(pixel_shader);
 	if (!werr)
 		goto error;
 
-	VkPipelineColorBlendAttachmentState bs;
-	bs.colorWriteMask = 0xf;
-	bs.blendEnable = VK_FALSE;
-	bs.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	effect->SetBlendingState(bs);
+	assets.effect->SetBlendingState(m_blendState);
+	assets.effect->SetRasterizationState(m_rasterizationState);
 
-	werr = effect->BuildPipeline(m_renderTarget);
-	if (!werr)
-		goto error;
-
-	assets.material = new WMaterial(m_renderer->m_app);
-	werr = assets.material->SetEffect(effect);
-	if (!werr)
-		goto error;
-
-	werr = assets.material->SetTexture(0, m_renderer->m_GBuffer.m_normalTarget);
-	if (!werr)
-		goto error;
-
-	werr = assets.material->SetTexture(1, m_renderer->m_GBuffer.m_depthTarget);
+	werr = assets.effect->BuildPipeline(m_renderTarget);
 	if (!werr)
 		goto error;
 
 	assets.fullscreen_sprite = new WSprite(m_renderer->m_app);
-	assets.fullscreen_sprite->SetMaterial(assets.material);
 	assets.fullscreen_sprite->SetSize(m_renderer->m_width, m_renderer->m_height);
 	assets.fullscreen_sprite->Hide();
 
@@ -486,7 +724,6 @@ WError WDeferredRenderer::LightBufferStage::_LoadDirectionalLightsAssets() {
 
 error:
 	W_SAFE_REMOVEREF(pixel_shader);
-	W_SAFE_REMOVEREF(effect);
 
 	return werr;
 }
@@ -497,39 +734,57 @@ WError WDeferredRenderer::LightBufferStage::Render(class WCamera* cam) {
 	if (!werr)
 		return werr;
 
-	for (auto iter = m_lightRenderingAssets.begin(); iter != m_lightRenderingAssets.end(); iter++) {
-		if (!iter->second.material)
-			continue;
-		iter->second.material->SetVariableMatrix("viewProjInv", WMatrixInverse(cam->GetProjectionMatrix()) * WMatrixInverse(cam->GetViewMatrix()));
-		iter->second.material->SetVariableVector3("eyePosW", cam->GetPosition());
-	}
-
 	unsigned int num_lights = m_renderer->m_app->LightManager->GetEntitiesCount();
 	for (unsigned int i = 0; i < num_lights; i++) {
 		WLight* light = m_renderer->m_app->LightManager->GetEntityByIndex(i);
 		int light_type = (int)light->GetType();
+
 		auto iter = m_lightRenderingAssets.find(light_type);
 		if (iter == m_lightRenderingAssets.end())
 			return WError(W_ERRORUNK);
 		WDeferredRenderer::LightBufferStage::LightTypeAssets assets = iter->second;
+		WMaterial* material = assets.material_map.find(light)->second;
 
-		if (!assets.material)
+		//
+		// make sure the light is in the camera's frustum and is not hidden
+		//
+		if (light->Hidden())
 			continue;
+		if (light_type == W_LIGHT_SPOT) {
+			if (!cam->CheckSphereInFrustum(light->GetPosition() + (light->GetLVector() * (light->GetRange() / 2.0f)), light->GetRange() / 2.0f))
+				continue;
+		}
+		else if (light_type == W_LIGHT_POINT) {
+			if (!cam->CheckSphereInFrustum(light->GetPosition(), light->GetRange()))
+				continue;
+		}
 
-		// make sure the light is in the camera's frustum
-
+		//
 		// setup the material for this light
+		//
 		WColor lightColor = light->GetColor();
-		assets.material->SetVariableVector3("lightDir", light->GetLVector());
-		assets.material->SetVariableVector3("lightColor", WVector3(lightColor.r, lightColor.g, lightColor.b));
-		assets.material->SetVariableFloat("lightSpec", lightColor.a); // specular power is store in alpha component
-		assets.material->SetVariableFloat("intensity", light->GetIntensity());
+		material->SetVariableMatrix("viewProjInv", WMatrixInverse(cam->GetProjectionMatrix()) * WMatrixInverse(cam->GetViewMatrix()));
+		material->SetVariableVector3("eyePosW", cam->GetPosition());
+		material->SetVariableVector3("lightDir", light->GetLVector());
+		material->SetVariableVector3("lightColor", WVector3(lightColor.r, lightColor.g, lightColor.b));
+		material->SetVariableFloat("lightSpec", lightColor.a); // specular power is store in alpha component
+		material->SetVariableFloat("intensity", light->GetIntensity());
+		material->SetVariableMatrix("wvp", light->GetWorldMatrix() * cam->GetViewMatrix() * cam->GetProjectionMatrix());
+		material->SetVariableFloat("range", light->GetRange());
+		material->SetVariableVector3("position", light->GetPosition());
+		material->SetVariableFloat("minCosAngle", light->GetMinCosAngle());
+		float emittingHalfAngle = acosf(light->GetMinCosAngle());
+		float spotRadius = tanf(emittingHalfAngle) * light->GetRange();
+		material->SetVariableFloat("spotRadius", spotRadius);
 
+		//
 		// render the light onto the light map
-		assets.material->Bind(m_renderTarget);
+		//
+		material->Bind(m_renderTarget);
 
 		if (assets.fullscreen_sprite) {
 			assets.fullscreen_sprite->Show();
+			assets.fullscreen_sprite->SetMaterial(material);
 			assets.fullscreen_sprite->Render(m_renderTarget);
 			assets.fullscreen_sprite->Hide();
 		}

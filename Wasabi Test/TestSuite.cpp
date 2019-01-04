@@ -85,7 +85,9 @@ WError WasabiTester::Setup() {
 	this->m_renderer = state->CreateRenderer();
 	WError ret = StartEngine(640, 480);
 	if (!ret) {
-		MessageBoxA(nullptr, "Ooops!", "Wasabi", MB_OK | MB_ICONERROR);
+		char msg[512];
+		sprintf_s(msg, 512, "Ooops!\n%s", ret.AsString().c_str());
+		MessageBoxA(nullptr, msg, "Wasabi", MB_OK | MB_ICONERROR);
 		return ret;
 	}
 
