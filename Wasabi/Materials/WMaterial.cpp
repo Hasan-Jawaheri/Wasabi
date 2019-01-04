@@ -62,6 +62,9 @@ void WMaterial::_DestroyResources() {
 WError WMaterial::SetEffect(WEffect* const effect) {
 	VkDevice device = m_app->GetVulkanDevice();
 
+	if (effect && !effect->Valid())
+		return WError(W_INVALIDPARAM);
+
 	_DestroyResources();
 
 	if (!effect)
@@ -74,6 +77,16 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 		WShader* shader = effect->m_shaders[i];
 		for (int j = 0; j < shader->m_desc.bound_resources.size(); j++) {
 			if (shader->m_desc.bound_resources[j].type == W_TYPE_UBO) {
+				bool already_added = false;
+				for (int k = 0; k < m_uniformBuffers.size(); k++) {
+					if (m_uniformBuffers[k].ubo_info->binding_index == shader->m_desc.bound_resources[j].binding_index) {
+						// two shaders have the same UBO binding index, skip (it is the same UBO, the WEffect::CreatePipeline ensures that)
+						already_added = true;
+					}
+				}
+				if (already_added)
+					continue;
+
 				UNIFORM_BUFFER_INFO ubo;
 
 				VkBufferCreateInfo bufferInfo = {};
@@ -124,6 +137,16 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 
 				m_uniformBuffers.push_back(ubo);
 			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_SAMPLER) {
+				bool already_added = false;
+				for (int k = 0; k < m_sampler_info.size(); k++) {
+					if (m_sampler_info[k].sampler_info->binding_index == shader->m_desc.bound_resources[j].binding_index) {
+						// two shaders have the same sampler binding index, skip (it is the same sampler, the WEffect::CreatePipeline ensures that)
+						already_added = true;
+					}
+				}
+				if (already_added)
+					continue;
+
 				SAMPLER_INFO sampler;
 				sampler.img = m_app->ImageManager->GetDefaultImage();
 				m_app->ImageManager->GetDefaultImage()->AddReference();

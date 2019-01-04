@@ -320,5 +320,17 @@
     <None Include="Renderers\Shaders\Deferred\directional_light_ps.glsl">
       <Filter>Renderers\Shaders\Deferred</Filter>
     </None>
+    <None Include="Renderers\Shaders\Deferred\point_light_ps.glsl">
+      <Filter>Renderers\Shaders\Deferred</Filter>
+    </None>
+    <None Include="Renderers\Shaders\Deferred\spot_light_ps.glsl">
+      <Filter>Renderers\Shaders\Deferred</Filter>
+    </None>
+    <None Include="Renderers\Shaders\Deferred\spot_light_vs.glsl">
+      <Filter>Renderers\Shaders\Deferred</Filter>
+    </None>
+    <None Include="Renderers\Shaders\Deferred\point_light_vs.glsl">
+      <Filter>Renderers\Shaders\Deferred</Filter>
+    </None>
   </ItemGroup>
 </Project>

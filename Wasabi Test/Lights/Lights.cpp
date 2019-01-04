@@ -29,16 +29,27 @@ void LightsDemo::Load() {
 	// remove default light
 	m_app->LightManager->GetDefaultLight()->Hide();
 
+	srand(time(NULL));
+
 	int maxLights = 20;
+	WColor colors[] = {
+		WColor(1, 0, 0),
+		WColor(0, 1, 0),
+		WColor(0, 0, 1),
+		WColor(1, 1, 0),
+		WColor(0, 1, 1),
+		WColor(1, 0, 1),
+		WColor(1, 1, 1),
+	};
 
 	for (int i = 0; i < maxLights / 2; i++) {
 		float x = 20.0f * (float)(rand() % 10000) / 10000.0f - 20.0f;
 		float z = 30.0f * (float)(rand() % 10000) / 10000.0f - 15.0f;
 
-		WLight* l = new WLight(m_app);
-		l->SetType(W_LIGHT_POINT);
+		WLight* l = new WPointLight(m_app);
 		l->SetRange(5.0f);
 		l->SetPosition(x, 3.0, z);
+		l->SetColor(colors[rand() % (sizeof(colors)/sizeof(WColor))]);
 		m_lights.push_back(l);
 	}
 
@@ -46,12 +57,12 @@ void LightsDemo::Load() {
 		float x = 20.0f * (float)(rand() % 10000) / 10000.0f + 20.0f;
 		float z = (10.0f + 30.0f * (float)(rand() % 10000) / 10000.0f) * (rand() % 2 == 0 ? 1 : -1);
 
-		WLight* l = new WLight(m_app);
-		l->SetType(W_LIGHT_SPOT);
+		WLight* l = new WSpotLight(m_app);
 		l->SetIntensity(5.0f);
 		l->SetRange(30.0f);
 		l->SetPosition(x, 4.0, z);
 		l->Point(WVector3(x, 0.0, z) * 0.5f);
+		l->SetColor(colors[rand() % (sizeof(colors) / sizeof(WColor))]);
 		m_lights.push_back(l);
 	}
 }

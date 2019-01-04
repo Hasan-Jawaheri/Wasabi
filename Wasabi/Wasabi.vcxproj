@@ -103,8 +103,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Renderers\Shaders\Deferred\directional_light_ps.glsl" />
+    <None Include="Renderers\Shaders\Deferred\point_light_vs.glsl" />
+    <None Include="Renderers\Shaders\Deferred\spot_light_vs.glsl" />
     <None Include="Renderers\Shaders\Deferred\pixel_shader.glsl" />
+    <None Include="Renderers\Shaders\Deferred\point_light_ps.glsl" />
     <None Include="Renderers\Shaders\Deferred\scene_composition_ps.glsl" />
+    <None Include="Renderers\Shaders\Deferred\spot_light_ps.glsl" />
     <None Include="Renderers\Shaders\Deferred\vertex_shader.glsl" />
     <None Include="Renderers\Shaders\Forward\pixel_shader.glsl" />
     <None Include="Renderers\Shaders\Forward\vertex_shader.glsl" />

@@ -372,6 +372,10 @@ destroy_resources:
 	return WError(W_SUCCEEDED);
 }
 
+WError WGeometry::CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint>& indices, bool bDynamic) {
+	return CreateFromData(default_vertices.data(), default_vertices.size(), indices.data(), indices.size(), bDynamic);
+}
+
 WError WGeometry::CreateAnimationData(void* ab) {
 	VkDevice device = m_app->GetVulkanDevice();
 	VkMemoryAllocateInfo memAlloc = {};
@@ -531,7 +535,7 @@ WError WGeometry::CreateBox(WVector3 dimensions, bool bDynamic) {
 	indices[30] = 20; indices[31] = 21; indices[32] = 22;
 	indices[33] = 20; indices[34] = 22; indices[35] = 23;
 
-	return CreateFromData(vertices.data(), vertices.size(), indices.data(), indices.size(), bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
 }
 
 WError WGeometry::CreatePlain(float fSize, int xsegs, int zsegs, bool bDynamic) {
@@ -588,7 +592,7 @@ WError WGeometry::CreatePlain(float fSize, int xsegs, int zsegs, bool bDynamic) 
 		}
 	}
 
-	return CreateFromData(vertices.data(), vertices.size(), indices.data(), indices.size(), bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
 }
 
 WError WGeometry::CreateSphere(float Radius, unsigned int VRes, unsigned int URes, bool bDynamic) {
@@ -676,11 +680,11 @@ WError WGeometry::CreateSphere(float Radius, unsigned int VRes, unsigned int URe
 		indices[curIndex++] = nextTop;
 	}
 
-	return CreateFromData(vertices.data(), vertices.size(), indices.data(), indices.size(), bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
 }
 
 WError WGeometry::CreateCone(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic) {
-	hsegs -= 2;
+	hsegs += 2;
 	if (csegs < 3 || hsegs < 2)
 		return WError(W_INVALIDPARAM);
 	//3 indices * number of triangles (top and bottom triangles + side triangles)
@@ -759,7 +763,7 @@ WError WGeometry::CreateCone(float fRadius, float fHeight, unsigned int hsegs, u
 			indices[pos - 2] = num_vertices - 1 - csegs;
 	}
 
-	return CreateFromData(vertices.data(), vertices.size(), indices.data(), indices.size(), bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
 }
 
 WError WGeometry::CreateCylinder(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic) {
@@ -859,7 +863,7 @@ WError WGeometry::CreateCylinder(float fRadius, float fHeight, unsigned int hseg
 			indices[pos - 2] = num_vertices - 1 - csegs;
 	}
 
-	return CreateFromData(vertices.data(), vertices.size(), indices.data(), indices.size(), bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
 }
 
 WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {

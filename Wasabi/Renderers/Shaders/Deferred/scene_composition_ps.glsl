@@ -8,11 +8,14 @@ layout(binding = 1) uniform sampler2D lightSampler;
 layout(location = 0) in vec2 inUV;
 layout(location = 0) out vec4 outFragColor;
 
+layout(binding = 2) uniform UBO {
+	vec4 ambient;
+} ubo;
+
 void main() {
 	vec4 color = texture(colorSampler, inUV);
 	vec4 light = texture(lightSampler, inUV);
-	vec3 ambient = vec3(0.3, 0.3, 0.3);
 
-	outFragColor = vec4(color.rgb * ambient + color.rgb * light.rgb * light.a, 1);
+	outFragColor = vec4(color.rgb * ubo.ambient.rgb + color.rgb * light.rgb * light.a, 1);
 }
 )"

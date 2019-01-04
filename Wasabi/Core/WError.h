@@ -61,6 +61,8 @@ enum W_ERROR {
 	W_FAILEDTOCREATEPIPELINELAYOUT = 20,
 	/** The render target is invalid for this use */
 	W_NORENDERTARGET = 21,
+	/** Two shaders in the given effect use the same binding index for two different resources */
+	W_INVALIDREPEATEDBINDINGINDEX = 22,
 };
 
 /**

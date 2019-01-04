@@ -238,6 +238,14 @@ public:
 						  bool bCalcNormals = false, bool bCalcTangents = false);
 
 	/**
+	 * Called by CreateBox, CreateSphere, etc... to convert the given default vertices
+	 * (of type WDefaultVertex) to the custom type for this geometry. This can be
+	 * overrided to utilize the Create* functions while using a custom vertex format
+	 */
+	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices,
+												 vector<uint>& indices, bool bDynamic);
+
+	/**
 	 * Creates a cube geometry.
 	 *
 	 * If this function is called while the engine parameter "geometryImmutable"

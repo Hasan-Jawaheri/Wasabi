@@ -116,17 +116,27 @@ typedef struct W_BOUND_RESOURCE {
 	/** Index in the shader at which the resource is bound */
 	unsigned int binding_index;
 	/** Variables of this resource (in case of a UBO), which is empty for
-			textures */
+		textures */
 	std::vector<W_SHADER_VARIABLE_INFO> variables;
-	/** Cached size of the variables */
+	/** Cached size of the variables, after automatically padding variables
+	    to be 16-byte-aligned */
 	mutable size_t _size;
 
 	/**
 	 * Retrieves the total size, in bytes, of the variables it contains. This
-	 * is not relevant for texture resources.
+	 * is not relevant for texture resources. The size aligns variables to 16
+	 * bytes (as required by Vulkan)
 	 * @return Size of all variables, in bytes
 	 */
 	size_t GetSize() const;
+
+	/**
+	 * Checks if this resource has the same layout as another resource.
+	 * @param resource  The resource to check against
+	 * @return          True iff this resource and the one provided have the
+	 *                  same binding index and type and variables
+	 */
+	bool IsSimilarTo(W_BOUND_RESOURCE resource);
 } W_BOUND_RESOURCE;
 
 /**
