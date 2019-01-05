@@ -49,12 +49,13 @@ WError WImageManager::Load() {
 	for (int y = 0; y < size; y++) {
 		for (int x = 0; x < size; x++) {
 			int col = ((y/ check_size) + ((x/ check_size) % 2)) % 2;
+			float fCol = col == 0 ? 0.1f : 1.0f;
 			if (comp_size > 0)
-				pixels[(y*size + x) * comp_size + 0] = col;
+				pixels[(y*size + x) * comp_size + 0] = fCol;
 			if (comp_size > 1)
-				pixels[(y*size + x) * comp_size + 1] = col;
+				pixels[(y*size + x) * comp_size + 1] = fCol;
 			if (comp_size > 2)
-				pixels[(y*size + x) * comp_size + 2] = col;
+				pixels[(y*size + x) * comp_size + 2] = fCol;
 			if (comp_size > 3)
 				pixels[(y*size + x) * comp_size + 3] = 1;
 		}

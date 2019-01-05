@@ -46,7 +46,7 @@ vec4 PointLight(vec3 pos, vec3 norm) {
 	float spec = pow(clamp(dot(norm, h), 0, 1), uboPerLight.lightSpec);
 	
 	float xVal = (1.0f - d/uboPerLight.range);
-	return vec4(uboPerLight.lightColor * nl, spec * xVal);
+	return vec4(uboPerLight.lightColor * nl, spec) * xVal;
 }
 
 vec4 Spotlight(vec3 pos, vec3 norm) {
