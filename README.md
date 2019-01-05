@@ -17,7 +17,7 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Particles
 
-<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Deferred Rendering
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/tick.ico" width="16" height="16"> Deferred Rendering
 
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Seamless Infinite Terrains (Geometry clipmaps)
 
