@@ -210,10 +210,11 @@ void WForwardRenderer::Cleanup() {
 class WMaterial* WForwardRenderer::CreateDefaultMaterial() {
 	WFRMaterial* mat = new WFRMaterial(m_app);
 	mat->SetEffect(m_default_fx);
-	float r = (float)(rand() % 224 + 32) / 256.0f;
-	float g = (float)(rand() % 224 + 32) / 256.0f;
-	float b = (float)(rand() % 224 + 32) / 256.0f;
-	mat->SetColor(WColor(r, g, b, 1.0f));
+	mat->SetVariableInt("isTextured", 1); // default image is being used as texture
+	//float r = (float)(rand() % 224 + 32) / 256.0f;
+	//float g = (float)(rand() % 224 + 32) / 256.0f;
+	//float b = (float)(rand() % 224 + 32) / 256.0f;
+	//mat->SetColor(WColor(r, g, b, 1.0f));
 	return mat;
 }
 
@@ -225,7 +226,7 @@ WFRMaterial::WFRMaterial(Wasabi* const app, unsigned int ID) : WMaterial(app, ID
 
 }
 
-WError WFRMaterial::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
+WError WFRMaterial::Bind(class WRenderTarget* rt, unsigned int num_vertex_buffers) {
 	//TODO: remove this and make shared UBO
 	int nLights = ((WForwardRenderer*)m_app->Renderer)->m_numLights;
 	SetVariableInt("numLights", nLights);
@@ -235,13 +236,11 @@ WError WFRMaterial::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
 }
 
 WError WFRMaterial::Texture(class WImage* img) {
-	int isTextured = 1;
-	SetVariableInt("isTextured", isTextured);
+	SetVariableInt("isTextured", 1);
 	return SetTexture(3, img);
 }
 
 WError WFRMaterial::SetColor(WColor col) {
-	int isTextured = 0;
-	SetVariableInt("isTextured", isTextured);
+	SetVariableInt("isTextured", 0);
 	return SetVariableColor("color", col);
 }

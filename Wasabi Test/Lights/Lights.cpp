@@ -6,6 +6,8 @@ LightsDemo::LightsDemo(Wasabi* const app) : WTestState(app) {
 }
 
 void LightsDemo::Load() {
+	srand(2);
+
 	// Create the plain
 	m_plain = new WObject(m_app);
 	WGeometry* plainGeometry = new WGeometry(m_app);
@@ -29,9 +31,7 @@ void LightsDemo::Load() {
 	// remove default light
 	m_app->LightManager->GetDefaultLight()->Hide();
 
-	srand(time(NULL));
-
-	int maxLights = 20;
+	int maxLights = min((int)m_app->engineParams["maxLights"], 8);
 	WColor colors[] = {
 		WColor(1, 0, 0),
 		WColor(0, 1, 0),

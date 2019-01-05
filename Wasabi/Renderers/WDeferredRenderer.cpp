@@ -247,6 +247,7 @@ WDeferredRenderer::WDeferredRenderer(Wasabi* const app) : WRenderer(app), m_GBuf
 	m_masterRenderSprite = nullptr;
 	m_compositionMaterial = nullptr;
 	m_ambientColor = WColor(0.3f, 0.3f, 0.3f);
+	m_app->engineParams.insert(std::pair<std::string, void*>("maxLights", (void*)INT_MAX));
 }
 
 WError WDeferredRenderer::Initiailize() {
@@ -575,7 +576,7 @@ WError WDeferredRenderer::LightBufferStage::Initialize(unsigned int width, unsig
 
 	m_rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	m_rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-	m_rasterizationState.cullMode = VK_CULL_MODE_NONE;
+	m_rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
 	m_rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	m_rasterizationState.depthClampEnable = VK_FALSE;
 	m_rasterizationState.rasterizerDiscardEnable = VK_FALSE;

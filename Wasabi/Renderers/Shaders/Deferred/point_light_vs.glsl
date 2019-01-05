@@ -17,7 +17,7 @@ layout(binding = 0) uniform UBOPerLight {
 } uboPerLight;
 
 void main() {
-	gl_Position = uboPerLight.wvp * vec4(inPos.xyz * uboPerLight.range, 1.0);
+	gl_Position = uboPerLight.wvp * vec4(inPos.xyz * uboPerLight.range * 1.05f, 1.0); // scale a bit more to make the sphere big enough so edges don't make a seam
 	outPos = gl_Position;
 }
 )"
