@@ -1,6 +1,26 @@
 #include "WParticles.h"
 #include "../Cameras/WCamera.h"
 #include "../Images/WRenderTarget.h"
+#include "../Geometries/WGeometry.h"
+#include "../Materials/WEffect.h"
+#include "../Materials/WMaterial.h"
+
+class WParticlesGeometry : public WGeometry {
+	const W_VERTEX_DESCRIPTION m_desc = W_VERTEX_DESCRIPTION({ W_ATTRIBUTE_POSITION });
+
+public:
+	WParticlesGeometry(Wasabi* const app, unsigned int ID = 0) : WGeometry(app, ID) {}
+
+	virtual unsigned int GetVertexBufferCount() const {
+		return 1;
+	}
+	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int layout_index = 0) const {
+		return m_desc;
+	}
+	virtual size_t GetVertexDescriptionSize(unsigned int layout_index = 0) const {
+		return m_desc.GetSize();
+	}
+};
 
 WParticlesManager::WParticlesManager(class Wasabi* const app) : WManager<WParticles>(app) {
 
@@ -34,6 +54,9 @@ WParticles::WParticles(class Wasabi* const app, unsigned int ID) : WBase(app, ID
 
 	m_WorldM = WMatrix();
 
+	m_geometry = nullptr;
+	m_material = nullptr;
+
 	app->ParticlesManager->AddEntity(this);
 }
 
@@ -48,7 +71,8 @@ std::string WParticles::GetTypeName() const {
 }
 
 void WParticles::_DestroyResources() {
-
+	W_SAFE_REMOVEREF(m_geometry);
+	W_SAFE_REMOVEREF(m_material);
 }
 
 bool WParticles::Valid() const {
@@ -75,6 +99,21 @@ bool WParticles::InCameraView(class WCamera* cam) {
 	//WVector3 pos = (max + min) / 2.0f;
 	//WVector3 size = (max - min) / 2.0f;
 	//return cam->CheckBoxInFrustum(pos, size);
+}
+
+WError WParticles::Create(unsigned int max_particles) {
+	_DestroyResources();
+	if (max_particles == 0)
+		return WError(W_INVALIDPARAM);
+
+	m_geometry = new WParticlesGeometry(m_app);
+	m_material = new WMaterial(m_app);
+
+	WParticlesVertex* vertices = new WParticlesVertex[max_particles];
+	m_geometry->CreateFromData(vertices, max_particles, nullptr, 0, true);
+	delete[] vertices;
+
+	return WError(W_SUCCEEDED);
 }
 
 void WParticles::Render(class WRenderTarget* const rt) {

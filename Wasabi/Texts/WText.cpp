@@ -381,7 +381,7 @@ void WTextComponent::Render(WRenderTarget* rt) {
 		}
 		if (font->texts.size()) {
 			font->textGeometry->UnmapVertexBuffer();
-			font->textGeometry->Draw(rt, (curvert / 4) * 2);
+			font->textGeometry->Draw(rt, (curvert / 4) * 2 * 3);
 			font->texts.clear();
 		}
 	}

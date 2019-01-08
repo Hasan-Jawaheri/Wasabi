@@ -98,7 +98,7 @@ std::string WGeometry::GetTypeName() const {
 }
 
 bool WGeometry::Valid() const {
-	return m_indices.buffer.buf && m_vertices.buffer.buf;
+	return m_vertices.buffer.buf != VK_NULL_HANDLE;
 }
 
 W_VERTEX_DESCRIPTION WGeometry::GetVertexDescription(unsigned int layout_index) const {
@@ -208,7 +208,7 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	void *data;
 	VkResult err;
 
-	if (num_verts <= 0 || num_indices <= 0 || !vb || !ib)
+	if (num_verts <= 0 || !vb || (num_indices > 0 && !ib))
 		return WError(W_INVALIDPARAM);
 
 	int vertexBufferSize = num_verts * GetVertexDescription(0).GetSize();
@@ -216,9 +216,9 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 
 	_DestroyResources();
 
-	if (bCalcNormals && GetVertexDescription(0).GetIndex("normal") >= 0)
+	if (bCalcNormals && vb && ib && GetVertexDescription(0).GetIndex("normal") >= 0)
 		_CalcNormals(vb, num_verts, ib, num_indices);
-	if (bCalcTangents && GetVertexDescription(0).GetIndex("tangent") >= 0)
+	if (bCalcTangents && vb && GetVertexDescription(0).GetIndex("tangent") >= 0)
 		_CalcTangents(vb, num_verts);
 
 	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -242,83 +242,91 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 	}
 
 	// Index buffer
-	indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	indexbufferInfo.size = indexBufferSize;
-	indexbufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-	// Copy index data to a buffer visible to the host (staging buffer)
-	err = vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_indices.staging.buf);
-	if (err) {
-		vkDestroyBuffer(device, m_vertices.staging.buf, nullptr);
-		vkFreeMemory(device, m_vertices.staging.mem, nullptr);
-		goto destroy_resources;
+	if (ib) {
+		indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		indexbufferInfo.size = indexBufferSize;
+		indexbufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		// Copy index data to a buffer visible to the host (staging buffer)
+		err = vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_indices.staging.buf);
+		if (err) {
+			vkDestroyBuffer(device, m_vertices.staging.buf, nullptr);
+			vkFreeMemory(device, m_vertices.staging.mem, nullptr);
+			goto destroy_resources;
+		}
+
+		vkGetBufferMemoryRequirements(device, m_indices.staging.buf, &memReqs);
+		memAlloc.allocationSize = memReqs.size;
+		m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memAlloc.memoryTypeIndex);
+		err = vkAllocateMemory(device, &memAlloc, nullptr, &m_indices.staging.mem);
+		if (err) {
+			vkDestroyBuffer(device, m_vertices.staging.buf, nullptr);
+			vkFreeMemory(device, m_vertices.staging.mem, nullptr);
+			vkDestroyBuffer(device, m_indices.staging.buf, nullptr);
+			goto destroy_resources;
+		}
 	}
 
-	vkGetBufferMemoryRequirements(device, m_indices.staging.buf, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_indices.staging.mem);
-	if (err) {
-		vkDestroyBuffer(device, m_vertices.staging.buf, nullptr);
-		vkFreeMemory(device, m_vertices.staging.mem, nullptr);
-		vkDestroyBuffer(device, m_indices.staging.buf, nullptr);
-		goto destroy_resources;
+	if (vb) {
+		// Map and copy VB
+		err = vkMapMemory(device, m_vertices.staging.mem, 0, memAlloc.allocationSize, 0, &data);
+		if (err)
+			goto destroy_staging;
+		memcpy(data, vb, vertexBufferSize);
+		vkUnmapMemory(device, m_vertices.staging.mem);
+
+		err = vkBindBufferMemory(device, m_vertices.staging.buf, m_vertices.staging.mem, 0);
+		if (err)
+			goto destroy_staging;
+
+		// Create the destination buffer with device only visibility
+		// Buffer will be used as a vertex buffer
+		vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		err = vkCreateBuffer(device, &vertexBufferInfo, nullptr, &m_vertices.buffer.buf);
+		if (err)
+			goto destroy_staging;
+		vkGetBufferMemoryRequirements(device, m_vertices.buffer.buf, &memReqs);
+		memAlloc.allocationSize = memReqs.size;
+		m_app->GetMemoryType(memReqs.memoryTypeBits,
+			bDynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			&memAlloc.memoryTypeIndex);
+		err = vkAllocateMemory(device, &memAlloc, nullptr, &m_vertices.buffer.mem);
+		if (err)
+			goto destroy_staging;
+		err = vkBindBufferMemory(device, m_vertices.buffer.buf, m_vertices.buffer.mem, 0);
+		if (err)
+			goto destroy_staging;
 	}
 
-	// Map and copy VB
-	err = vkMapMemory(device, m_vertices.staging.mem, 0, memAlloc.allocationSize, 0, &data);
-	if (err)
-		goto destroy_staging;
-	memcpy(data, vb, vertexBufferSize);
-	vkUnmapMemory(device, m_vertices.staging.mem);
-	err = vkBindBufferMemory(device, m_vertices.staging.buf, m_vertices.staging.mem, 0);
-	if (err)
-		goto destroy_staging;
+	if (ib) {
+		// Map and copy IB
+		err = vkMapMemory(device, m_indices.staging.mem, 0, indexBufferSize, 0, &data);
+		if (err)
+			goto destroy_staging;
+		memcpy(data, ib, indexBufferSize);
+		vkUnmapMemory(device, m_indices.staging.mem);
 
-	// Create the destination buffer with device only visibility
-	// Buffer will be used as a vertex buffer
-	vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-	err = vkCreateBuffer(device, &vertexBufferInfo, nullptr, &m_vertices.buffer.buf);
-	if (err)
-		goto destroy_staging;
-	vkGetBufferMemoryRequirements(device, m_vertices.buffer.buf, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	m_app->GetMemoryType(memReqs.memoryTypeBits,
-		bDynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		&memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_vertices.buffer.mem);
-	if (err)
-		goto destroy_staging;
-	err = vkBindBufferMemory(device, m_vertices.buffer.buf, m_vertices.buffer.mem, 0);
-	if (err)
-		goto destroy_staging;
+		err = vkBindBufferMemory(device, m_indices.staging.buf, m_indices.staging.mem, 0);
+		if (err)
+			goto destroy_staging;
 
-	// Map and copy IB
-	err = vkMapMemory(device, m_indices.staging.mem, 0, indexBufferSize, 0, &data);
-	if (err)
-		goto destroy_staging;
-	memcpy(data, ib, indexBufferSize);
-	vkUnmapMemory(device, m_indices.staging.mem);
-	err = vkBindBufferMemory(device, m_indices.staging.buf, m_indices.staging.mem, 0);
-	if (err)
-		goto destroy_staging;
-
-	// Create destination buffer with device only visibility
-	// Buffer will be used as an index buffer
-	indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-	err = vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_indices.buffer.buf);
-	if (err)
-		goto destroy_staging;
-	vkGetBufferMemoryRequirements(device, m_indices.buffer.buf, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	m_app->GetMemoryType(memReqs.memoryTypeBits,
-		bDynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		&memAlloc.memoryTypeIndex);
-	err = vkAllocateMemory(device, &memAlloc, nullptr, &m_indices.buffer.mem);
-	if (err)
-		goto destroy_staging;
-	err = vkBindBufferMemory(device, m_indices.buffer.buf, m_indices.buffer.mem, 0);
-	if (err)
-		goto destroy_staging;
+		// Create destination buffer with device only visibility
+		// Buffer will be used as an index buffer
+		indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		err = vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_indices.buffer.buf);
+		if (err)
+			goto destroy_staging;
+		vkGetBufferMemoryRequirements(device, m_indices.buffer.buf, &memReqs);
+		memAlloc.allocationSize = memReqs.size;
+		m_app->GetMemoryType(memReqs.memoryTypeBits,
+			bDynamic ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			&memAlloc.memoryTypeIndex);
+		err = vkAllocateMemory(device, &memAlloc, nullptr, &m_indices.buffer.mem);
+		if (err)
+			goto destroy_staging;
+		err = vkBindBufferMemory(device, m_indices.buffer.buf, m_indices.buffer.mem, 0);
+		if (err)
+			goto destroy_staging;
+	}
 
 	err = m_app->BeginCommandBuffer();
 	if (err)
@@ -333,13 +341,15 @@ WError WGeometry::CreateFromData(void* vb, unsigned int num_verts, void* ib, uns
 		1,
 		&copyRegion);
 	// Index buffer
-	copyRegion.size = indexBufferSize;
-	vkCmdCopyBuffer(
-		m_app->GetCommandBuffer(),
-		m_indices.staging.buf,
-		m_indices.buffer.buf,
-		1,
-		&copyRegion);
+	if (ib) {
+		copyRegion.size = indexBufferSize;
+		vkCmdCopyBuffer(
+			m_app->GetCommandBuffer(),
+			m_indices.staging.buf,
+			m_indices.buffer.buf,
+			1,
+			&copyRegion);
+	}
 
 	err = m_app->EndCommandBuffer();
 	if (err)
@@ -1173,7 +1183,7 @@ WError WGeometry::MapVertexBuffer(void** const vb, bool bReadOnly) {
 }
 
 WError WGeometry::MapIndexBuffer(uint** const ib, bool bReadOnly) {
-	if (!Valid() || (m_immutable && !m_dynamic))
+	if (!Valid() || (m_immutable && !m_dynamic) || m_indices.count == 0)
 		return WError(W_NOTVALID);
 
 	m_indices.readOnlyMap = bReadOnly;
@@ -1576,13 +1586,13 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 	return true;
 }
 
-WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles, unsigned int num_instances, bool bind_animation) {
+WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_indices, unsigned int num_instances, bool bind_animation) {
 	VkCommandBuffer renderCmdBuffer = rt->GetCommnadBuffer();
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	if (num_triangles == -1 || num_triangles * 3 > m_indices.count)
-		num_triangles = m_indices.count / 3;
+	if (num_indices == -1 || num_indices > m_indices.count)
+		num_indices = m_indices.count;
 
 	// Bind triangle vertices
 	VkDeviceSize offsets[] = { 0, 0 };
@@ -1592,10 +1602,11 @@ WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_triangles, unsigned i
 	vkCmdBindVertexBuffers(renderCmdBuffer, 0, bind_animation ? 2 : 1, bindings, offsets);
 
 	// Bind triangle indices
-	vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buffer.buf, 0, VK_INDEX_TYPE_UINT32);
+	if (m_indices.buffer.buf != VK_NULL_HANDLE)
+		vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buffer.buf, 0, VK_INDEX_TYPE_UINT32);
 
 	// Draw indexed triangle
-	vkCmdDrawIndexed(renderCmdBuffer, num_triangles * 3, num_instances, 0, 0, 0);
+	vkCmdDrawIndexed(renderCmdBuffer, num_indices, num_instances, 0, 0, 0);
 
 	return WError(W_SUCCEEDED);
 }

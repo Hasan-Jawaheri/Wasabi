@@ -12,6 +12,10 @@
 
 #include "../Core/WCore.h"
 
+struct WParticlesVertex {
+	WVector3 pos;
+};
+
 /**
  * @ingroup engineclass
  * This represents a particles system and is responsible for animating and
@@ -28,6 +32,20 @@ public:
 	WParticles(class Wasabi* const app, unsigned int ID = 0);
 	~WParticles();
 
+	/**
+	 * Initializes the particle system. This must be called for a WParticles
+	 * object to be Valid().
+	 * @param max_particles  Maximum number of particles that the system can
+	 *                       render simultaneously. Pass 0 to free resources
+	 *                       and uninitialize the system
+	 * @return Error code, see WError.h
+	 */
+	WError Create(unsigned int max_particles = 5000);
+
+	/**
+	 * Renders the particle system to the given render target.
+	 * @params rt  Render target to render to
+	 */
 	void Render(class WRenderTarget* rt);
 
 	/**
@@ -94,6 +112,11 @@ private:
 	bool m_bFrustumCull;
 	/** Local world matrix */
 	WMatrix m_WorldM;
+
+	/** Geometry of points used to render the particles */
+	class WGeometry* m_geometry;
+	/** Material used to render the geometry */
+	class WMaterial* m_material;
 
 	/**
 	 * Destroys all resources held by this particles system
