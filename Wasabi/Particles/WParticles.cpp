@@ -76,7 +76,7 @@ void WParticles::_DestroyResources() {
 }
 
 bool WParticles::Valid() const {
-	return false;
+	return m_geometry && m_material;
 }
 
 void WParticles::Show() {
@@ -110,8 +110,13 @@ WError WParticles::Create(unsigned int max_particles) {
 	m_material = new WMaterial(m_app);
 
 	WParticlesVertex* vertices = new WParticlesVertex[max_particles];
-	m_geometry->CreateFromData(vertices, max_particles, nullptr, 0, true);
+	WError err = m_geometry->CreateFromData(vertices, max_particles, nullptr, 0, true);
 	delete[] vertices;
+
+	if (err != W_SUCCEEDED) {
+		_DestroyResources();
+		return err;
+	}
 
 	return WError(W_SUCCEEDED);
 }
@@ -123,6 +128,9 @@ void WParticles::Render(class WRenderTarget* const rt) {
 		if (m_bFrustumCull) {
 			if (!InCameraView(cam))
 				return;
+
+			m_material->Bind(rt);
+			m_geometry->Draw(rt, 0);
 		}
 	}
 }
