@@ -52,8 +52,8 @@ void RenderTargetTextureDemo::Load() {
 	delete[] pixels;
 	rt = new WRenderTarget(m_app);
 	rt->SetName("Falla RT");
-	rt->Create(640, 480, rtImg, false);
-	rt->SetClearColor(WColor(0.2f, 0, 0));
+	rt->Create(640, 480, rtImg);
+	rt->SetClearColor(WColor(0.6f, 0, 0));
 	((WFRMaterial*)o->GetMaterial())->Texture(rtImg);
 }
 
@@ -62,7 +62,8 @@ void RenderTargetTextureDemo::Update(float fDeltaTime) {
 	int my = m_app->InputComponent->MouseY();
 
 	WVector3 pt;
-	if (WObject* o = m_app->ObjectManager->PickObject(mx, my, false, 0, 1, &pt)) {
+	WObject* o = m_app->ObjectManager->PickObject(mx, my, false, 0, 1, &pt);
+	if (o) {
 		m_app->ObjectManager->GetEntity("sphere")->SetPosition(pt);
 		WVector2 out;
 		int x, y;
@@ -71,11 +72,9 @@ void RenderTargetTextureDemo::Update(float fDeltaTime) {
 	}
 
 	if (rt) {
-		rt->Begin();
 		m_app->ObjectManager->GetEntity("plain")->Hide();
 		m_app->Renderer->Render(rt, RENDER_FILTER_OBJECTS);
 		m_app->ObjectManager->GetEntity("plain")->Show();
-		rt->End();
 	}
 
 	char title[128];

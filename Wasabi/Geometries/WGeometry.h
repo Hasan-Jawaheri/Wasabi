@@ -609,14 +609,14 @@ public:
 	 * target must have its Begin() function called before this function is
 	 * called.
 	 * @param  rt             Render target to draw to
-	 * @param  num_triangles  Number of triangles to draw, -1 for all
+	 * @param  num_indices    Number of indices to draw, -1 for all
 	 * @param  num_instances  Number of instances to draw
 	 * @param  bind_animation true to bind the animation buffer (if not
 	 *                        available, the geometry buffer will be bound
 	 *                        twice), false otherwise
 	 * @return                [description]
 	 */
-	WError Draw(class WRenderTarget* rt, unsigned int num_triangles = -1,
+	WError Draw(class WRenderTarget* rt, unsigned int num_indices = -1,
 				unsigned int num_instances = 1, bool bind_animation = true);
 
 	/**
