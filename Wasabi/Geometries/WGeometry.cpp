@@ -1591,9 +1591,6 @@ WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_indices, unsigned int
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	if (num_indices == -1 || num_indices > m_indices.count)
-		num_indices = m_indices.count;
-
 	// Bind triangle vertices
 	VkDeviceSize offsets[] = { 0, 0 };
 	VkBuffer bindings[] = { m_vertices.buffer.buf, m_animationbuf.buffer.buf };
@@ -1601,12 +1598,19 @@ WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_indices, unsigned int
 		bindings[1] = m_vertices.buffer.buf;
 	vkCmdBindVertexBuffers(renderCmdBuffer, 0, bind_animation ? 2 : 1, bindings, offsets);
 
-	// Bind triangle indices
-	if (m_indices.buffer.buf != VK_NULL_HANDLE)
+	if (m_indices.buffer.buf != VK_NULL_HANDLE) {
+		if (num_indices == -1 || num_indices > m_indices.count)
+			num_indices = m_indices.count;
+		// Bind triangle indices & draw the indexed triangle
 		vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.buffer.buf, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(renderCmdBuffer, num_indices, num_instances, 0, 0, 0);
+	} else {
+		if (num_indices == -1 || num_indices > m_vertices.count)
+			num_indices = m_vertices.count;
+		// render the vertices without indices
+		vkCmdDraw(renderCmdBuffer, num_indices, num_instances, 0, 0);
+	}
 
-	// Draw indexed triangle
-	vkCmdDrawIndexed(renderCmdBuffer, num_indices, num_instances, 0, 0, 0);
 
 	return WError(W_SUCCEEDED);
 }
