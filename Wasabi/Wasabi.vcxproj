@@ -38,6 +38,7 @@
     <ClCompile Include="Materials\WEffect.cpp" />
     <ClCompile Include="Materials\WMaterial.cpp" />
     <ClCompile Include="Objects\WObject.cpp" />
+    <ClCompile Include="Particles\WParticles.cpp" />
     <ClCompile Include="Physics\Havok\WHavokPhysics.cpp" />
     <ClCompile Include="Renderers\WDeferredRenderer.cpp" />
     <ClCompile Include="Renderers\WForwardRenderer.cpp" />
@@ -71,6 +72,7 @@
     <ClInclude Include="Materials\WEffect.h" />
     <ClInclude Include="Materials\WMaterial.h" />
     <ClInclude Include="Objects\WObject.h" />
+    <ClInclude Include="Particles\WParticles.h" />
     <ClInclude Include="Physics\Havok\WHavokPhysics.h" />
     <ClInclude Include="Physics\WPhysicsComponent.h" />
     <ClInclude Include="Renderers\WDeferredRenderer.h" />

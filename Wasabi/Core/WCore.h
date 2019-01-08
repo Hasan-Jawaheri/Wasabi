@@ -151,6 +151,8 @@ public:
 	class WLightManager* LightManager;
 	/** Pointer to the animation manager */
 	class WAnimationManager* AnimationManager;
+	/** Pointer to the particles manager */
+	class WParticlesManager* ParticlesManager;
 
 	/** A timer object, which starts counting when the application starts */
 	WTimer Timer;

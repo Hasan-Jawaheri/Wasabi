@@ -267,7 +267,7 @@ bool WObject::Valid() const {
 		if (m_geometry->GetVertexDescriptionSize(0) == m_material->GetEffect()->GetInputLayoutSize(0))
 			return true;
 
-		return false;
+	return false;
 }
 
 void WObject::Render(WRenderTarget* rt) {
@@ -275,12 +275,8 @@ void WObject::Render(WRenderTarget* rt) {
 		WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();
 		if (m_bFrustumCull) {
-			WVector3 min = WVec3TransformCoord(m_geometry->GetMinPoint(), worldM);
-			WVector3 max = WVec3TransformCoord(m_geometry->GetMaxPoint(), worldM);
-			WVector3 pos = (max + min) / 2.0f;
-			WVector3 size = (max - min) / 2.0f;
-			if (!cam->CheckBoxInFrustum(pos, size))
-				return; //outside viewing frustum
+			if (!InCameraView(cam))
+				return;
 		}
 
 		_UpdateInstanceBuffer();
@@ -468,6 +464,15 @@ void WObject::DisableFrustumCulling() {
 	m_bFrustumCull = false;
 }
 
+bool WObject::InCameraView(class WCamera* const cam) {
+	WMatrix worldM = GetWorldMatrix();
+	WVector3 min = WVec3TransformCoord(m_geometry->GetMinPoint(), worldM);
+	WVector3 max = WVec3TransformCoord(m_geometry->GetMaxPoint(), worldM);
+	WVector3 pos = (max + min) / 2.0f;
+	WVector3 size = (max - min) / 2.0f;
+	return cam->CheckBoxInFrustum(pos, size);
+}
+
 WVector3 WObject::GetScale() const {
 	return m_scale;
 }
@@ -546,8 +551,7 @@ bool WObject::UpdateLocals(WVector3 offset) {
 	return false;
 }
 
-void WObject::OnStateChange(STATE_CHANGE_TYPE type) //virtual method of the orientation device
-{
+void WObject::OnStateChange(STATE_CHANGE_TYPE type) { //virtual method of the orientation device
 	WOrientation::OnStateChange(type); //do the default OnStateChange first
 	m_bAltered = true;
 }

@@ -126,7 +126,7 @@ public:
 	/**
 	 * Checks if the light appears anywhere in the view of the camera
 	 * @param  cam Camera to check against
-	 * @return     true of the light is in the viewing frustum of cam, false
+	 * @return     true if the light is in the viewing frustum of cam, false
 	 *             otherwise
 	 */
 	bool InCameraView(class WCamera* cam) const;

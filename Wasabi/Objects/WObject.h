@@ -280,6 +280,14 @@ public:
 	void DisableFrustumCulling();
 
 	/**
+	 * Checks if the object appears anywhere in the view of the camera
+	 * @param  cam Camera to check against
+	 * @return     true of the object is in the viewing frustum of cam, false
+	 *             otherwise
+	 */
+	bool InCameraView(class WCamera* cam);
+
+	/**
 	 * Sets the scale of this object.
 	 * @param x X scale multiplier
 	 * @param y Y scale multiplier

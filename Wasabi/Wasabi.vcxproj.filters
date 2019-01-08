@@ -61,6 +61,9 @@
     <Filter Include="Renderers\Shaders\Forward">
       <UniqueIdentifier>{ecd66444-6b37-4f17-b4f7-4b034dca838d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Particles">
+      <UniqueIdentifier>{7924b2e4-d491-4db7-b072-6009b1894457}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -146,6 +149,9 @@
     </ClCompile>
     <ClCompile Include="stb\stb_vorbis.c">
       <Filter>stb</Filter>
+    </ClCompile>
+    <ClCompile Include="Particles\WParticles.cpp">
+      <Filter>Particles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -300,6 +306,9 @@
       <Filter>stb</Filter>
     </ClInclude>
     <ClInclude Include="Wasabi.h" />
+    <ClInclude Include="Particles\WParticles.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Renderers\Shaders\Deferred\scene_composition_ps.glsl">
