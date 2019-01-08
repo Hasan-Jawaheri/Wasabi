@@ -609,7 +609,9 @@ public:
 	 * target must have its Begin() function called before this function is
 	 * called.
 	 * @param  rt             Render target to draw to
-	 * @param  num_indices    Number of indices to draw, -1 for all
+	 * @param  num_indices    Number of indices to draw, -1 for all. If the
+	 *                        geometry has no indices, this is the number of
+	 *                        vertices to draw, -1 for all
 	 * @param  num_instances  Number of instances to draw
 	 * @param  bind_animation true to bind the animation buffer (if not
 	 *                        available, the geometry buffer will be bound
