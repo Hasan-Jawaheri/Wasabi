@@ -17,6 +17,9 @@
     <ClCompile Include="Animation\Animation.cpp">
       <Filter>Animation</Filter>
     </ClCompile>
+    <ClCompile Include="Particles\Particles.cpp">
+      <Filter>Particles</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestSuite.hpp" />
@@ -35,6 +38,9 @@
     <ClInclude Include="Sound\Sound.hpp">
       <Filter>Sound</Filter>
     </ClInclude>
+    <ClInclude Include="Particles\Particles.hpp">
+      <Filter>Particles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Lights">
@@ -51,6 +57,9 @@
     </Filter>
     <Filter Include="Sound">
       <UniqueIdentifier>{9e80c4e9-6e2b-4630-ae4e-d57c555319d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particles">
+      <UniqueIdentifier>{4ffc94b6-828b-4487-905f-74fe6c03159d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
