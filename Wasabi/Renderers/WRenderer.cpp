@@ -78,7 +78,8 @@ void WRenderer::_Render() {
 	// Command buffer to be sumitted to the queue
 	VkCommandBuffer cmdBuf = m_renderTarget->GetCommnadBuffer();
 	VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.pWaitDstStageMask = &submitPipelineStages;
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = &m_semaphores.presentComplete;
@@ -88,8 +89,8 @@ void WRenderer::_Render() {
 	submitInfo.pCommandBuffers = &cmdBuf;
 
 	// Submit to queue
-	err = vkQueueSubmit(m_queue, 1, &submitInfo, VK_NULL_HANDLE);
-	err = m_swapChain->queuePresent(m_queue, currentBuffer, m_semaphores.renderComplete);
+	if (m_renderTarget->Submit(submitInfo) == W_SUCCEEDED)
+		err = m_swapChain->queuePresent(m_queue, currentBuffer, m_semaphores.renderComplete);
 
 	vkDeviceWaitIdle(m_device);
 }

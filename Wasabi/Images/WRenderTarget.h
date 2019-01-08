@@ -4,6 +4,13 @@
  *  Render targets are special images that can be used to render a scene to. A
  *  render target enable one to perform render-to-texture operations that are
  *  required for many applications such as post-processing effects.
+ *  Rendering to render targets is done by calling WRenderTarget::Begin(), rendering
+ *  assets (objects, sprites, etc...) and then calling WRenderTarget::End(). Notice
+ *  that after ending, the render target merely creates a "command buffer" filled
+ *  with the recorded rendering commands that occurred between Begin() and End(). To
+ *  actually perform the rendering stored in the buffer, either call
+ *  WRenderTarget::End() passing true (default) or explicitly call
+ *  WRenderTarget::Submit() afterwards.
  *
  *  @author Hasan Al-Jawaheri (hbj)
  *  @bug No known bugs.
@@ -126,13 +133,25 @@ public:
 	WError Begin();
 
 	/**
-	 * End recording renders on this render target.
+	 * End recording renders on this render target. If bSubmit is set to false, you
+	 * have to call Submit() afterwards to actually perform the rendering.
 	 * @param  bSubmit When set to true, recorded renders will be submitted to
 	 *                 the Vulkan graphics queue and thus will be reflected on
 	 *                 the backing WImage of VkImageViews
 	 * @return         Error code, see WError.h
 	 */
 	WError End(bool bSubmit = true);
+
+	/**
+	 * Submit the command queue (generated between a call to Begin() and End()) to be performed
+	 * by Vulkan.
+	 * @params custom_info  Optional custom VkSubmitInfo structure passed to vkQueueSubmit, this
+	 *                      will be filled automatically if you ignore this argument (or pass a
+	 *                      VkSubmitInfo with pCommandBuffers = NULL. Normally, you should fill
+	 *                      pCommandBuffers with GetCommnadBuffer()
+	 * @return              Error code, see WError.h
+	 */
+	WError Submit(VkSubmitInfo custom_info = {});
 
 	/**
 	 * Sets the color to use when the render target is cleared upon calling

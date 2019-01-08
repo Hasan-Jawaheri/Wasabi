@@ -74,6 +74,7 @@ void RenderTargetTextureDemo::Update(float fDeltaTime) {
 	if (rt) {
 		m_app->ObjectManager->GetEntity("plain")->Hide();
 		m_app->Renderer->Render(rt, RENDER_FILTER_OBJECTS);
+		rt->Submit();
 		m_app->ObjectManager->GetEntity("plain")->Show();
 	}
 

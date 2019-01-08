@@ -518,23 +518,31 @@ WError WRenderTarget::End(bool bSubmit) {
 	if (err)
 		return WError(W_ERRORUNK);
 
-	if (bSubmit) {
+	if (bSubmit)
+		return Submit();
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WRenderTarget::Submit(VkSubmitInfo custom_info) {
+	if (!custom_info.pCommandBuffers) {
 		// Command buffer to be sumitted to the queue
 		VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
-		submitInfo.pWaitDstStageMask = &submitPipelineStages;
-		submitInfo.waitSemaphoreCount = 0;
-		submitInfo.pWaitSemaphores = nullptr;
-		submitInfo.signalSemaphoreCount = 0;
-		submitInfo.pSignalSemaphores = nullptr;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_renderCmdBuffer;
-
-		// Submit to queue
-		err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-		if (err)
-			return WError(W_ERRORUNK);
+		memset(&custom_info, 0, sizeof(VkSubmitInfo));
+		custom_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		custom_info.pWaitDstStageMask = &submitPipelineStages;
+		custom_info.waitSemaphoreCount = 0;
+		custom_info.pWaitSemaphores = nullptr;
+		custom_info.signalSemaphoreCount = 0;
+		custom_info.pSignalSemaphores = nullptr;
+		custom_info.commandBufferCount = 1;
+		custom_info.pCommandBuffers = &m_renderCmdBuffer;
 	}
+
+	// Submit to queue
+	VkResult err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &custom_info, VK_NULL_HANDLE);
+	if (err)
+		return WError(W_ERRORUNK);
 
 	return WError(W_SUCCEEDED);
 }
