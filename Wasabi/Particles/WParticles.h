@@ -153,4 +153,20 @@ public:
 	 * @param rt Render target to render to
 	 */
 	void Render(class WRenderTarget* rt);
+
+	/**
+	 * Retrieves the WEffect used by all particle systems.
+	 * @return Particle systems effect
+	 */
+	class WEffect* GetDefaultEffect() const;
+
+private:
+	/** Effect used by different particle systems */
+	class WEffect* m_particlesEffect;
+	/** blend state used for all particle systems renders */
+	VkPipelineColorBlendAttachmentState m_blendState;
+	/** Rasterization state used for all particle systems renders */
+	VkPipelineRasterizationStateCreateInfo m_rasterizationState;
+	/** Depth/Stencil state used for all particle systems renders */
+	VkPipelineDepthStencilStateCreateInfo m_depthStencilState;
 };

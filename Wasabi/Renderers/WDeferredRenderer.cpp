@@ -9,6 +9,7 @@
 #include "../Objects/WObject.h"
 #include "../Sprites/WSprite.h"
 #include "../Texts/WText.h"
+#include "../Particles/WParticles.h"
 
 #include <functional>
 using std::function;
@@ -423,6 +424,11 @@ void WDeferredRenderer::Render(WRenderTarget* rt, unsigned int filter) {
 	m_masterRenderSprite->Show();
 	m_masterRenderSprite->Render(rt);
 	m_masterRenderSprite->Hide();
+
+	//
+	// Render particles
+	//
+	m_app->ParticlesManager->Render(rt);
 
 	//
 	// Render 2D assets
