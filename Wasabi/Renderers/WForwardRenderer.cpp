@@ -9,6 +9,7 @@
 #include "../Objects/WObject.h"
 #include "../Sprites/WSprite.h"
 #include "../Texts/WText.h"
+#include "../Particles/WParticles.h"
 
 struct LightStruct {
 	WVector4 color;
@@ -188,6 +189,9 @@ void WForwardRenderer::Render(WRenderTarget* rt, unsigned int filter) {
 
 	if (filter & RENDER_FILTER_OBJECTS)
 		m_app->ObjectManager->Render(rt);
+
+	if (filter & RENDER_FILTER_OBJECTS)
+		m_app->ParticlesManager->Render(rt);
 
 	if (filter & RENDER_FILTER_SPRITES)
 		m_app->SpriteManager->Render(rt);

@@ -64,6 +64,9 @@
     <Filter Include="Particles">
       <UniqueIdentifier>{7924b2e4-d491-4db7-b072-6009b1894457}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Particles\Shaders">
+      <UniqueIdentifier>{eacb7417-6b01-4b86-bd3f-1eec84e94863}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -340,6 +343,12 @@
     </None>
     <None Include="Renderers\Shaders\Deferred\point_light_vs.glsl">
       <Filter>Renderers\Shaders\Deferred</Filter>
+    </None>
+    <None Include="Particles\Shaders\particles_ps.glsl">
+      <Filter>Particles\Shaders</Filter>
+    </None>
+    <None Include="Particles\Shaders\particles_vs.glsl">
+      <Filter>Particles\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>
