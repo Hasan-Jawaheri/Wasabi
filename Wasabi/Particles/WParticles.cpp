@@ -30,7 +30,8 @@ public:
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "wvp"), // world * view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "worldView"), // world * view
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "projection"), // camera projection
 			}),
 		};
 	}
@@ -43,6 +44,28 @@ public:
 		}) };
 		LoadCodeGLSL(
 			#include "Shaders/particles_vs.glsl"
+		);
+	}
+};
+
+class ParticlesGS : public WShader {
+public:
+	ParticlesGS(class Wasabi* const app) : WShader(app) {}
+
+	static vector<W_BOUND_RESOURCE> GetBoundResources() {
+		return {
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "worldView"), // world * view
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "projection"), // camera projection
+			}),
+		};
+	}
+
+	virtual void Load() {
+		m_desc.type = W_GEOMETRY_SHADER;
+		m_desc.bound_resources = GetBoundResources();
+		LoadCodeGLSL(
+			#include "Shaders/particles_gs.glsl"
 		);
 	}
 };
@@ -104,7 +127,7 @@ WError WParticlesManager::Load() {
 	m_blendState.alphaBlendOp = VK_BLEND_OP_ADD;
 
 	m_rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	m_rasterizationState.polygonMode = VK_POLYGON_MODE_POINT;
+	m_rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
 	m_rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
 	m_rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	m_rasterizationState.depthClampEnable = VK_FALSE;
@@ -114,10 +137,17 @@ WError WParticlesManager::Load() {
 
 	WShader* vertex_shader = new ParticlesVS(m_app);
 	vertex_shader->Load();
+	WShader* geometry_shader = new ParticlesGS(m_app);
+	geometry_shader->Load();
 	WShader* pixel_shader = new ParticlesPS(m_app);
 	pixel_shader->Load();
 	m_particlesEffect = new WEffect(m_app);
+
 	WError werr = m_particlesEffect->BindShader(vertex_shader);
+	if (!werr)
+		goto error;
+
+	werr = m_particlesEffect->BindShader(geometry_shader);
 	if (!werr)
 		goto error;
 
@@ -138,7 +168,7 @@ error:
 	W_SAFE_REMOVEREF(vertex_shader);
 	W_SAFE_REMOVEREF(pixel_shader);
 
-	return WError(W_SUCCEEDED);
+	return werr;
 }
 
 class WEffect* WParticlesManager::GetDefaultEffect() const {
@@ -229,6 +259,9 @@ void WParticles::Render(class WRenderTarget* const rt) {
 		if (m_bFrustumCull) {
 			if (!InCameraView(cam))
 				return;
+
+			m_material->SetVariableMatrix("worldView", GetWorldMatrix() * cam->GetViewMatrix());
+			m_material->SetVariableMatrix("projection", cam->GetProjectionMatrix());
 
 			m_material->Bind(rt);
 			m_geometry->Draw(rt, 1, 1, false);

@@ -104,6 +104,7 @@
     <ClInclude Include="Windows\WWindowComponent.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Particles\Shaders\particles_gs.glsl" />
     <None Include="Particles\Shaders\particles_ps.glsl" />
     <None Include="Particles\Shaders\particles_vs.glsl" />
     <None Include="Renderers\Shaders\Deferred\directional_light_ps.glsl" />

@@ -7,11 +7,12 @@ layout(location = 0) in vec3 inPos;
 layout(location = 0) out vec4 outPos;
 
 layout(binding = 0) uniform UBOPerParticles {
-	mat4 wvp;
+	mat4 worldView;
+	mat4 projection;
 } uboPerParticles;
 
 void main() {
-	gl_Position = uboPerParticles.wvp * vec4(inPos.xyz, 1.0);
+	gl_Position = uboPerParticles.worldView * vec4(inPos.xyz, 1.0);
 	outPos = gl_Position;
 }
 )"
