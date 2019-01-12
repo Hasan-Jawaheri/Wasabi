@@ -134,12 +134,12 @@ WDefaultParticleBehavior::WDefaultParticleBehavior(unsigned int max_particles)
 	: WParticlesBehavior(max_particles, sizeof(WDefaultParticleBehavior::Particle)) {
 	m_lastEmit = 0;
 	m_emissionPosition = WVector3(0, 0, 0);
-	m_emissionRandomness = WVector3(2, 2, 2);
-	m_particleLife = 5;
-	m_particleSpawnVelocity = WVector3(0, 1, 0);
+	m_emissionRandomness = WVector3(1, 1, 1);
+	m_particleLife = 3;
+	m_particleSpawnVelocity = WVector3(0, 2, 0);
 	m_emissionFrequency = 20;
 	m_emissionSize = 1;
-	m_deathSize = 2;
+	m_deathSize = 3;
 	m_type = BILLBOARD;
 }
 
@@ -162,17 +162,23 @@ inline bool WDefaultParticleBehavior::UpdateParticle(float cur_time, void* parti
 
 	p->vtx.pos = p->initialPos + lifePercentage * m_particleLife * p->velocity;
 	p->vtx.size = m_type == BILLBOARD ? WVector3(0, size, 0) : WVector3(size, 0, 0);
-	p->vtx.alpha = 1.0f - fabs(lifePercentage * 2.0f - 1.0f);
+	p->vtx.alpha = fmin(fmax(0.8f - fabs(lifePercentage * 2.0f - 1.0f), 0.0f), 1.0f);
 	return lifePercentage <= 1.0f;
 }
 
 WParticlesManager::WParticlesManager(class Wasabi* const app)
-	: WManager<WParticles>(app), m_blendState({}), m_rasterizationState({}), m_depthStencilState({}) {
-	m_particlesEffect = nullptr;
+	: WManager<WParticles>(app) {
+	m_vertexShader = nullptr;
+	m_geometryShader = nullptr;
+	m_fragmentShader = nullptr;
 }
 
 WParticlesManager::~WParticlesManager() {
-	W_SAFE_REMOVEREF(m_particlesEffect);
+	for (auto it = m_particleEffects.begin(); it != m_particleEffects.end(); it++)
+		W_SAFE_REMOVEREF(it->second);
+	W_SAFE_REMOVEREF(m_vertexShader);
+	W_SAFE_REMOVEREF(m_geometryShader);
+	W_SAFE_REMOVEREF(m_fragmentShader);
 }
 
 void WParticlesManager::Render(WRenderTarget* rt) {
@@ -188,74 +194,103 @@ std::string WParticlesManager::GetTypeName() const {
 }
 
 WError WParticlesManager::Load() {
-	m_depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	m_depthStencilState.depthTestEnable = VK_TRUE;
-	m_depthStencilState.depthWriteEnable = VK_FALSE;
-	m_depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-	m_depthStencilState.depthBoundsTestEnable = VK_FALSE;
-	m_depthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
-	m_depthStencilState.back.passOp = VK_STENCIL_OP_KEEP;
-	m_depthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
-	m_depthStencilState.stencilTestEnable = VK_FALSE;
-	m_depthStencilState.front = m_depthStencilState.back;
+	unordered_map<W_DEFAULT_PARTICLE_EFFECT_TYPE, VkPipelineColorBlendAttachmentState> blend_states;
+	VkPipelineRasterizationStateCreateInfo rasterization_state;
+	VkPipelineDepthStencilStateCreateInfo depth_stencil_state;
 
-	m_blendState.colorWriteMask = 0xff;
-	m_blendState.blendEnable = VK_TRUE;
-	m_blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	m_blendState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-	m_blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-	m_blendState.colorBlendOp = VK_BLEND_OP_ADD;
-	m_blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	m_blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	m_blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+	depth_stencil_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depth_stencil_state.depthTestEnable = VK_TRUE;
+	depth_stencil_state.depthWriteEnable = VK_FALSE;
+	depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	depth_stencil_state.depthBoundsTestEnable = VK_FALSE;
+	depth_stencil_state.back.failOp = VK_STENCIL_OP_KEEP;
+	depth_stencil_state.back.passOp = VK_STENCIL_OP_KEEP;
+	depth_stencil_state.back.compareOp = VK_COMPARE_OP_ALWAYS;
+	depth_stencil_state.stencilTestEnable = VK_FALSE;
+	depth_stencil_state.front = depth_stencil_state.back;
 
-	m_rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	m_rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-	m_rasterizationState.cullMode = VK_CULL_MODE_NONE;
-	m_rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
-	m_rasterizationState.depthClampEnable = VK_FALSE;
-	m_rasterizationState.rasterizerDiscardEnable = VK_FALSE;
-	m_rasterizationState.depthBiasEnable = VK_FALSE;
-	m_rasterizationState.lineWidth = 1.0f;
+	rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterization_state.cullMode = VK_CULL_MODE_NONE;
+	rasterization_state.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterization_state.depthClampEnable = VK_FALSE;
+	rasterization_state.rasterizerDiscardEnable = VK_FALSE;
+	rasterization_state.depthBiasEnable = VK_FALSE;
+	rasterization_state.lineWidth = 1.0f;
 
-	WShader* vertex_shader = new ParticlesVS(m_app);
-	vertex_shader->Load();
-	WShader* geometry_shader = new ParticlesGS(m_app);
-	geometry_shader->Load();
-	WShader* pixel_shader = new ParticlesPS(m_app);
-	pixel_shader->Load();
-	m_particlesEffect = new WEffect(m_app);
+	VkPipelineColorBlendAttachmentState blend_state;
+	blend_state.colorWriteMask = 0xff;
+	blend_state.blendEnable = VK_TRUE;
+	blend_state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
-	WError werr = m_particlesEffect->BindShader(vertex_shader);
-	if (!werr)
-		goto error;
+	blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend_state.colorBlendOp = VK_BLEND_OP_ADD;
+	blend_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend_state.alphaBlendOp = VK_BLEND_OP_ADD;
+	blend_states.insert(std::pair<W_DEFAULT_PARTICLE_EFFECT_TYPE, VkPipelineColorBlendAttachmentState>(
+		W_DEFAULT_PARTICLES_ADDITIVE, blend_state
+	));
+	
+	blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	blend_state.colorBlendOp = VK_BLEND_OP_ADD;
+	blend_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	blend_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend_state.alphaBlendOp = VK_BLEND_OP_ADD;
+	blend_states.insert(std::pair<W_DEFAULT_PARTICLE_EFFECT_TYPE, VkPipelineColorBlendAttachmentState>(
+		W_DEFAULT_PARTICLES_ALPHA, blend_state
+	));
+	
+	blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend_state.colorBlendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
+	blend_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend_state.alphaBlendOp = VK_BLEND_OP_ADD;
+	blend_states.insert(std::pair<W_DEFAULT_PARTICLE_EFFECT_TYPE, VkPipelineColorBlendAttachmentState>(
+		W_DEFAULT_PARTICLES_SUBTRACTIVE, blend_state
+	));
 
-	werr = m_particlesEffect->BindShader(geometry_shader);
-	if (!werr)
-		goto error;
+	m_vertexShader = new ParticlesVS(m_app);
+	m_vertexShader->Load();
+	m_geometryShader = new ParticlesGS(m_app);
+	m_geometryShader->Load();
+	m_fragmentShader = new ParticlesPS(m_app);
+	m_fragmentShader->Load();
 
-	werr = m_particlesEffect->BindShader(pixel_shader);
-	if (!werr)
-		goto error;
+	for (auto it = blend_states.begin(); it != blend_states.end(); it++) {
+		WEffect* fx = new WEffect(m_app);
+		m_particleEffects.insert(std::pair<W_DEFAULT_PARTICLE_EFFECT_TYPE, WEffect*>(it->first, fx));
 
-	m_particlesEffect->SetBlendingState(m_blendState);
-	m_particlesEffect->SetDepthStencilState(m_depthStencilState);
-	m_particlesEffect->SetRasterizationState(m_rasterizationState);
-	m_particlesEffect->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+		WError werr = fx->BindShader(m_vertexShader);
+		if (!werr)
+			return werr;
 
-	werr = m_particlesEffect->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
-	if (!werr)
-		goto error;
+		werr = fx->BindShader(m_geometryShader);
+		if (!werr)
+			return werr;
 
-error:
-	W_SAFE_REMOVEREF(vertex_shader);
-	W_SAFE_REMOVEREF(pixel_shader);
+		werr = fx->BindShader(m_fragmentShader);
+		if (!werr)
+			return werr;
 
-	return werr;
+		fx->SetBlendingState(it->second);
+		fx->SetDepthStencilState(depth_stencil_state);
+		fx->SetRasterizationState(rasterization_state);
+		fx->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+
+		werr = fx->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
+		if (!werr)
+			return werr;
+	}
+
+	return WError(W_SUCCEEDED);
 }
 
-class WEffect* WParticlesManager::GetDefaultEffect() const {
-	return m_particlesEffect;
+class WEffect* WParticlesManager::GetDefaultEffect(W_DEFAULT_PARTICLE_EFFECT_TYPE type) const {
+	return m_particleEffects.find(type)->second;
 }
 
 
@@ -326,7 +361,7 @@ bool WParticles::InCameraView(class WCamera* cam) {
 	return cam->CheckBoxInFrustum(pos, size);
 }
 
-WError WParticles::Create(unsigned int max_particles, WParticlesBehavior* behavior) {
+WError WParticles::Create(class WEffect* effect, unsigned int max_particles, WParticlesBehavior* behavior) {
 	_DestroyResources();
 	if (max_particles == 0)
 		return WError(W_INVALIDPARAM);
@@ -334,7 +369,7 @@ WError WParticles::Create(unsigned int max_particles, WParticlesBehavior* behavi
 	m_geometry = new WParticlesGeometry(m_app);
 	m_material = new WMaterial(m_app);
 
-	m_material->SetEffect(m_app->ParticlesManager->GetDefaultEffect());
+	m_material->SetEffect(effect);
 
 	WParticlesVertex* vertices = new WParticlesVertex[max_particles];
 	WError err = m_geometry->CreateFromData(vertices, max_particles, nullptr, 0, true);
