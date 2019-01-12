@@ -195,8 +195,8 @@ std::string WParticlesManager::GetTypeName() const {
 
 WError WParticlesManager::Load() {
 	unordered_map<W_DEFAULT_PARTICLE_EFFECT_TYPE, VkPipelineColorBlendAttachmentState> blend_states;
-	VkPipelineRasterizationStateCreateInfo rasterization_state;
-	VkPipelineDepthStencilStateCreateInfo depth_stencil_state;
+	VkPipelineRasterizationStateCreateInfo rasterization_state = {};
+	VkPipelineDepthStencilStateCreateInfo depth_stencil_state = {};
 
 	depth_stencil_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depth_stencil_state.depthTestEnable = VK_TRUE;
@@ -218,7 +218,7 @@ WError WParticlesManager::Load() {
 	rasterization_state.depthBiasEnable = VK_FALSE;
 	rasterization_state.lineWidth = 1.0f;
 
-	VkPipelineColorBlendAttachmentState blend_state;
+	VkPipelineColorBlendAttachmentState blend_state = {};
 	blend_state.colorWriteMask = 0xff;
 	blend_state.blendEnable = VK_TRUE;
 	blend_state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
