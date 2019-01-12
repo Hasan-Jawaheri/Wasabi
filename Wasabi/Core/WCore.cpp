@@ -28,6 +28,7 @@ int main() {
 #endif
 	Wasabi* app = WInitialize();
 
+	app->Timer.Start();
 	if (app && app->Setup()) {
 		unsigned int numFrames = 0;
 		auto fpsTimer = std::chrono::high_resolution_clock::now();
@@ -35,6 +36,7 @@ int main() {
 		float deltaTime = 1.0f / maxFPSReached;
 		while (!app->__EXIT) {
 			auto tStart = std::chrono::high_resolution_clock::now();
+			app->Timer.GetElapsedTime(true); // record elapsed time
 
 			if (!app->WindowComponent->Loop())
 				continue;
@@ -107,7 +109,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(
 	return VK_FALSE;
 }
 
-Wasabi::Wasabi() {
+Wasabi::Wasabi() : Timer(W_TIMER_SECONDS, true) {
 	engineParams = {
 		{ "appName", (void*)"Wasabi" }, // LPCSTR
 		{ "fontBmpSize", (void*)(512) }, // int

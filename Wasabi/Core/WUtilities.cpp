@@ -224,3 +224,10 @@ bool WUtil::RayIntersectBox(WVector3 boxDimensions, WVector3 rayPos, WVector3 ra
 
 	return false;
 }
+
+float WUtil::frand_0_1() {
+	return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+};
+float WUtil::flerp(float x, float y, float f) {
+	return x * (1 - f) + y * f;
+}
