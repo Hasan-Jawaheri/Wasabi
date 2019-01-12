@@ -54,4 +54,13 @@ namespace WUtil {
    */
 	bool RayIntersectBox(WVector3 halfDimensions, WVector3 rayPos,
                        WVector3 rayDir, WVector3 boxPos = WVector3(0, 0, 0));
+
+	/**
+	 * Returns a random number between 0 and 1
+	 */
+	float frand_0_1();
+	/**
+	 * Returns a linear interpolation between x and y at factor f
+	 */
+	float flerp(float x, float y, float f);
 };
