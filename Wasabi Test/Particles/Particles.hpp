@@ -4,7 +4,7 @@
 #include <Renderers/WForwardRenderer.h>
 
 class ParticlesDemo : public WTestState {
-	WParticles* m_particles;
+	vector<WParticles*> m_particles;
 
 public:
 	ParticlesDemo(Wasabi* const app);

@@ -11,7 +11,7 @@ layout(binding = 1) uniform sampler2D samplerColor;
 
 void main() {
 	vec4 color = texture(samplerColor, inUV).rgba;
-	color *= inAlpha;
+	color.a *= inAlpha;
 	outFragColor = color;
 }
 )"

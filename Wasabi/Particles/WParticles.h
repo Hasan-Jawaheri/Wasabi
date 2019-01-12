@@ -22,6 +22,16 @@ struct WParticlesVertex {
 	float alpha;
 };
 
+/** Type of default particle effects supported by WParticlesManager */
+enum W_DEFAULT_PARTICLE_EFFECT_TYPE {
+	/** Default particles effect with additive blending */
+	W_DEFAULT_PARTICLES_ADDITIVE = 0,
+	/** Default particles effect with alpha blending */
+	W_DEFAULT_PARTICLES_ALPHA = 1,
+	/** Default particles effect with subtractive blending */
+	W_DEFAULT_PARTICLES_SUBTRACTIVE = 2,
+};
+
 /**
  * This class can be derived to implement custom behavior for particles.
  * Custom behavior includes rules for emission, motion, growth, etc...
@@ -35,6 +45,7 @@ class WParticlesBehavior {
 	unsigned int m_particleSize;
 	/** Number of particles currently active */
 	unsigned int m_numParticles;
+	/** Buffer to store particles data */
 	void* m_buffer;
 
 protected:
@@ -78,11 +89,19 @@ public:
 	virtual inline bool UpdateParticle(float cur_time, void* particle) = 0;
 };
 
+/**
+ * Default particles behavior implementation, good for basic/starter particle
+ * systems.
+ */
 class WDefaultParticleBehavior : public WParticlesBehavior {
 	struct Particle {
+		/** Required WParticleVertex at the beginning of the data structure */
 		WParticlesVertex vtx;
+		/** Spawn time of this particle */
 		float spawnTime;
+		/** Initial position of this particle */
 		WVector3 initialPos;
+		/** Velocity of this particle */
 		WVector3 velocity;
 	};
 
@@ -91,25 +110,28 @@ class WDefaultParticleBehavior : public WParticlesBehavior {
 
 public:
 
+	/** Type of the particle */
 	enum Type {
+		/** Particle is rendered such that it always faces the camera */
 		BILLBOARD = 0,
+		/** Particle is rendered to be facing up */
 		NOVA = 1,
 	};
 
 	/** Position at which new particles spawn (default is (0,0,0)) */
 	WVector3 m_emissionPosition;
 	/** Dimensions of a cube at m_emissionPosition where particles randomly spawn
-	    (default is (5, 5, 5))*/
+	    (default is (1, 1, 1)*/
 	WVector3 m_emissionRandomness;
-	/** Lifetime (in seconds) of each particle (default is 5) */
+	/** Lifetime (in seconds) of each particle (default is 3) */
 	float m_particleLife;
-	/** A direction/velocity vector for spawned particles */
+	/** A direction/velocity vector for spawned particles default is (0, 2, 0) */
 	WVector3 m_particleSpawnVelocity;
 	/** Number of particles to emit per second (default is 20) */
 	float m_emissionFrequency;
-	/** Size of a particle at emission (default is 5) */
+	/** Size of a particle at emission (default is 1) */
 	float m_emissionSize;
-	/** Size of a particle at death (default is 2) */
+	/** Size of a particle at death (default is 3) */
 	float m_deathSize;
 	/** Type of the particle (default is BILLBOARD) */
 	Type m_type;
@@ -144,12 +166,17 @@ public:
 	/**
 	 * Initializes the particle system. This must be called for a WParticles
 	 * object to be Valid().
+	 * @param effect         Effect to be used for this particle system, default
+	 *                       effects can be retrieved from
+	 *                       WParticlesManager::GetDefaultEffect()
 	 * @param max_particles  Maximum number of particles that the system can
 	 *                       render simultaneously. Pass 0 to free resources
 	 *                       and uninitialize the system
+	 * @param behavior       Behavior object for this system, pass nullptr to
+	 *                       use WDefaultParticleBehavior
 	 * @return Error code, see WError.h
 	 */
-	WError Create(unsigned int max_particles = 5000, WParticlesBehavior* behavior = nullptr);
+	WError Create(class WEffect* effect, unsigned int max_particles = 5000, WParticlesBehavior* behavior = nullptr);
 
 	/**
 	 * Renders the particle system to the given render target.
@@ -278,15 +305,15 @@ public:
 	 * Retrieves the WEffect used by all particle systems.
 	 * @return Particle systems effect
 	 */
-	class WEffect* GetDefaultEffect() const;
+	class WEffect* GetDefaultEffect(W_DEFAULT_PARTICLE_EFFECT_TYPE type) const;
 
 private:
-	/** Effect used by different particle systems */
-	class WEffect* m_particlesEffect;
-	/** blend state used for all particle systems renders */
-	VkPipelineColorBlendAttachmentState m_blendState;
-	/** Rasterization state used for all particle systems renders */
-	VkPipelineRasterizationStateCreateInfo m_rasterizationState;
-	/** Depth/Stencil state used for all particle systems renders */
-	VkPipelineDepthStencilStateCreateInfo m_depthStencilState;
+	/** Default effect used by different particle systems */
+	unordered_map<W_DEFAULT_PARTICLE_EFFECT_TYPE, class WEffect*> m_particleEffects;
+	/** Default vertex shader used by the default effect */
+	class WShader* m_vertexShader;
+	/** Default geometry shader used by the default effect */
+	class WShader* m_geometryShader;
+	/** Default fragment shader used by the default effect */
+	class WShader* m_fragmentShader;
 };
