@@ -104,7 +104,7 @@ bool WasabiTester::Loop(float fDeltaTime) {
 	ApplyMousePivot();
 
 	char title[128];
-	sprintf_s(title, 128, "FPS: %.2f", FPS);
+	sprintf_s(title, 128, "FPS: %.2f (Elapsed %.2fs)", FPS, Timer.GetElapsedTime());
 	TextComponent->RenderText(title, 5, 5, 32);
 
 	return true;

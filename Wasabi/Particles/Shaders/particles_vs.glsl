@@ -4,15 +4,21 @@ R"(
 #extension GL_ARB_shading_language_420pack : enable
 
 layout(location = 0) in vec3 inPos;
-layout(location = 0) out vec4 outPos;
+layout(location = 1) in vec3 inSize;
+layout(location = 2) in float inAlpha;
+
+layout(location = 0) out vec3 outSize;
+layout(location = 1) out float outAlpha;
 
 layout(binding = 0) uniform UBOPerParticles {
-	mat4 worldView;
-	mat4 projection;
+	mat4 world;
+	mat4 view;
+	mat4 proj;
 } uboPerParticles;
 
 void main() {
-	gl_Position = uboPerParticles.worldView * vec4(inPos.xyz, 1.0);
-	outPos = gl_Position;
+	gl_Position = uboPerParticles.world * vec4(inPos.xyz, 1.0);
+	outSize = inSize;
+	outAlpha = inAlpha;
 }
 )"
