@@ -4,9 +4,14 @@ R"(
 #extension GL_ARB_shading_language_420pack : enable
 
 layout(location = 0) in vec2 inUV;
+layout(location = 1) in float inAlpha;
 layout(location = 0) out vec4 outFragColor;
 
+layout(binding = 1) uniform sampler2D samplerColor;
+
 void main() {
-	outFragColor = vec4(inUV.xy, 0, 1);
+	vec4 color = texture(samplerColor, inUV).rgba;
+	color *= inAlpha;
+	outFragColor = color;
 }
 )"
