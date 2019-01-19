@@ -20,6 +20,9 @@
     <ClCompile Include="Particles\Particles.cpp">
       <Filter>Particles</Filter>
     </ClCompile>
+    <ClCompile Include="Terrain\Terrain.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestSuite.hpp" />
@@ -41,6 +44,9 @@
     <ClInclude Include="Particles\Particles.hpp">
       <Filter>Particles</Filter>
     </ClInclude>
+    <ClInclude Include="Terrain\Terrain.hpp">
+      <Filter>Terrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Lights">
@@ -60,6 +66,9 @@
     </Filter>
     <Filter Include="Particles">
       <UniqueIdentifier>{4ffc94b6-828b-4487-905f-74fe6c03159d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Terrain">
+      <UniqueIdentifier>{02d1e8d7-8fa0-4ca5-9bb1-ce0e50304485}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

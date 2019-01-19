@@ -46,6 +46,7 @@
     <ClCompile Include="Sounds\WSound.cpp" />
     <ClCompile Include="Sprites\WSprite.cpp" />
     <ClCompile Include="stb\stb_vorbis.c" />
+    <ClCompile Include="Terrains\WTerrain.cpp" />
     <ClCompile Include="Texts\WText.cpp" />
     <ClCompile Include="Windows\Windows\WWC_Win32.cpp" />
   </ItemGroup>
@@ -98,6 +99,7 @@
     <ClInclude Include="stb\stb_truetype.h" />
     <ClInclude Include="stb\stb_voxel_render.h" />
     <ClInclude Include="stb\stretchy_buffer.h" />
+    <ClInclude Include="Terrains\WTerrain.h" />
     <ClInclude Include="Texts\WText.h" />
     <ClInclude Include="Wasabi.h" />
     <ClInclude Include="Windows\Windows\WWC_Win32.h" />

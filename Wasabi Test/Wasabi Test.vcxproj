@@ -155,6 +155,7 @@
     <ClCompile Include="Particles\Particles.cpp" />
     <ClCompile Include="RenderTargetTexture\RenderTargetTexture.cpp" />
     <ClCompile Include="Sound\Sound.cpp" />
+    <ClCompile Include="Terrain\Terrain.cpp" />
     <ClCompile Include="TestSuite.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +165,7 @@
     <ClInclude Include="Particles\Particles.hpp" />
     <ClInclude Include="RenderTargetTexture\RenderTargetTexture.hpp" />
     <ClInclude Include="Sound\Sound.hpp" />
+    <ClInclude Include="Terrain\Terrain.hpp" />
     <ClInclude Include="TestSuite.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
