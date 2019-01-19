@@ -15,6 +15,7 @@
 #include "../Sounds/WSound.h"
 #include "../Texts/WText.h"
 #include "../Particles/WParticles.h"
+#include "../Terrains/WTerrain.h"
 
 #ifdef _WIN32
 #include "../Windows/Windows/WWC_Win32.h"
@@ -139,6 +140,7 @@ Wasabi::Wasabi() : Timer(W_TIMER_SECONDS, true) {
 	LightManager = nullptr;
 	AnimationManager = nullptr;
 	ParticlesManager = nullptr;
+	TerrainManager = nullptr;
 
 	m_copyCommandBuffer = VK_NULL_HANDLE;
 
@@ -164,6 +166,7 @@ void Wasabi::_DestroyResources() {
 	W_SAFE_DELETE(PhysicsComponent);
 	W_SAFE_DELETE(Renderer);
 
+	W_SAFE_DELETE(TerrainManager);
 	W_SAFE_DELETE(ParticlesManager);
 	W_SAFE_DELETE(ObjectManager);
 	W_SAFE_DELETE(SpriteManager);
@@ -426,6 +429,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	LightManager = new WLightManager(this);
 	AnimationManager = new WAnimationManager(this);
 	ParticlesManager = new WParticlesManager(this);
+	TerrainManager = new WTerrainManager(this);
 
 	if (!CameraManager->Load()) {
 		_DestroyResources();
@@ -455,6 +459,10 @@ WError Wasabi::StartEngine(int width, int height) {
 		return WError(W_ERRORUNK);
 	}
 	if (!ParticlesManager->Load()) {
+		_DestroyResources();
+		return WError(W_ERRORUNK);
+	}
+	if (!TerrainManager->Load()) {
 		_DestroyResources();
 		return WError(W_ERRORUNK);
 	}

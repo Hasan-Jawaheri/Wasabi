@@ -25,6 +25,7 @@
 #include "Animations/WAnimation.h"
 #include "Animations/WSkeletalAnimation.h"
 #include "Particles/WParticles.h"
+#include "Terrains/WTerrain.h"
 #ifdef _WIN32
 #include "Windows/Windows/WWC_Win32.h"
 #include "Input/Windows/WIC_Win32.h"

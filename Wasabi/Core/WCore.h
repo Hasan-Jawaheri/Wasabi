@@ -153,6 +153,8 @@ public:
 	class WAnimationManager* AnimationManager;
 	/** Pointer to the particles manager */
 	class WParticlesManager* ParticlesManager;
+	/** Pointer to the terrain manager */
+	class WTerrainManager* TerrainManager;
 
 	/** A timer object, which starts counting when the application starts */
 	WTimer Timer;

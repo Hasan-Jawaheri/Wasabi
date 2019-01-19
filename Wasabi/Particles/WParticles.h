@@ -220,7 +220,7 @@ public:
 	void DisableFrustumCulling();
 
 	/**
-	 * Checks if the light system appears anywhere in the view of the camera
+	 * Checks if the particle system appears anywhere in the view of the camera
 	 * @param  cam Camera to check against
 	 * @return     true if the particle system is in the viewing frustum of
 	 *             cam, false otherwise

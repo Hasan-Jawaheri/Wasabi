@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ ParticlesDemo
+#define _DEMO_STATE_CLASSNAME_ TerrainDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo
@@ -12,6 +12,7 @@
  * - InstancingDemo
  * - LightsDemo
  * - ParticlesDemo
+ * - TerrainDemo
  ******************************************************************/
 
 #include "RenderTargetTexture/RenderTargetTexture.hpp"
@@ -20,6 +21,7 @@
 #include "Instancing/Instancing.hpp"
 #include "Lights/Lights.hpp"
 #include "Particles/Particles.hpp"
+#include "Terrain/Terrain.hpp"
 
 void WasabiTester::ApplyMousePivot() {
 	WCamera* cam = CameraManager->GetDefaultCamera();

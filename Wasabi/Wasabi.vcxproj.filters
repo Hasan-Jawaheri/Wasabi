@@ -67,6 +67,9 @@
     <Filter Include="Particles\Shaders">
       <UniqueIdentifier>{eacb7417-6b01-4b86-bd3f-1eec84e94863}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Terrains">
+      <UniqueIdentifier>{3b9ce3fe-fa1a-4217-b9a4-8aede75d9406}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -155,6 +158,9 @@
     </ClCompile>
     <ClCompile Include="Particles\WParticles.cpp">
       <Filter>Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrains\WTerrain.cpp">
+      <Filter>Terrains</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -311,6 +317,9 @@
     <ClInclude Include="Wasabi.h" />
     <ClInclude Include="Particles\WParticles.h">
       <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrains\WTerrain.h">
+      <Filter>Terrains</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
