@@ -152,7 +152,7 @@ WError WTextComponent::Initialize() {
 	ps->RemoveReference();
 
 	if (ret)
-		ret = CreateFont(0, "Arial");
+		ret = CreateTextFont(0, "Arial");
 	m_curFont = 0;
 
 	return WError(W_SUCCEEDED);
@@ -166,7 +166,7 @@ void WTextComponent::AddFontDirectory(std::string dir) {
 	}
 }
 
-WError WTextComponent::CreateFont(unsigned int ID, std::string fontName) {
+WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(ID);
 	if (obj != m_fonts.end())
 		return WError(W_INVALIDPARAM);
@@ -294,15 +294,15 @@ WError WTextComponent::SetFont(unsigned int ID) {
 	return WError(W_INVALIDPARAM);
 }
 
-WError WTextComponent::RenderText(std::string text, int x, int y, float fHeight) {
+WError WTextComponent::RenderText(std::string text, float x, float y, float fHeight) {
 	return RenderText(text, x, y, fHeight, m_curFont, m_curColor);
 }
 
-WError WTextComponent::RenderText(std::string text, int x, int y, float fHeight, unsigned int fontID) {
+WError WTextComponent::RenderText(std::string text, float x, float y, float fHeight, unsigned int fontID) {
 	return RenderText(text, x, y, fHeight, fontID, m_curColor);
 }
 
-WError WTextComponent::RenderText(std::string text, int x, int y, float fHeight, unsigned int fontID, WColor col) {
+WError WTextComponent::RenderText(std::string text, float x, float y, float fHeight, unsigned int fontID, WColor col) {
 	if (text.length() > (unsigned int)m_app->engineParams["textBatchSize"])
 		return WError(W_INVALIDPARAM);
 

@@ -273,6 +273,9 @@ WError WSprite::Load() {
 }
 
 void WSprite::SetImage(WImage* img) {
+	if (!m_geometry && !m_lastLoadFailed)
+		Load();
+
 	W_SAFE_REMOVEREF(m_img);
 
 	m_img = img;
@@ -345,6 +348,9 @@ void WSprite::SetPriority(unsigned int priority) {
 }
 
 void WSprite::SetAlpha(float fAlpha) {
+	if (!m_geometry && !m_lastLoadFailed)
+		Load();
+
 	m_alpha = fAlpha;
 	m_material->SetVariableFloat("alpha", m_alpha);
 }

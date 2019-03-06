@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ SpritesDemo
+#define _DEMO_STATE_CLASSNAME_ LightsDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo
@@ -97,6 +97,8 @@ WError WasabiTester::Setup() {
 		return ret;
 	}
 
+	TextComponent->CreateTextFont(1, "Calibri");
+
 	LightManager->GetDefaultLight()->Point(0, -1, -1);
 
 	SwitchState(state);
@@ -109,7 +111,7 @@ bool WasabiTester::Loop(float fDeltaTime) {
 
 	char title[128];
 	sprintf_s(title, 128, "FPS: %.2f (Elapsed %.2fs)", FPS, Timer.GetElapsedTime());
-	TextComponent->RenderText(title, 5, 5, 32);
+	TextComponent->RenderText(title, 5, 5, 32, 1);
 
 	return true;
 }
