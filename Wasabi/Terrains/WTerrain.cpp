@@ -2,6 +2,7 @@
 #include "../Cameras/WCamera.h"
 #include "../Images/WImage.h"
 #include "../Images/WRenderTarget.h"
+#include "../Geometries/WGeometry.h"
 
 WTerrainManager::WTerrainManager(class Wasabi* const app)
 	: WManager<WTerrain>(app) {
@@ -32,6 +33,8 @@ WTerrain::WTerrain(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 
 	m_WorldM = WMatrix();
 
+	m_blockGeometry = nullptr;
+
 	app->TerrainManager->AddEntity(this);
 }
 
@@ -46,6 +49,7 @@ std::string WTerrain::GetTypeName() const {
 }
 
 void WTerrain::_DestroyResources() {
+	W_SAFE_REMOVEREF(m_blockGeometry);
 }
 
 bool WTerrain::Valid() const {
@@ -64,8 +68,15 @@ bool WTerrain::Hidden() const {
 	return m_hidden;
 }
 
-WError WTerrain::Create() {
+WError WTerrain::Create(unsigned int N, float size) {
+	if (N > 1 && (N & (N - 1)) == 0) // check power of 2
+		return WError(W_INVALIDPARAM);
+	if (size <= 0)
+		return WError(W_INVALIDPARAM);
 	_DestroyResources();
+
+	m_blockGeometry->CreatePlain(N * size, N - 2, N - 2);
+
 	return WError(W_SUCCEEDED);
 }
 
