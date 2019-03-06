@@ -28,6 +28,8 @@ class WSprite : public WBase {
 	 */
 	virtual std::string GetTypeName() const;
 
+	/** True if the last call to Load() failed */
+	bool m_lastLoadFailed;
 	/** true if the sprite is hidden (will no render), false otherwise */
 	bool m_hidden;
 	/** Texture of the sprite */
@@ -45,13 +47,23 @@ class WSprite : public WBase {
 	/** Alpha (transparency) of the sprite, 0 being fully transparent and 1 being
 	    fully opaque */
 	float m_alpha;
+	/** true if position/size/etc... changed and geometry needs to be rebuilt */
+	bool m_geometry_changed;
 
-	/** Custom material for this sprite (if provided) */
-	class WMaterial* m_customMaterial;
+	/** Rendering material */
+	class WMaterial* m_material;
+	/** Rendering geometry */
+	class WGeometry* m_geometry;
 
 public:
 	WSprite(Wasabi* const app, unsigned int ID = 0);
 	~WSprite();
+
+	/**
+	 * Loads the sprite's resources (material and geometry). If material is
+	 * already set (via SetMaterial()) then it will not be changed.
+	 */
+	WError Load();
 
 	/**
 	 * Sets the texture of the sprite.
@@ -153,6 +165,9 @@ public:
 	/**
 	 * Renders the sprite. The sprite will not render if its hidden or invalid
 	 * (see Valid()).
+	 * Material settings during render:
+	 * - Variable "alpha" will be set to the sprite's alpha
+	 * - Texture slot 1 will be set to the sprite's current texture
 	 * @param rt Render target to render to
 	 */
 	void Render(class WRenderTarget* rt);
@@ -242,14 +257,14 @@ class WSpriteManager : public WManager<WSprite> {
 	 */
 	virtual std::string GetTypeName() const;
 
-	/** Geometry used to render sprites */
-	class WGeometry* m_spriteGeometry;
 	/** Geometry used to render full-screen sprites */
 	class WGeometry* m_spriteFullscreenGeometry;
-	/** Material used to render sprites */
-	class WMaterial* m_spriteMaterial;
 	/** Vertex shader used by all sprites */
 	class WShader* m_spriteVertexShader;
+	/** Default pixel shader used by sprites */
+	class WShader* m_spritePixelShader;
+
+	class WGeometry* CreateSpriteGeometry() const;
 
 public:
 	WSpriteManager(class Wasabi* const app);
@@ -272,4 +287,30 @@ public:
 	 * @return Default vertex shader that sprites use
 	 */
 	class WShader* GetSpriteVertexShader() const;
+
+	/**
+	 * Retrieves the default pixel shader that sprites can use.
+	 * @return Default pixel shader that sprites can use
+	 */
+	class WShader* GetSpritePixelShader() const;
+
+	/**
+	 * Creates a new WEffect using the default sprite vertex shader and a
+	 * supplied pixel shader and other states
+	 * @param ps  A pixel/fragment shader to use. If none is provided, the
+	 *            default pixel shader will be used
+	 * @param bs  Blend state to use. If none is provided, the default
+	 *            blend state will be used (do not set .colorWriteMask to 0)
+	 * @param bs  Depth/stencil state to use. If none is provided, the default
+	 *            depth/stencil state will be used
+	 * @param bs  Rasterization state to use. If none is provided, the default
+	 *            rasterization state will be used
+	 * @return    Newly created effect, or nullptr on failure
+	 */
+	class WEffect* CreateSpriteEffect(
+		WShader* ps = nullptr,
+		VkPipelineColorBlendAttachmentState bs = {},
+		VkPipelineDepthStencilStateCreateInfo dss = {},
+		VkPipelineRasterizationStateCreateInfo rs = {}
+	) const;
 };
