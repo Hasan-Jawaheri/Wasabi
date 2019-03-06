@@ -25,9 +25,9 @@ typedef struct W_RENDERING_TEXT {
 	/** Height of the text */
 	float fHeight;
 	/** x-coordinate to render at (in screen-space) */
-	int x;
+	float x;
 	/** y-coordinate to render at (in screen-space) */
-	int y;
+	float y;
 } W_RENDERING_TEXT;
 
 /**
@@ -85,7 +85,7 @@ public:
 	 *                  AddFontDirectory())
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateFont(unsigned int ID, std::string fontName);
+	WError CreateTextFont(unsigned int ID, std::string fontName);
 
 	/**
 	 * Destroys a font.
@@ -118,7 +118,7 @@ public:
 	 * @param  fHeight Height of a text character
 	 * @return         Error code, see WError.h
 	 */
-	WError RenderText(std::string text, int x, int y, float fHeight);
+	WError RenderText(std::string text, float x, float y, float fHeight);
 
 	/**
 	 * Adds text to be rendered on the next frame.
@@ -129,7 +129,7 @@ public:
 	 * @param  fontID  ID of the font to use
 	 * @return         Error code, see WError.h
 	 */
-	WError RenderText(std::string text, int x, int y, float fHeight, unsigned int fontID);
+	WError RenderText(std::string text, float x, float y, float fHeight, unsigned int fontID);
 
 	/**
 	 * Adds text to be rendered on the next frame.
@@ -141,7 +141,7 @@ public:
 	 * @param  col     Color to use for rendering
 	 * @return         Error code, see WError.h
 	 */
-	WError RenderText(std::string text, int x, int y, float fHeight, unsigned int fontID, WColor col);
+	WError RenderText(std::string text, float x, float y, float fHeight, unsigned int fontID, WColor col);
 
 	/**
 	 * Renders all text onto the render target.

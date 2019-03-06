@@ -33,7 +33,7 @@ void RenderTargetTextureDemo::Load() {
 	o3->SetPosition(4, 4, 0);
 	o3->SetAngle(0, 0, 80);
 
-	m_app->TextComponent->CreateFont(1, "arial");
+	m_app->TextComponent->CreateTextFont(2, "arial");
 
 	WImage* img = new WImage(m_app);
 	((WFRMaterial*)o2->GetMaterial())->Texture(img);
@@ -80,8 +80,8 @@ void RenderTargetTextureDemo::Update(float fDeltaTime) {
 
 	char title[128];
 	sprintf_s(title, 128, "Elapsed time: %.2f\nFPS: %.2f", m_app->Timer.GetElapsedTime() / 1000.0f, m_app->FPS);
-	int width = m_app->TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
-	m_app->TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 1);
+	int width = m_app->TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 2);
+	m_app->TextComponent->RenderText(title, mx - width / 2, my - 45, 32, 2);
 }
 
 void RenderTargetTextureDemo::Cleanup() {
