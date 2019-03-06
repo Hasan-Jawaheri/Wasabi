@@ -78,6 +78,13 @@ struct W_VERTEX_DESCRIPTION {
 	 *                     if it cannot be found
 	 */
 	unsigned int GetIndex(std::string attrib_name) const;
+
+	/**
+	 * Checks if this vertex description is equal to another one
+	 * @param other  Other vertex description to compare against
+	 * @return       true if both descriptions are the same, false otherwise
+	 */
+	bool isEqualTo(W_VERTEX_DESCRIPTION other) const;
 };
 
 /**

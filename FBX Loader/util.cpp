@@ -142,13 +142,16 @@ bool LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename)
 }
 
 void RedirectIOToConsole() {
+	// allocate a console for this app
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONIN$", "r", stdin);
+
+	/*
 	int hConHandle;
 	long lStdHandle;
 	CONSOLE_SCREEN_BUFFER_INFO coninfo;
 	FILE *fp;
-
-	// allocate a console for this app
-	AllocConsole();
 
 	// set the screen buffer to be big enough to let us scroll text
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
@@ -186,5 +189,5 @@ void RedirectIOToConsole() {
 
 	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
 	// point to console as well
-	ios::sync_with_stdio();
+	ios::sync_with_stdio();*/
 }

@@ -28,9 +28,13 @@ public:
 
 	/**
 	 * Initializes the terrain.
+	 * @param N    Dimension (in number of vertices) of each block in the
+	 *             terrain, must be a power of 2 greater than 1
+	 * @param size Size of each square in the highest resolution block, must be
+	 *             greater than 0
 	 * @return Error code, see WError.h
 	 */
-	WError Create();
+	WError Create(unsigned int N = 256, float size = 1.0f);
 
 	/**
 	 * Renders the terrain to the given render target.
@@ -80,6 +84,8 @@ private:
 	bool m_hidden;
 	/** Local world matrix */
 	WMatrix m_WorldM;
+
+	class WGeometry* m_blockGeometry;
 
 	/**
 	 * Destroys all resources held by this terrain

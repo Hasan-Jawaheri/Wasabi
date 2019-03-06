@@ -68,6 +68,15 @@ unsigned int W_VERTEX_DESCRIPTION::GetIndex(std::string attrib_name) const {
 	return -1;
 }
 
+bool W_VERTEX_DESCRIPTION::isEqualTo(W_VERTEX_DESCRIPTION other) const {
+	if (attributes.size() != other.attributes.size())
+		return false;
+	for (int i = 0; i < attributes.size(); i++)
+		if (attributes[i].name != other.attributes[i].name)
+			return false;
+	return true;
+}
+
 std::string WGeometryManager::GetTypeName(void) const {
 	return "Geometry";
 }
@@ -886,23 +895,28 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 	W_VERTEX_DESCRIPTION from_desc = from->GetVertexDescription(0);
 	void *vb, *fromvb, *fromib;
 
-	vb = malloc(num_verts *my_desc.GetSize());
-	if (!vb)
-		return WError(W_OUTOFMEMORY);
+	if (!my_desc.isEqualTo(from_desc)) {
+		vb = W_SAFE_ALLOC(num_verts *my_desc.GetSize());
+		if (!vb)
+			return WError(W_OUTOFMEMORY);
+	}
 
 	WError ret = from->MapIndexBuffer((uint**)&fromib, true);
 	if (!ret) {
-		free(vb);
+		W_SAFE_FREE(vb);
 		return ret;
 	}
 	ret = from->MapVertexBuffer(&fromvb, true);
 	if (!ret) {
 		from->UnmapIndexBuffer();
-		free(vb);
+		W_SAFE_FREE(vb);
 		return ret;
 	}
 
-	ConvertVertices(fromvb, vb, num_verts, from_desc, my_desc);
+	if (!vb)
+		vb = fromvb;
+	else
+		ConvertVertices(fromvb, vb, num_verts, from_desc, my_desc);
 
 	bool bCalcTangents = false, bCalcNormals = false;
 	if (my_desc.GetOffset("normal") >= 0 && from_desc.GetOffset("normal") == -1)
@@ -912,7 +926,8 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 
 	from->UnmapVertexBuffer();
 	ret = CreateFromData(vb, num_verts, fromib, num_indices, bDynamic, bCalcNormals, bCalcTangents);
-	free(vb);
+	if (!my_desc.isEqualTo(from_desc))
+		W_SAFE_FREE(vb);
 	from->UnmapIndexBuffer();
 
 	if (ret && from->m_animationbuf.buffer.buf) {
@@ -958,7 +973,7 @@ WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
 			temp[namesize] = '\0';
 			desc.attributes[i].name = temp;
 		}
-		from_descs.push_back(desc);
+		from_descs[d] = desc;
 	}
 
 	unsigned int numV, numI;
@@ -979,13 +994,20 @@ WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
 
 	WError ret;
 	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(0);
-	void* convertedVB = calloc(numV, my_desc.GetSize());
+	void* convertedVB;
+	if (my_desc.isEqualTo(from_descs[0]))
+		convertedVB = vb;
+	else
+		convertedVB = W_SAFE_ALLOC(numV * my_desc.GetSize());
+
 	if (!convertedVB) {
 		ret = WError(W_OUTOFMEMORY);
 		W_SAFE_FREE(vb);
 	}  else {
-		ConvertVertices(vb, convertedVB, numV, from_descs[0], my_desc);
-		W_SAFE_FREE(vb);
+		if (!my_desc.isEqualTo(from_descs[0])) {
+			ConvertVertices(vb, convertedVB, numV, from_descs[0], my_desc);
+			W_SAFE_FREE(vb);
+		}
 
 		bool bCalcTangents = false, bCalcNormals = false;
 		if (my_desc.GetOffset("normal") >= 0 && from_descs[0].GetOffset("normal") == -1)
@@ -994,7 +1016,8 @@ WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
 			bCalcTangents = true;
 
 		ret = CreateFromData(convertedVB, numV, ib, numI, bDynamic, bCalcNormals, bCalcTangents);
-		free(convertedVB);
+
+		W_SAFE_FREE(convertedVB);
 	}
 	W_SAFE_FREE(ib);
 
@@ -1139,20 +1162,26 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	file.close();
 
 	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(0);
-	void* newverts = (char*)calloc(numV, my_desc.GetSize());
+	void* newverts;
+	if (my_desc.isEqualTo(hx_vtx_desc))
+		newverts = v;
+	else
+		newverts = (char*)W_SAFE_ALLOC(numV * my_desc.GetSize());
 	if (!newverts) {
 		W_SAFE_DELETE_ARRAY(v);
 		W_SAFE_DELETE_ARRAY(ind);
 		return WError(W_OUTOFMEMORY);
 	}
 
-	ConvertVertices((void*)v, newverts, numV, hx_vtx_desc, my_desc);
-	W_SAFE_DELETE_ARRAY(v);
+	if (!my_desc.isEqualTo(hx_vtx_desc)) {
+		ConvertVertices((void*)v, newverts, numV, hx_vtx_desc, my_desc);
+		W_SAFE_DELETE_ARRAY(v);
+	}
 
 	WError ret = CreateFromData(newverts, numV, ind, numI, bDynamic);
 
 	//de-allocate the temporary buffers
-	free(newverts);
+	W_SAFE_FREE(newverts);
 	W_SAFE_DELETE_ARRAY(ind);
 
 	if (a) {

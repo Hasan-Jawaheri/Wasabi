@@ -28,7 +28,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 int main() {
 #endif
 	Wasabi* app = WInitialize();
-
 	app->Timer.Start();
 	if (app && app->Setup()) {
 		unsigned int numFrames = 0;
@@ -39,7 +38,7 @@ int main() {
 			auto tStart = std::chrono::high_resolution_clock::now();
 			app->Timer.GetElapsedTime(true); // record elapsed time
 
-			if (!app->WindowComponent->Loop())
+			if (app->WindowComponent && !app->WindowComponent->Loop())
 				continue;
 
 			if (deltaTime >= 0.00001f) {
@@ -51,8 +50,10 @@ int main() {
 					app->PhysicsComponent->Step(deltaTime);
 			}
 
-			app->AnimationManager->Update(deltaTime);
-			app->Renderer->_Render();
+			if (app->AnimationManager)
+				app->AnimationManager->Update(deltaTime);
+			if (app->Renderer)
+				app->Renderer->_Render();
 
 			numFrames++;
 
