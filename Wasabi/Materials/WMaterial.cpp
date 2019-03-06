@@ -177,72 +177,70 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 		s.descriptorCount = m_sampler_info.size();
 		typeCounts.push_back(s);
 	}
-	// For additional types you need to add new entries in the type count list
-	// E.g. for two combined image samplers :
-	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	// typeCounts[1].descriptorCount = 2;
 
-	// Create the global descriptor pool
-	// All descriptors used in this example are allocated from this pool
-	VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
-	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	descriptorPoolInfo.pNext = NULL;
-	descriptorPoolInfo.poolSizeCount = typeCounts.size();
-	descriptorPoolInfo.pPoolSizes = typeCounts.data();
-	// Set the max. number of sets that can be requested
-	// Requesting descriptors beyond maxSets will result in an error
-	descriptorPoolInfo.maxSets = descriptorPoolInfo.poolSizeCount;
+	if (typeCounts.size() > 0) {
+		// Create the global descriptor pool
+		// All descriptors used in this example are allocated from this pool
+		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolInfo.pNext = NULL;
+		descriptorPoolInfo.poolSizeCount = typeCounts.size();
+		descriptorPoolInfo.pPoolSizes = typeCounts.data();
+		// Set the max. number of sets that can be requested
+		// Requesting descriptors beyond maxSets will result in an error
+		descriptorPoolInfo.maxSets = descriptorPoolInfo.poolSizeCount;
 
-	VkResult vkRes = vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_descriptorPool);
-	if (vkRes) {
-		_DestroyResources();
-		return WError(W_OUTOFMEMORY);
+		VkResult vkRes = vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_descriptorPool);
+		if (vkRes) {
+			_DestroyResources();
+			return WError(W_OUTOFMEMORY);
+		}
+
+		//
+		// Create descriptor set
+		//
+
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = m_descriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = effect->GetDescriptorSetLayout();
+
+		vkRes = vkAllocateDescriptorSets(device, &allocInfo, &m_descriptorSet);
+		if (vkRes) {
+			_DestroyResources();
+			return WError(W_OUTOFMEMORY);
+		}
+
+		// Update descriptor sets determining the shader binding points
+		// For every binding point used in a shader there needs to be one
+		// descriptor set matching that binding point
+		vector<VkWriteDescriptorSet> writes;
+		for (int i = 0; i < m_uniformBuffers.size(); i++) {
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = m_descriptorSet;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			writeDescriptorSet.pBufferInfo = &m_uniformBuffers[i].descriptor;
+			writeDescriptorSet.dstBinding = m_uniformBuffers[i].ubo_info->binding_index;
+
+			writes.push_back(writeDescriptorSet);
+		}
+		for (int i = 0; i < m_sampler_info.size(); i++) {
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = m_descriptorSet;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
+			writeDescriptorSet.dstBinding = m_sampler_info[i].sampler_info->binding_index;
+
+			writes.push_back(writeDescriptorSet);
+		}
+
+		vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, NULL);
 	}
-
-	//
-	// Create descriptor set
-	//
-
-	VkDescriptorSetAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = m_descriptorPool;
-	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = effect->GetDescriptorSetLayout();
-
-	vkRes = vkAllocateDescriptorSets(device, &allocInfo, &m_descriptorSet);
-	if (vkRes) {
-		_DestroyResources();
-		return WError(W_OUTOFMEMORY);
-	}
-
-	// Update descriptor sets determining the shader binding points
-	// For every binding point used in a shader there needs to be one
-	// descriptor set matching that binding point
-	vector<VkWriteDescriptorSet> writes;
-	for (int i = 0; i < m_uniformBuffers.size(); i++) {
-		VkWriteDescriptorSet writeDescriptorSet = {};
-		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSet.dstSet = m_descriptorSet;
-		writeDescriptorSet.descriptorCount = 1;
-		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		writeDescriptorSet.pBufferInfo = &m_uniformBuffers[i].descriptor;
-		writeDescriptorSet.dstBinding = m_uniformBuffers[i].ubo_info->binding_index;
-
-		writes.push_back(writeDescriptorSet);
-	}
-	for (int i = 0; i < m_sampler_info.size(); i++) {
-		VkWriteDescriptorSet writeDescriptorSet = {};
-		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSet.dstSet = m_descriptorSet;
-		writeDescriptorSet.descriptorCount = 1;
-		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
-		writeDescriptorSet.dstBinding = m_sampler_info[i].sampler_info->binding_index;
-
-		writes.push_back(writeDescriptorSet);
-	}
-
-	vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, NULL);
 
 	m_effect = effect;
 	effect->AddReference();

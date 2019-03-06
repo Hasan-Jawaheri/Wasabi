@@ -311,7 +311,6 @@ WError WDeferredRenderer::LoadDependantResources() {
 	VkPipelineColorBlendAttachmentState bs = {};
 	VkPipelineDepthStencilStateCreateInfo dss = {};
 	WShader* compositionPS = nullptr;
-	WEffect* compositionFX = nullptr;
 
 	//
 	// Create the LightBuffer
@@ -324,22 +323,11 @@ WError WDeferredRenderer::LoadDependantResources() {
 	// Create the final composition material
 	//
 
-	WShader* compositionVS = m_app->SpriteManager->GetSpriteVertexShader();
 	compositionPS = new SceneCompositionPS(m_app);
 	compositionPS->Load();
-	compositionFX = new WEffect(m_app);
-	werr = compositionFX->BindShader(compositionVS);
-	if (!werr)
-		goto error;
 
-	werr = compositionFX->BindShader(compositionPS);
-	if (!werr)
-		goto error;
-
-	bs.colorWriteMask = 0xf;
 	bs.blendEnable = VK_FALSE;
 	bs.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	compositionFX->SetBlendingState(bs);
 
 	dss.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	dss.depthTestEnable = VK_FALSE;
@@ -347,14 +335,14 @@ WError WDeferredRenderer::LoadDependantResources() {
 	dss.depthBoundsTestEnable = VK_FALSE;
 	dss.stencilTestEnable = VK_FALSE;
 	dss.front = dss.back;
-	compositionFX->SetDepthStencilState(dss);
 
-	werr = compositionFX->BuildPipeline(m_renderTarget);
-	if (!werr)
+	WEffect* compositionFX = m_app->SpriteManager->CreateSpriteEffect(compositionPS, bs, dss);
+	if (!compositionFX)
 		goto error;
 
 	m_compositionMaterial = new WMaterial(m_app);
 	werr = m_compositionMaterial->SetEffect(compositionFX);
+	W_SAFE_REMOVEREF(compositionFX);
 	if (!werr)
 		goto error;
 
@@ -368,6 +356,7 @@ WError WDeferredRenderer::LoadDependantResources() {
 
 	m_masterRenderSprite = new WSprite(m_app);
 	m_masterRenderSprite->SetMaterial(m_compositionMaterial);
+	m_masterRenderSprite->Load();
 	m_masterRenderSprite->SetSize(m_width, m_height);
 	m_masterRenderSprite->Hide();
 
@@ -380,7 +369,6 @@ error:
 
 success:
 	W_SAFE_REMOVEREF(compositionPS);
-	W_SAFE_REMOVEREF(compositionFX);
 
 	return werr;
 }
@@ -704,26 +692,17 @@ error:
 
 WError WDeferredRenderer::LightBufferStage::_LoadDirectionalLightsAssets() {
 	LightTypeAssets assets;
-	WShader* vertex_shader = m_renderer->m_app->SpriteManager->GetSpriteVertexShader();
+	WError werr(W_SUCCEEDED);
 	WShader* pixel_shader = new DirectionalLightPS(m_renderer->m_app);
 	pixel_shader->Load();
-	assets.effect = new WEffect(m_renderer->m_app);
-	WError werr = assets.effect->BindShader(vertex_shader);
-	if (!werr)
+	assets.effect = m_renderer->m_app->SpriteManager->CreateSpriteEffect(pixel_shader, m_blendState);
+	if (!assets.effect) {
+		werr = WError(W_OUTOFMEMORY);
 		goto error;
-
-	werr = assets.effect->BindShader(pixel_shader);
-	if (!werr)
-		goto error;
-
-	assets.effect->SetBlendingState(m_blendState);
-	assets.effect->SetRasterizationState(m_rasterizationState);
-
-	werr = assets.effect->BuildPipeline(m_renderTarget);
-	if (!werr)
-		goto error;
+	}
 
 	assets.fullscreen_sprite = new WSprite(m_renderer->m_app);
+	assets.fullscreen_sprite->Load();
 	assets.fullscreen_sprite->SetSize(m_renderer->m_width, m_renderer->m_height);
 	assets.fullscreen_sprite->Hide();
 
@@ -791,7 +770,6 @@ WError WDeferredRenderer::LightBufferStage::Render(class WCamera* cam) {
 
 		if (assets.fullscreen_sprite) {
 			assets.fullscreen_sprite->Show();
-			assets.fullscreen_sprite->SetMaterial(material);
 			assets.fullscreen_sprite->Render(m_renderTarget);
 			assets.fullscreen_sprite->Hide();
 		}
