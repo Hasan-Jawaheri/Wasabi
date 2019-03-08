@@ -4,14 +4,33 @@
 #include <unordered_map>
 using std::unordered_map;
 
+size_t W_SHADER_VARIABLE_TYPE_SIZES[] = { 4, 4, 4, 2 };
+
+W_SHADER_VARIABLE_INFO::W_SHADER_VARIABLE_INFO(
+	W_SHADER_VARIABLE_TYPE _type,
+	int _num_elems,
+	std::string _name
+) : type(_type), num_elems(_num_elems), name(_name) {
+	_size = W_SHADER_VARIABLE_TYPE_SIZES[(int)type] * num_elems;
+}
+
 size_t W_SHADER_VARIABLE_INFO::GetSize() const {
-	if (_size == -1)
-		_size = 4 * num_elems;
 	return _size;
 }
 
+size_t W_SHADER_VARIABLE_INFO::GetAlignment() const {
+	int N = W_SHADER_VARIABLE_TYPE_SIZES[(int)type];
+	if (num_elems <= 2) // scalar or 2d vector: N or 2N
+		return N * num_elems;
+	else if (num_elems <= 4) // 3d/4d vector: 4N
+		return N * 4;
+	else // array: num_elems*N rounded up to align with 16
+		return (int)((int)(N * num_elems + 15) / 16) * 16;
+}
+
 VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
-	if (type == W_TYPE_FLOAT) {
+	switch (type) {
+	case W_TYPE_FLOAT:
 		switch (num_elems) {
 		case 1: return VK_FORMAT_R32_SFLOAT;
 		case 2: return VK_FORMAT_R32G32_SFLOAT;
@@ -19,7 +38,8 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
 		case 4: return VK_FORMAT_R32G32B32A32_SFLOAT;
 		default: return VK_FORMAT_UNDEFINED;
 		}
-	} else if (type == W_TYPE_INT) {
+		break;
+	case W_TYPE_INT:
 		switch (num_elems) {
 		case 1: return VK_FORMAT_R32_SINT;
 		case 2: return VK_FORMAT_R32G32_SINT;
@@ -27,7 +47,8 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
 		case 4: return VK_FORMAT_R32G32B32A32_SINT;
 		default: return VK_FORMAT_UNDEFINED;
 		}
-	} else if (type == W_TYPE_UINT) {
+		break;
+	case W_TYPE_UINT:
 		switch (num_elems) {
 		case 1: return VK_FORMAT_R32_UINT;
 		case 2: return VK_FORMAT_R32G32_UINT;
@@ -35,22 +56,43 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
 		case 4: return VK_FORMAT_R32G32B32A32_UINT;
 		default: return VK_FORMAT_UNDEFINED;
 		}
+		break;
+	case W_TYPE_HALF:
+		switch (num_elems) {
+		case 1: return VK_FORMAT_R16_SFLOAT;
+		case 2: return VK_FORMAT_R16G16_SFLOAT;
+		case 3: return VK_FORMAT_R16G16B16_SFLOAT;
+		case 4: return VK_FORMAT_R16G16B16A16_SFLOAT;
+		default: return VK_FORMAT_UNDEFINED;
+		}
+		break;
 	}
 	return VK_FORMAT_UNDEFINED;
 }
 
-size_t W_BOUND_RESOURCE::GetSize() const {
-	if (_size == -1) {
-		_size = 0;
-		for (int i = 0; i < variables.size(); i++) {
-			int varsize = variables[i].GetSize();
-			int ramining_bytes_in_alignment_slot = 16 - (_size % 16);
-			if (varsize > ramining_bytes_in_alignment_slot && ramining_bytes_in_alignment_slot < 16)
-				_size += ramining_bytes_in_alignment_slot;
-			_size += varsize;
-		}
+W_BOUND_RESOURCE::W_BOUND_RESOURCE(
+	W_SHADER_BOUND_RESOURCE_TYPE t,
+	unsigned int index,
+	std::vector<W_SHADER_VARIABLE_INFO> v
+) : variables(v), type(t), binding_index(index) {
+	size_t cur_offset = 0;
+	_offsets.resize(variables.size());
+	for (int i = 0; i < variables.size(); i++) {
+		int varsize = variables[i].GetSize();
+		int varalignment = variables[i].GetAlignment();
+		cur_offset += cur_offset % varalignment; // apply alignment
+		_offsets[i] = cur_offset;
+		cur_offset += varsize;
 	}
+	_size = cur_offset;
+}
+
+size_t W_BOUND_RESOURCE::GetSize() const {
 	return _size;
+}
+
+size_t W_BOUND_RESOURCE::OffsetAtVariable(unsigned int variable_index) const {
+	return _offsets[variable_index];
 }
 
 bool W_BOUND_RESOURCE::IsSimilarTo(W_BOUND_RESOURCE resource) {

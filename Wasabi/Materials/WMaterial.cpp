@@ -323,18 +323,14 @@ WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 	bool isFound = false;
 	for (int i = 0; i < m_uniformBuffers.size(); i++) {
 		W_BOUND_RESOURCE* info = m_uniformBuffers[i].ubo_info;
-		size_t cur_offset = 0;
 		for (int j = 0; j < info->variables.size(); j++) {
-			int varsize = info->variables[j].GetSize();
-			// the data is 16-byte aligned, so if this variable doesn't fit in the current 16-byte-aligned-slot, move to the next 16 bytes block
-			int ramining_bytes_in_alignment_slot = 16 - (cur_offset % 16);
-			if (varsize > ramining_bytes_in_alignment_slot && ramining_bytes_in_alignment_slot < 16)
-				cur_offset += ramining_bytes_in_alignment_slot;
 			if (strcmp(info->variables[j].name.c_str(), varName) == 0) {
-				if (info->variables[j].GetSize() < len)
+				size_t varsize = info->variables[j].GetSize();
+				size_t offset = info->OffsetAtVariable(j);
+				if (varsize < len)
 					return WError(W_INVALIDPARAM);
 				uint8_t *pData;
-				VkResult vkRes = vkMapMemory(device, m_uniformBuffers[i].memory, cur_offset, len, 0, (void **)&pData);
+				VkResult vkRes = vkMapMemory(device, m_uniformBuffers[i].memory, offset, len, 0, (void **)&pData);
 				if (vkRes)
 					return WError(W_UNABLETOMAPBUFFER);
 				memcpy(pData, data, len);
@@ -342,7 +338,6 @@ WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 
 				isFound = true;
 			}
-			cur_offset += varsize;
 		}
 	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
