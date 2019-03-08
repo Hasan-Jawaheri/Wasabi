@@ -16,8 +16,8 @@
  * Implementation of the window component for Windows.
  */
 class WWC_Win32 : public WWindowComponent {
-	friend LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg,
-									WPARAM wParam, LPARAM lParam);
+	friend LRESULT CALLBACK hMainWndProc(
+		HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);
 public:
 	WWC_Win32(Wasabi* app);
 	virtual WError Initialize(int width, int height);
@@ -51,6 +51,17 @@ public:
 	 */
 	HINSTANCE GetInstance() const;
 
+	/**
+	 * Assigns a function to intercept window procedure callbacks. This
+	 * callback will be called once before the default handler is run by
+	 * Wasabi and once after.
+	 * @param proc  A function pointer which will be called given the
+	 *              Wasabi instance, window proc arguments and a boolean
+	 *              set to true on the pre-processing call and false on
+	 *              the second, after-processing call
+	 */
+	void SetWndProcCallback(LRESULT(CALLBACK *proc)(Wasabi*, HWND, UINT, WPARAM, LPARAM, bool));
+
 	virtual void* GetPlatformHandle() const;
 	virtual void* GetWindowHandle() const;
 
@@ -69,6 +80,8 @@ private:
 	int m_maxWindowY;
 	/** true if the window is currently minimized, false otherwise */
 	bool m_isMinimized;
+	/** Optional additional callback to intercept the window procedure */
+	LRESULT(CALLBACK *m_extra_proc) (Wasabi*, HWND, UINT, WPARAM, LPARAM, bool);
 };
 
 #endif
