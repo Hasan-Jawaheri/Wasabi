@@ -13,6 +13,7 @@ WWC_Win32::WWC_Win32(Wasabi* app) : WWindowComponent(app) {
 	m_maxWindowX = 640 * 20;
 	m_maxWindowY = 480 * 20;
 	m_isMinimized = true;
+	m_extra_proc = nullptr;
 
 	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW)));
 	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW))); // uint
@@ -227,8 +228,12 @@ void WWC_Win32::SetWindowMaximumSize(int maxX, int maxY) {
 	m_maxWindowY = maxY;
 }
 
+void WWC_Win32::SetWndProcCallback(LRESULT(CALLBACK *proc)(Wasabi*, HWND, UINT, WPARAM, LPARAM, bool)) {
+	m_extra_proc = proc;
+}
+
 //window procedure
-LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	//get an inctance of the core
 	Wasabi* appInst = (Wasabi*)GetWindowLong(hWnd, GWL_USERDATA);
 
@@ -246,6 +251,9 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 	}
 
 	LRESULT result = TRUE;
+
+	if (((WWC_Win32*)appInst->WindowComponent)->m_extra_proc)
+		((WWC_Win32*)appInst->WindowComponent)->m_extra_proc(appInst, hWnd, msg, wParam, lParam, true);
 
 	switch (msg) {
 		//quit
@@ -349,6 +357,9 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 	default: //default behavior for other messages
 		result = DefWindowProcA(hWnd, msg, wParam, lParam);
 	}
+
+	if (((WWC_Win32*)appInst->WindowComponent)->m_extra_proc)
+		((WWC_Win32*)appInst->WindowComponent)->m_extra_proc(appInst, hWnd, msg, wParam, lParam, false);
 
 	return result;
 }
