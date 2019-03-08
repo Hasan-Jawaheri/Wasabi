@@ -39,6 +39,8 @@ enum W_SHADER_VARIABLE_TYPE {
 	W_TYPE_INT = 1,
 	/** An unsigned int type */
 	W_TYPE_UINT = 2,
+	/** A half float */
+	W_TYPE_HALF = 3,
 };
 
 /**
@@ -70,20 +72,21 @@ enum W_VERTEX_INPUT_RATE {
  * Description of a shader variable in a UBO or vertex attribute.
  */
 typedef struct W_SHADER_VARIABLE_INFO {
-	W_SHADER_VARIABLE_INFO(W_SHADER_VARIABLE_TYPE _type,
-						   int _num_elems, std::string _name = "")
-		: type(_type), num_elems(_num_elems), name(_name), _size(-1) {
-	}
+	W_SHADER_VARIABLE_INFO(
+		W_SHADER_VARIABLE_TYPE _type,
+		int _num_elems,
+		std::string _name = ""
+	);
 
 	/** Type of the variable */
 	W_SHADER_VARIABLE_TYPE type;
 	/** Number of elements in the variable (vec2 has 2 elements, etc...) */
 	int num_elems;
-	/** Given name for the variable, which is used by materials to set its value
-	*/
+	/** Given name for the variable, which is used by materials to set its
+	 *  value */
 	std::string name;
 	/** Cached size of the variable */
-	mutable size_t _size;
+	size_t _size;
 
 	/**
 	 * Retrieves the size of the variable, in bytes. This is calculated as the
@@ -91,6 +94,25 @@ typedef struct W_SHADER_VARIABLE_INFO {
 	 * @return Size, in bytes, of this shader variable
 	 */
 	size_t GetSize() const;
+
+	/**
+	 * Returns the alignment of this variable, according to Vulkan:
+	 * - A scalar of size N has a base alignment of N
+	 * - A two-component vector, with components of size N, has a base
+	 *   alignment of 2 N
+	 * - A three- or four-component vector, with components of size N, has a
+	 *   base alignment of 4 N
+	 * - An array has a base alignment equal to the base alignment of its
+	 *   element type, rounded up to a multiple of 16
+	 * - A structure has a base alignment equal to the largest base alignment
+	 *   of any of its members, rounded up to a multiple of 16
+	 * - A row-major matrix of C columns has a base alignment equal to the
+	 *   base alignment of a vector of C matrix components
+	 * - A column-major matrix has a base alignment equal to the base alignment
+	 *   of the matrix column type
+	 * @return Alignment of this variable
+	 */
+	size_t GetAlignment() const;
 
 	/**
 	 * Retrieves the Vulkan format corresponding to this variable.
@@ -106,12 +128,12 @@ typedef struct W_SHADER_VARIABLE_INFO {
  * UBO.
  */
 typedef struct W_BOUND_RESOURCE {
-	W_BOUND_RESOURCE(W_SHADER_BOUND_RESOURCE_TYPE t,
-					 unsigned int index,
-					 std::vector<W_SHADER_VARIABLE_INFO> v =
-					 std::vector<W_SHADER_VARIABLE_INFO>())
-		: variables(v), type(t), binding_index(index), _size(-1) {
-	}
+	W_BOUND_RESOURCE(
+		W_SHADER_BOUND_RESOURCE_TYPE t,
+		unsigned int index,
+		std::vector<W_SHADER_VARIABLE_INFO> v =
+			std::vector<W_SHADER_VARIABLE_INFO>()
+	);
 
 	/** Type of this resource */
 	W_SHADER_BOUND_RESOURCE_TYPE type;
@@ -122,7 +144,9 @@ typedef struct W_BOUND_RESOURCE {
 	std::vector<W_SHADER_VARIABLE_INFO> variables;
 	/** Cached size of the variables, after automatically padding variables
 	    to be 16-byte-aligned */
-	mutable size_t _size;
+	size_t _size;
+	/** Aligned offsets of variables elements in the UBO */
+	std::vector<size_t> _offsets;
 
 	/**
 	 * Retrieves the total size, in bytes, of the variables it contains. This
@@ -131,6 +155,14 @@ typedef struct W_BOUND_RESOURCE {
 	 * @return Size of all variables, in bytes
 	 */
 	size_t GetSize() const;
+
+	/**
+	 * Retrieves the (aligned) offset of a given variable
+	 * @param variable_index  Index into the variables array for which to get
+	 *                        the offset
+	 * @return                Aligned offset of the given variable in the UBO
+	 */
+	size_t OffsetAtVariable(unsigned int variable_index) const;
 
 	/**
 	 * Checks if this resource has the same layout as another resource.
