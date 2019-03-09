@@ -13,6 +13,7 @@
 #pragma once
 
 #include "../Core/WCore.h"
+#include "WRigidBody.h"
 
 /** Output of a ray cast operation */
 typedef struct W_RAYCAST_OUTPUT {
@@ -30,7 +31,9 @@ typedef struct W_RAYCAST_OUTPUT {
  */
 class WPhysicsComponent {
 public:
-	WPhysicsComponent(class Wasabi* app) : m_app(app) {}
+	WPhysicsComponent(class Wasabi* app) : m_app(app), RigidBodyManager(nullptr) {}
+
+	WRigidBodyManager* RigidBodyManager;
 
 	/**
 	 * Initializes the physics engine.
@@ -65,6 +68,15 @@ public:
 	 * @return true if the physics simulation is stepping, false otherwise
 	 */
 	virtual bool Stepping() const = 0;
+
+	/**
+	 * Creates a new rigid body instance. This is equivalent to calling
+	 * new WRigidBody(app, ID), so care must be taken to free the resource
+	 * when done with it.
+	 * @param ID  ID for the created rigid body
+	 * @return    A newly allocated rigid body instance
+	 */
+	virtual WRigidBody* CreateRigidBody(unsigned int ID = 0) const = 0;
 
 	/**
 	 * Performs a ray cast operation on the physics objects. A ray cast operation

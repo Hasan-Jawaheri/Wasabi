@@ -171,6 +171,9 @@
     <ClCompile Include="Physics\Bullet\WBulletPhysics.cpp">
       <Filter>Physics\Bullet</Filter>
     </ClCompile>
+    <ClCompile Include="Physics\Bullet\WBulletRigidBody.cpp">
+      <Filter>Physics\Bullet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations\WAnimation.h">
@@ -332,6 +335,12 @@
     </ClInclude>
     <ClInclude Include="Physics\Bullet\WBulletPhysics.h">
       <Filter>Physics\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Bullet\WBulletRigidBody.h">
+      <Filter>Physics\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\WRigidBody.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
