@@ -46,7 +46,6 @@
 #include "WMath.h"
 #include "WUtilities.h"
 
-using namespace std;
 using std::ios;
 using std::basic_filebuf;
 using std::vector;
@@ -349,6 +348,14 @@ protected:
 	* will create the appropriate component based on the OS.
 	*/
 	virtual WInputComponent* CreateInputComponent();
+
+	/**
+	* This function can be overloaded by the application. This function is
+	* called by the engine in StartEngine() and will give the application a
+	* chance to set the physics component of the engine. Default implementation
+	* will create a bullet physics instance.
+	*/
+	virtual WPhysicsComponent* CreatePhysicsComponent();
 
 private:
 	/** The Vulkan instance */

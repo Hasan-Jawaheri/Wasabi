@@ -199,7 +199,7 @@ WError WSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, ALenum f
 WError WSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) {
 	if (!m_bCheck(true)) return WError(W_ERRORUNK);
 
-	fstream file(Filename, ios::in | ios::binary);
+	std::fstream file(Filename, ios::in | ios::binary);
 	if (!file.is_open())
 		return WError(W_FILENOTFOUND);
 
@@ -427,7 +427,7 @@ bool WSound::Valid(void) const {
 	return m_valid;
 }
 WError WSound::LoadFromWS(std::string filename, bool bSaveData) {
-	fstream file;
+	std::fstream file;
 	file.open(filename, ios::in | ios::binary);
 	if (file.fail())
 		return WError(W_FILENOTFOUND);
@@ -467,7 +467,7 @@ WError WSound::LoadFromWS(std::string filename, bool bSaveData) {
 }
 WError WSound::LoadFromWS(basic_filebuf<char>* buff, uint pos, bool bSaveData) {
 	//use the given stream
-	fstream file;
+	std::fstream file;
 	if (!buff)
 		return WError(W_INVALIDPARAM);
 	file.set_rdbuf(buff);
@@ -510,7 +510,7 @@ WError WSound::SaveToWS(std::string filename) const {
 	if (Valid() && m_dataV.size()) //only attempt to save if the sound is valid and there is something to save
 	{
 		//open the file for writing
-		fstream file;
+		std::fstream file;
 		file.open(filename, ios::out | ios::binary);
 
 		if (!file.is_open())
@@ -552,7 +552,7 @@ WError WSound::SaveToWS(basic_filebuf<char>* buff, uint pos) const {
 	if (Valid() && m_dataV.size()) //only attempt to save if the sound is valid and there is something to save
 	{
 		//use the given stream
-		fstream file;
+		std::fstream file;
 		if (!buff)
 			return WError(W_INVALIDPARAM);
 		file.set_rdbuf(buff);

@@ -71,8 +71,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(SolutionDir)\Wasabi\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(SolutionDir)\Debug\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(BULLET_PATH)\src;$(SolutionDir)\Wasabi;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(BULLET_PATH)\bin;$(SolutionDir)\Debug\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -153,6 +153,7 @@
     <ClCompile Include="Instancing\Instancing.cpp" />
     <ClCompile Include="Lights\Lights.cpp" />
     <ClCompile Include="Particles\Particles.cpp" />
+    <ClCompile Include="Physics\Physics.cpp" />
     <ClCompile Include="RenderTargetTexture\RenderTargetTexture.cpp" />
     <ClCompile Include="Sound\Sound.cpp" />
     <ClCompile Include="Sprites\Sprites.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Instancing\Instancing.hpp" />
     <ClInclude Include="Lights\Lights.hpp" />
     <ClInclude Include="Particles\Particles.hpp" />
+    <ClInclude Include="Physics\Physics.hpp" />
     <ClInclude Include="RenderTargetTexture\RenderTargetTexture.hpp" />
     <ClInclude Include="Sound\Sound.hpp" />
     <ClInclude Include="Sprites\Sprites.hpp" />

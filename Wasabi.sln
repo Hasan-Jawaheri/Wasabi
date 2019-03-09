@@ -17,20 +17,34 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FBX Loader", "FBX Loader\FB
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}.Debug|x64.ActiveCfg = Debug|x64
+		{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}.Debug|x64.Build.0 = Debug|x64
 		{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}.Debug|x86.ActiveCfg = Debug|Win32
 		{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}.Debug|x86.Build.0 = Debug|Win32
+		{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}.Release|x64.ActiveCfg = Release|x64
+		{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}.Release|x64.Build.0 = Release|x64
 		{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}.Release|x86.ActiveCfg = Release|Win32
 		{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}.Release|x86.Build.0 = Release|Win32
+		{A7B24193-AE49-4C8C-BBA8-234A81901DD6}.Debug|x64.ActiveCfg = Debug|x64
+		{A7B24193-AE49-4C8C-BBA8-234A81901DD6}.Debug|x64.Build.0 = Debug|x64
 		{A7B24193-AE49-4C8C-BBA8-234A81901DD6}.Debug|x86.ActiveCfg = Debug|Win32
 		{A7B24193-AE49-4C8C-BBA8-234A81901DD6}.Debug|x86.Build.0 = Debug|Win32
+		{A7B24193-AE49-4C8C-BBA8-234A81901DD6}.Release|x64.ActiveCfg = Release|x64
+		{A7B24193-AE49-4C8C-BBA8-234A81901DD6}.Release|x64.Build.0 = Release|x64
 		{A7B24193-AE49-4C8C-BBA8-234A81901DD6}.Release|x86.ActiveCfg = Release|Win32
 		{A7B24193-AE49-4C8C-BBA8-234A81901DD6}.Release|x86.Build.0 = Release|Win32
+		{30590253-039B-44AC-BD85-4E54569227C6}.Debug|x64.ActiveCfg = Debug|x64
+		{30590253-039B-44AC-BD85-4E54569227C6}.Debug|x64.Build.0 = Debug|x64
 		{30590253-039B-44AC-BD85-4E54569227C6}.Debug|x86.ActiveCfg = Debug|Win32
 		{30590253-039B-44AC-BD85-4E54569227C6}.Debug|x86.Build.0 = Debug|Win32
+		{30590253-039B-44AC-BD85-4E54569227C6}.Release|x64.ActiveCfg = Release|x64
+		{30590253-039B-44AC-BD85-4E54569227C6}.Release|x64.Build.0 = Release|x64
 		{30590253-039B-44AC-BD85-4E54569227C6}.Release|x86.ActiveCfg = Release|Win32
 		{30590253-039B-44AC-BD85-4E54569227C6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection

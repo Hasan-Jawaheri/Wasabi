@@ -70,6 +70,12 @@
     <Filter Include="Terrains">
       <UniqueIdentifier>{3b9ce3fe-fa1a-4217-b9a4-8aede75d9406}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\Havok">
+      <UniqueIdentifier>{9ad84bfe-fc58-41aa-bbfd-580c7244e2bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Bullet">
+      <UniqueIdentifier>{9c5e046b-6a46-4110-939c-b2601b81af05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -104,9 +110,6 @@
     </ClCompile>
     <ClCompile Include="Objects\WObject.cpp">
       <Filter>Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="Physics\Havok\WHavokPhysics.cpp">
-      <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\WDeferredRenderer.cpp">
       <Filter>Renderers</Filter>
@@ -162,6 +165,12 @@
     <ClCompile Include="Terrains\WTerrain.cpp">
       <Filter>Terrains</Filter>
     </ClCompile>
+    <ClCompile Include="Physics\Havok\WHavokPhysics.cpp">
+      <Filter>Physics\Havok</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\Bullet\WBulletPhysics.cpp">
+      <Filter>Physics\Bullet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations\WAnimation.h">
@@ -199,9 +208,6 @@
     </ClInclude>
     <ClInclude Include="Objects\WObject.h">
       <Filter>Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="Physics\Havok\WHavokPhysics.h">
-      <Filter>Physics</Filter>
     </ClInclude>
     <ClInclude Include="Physics\WPhysicsComponent.h">
       <Filter>Physics</Filter>
@@ -320,6 +326,12 @@
     </ClInclude>
     <ClInclude Include="Terrains\WTerrain.h">
       <Filter>Terrains</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Havok\WHavokPhysics.h">
+      <Filter>Physics\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Bullet\WBulletPhysics.h">
+      <Filter>Physics\Bullet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
