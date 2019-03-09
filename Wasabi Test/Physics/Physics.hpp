@@ -4,6 +4,11 @@
 #include <Renderers/WForwardRenderer.h>
 
 class PhysicsDemo : public WTestState {
+	WObject* m_ground;
+	WRigidBody* m_groundRB;
+	WObject* m_ball;
+	WRigidBody* m_ballRB;
+
 public:
 	PhysicsDemo(Wasabi* const app);
 
