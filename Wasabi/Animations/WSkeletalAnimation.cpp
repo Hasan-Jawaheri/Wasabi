@@ -122,7 +122,7 @@ void WBone::OnStateChange(STATE_CHANGE_TYPE type) {
 	m_bAltered = true;
 }
 WError WBone::LoadFromWA(basic_filebuf<char>* buff, unsigned int pos) {
-	fstream file;
+	std::fstream file;
 	if (!buff)
 		return WError(W_FILENOTFOUND);
 	file.set_rdbuf(buff);
@@ -145,7 +145,7 @@ WError WBone::LoadFromWA(basic_filebuf<char>* buff, unsigned int pos) {
 	return WError(W_SUCCEEDED);
 }
 WError WBone::SaveToWA(basic_filebuf<char>* buff, unsigned int pos) const {
-	fstream file;
+	std::fstream file;
 	if (!buff)
 		return WError(W_FILENOTFOUND);
 	file.set_rdbuf(buff);
@@ -528,7 +528,7 @@ WError WSkeleton::LoadFromWA(std::string Filename) {
 	WAnimation::m_bFramesOwner = true;
 
 	//open the file for reading
-	fstream file;
+	std::fstream file;
 	file.open(Filename, ios::in | ios::binary | ios::ate);
 	if (!file.is_open())
 		return WError(W_FILENOTFOUND);
@@ -566,7 +566,7 @@ WError WSkeleton::SaveToWA(std::string Filename) const {
 	if (Valid()) //only attempt to save if the skeleton if its valid
 	{
 		//open the file for writing
-		fstream file;
+		std::fstream file;
 		file.open(Filename, ios::out | ios::binary);
 		if (!file.is_open())
 			return WError(W_FILENOTFOUND);
@@ -603,7 +603,7 @@ WError WSkeleton::SaveToWA(basic_filebuf<char>* buff, unsigned int pos) const {
 	if (Valid()) //only attempt to save if the mesh is valid and is not dynamic
 	{
 		//use the given stream
-		fstream file;
+		std::fstream file;
 		if (!buff)
 			return WError(W_INVALIDPARAM);
 		file.set_rdbuf(buff);
@@ -651,7 +651,7 @@ WError WSkeleton::LoadFromWA(basic_filebuf<char>* buff, unsigned int pos) {
 	WAnimation::m_bFramesOwner = true;
 
 	//use the reading stream
-	fstream file;
+	std::fstream file;
 	if (!buff)
 		return WError(W_INVALIDPARAM);
 	file.set_rdbuf(buff);

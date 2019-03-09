@@ -943,7 +943,7 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 }
 
 WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
-	fstream file;
+	std::fstream file;
 	file.open(filename, ios::in | ios::binary);
 	if (!file.is_open())
 		return WError(W_FILENOTFOUND);
@@ -1038,7 +1038,7 @@ WError WGeometry::SaveToWGM(std::string filename) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
-	fstream file;
+	std::fstream file;
 	file.open(filename, ios::out | ios::binary);
 	if (!file.is_open())
 		return WError(W_FILENOTFOUND);
@@ -1106,7 +1106,7 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	});
 
 	//open the file for reading
-	fstream file;
+	std::fstream file;
 	file.open(filename, ios::in | ios::binary);
 	if (!file.is_open())
 		return WError(W_FILENOTFOUND);

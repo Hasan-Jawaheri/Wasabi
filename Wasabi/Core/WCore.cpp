@@ -12,6 +12,7 @@
 #include "../Lights/WLight.h"
 #include "../Animations/WAnimation.h"
 #include "../Physics/WPhysicsComponent.h"
+#include "../Physics/Bullet/WBulletPhysics.h"
 #include "../Sounds/WSound.h"
 #include "../Texts/WText.h"
 #include "../Particles/WParticles.h"
@@ -379,6 +380,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	TextComponent = CreateTextComponent();
 	WindowComponent = CreateWindowComponent();
 	InputComponent = CreateInputComponent();
+	PhysicsComponent = CreatePhysicsComponent();
 
 	WError werr = WindowComponent->Initialize(width, height);
 	if (!werr) {
@@ -609,4 +611,8 @@ WInputComponent* Wasabi::CreateInputComponent() {
 #elif defined(__linux__)
 	return new WIC_Linux(this);
 #endif
+}
+
+WPhysicsComponent* Wasabi::CreatePhysicsComponent() {
+	return new WBulletPhysics(this);
 }

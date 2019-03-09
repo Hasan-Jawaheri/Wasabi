@@ -26,6 +26,9 @@
     <ClCompile Include="Sprites\Sprites.cpp">
       <Filter>Sprites</Filter>
     </ClCompile>
+    <ClCompile Include="Physics\Physics.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestSuite.hpp" />
@@ -53,6 +56,9 @@
     <ClInclude Include="Sprites\Sprites.hpp">
       <Filter>Sprites</Filter>
     </ClInclude>
+    <ClInclude Include="Physics\Physics.hpp">
+      <Filter>Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Lights">
@@ -78,6 +84,9 @@
     </Filter>
     <Filter Include="Sprites">
       <UniqueIdentifier>{8c654976-748f-4b93-9cf3-fe0e09e9b0d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{1d852a4d-533c-40a6-90c3-ec4e126e996e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
