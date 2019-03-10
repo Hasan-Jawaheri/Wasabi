@@ -29,6 +29,7 @@ WWC_Win32::WWC_Win32(Wasabi* app) : WWindowComponent(app) {
 	app->engineParams.insert(std::pair<std::string, void*>("defWndX", (void*)(-1))); // int
 	app->engineParams.insert(std::pair<std::string, void*>("defWndY", (void*)(-1))); //int
 }
+
 WError WWC_Win32::Initialize(int width, int height) {
 	//do not initialize if the window is already there
 	if (m_mainWindow) {
@@ -109,6 +110,7 @@ WError WWC_Win32::Initialize(int width, int height) {
 
 	return WError(W_SUCCEEDED);
 }
+
 bool WWC_Win32::Loop() {
 	MSG msg;
 	while (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) //find messages
@@ -126,6 +128,7 @@ bool WWC_Win32::Loop() {
 	}
 	return !m_isMinimized;
 }
+
 void WWC_Win32::Cleanup() {
 	if (m_mainWindow)
 		DestroyWindow(m_mainWindow);
@@ -135,94 +138,127 @@ void WWC_Win32::SetWindowTitle(const char* const title) {
 	//set the title of the main window
 	SetWindowTextA(m_mainWindow, title);
 }
+
 void WWC_Win32::SetWindowPosition(int x, int y) {
 	//set the position of the main window
 	SetWindowPos(m_mainWindow, nullptr, x, y, 0, 0, SWP_NOSIZE);
 }
+
 void WWC_Win32::SetWindowSize(int width, int height) {
-	//manual window resizing
-
-	//save old sizes
+	//change main window size, convert client space size to window size	RECT rc;
 	RECT rc;
-	GetClientRect(m_mainWindow, &rc);
-	int oldSizeX = rc.right;
-	int oldSizeY = rc.bottom;
-
-	//change main window size
-	SetWindowPos(m_mainWindow, nullptr, 0, 0, width, height, SWP_NOMOVE);
-	GetClientRect(m_mainWindow, &rc);
-
-	//re-initialize the core to fit the new size
-	// TODO: resize engine
-	//m_app->Init(rc.right, rc.bottom, m_app->IsVSyncEnabled());
+	rc.left = 0;
+	rc.top = 0;
+	rc.right = width;
+	rc.bottom = height;
+	BOOL hasMenu = GetMenu(m_mainWindow) != INVALID_HANDLE_VALUE;
+	AdjustWindowRectEx(&rc, (uint)GetWindowLongPtr(m_mainWindow, GWL_STYLE),
+		hasMenu,
+		(uint)GetWindowLongPtr(m_mainWindow, GWL_EXSTYLE));
+	SetWindowPos(m_mainWindow, nullptr, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE);
 }
+
 void WWC_Win32::MaximizeWindow() {
 	//show window as maximized
 	ShowWindow(m_mainWindow, SW_SHOWMAXIMIZED);
 	m_isMinimized = false; //mark not minimized
 }
+
 void WWC_Win32::MinimizeWindow() {
 	//show window as minimized
 	ShowWindow(m_mainWindow, SW_SHOWMINIMIZED);
 	m_isMinimized = true; //mark minimized
 }
+
 uint WWC_Win32::RestoreWindow() {
 	//restore window
 	int result = ShowWindow(m_mainWindow, SW_RESTORE);
 	m_isMinimized = false; //mark not minimized
 	return result;
 }
+
 uint WWC_Win32::GetWindowWidth() const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.right;
 }
+
 uint WWC_Win32::GetWindowHeight() const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.bottom;
 }
+
 int WWC_Win32::GetWindowPositionX() const {
 	//return the left coordinate of the window rect
 	RECT rc;
 	GetWindowRect(m_mainWindow, &rc);
 	return rc.left;
 }
+
 int WWC_Win32::GetWindowPositionY() const {
 	//return the top coordinate of the window rect
 	RECT rc;
 	GetWindowRect(m_mainWindow, &rc);
 	return rc.top;
 }
+
 HWND WWC_Win32::GetWindow() const {
 	//return the API HWND
 	return m_mainWindow;
 }
+
 HINSTANCE WWC_Win32::GetInstance() const {
 	//return the instance
 	return m_hInstance;
 }
+
 void* WWC_Win32::GetPlatformHandle() const {
 	return (void*)m_hInstance;
 }
+
 void* WWC_Win32::GetWindowHandle() const {
 	return (void*)m_mainWindow;
 }
+
 void WWC_Win32::SetFullScreenState(bool bFullScreen) {
 	//set the fullscreen state of the window
 	// TODO: implement this
 	//m_app->GetSwapChain()->SetFullscreenState(bFullScreen, nullptr);
+	if (bFullScreen) {
+		DWORD newStyle = WS_VISIBLE | WS_POPUP;
+		RECT rc;
+		rc.left = 0;
+		rc.top = 0;
+		rc.right = GetSystemMetrics(SM_CXSCREEN);
+		rc.bottom = GetSystemMetrics(SM_CYSCREEN);
+		AdjustWindowRect(&rc, newStyle, FALSE);
+		SetWindowLongPtr(m_mainWindow, GWL_EXSTYLE, 0);
+		SetWindowLongPtr(m_mainWindow, GWL_STYLE, newStyle);
+		SetWindowPos(m_mainWindow, nullptr, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_SHOWWINDOW);
+	} else {
+		RECT rc;
+		GetClientRect(m_mainWindow, &rc);
+		DWORD newStyle = (uint)m_app->engineParams["windowStyle"] | WS_BORDER | WS_VISIBLE;
+		DWORD newExStyle = (uint)m_app->engineParams["windowStyleEx"];
+		AdjustWindowRectEx(&rc, newStyle, FALSE, newExStyle);
+		SetWindowLongPtr(m_mainWindow, GWL_STYLE, newStyle);
+		SetWindowLongPtr(m_mainWindow, GWL_EXSTYLE, newExStyle);
+		SetWindowPosition(0, 0);
+		MaximizeWindow();
+	}
 }
+
 bool WWC_Win32::GetFullScreenState() const {
-	BOOL bf = false;
-	// TODO: implement this
-	//m_app->GetSwapChain()->GetFullscreenState(&bf, nullptr);
-	return (bool)bf;
+	DWORD dwStyle = GetWindowLongPtr(m_mainWindow, GWL_STYLE);
+	return dwStyle & WS_POPUP && !(dwStyle & WS_BORDER);
 }
+
 void WWC_Win32::SetWindowMinimumSize(int minX, int minY) {
 	m_minWindowX = minX;
 	m_minWindowY = minY;
 }
+
 void WWC_Win32::SetWindowMaximumSize(int maxX, int maxY) {
 	m_maxWindowX = maxX;
 	m_maxWindowY = maxY;

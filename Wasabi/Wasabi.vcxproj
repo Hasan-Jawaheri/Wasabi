@@ -181,7 +181,7 @@
     <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\include;$(SolutionDir)\BulletPhysics;$(IncludePath)</IncludePath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\include;$(BULLET_PATH)\src;$(IncludePath)</IncludePath>
     <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -217,7 +217,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BT_THREADSAFE=1;BT_USE_DOUBLE_PRECISION;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>

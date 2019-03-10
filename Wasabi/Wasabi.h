@@ -58,6 +58,13 @@
 #pragma comment(lib, "ConvexDecomposition_vs2010_debug.lib")
 */
 #else
+#pragma comment(lib, "Bullet3Collision_vs2010.lib")
+#pragma comment(lib, "Bullet3Common_vs2010.lib")
+#pragma comment(lib, "Bullet3Dynamics_vs2010.lib")
+#pragma comment(lib, "Bullet3Geometry_vs2010.lib")
+#pragma comment(lib, "BulletCollision_vs2010.lib")
+#pragma comment(lib, "BulletDynamics_vs2010.lib")
+#pragma comment(lib, "LinearMath_vs2010.lib")
 #endif
 
 /**

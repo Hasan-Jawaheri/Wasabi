@@ -79,8 +79,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(SolutionDir)\Wasabi\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(SolutionDir)\Release\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(BULLET_PATH)\src;$(SolutionDir)\Wasabi\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(BULLET_PATH)\bin;$(SolutionDir)\Release\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
