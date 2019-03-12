@@ -31,7 +31,7 @@ void RenderTargetTextureDemo::Load() {
 	o->SetPosition(0, 0, 0);
 	o2->SetPosition(0, 0, -4);
 	o3->SetPosition(4, 4, 0);
-	o3->SetAngle(0, 0, 80);
+	o3->Roll(80);
 
 	m_app->TextComponent->CreateTextFont(2, "arial");
 

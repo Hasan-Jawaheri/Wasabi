@@ -64,26 +64,6 @@ public:
 	void Point(WVector3 target);
 
 	/**
-	 * Sets the angles of the object. This performs a yaw (rotation on the up
-	 * axis), a pitch (rotation on the right axis) and then a roll (rotation on
-	 * the look axis) after the entity is in identity rotation. This will result
-	 * in calling OnStateChange(CHANGE_ROTATION).
-	 * @param x x angle of rotation in degrees
-	 * @param y y angle of rotation in degrees
-	 * @param z z angle of rotation in degrees
-	 */
-	void SetAngle(float x, float y, float z);
-
-	/**
-	 * Sets the angles of the object. This performs a yaw (rotation on the up
-	 * axis), a pitch (rotation on the right axis) and then a roll (rotation on
-	 * the look axis) after the entity is in identity rotation. This will result
-	 * in calling OnStateChange(CHANGE_ROTATION).
-	 * @param angle The angles used in rotation.
-	 */
-	void SetAngle(WVector3 angle);
-
-	/**
 	 * Sets the rotation of the entity to match that of a quaternion. This will
 	 * result in calling OnStateChange(CHANGE_ROTATION).
 	 * @param quat Quaternion to match
@@ -194,11 +174,9 @@ public:
 	float GetAngleZ() const;
 
 	/**
-	 * Gets the angles of the entity as given by GetAngleX(), GetAngleY() and
-	 * GetAngleZ().
-	 * @return (X,Y,Z) angle of the entity
+	 * @return A quaternion representing the rotation of the entity
 	 */
-	WVector3 GetAngle() const;
+	WQuaternion GetRotation() const;
 
 	/**
 	 * Retrieves the up vector of the entity.
@@ -252,6 +230,22 @@ public:
 	 * @param type Orientation change type
 	 */
 	virtual void OnStateChange(STATE_CHANGE_TYPE type);
+
+	/**
+	 * This function recomputes the transformation matrix for this orientation.
+	 * Most objects inheriting from WOrientation have their own GetWorldMatrix
+	 * functions that are more efficient to use (since they cache the matrix).
+	 * @return returns a newly computed matrix corresponding to this orientation
+	 */
+	WMatrix ComputeTransformation() const;
+
+	/**
+	 * This function recomputes the transformation matrix for this orientation.
+	 * Most objects inheriting from WOrientation have their own GetWorldMatrix
+	 * functions that are more efficient to use (since they cache the matrix).
+	 * @return returns a newly computed matrix corresponding to this orientation
+	 */
+	WMatrix ComputeInverseTransformation() const;
 
 private:
 	/** Position of this entity */

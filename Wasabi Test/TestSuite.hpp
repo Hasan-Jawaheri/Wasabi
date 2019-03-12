@@ -4,7 +4,7 @@
 #include <Renderers/WDeferredRenderer.h>
 
 class WasabiTester : public Wasabi {
-	WRenderer* m_renderer;
+	class WTestState* m_state;
 
 	float fYaw, fPitch, fDist;
 	WVector3 vPos;
@@ -13,13 +13,15 @@ class WasabiTester : public Wasabi {
 
 public:
 	WasabiTester();
-	WError Setup();
-	bool Loop(float fDeltaTime);
-	void Cleanup();
+	virtual WError Setup();
+	virtual bool Loop(float fDeltaTime);
+	virtual void Cleanup();
+
 	void SetCameraPosition(WVector3 pos);
 	void SetZoom(float d);
 
-	WRenderer* CreateRenderer();
+	virtual WRenderer* CreateRenderer();
+	virtual WPhysicsComponent* CreatePhysicsComponent();
 };
 
 class WTestState : public WGameState {
@@ -28,6 +30,9 @@ public:
 
 	virtual WRenderer* CreateRenderer() {
 		return new WDeferredRenderer(m_app);
+	}
+	virtual WPhysicsComponent* CreatePhysicsComponent() {
+		return nullptr;
 	}
 };
 

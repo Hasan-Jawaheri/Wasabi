@@ -75,7 +75,7 @@ void WasabiTester::ApplyMousePivot() {
 	fDist = min(-1, fDist);
 
 	cam->SetPosition(vPos);
-	cam->SetAngle(0, 0, 0);
+	cam->SetAngle(WQuaternion());
 	cam->Yaw(fYaw);
 	cam->Pitch(fPitch);
 	cam->Move(fDist);
@@ -90,7 +90,7 @@ WasabiTester::WasabiTester() : Wasabi() {
 WError WasabiTester::Setup() {
 	WTestState* state = new _DEMO_STATE_CLASSNAME_(this);
 	this->maxFPS = 0;
-	this->m_renderer = state->CreateRenderer();
+	this->m_state = state;
 	WError ret = StartEngine(640, 480);
 	if (!ret) {
 		char msg[512];
@@ -123,7 +123,14 @@ void WasabiTester::Cleanup() {
 }
 
 WRenderer* WasabiTester::CreateRenderer() {
-	return this->m_renderer;
+	return m_state->CreateRenderer();
+}
+
+WPhysicsComponent* WasabiTester::CreatePhysicsComponent() {
+	WPhysicsComponent* physics = m_state->CreatePhysicsComponent();
+	if (physics)
+		return physics;
+	return Wasabi::CreatePhysicsComponent();
 }
 
 void WasabiTester::SetCameraPosition(WVector3 pos) {

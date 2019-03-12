@@ -60,14 +60,16 @@ struct W_VERTEX_DESCRIPTION {
 	/**
 	 * Retrieves the offset (in bytes) to a certain attribute.
 	 * @param  attrib_index Index of the attribute to get its offset
-	 * @return              The offset of the attribute at attrib_index
+	 * @return             The offset of the attribute at attrib_indexm -1 if
+	 *                     it cannot be found
 	 */
 	size_t GetOffset(unsigned int attrib_index) const;
 
 	/**
 	 * Retrieves the offset (in bytes) to a certain attribute.
 	 * @param  attrib_name Name of the attribute to get its offset
-	 * @return             The offset of the attribute at attrib_index
+	 * @return             The offset of the attribute at attrib_indexm -1 if
+	 *                     it cannot be found
 	 */
 	size_t GetOffset(std::string attrib_name) const;
 

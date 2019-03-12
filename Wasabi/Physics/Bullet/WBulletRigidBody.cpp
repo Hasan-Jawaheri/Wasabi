@@ -2,6 +2,7 @@
 #include "WBulletPhysics.h"
 #include "../WRigidBody.h"
 #include "../../Core/WCore.h"
+#include "../../Geometries/WGeometry.h"
 
 WBulletRigidBodyManager::WBulletRigidBodyManager(class Wasabi* const app)
 	: WRigidBodyManager(app) {
@@ -65,32 +66,112 @@ bool WBulletRigidBody::Valid() const {
 	return m_rigidBody;
 }
 
-WError WBulletRigidBody::Create(float fMass) {
+WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo) {
+	if (createInfo.mass < 0.0f ||
+		((createInfo.shape == RIGID_BODY_SHAPE_CONVEX || createInfo.shape == RIGID_BODY_SHAPE_MESH) && !createInfo.geometry) ||
+		(createInfo.shape == RIGID_BODY_SHAPE_MESH && createInfo.geometry->GetNumIndices() <= 0 && createInfo.isTriangleList))
+		return WError(W_INVALIDPARAM);
+
 	_DestroyResources();
 
 	WBulletPhysics* physics = (WBulletPhysics*)m_app->PhysicsComponent;
 
-	m_collisionShape = new btBoxShape(btVector3(btScalar(1), btScalar(1), btScalar(1)));
+	switch (createInfo.shape) {
+	case RIGID_BODY_SHAPE_CUBE:
+		m_collisionShape = new btBoxShape(WBTConvertVec3(createInfo.dimensions));
+		break;
+	case RIGID_BODY_SHAPE_SPHERE:
+		m_collisionShape = new btSphereShape(btScalar(createInfo.dimensions.x));
+		break;
+	case RIGID_BODY_SHAPE_CAPSULE:
+		m_collisionShape = new btCapsuleShape(btScalar(createInfo.dimensions.y), btScalar(createInfo.dimensions.x));
+		break;
+	case RIGID_BODY_SHAPE_CYLINDER:
+		m_collisionShape = new btCylinderShape(WBTConvertVec3(createInfo.dimensions / WVector3(1.0f, 2.0f, 1.0f)));
+		break;
+	case RIGID_BODY_SHAPE_CONE:
+		m_collisionShape = new btConeShape(btScalar(createInfo.dimensions.y), btScalar(createInfo.dimensions.x));
+		break;
+	case RIGID_BODY_SHAPE_CONVEX:
+	{
+		W_VERTEX_DESCRIPTION vertexDesc = createInfo.geometry->GetVertexDescription();
+		int stride = vertexDesc.GetSize();
+		int numVerts = createInfo.geometry->GetNumVertices();
+		unsigned int posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
+		if (posOffset < 0)
+			return WError(W_INVALIDPARAM);
+		float* vb = nullptr;
+		createInfo.geometry->MapVertexBuffer((void**)&vb, true);
+		btScalar* points = new btScalar[numVerts*3];
+		for (int i = 0; i < numVerts; i++) {
+			points[i*3 + 0] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 0);
+			points[i*3 + 1] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 4);
+			points[i*3 + 2] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 8);
+		}
+		createInfo.geometry->UnmapVertexBuffer();
+		m_collisionShape = new btConvexHullShape(points, numVerts, 3 * sizeof(btScalar));
+		delete[] points;
+		break;
+	}
+	case RIGID_BODY_SHAPE_MESH:
+	{
+		W_VERTEX_DESCRIPTION vertexDesc = createInfo.geometry->GetVertexDescription();
+		int stride = vertexDesc.GetSize();
+		unsigned int posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
+		if (posOffset < 0)
+			return WError(W_INVALIDPARAM);
+		btScalar* points = nullptr;
+		int* indices = nullptr;
+		createInfo.geometry->MapVertexBuffer((void**)&points, true);
+		if (createInfo.isTriangleList)
+			createInfo.geometry->MapIndexBuffer((uint**)&indices, true);
 
-	btTransform groundTransform;
-	groundTransform.setIdentity();
+		int num_triangles = createInfo.isTriangleList ? createInfo.geometry->GetNumIndices() / 3 : createInfo.geometry->GetNumVertices() - 2;
+		btTriangleMesh* mesh = new btTriangleMesh(true, false);
+		for (int tri = 0; tri < num_triangles; tri++) {
+			int i0 = tri, i1 = tri + 1, i2 = tri + 2;
+			if (createInfo.isTriangleList) {
+				i0 = indices[tri * 3 + 0], i1 = indices[tri * 3 + 1], i2 = indices[tri * 3 + 2];
+			}
+			WVector3 t0 = *(WVector3*)((char*)points + (i0 * stride) + posOffset);
+			WVector3 t1 = *(WVector3*)((char*)points + (i1 * stride) + posOffset);
+			WVector3 t2 = *(WVector3*)((char*)points + (i2 * stride) + posOffset);
+			mesh->addTriangle(WBTConvertVec3(t0), WBTConvertVec3(t1), WBTConvertVec3(t2), false);
+		}
+		createInfo.mass = 0.0f;
+		m_collisionShape = new btBvhTriangleMeshShape(mesh, true);
+		createInfo.geometry->UnmapVertexBuffer();
+		if (createInfo.isTriangleList)
+			createInfo.geometry->UnmapIndexBuffer();
+	}
+	}
 
-	btScalar mass(fMass);
+	btTransform transformation;
+	transformation.setIdentity();
+	if (createInfo.orientation) {
+		transformation = WBTConverMatrix(createInfo.orientation->ComputeTransformation());
+	} else {
+		transformation.setOrigin(WBTConvertVec3(createInfo.initialPosition));
+		transformation.setRotation(WBTConvertQuaternion(createInfo.initialRotation));
+	}
+
+	btScalar mass(createInfo.mass);
 
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
-	bool isDynamic = mass > 0.0001f;
-
 	btVector3 localInertia(0, 0, 0);
-	if (isDynamic)
+	if (mass > 0.0001f)
 		m_collisionShape->calculateLocalInertia(mass, localInertia);
 
 	//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-	btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, m_collisionShape, localInertia);
+	btDefaultMotionState* motionState = new btDefaultMotionState(transformation);
+	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, m_collisionShape, localInertia);
 	m_rigidBody = new btRigidBody(rbInfo);
 
 	//add the body to the dynamics world
 	physics->m_dynamicsWorld->addRigidBody(m_rigidBody);
+
+	SetBouncingPower(0.2f);
+	SetFriction(0.2f);
 
 	return WError(W_SUCCEEDED);
 }
@@ -99,10 +180,10 @@ void WBulletRigidBody::Update(float deltaTime) {
 	m_isUpdating = true;
 	if (m_boundObject && m_rigidBody) {
 		btQuaternion rotation = m_rigidBody->getOrientation();
+		WQuaternion wRot = BTWConvertQuaternion(rotation);
 		btTransform transformation = m_rigidBody->getWorldTransform();
 		btVector3 position = transformation.getOrigin();
-		WVector3 wPos = WVector3(position.x(), position.y(), position.z());
-		WQuaternion wRot = WQuaternion(rotation.x(), rotation.y(), rotation.z(), rotation.w());
+		WVector3 wPos = BTWConvertVec3(position);
 		SetPosition(wPos);
 		SetAngle(wRot);
 
@@ -123,37 +204,102 @@ void WBulletRigidBody::BindObject(WOrientation* obj, WBase* objBase) {
 		m_boundObjectBase->AddReference();
 }
 
+void WBulletRigidBody::SetLinearVelocity(WVector3 vel) {
+	if (m_rigidBody)
+		m_rigidBody->setLinearVelocity(WBTConvertVec3(vel));
+}
+
+void WBulletRigidBody::SetAngularVelocity(WVector3 vel) {
+	if (m_rigidBody)
+		m_rigidBody->setAngularVelocity(WBTConvertVec3(vel));
+}
+
+void WBulletRigidBody::SetLinearDamping(float power) {
+	if (m_rigidBody)
+		m_rigidBody->setDamping(btScalar(power), m_rigidBody->getAngularDamping());
+}
+
+void WBulletRigidBody::SetAngularDamping(float power) {
+	if (m_rigidBody)
+		m_rigidBody->setDamping(m_rigidBody->getLinearDamping(), btScalar(power));
+}
+
+void WBulletRigidBody::SetBouncingPower(float bouncing) {
+	if (m_rigidBody)
+		m_rigidBody->setRestitution(btScalar(bouncing));
+}
+
+void WBulletRigidBody::SetMass(float mass) {
+	if (m_rigidBody)
+		m_rigidBody->setMassProps(btScalar(mass), m_rigidBody->getLocalInertia());
+}
+
+void WBulletRigidBody::SetMassCenter(float x, float y, float z) {
+	if (m_rigidBody)
+		m_rigidBody->setCenterOfMassTransform(WBTConverMatrix(WTranslationMatrix(x, y, z)));
+}
+
+void WBulletRigidBody::SetFriction(float friction) {
+	if (m_rigidBody)
+		m_rigidBody->setFriction(btScalar(friction));
+}
+
+void WBulletRigidBody::ApplyForce(WVector3 force) {
+	if (m_rigidBody)
+		m_rigidBody->applyCentralForce(WBTConvertVec3(force));
+}
+
+void WBulletRigidBody::ApplyForce(WVector3 force, WVector3 relative_pos) {
+	if (m_rigidBody)
+		m_rigidBody->applyForce(WBTConvertVec3(force), WBTConvertVec3(relative_pos));
+}
+
+void WBulletRigidBody::ApplyImpulse(WVector3 impulse) {
+	if (m_rigidBody)
+		m_rigidBody->applyCentralImpulse(WBTConvertVec3(impulse));
+}
+
+void WBulletRigidBody::ApplyImpulse(WVector3 impulse, WVector3 relative_pos) {
+	if (m_rigidBody)
+		m_rigidBody->applyImpulse(WBTConvertVec3(impulse), WBTConvertVec3(relative_pos));
+}
+
+void WBulletRigidBody::ApplyTorque(WVector3 torque) {
+	if (m_rigidBody)
+		m_rigidBody->applyTorque(WBTConvertVec3(torque));
+}
+
+WVector3 WBulletRigidBody::getLinearVelocity() const {
+	if (m_rigidBody)
+		return BTWConvertVec3(m_rigidBody->getLinearVelocity());
+	return WVector3();
+}
+
+WVector3 WBulletRigidBody::getAngularVelocity() const {
+	if (m_rigidBody)
+		return BTWConvertVec3(m_rigidBody->getAngularVelocity());
+	return WVector3();
+}
+
+WVector3 WBulletRigidBody::getTotalForce() const {
+	if (m_rigidBody)
+		return BTWConvertVec3(m_rigidBody->getTotalForce());
+	return WVector3();
+}
+
+WVector3 WBulletRigidBody::getTotalTorque() const {
+	if (m_rigidBody)
+		return BTWConvertVec3(m_rigidBody->getTotalTorque());
+	return WVector3();
+}
+
 WMatrix WBulletRigidBody::GetWorldMatrix() {
-	WMatrix worldM;
-	WVector3 _up = GetUVector();
-	WVector3 _look = GetLVector();
-	WVector3 _right = GetRVector();
-	WVector3 _pos = GetPosition();
-
-	//
-	//the world matrix is the view matrix's inverse
-	//so we build a normal view matrix and invert it
-	//
-
-	//build world matrix
-	float x = -WVec3Dot(_right, _pos);
-	float y = -WVec3Dot(_up, _pos);
-	float z = -WVec3Dot(_look, _pos);
-	(worldM)(0, 0) = _right.x; (worldM)(0, 1) = _up.x; (worldM)(0, 2) = _look.x; (worldM)(0, 3) = 0.0f;
-	(worldM)(1, 0) = _right.y; (worldM)(1, 1) = _up.y; (worldM)(1, 2) = _look.y; (worldM)(1, 3) = 0.0f;
-	(worldM)(2, 0) = _right.z; (worldM)(2, 1) = _up.z; (worldM)(2, 2) = _look.z; (worldM)(2, 3) = 0.0f;
-	(worldM)(3, 0) = x;        (worldM)(3, 1) = y;     (worldM)(3, 2) = z;       (worldM)(3, 3) = 1.0f;
-	return WMatrixInverse(worldM);
+	return ComputeTransformation();
 }
 
 void WBulletRigidBody::OnStateChange(STATE_CHANGE_TYPE type) {
 	if (!m_isUpdating) {
-		WMatrix worldM = GetWorldMatrix();
-		btScalar scalarMtx[16];
-		for (int i = 0; i < 16; i++)
-			scalarMtx[i] = worldM.mat[i];
-		btTransform mtx;
-		mtx.setFromOpenGLMatrix(scalarMtx);
+		btTransform mtx = WBTConverMatrix(GetWorldMatrix());
 		m_rigidBody->setWorldTransform(mtx);
 		m_rigidBody->getMotionState()->setWorldTransform(mtx);
 	}

@@ -39,13 +39,8 @@ enum W_RENDER_FILTER {
  * are, during the initialization in Wasabi::SetupComponents().
  */
 class WRenderer {
-#ifdef _WIN32
-	friend int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-								LPSTR cmdLine, int cmdShow);
-#elif (defined __linux__)
-	friend int main();
-#endif
 	friend class Wasabi;
+	friend int RunWasabi(class Wasabi*);
 
 	/**
 	 * Initializes the implementation-independent components of the renderer,

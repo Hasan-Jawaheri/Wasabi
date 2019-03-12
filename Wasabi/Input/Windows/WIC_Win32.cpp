@@ -11,6 +11,7 @@ WIC_Win32::WIC_Win32(Wasabi* const app) : WInputComponent(app) {
 	for (uint i = 0; i < 256; i++)
 		m_keyDown[i] = false;
 }
+
 bool WIC_Win32::MouseClick(W_MOUSEBUTTON button) const {
 	//return the registered click state
 
@@ -23,6 +24,7 @@ bool WIC_Win32::MouseClick(W_MOUSEBUTTON button) const {
 
 	return false;
 }
+
 int WIC_Win32::WIC_Win32::MouseX(W_MOUSEPOSTYPE posT, uint vpID) const {
 	//get mouse position and convert it to the desired type
 	RECT rc;
@@ -47,6 +49,7 @@ int WIC_Win32::WIC_Win32::MouseX(W_MOUSEPOSTYPE posT, uint vpID) const {
 
 	return 0;
 }
+
 int WIC_Win32::MouseY(W_MOUSEPOSTYPE posT, uint vpID) const {
 	//get mouse position and convert it to the desired type
 	RECT rc;
@@ -71,10 +74,12 @@ int WIC_Win32::MouseY(W_MOUSEPOSTYPE posT, uint vpID) const {
 
 	return 0;
 }
+
 int WIC_Win32::MouseZ() const {
 	//return registered mouse wheel position
 	return m_mouseZ;
 }
+
 bool WIC_Win32::MouseInScreen(W_MOUSEPOSTYPE posT, uint vpID) const {
 	if (posT == MOUSEPOS_WINDOW) //check if mouse is in the window
 	{
@@ -118,6 +123,7 @@ bool WIC_Win32::MouseInScreen(W_MOUSEPOSTYPE posT, uint vpID) const {
 
 	return false;
 }
+
 void WIC_Win32::SetMousePosition(uint x, uint y) {
 	POINT pos;
 	pos.x = x;
@@ -126,19 +132,24 @@ void WIC_Win32::SetMousePosition(uint x, uint y) {
 	ClientToScreen(((WWC_Win32*)m_app->WindowComponent)->GetWindow(), &pos);
 	SetCursorPos(pos.x, pos.y);
 }
+
 void WIC_Win32::SetMouseZ(int value) {
 	//set the mouse wheel position
 	m_mouseZ = value;
 }
+
 void WIC_Win32::EnableEscapeKeyQuit() {
 	m_escapeE = true;
 }
+
 void WIC_Win32::DisableEscapeKeyQuit() {
 	m_escapeE = false;
 }
+
 bool WIC_Win32::KeyDown(char key) const {
 	return m_keyDown[key];
 }
+
 void WIC_Win32::InsertRawInput(char key, bool state) {
 	m_keyDown[key] = state;
 }

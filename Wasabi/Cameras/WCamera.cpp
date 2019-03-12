@@ -212,20 +212,7 @@ void WCamera::UpdateInternals() {
 	if (m_bAltered) {
 		m_bAltered = false;
 
-		WVector3 look = GetLVector();
-		WVector3 up = GetUVector();
-		WVector3 right = GetRVector();
-		WVector3 pos = GetPosition();
-
-		//build the view matrix
-		float x = -WVec3Dot(right, pos);
-		float y = -WVec3Dot(up, pos);
-		float z = -WVec3Dot(look, pos);
-
-		(m_ViewM)(0, 0) = right.x; (m_ViewM)(0, 1) = up.x; (m_ViewM)(0, 2) = look.x; (m_ViewM)(0, 3) = 0.0f;
-		(m_ViewM)(1, 0) = right.y; (m_ViewM)(1, 1) = up.y; (m_ViewM)(1, 2) = look.y; (m_ViewM)(1, 3) = 0.0f;
-		(m_ViewM)(2, 0) = right.z; (m_ViewM)(2, 1) = up.z; (m_ViewM)(2, 2) = look.z; (m_ViewM)(2, 3) = 0.0f;
-		(m_ViewM)(3, 0) = x;       (m_ViewM)(3, 1) = y;    (m_ViewM)(3, 2) = z;      (m_ViewM)(3, 3) = 1.0f;
+		m_ViewM = ComputeInverseTransformation(); // the view matrix is the inverse of the world matrix/transformation
 
 		if (IsBound())
 			m_ViewM *= GetBindingMatrix();
@@ -238,13 +225,6 @@ void WCamera::UpdateInternals() {
 			m_ProjM = m_orthoMatrix;
 		
 		// fix the coordinate system (we use LHS, Vulkan uses RHS, so flip y coordinate)
-		// also change depth from [-1, 1] to [0, 1]
-		/*m_ProjM *= WMatrix(
-			1,  0,       0,         0,
-			0, -1,       0,         0,
-			0,  0, 1.0/2.0, 1.0 / 2.0,
-			0,  0,       0,         1
-		);*/
 		m_ProjM(1, 1) *= -1; // flip Y-axis in the render
 
 		// Create the m_frustum matrix from the view matrix and updated projection matrix.

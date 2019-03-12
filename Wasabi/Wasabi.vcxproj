@@ -39,9 +39,11 @@
     <ClCompile Include="Materials\WMaterial.cpp" />
     <ClCompile Include="Objects\WObject.cpp" />
     <ClCompile Include="Particles\WParticles.cpp" />
+    <ClCompile Include="Physics\Bullet\BulletDebugger.cpp" />
     <ClCompile Include="Physics\Bullet\WBulletPhysics.cpp" />
     <ClCompile Include="Physics\Bullet\WBulletRigidBody.cpp" />
     <ClCompile Include="Physics\Havok\WHavokPhysics.cpp" />
+    <ClCompile Include="Physics\WRigidBody.cpp" />
     <ClCompile Include="Renderers\WDeferredRenderer.cpp" />
     <ClCompile Include="Renderers\WForwardRenderer.cpp" />
     <ClCompile Include="Renderers\WRenderer.cpp" />
@@ -76,6 +78,7 @@
     <ClInclude Include="Materials\WMaterial.h" />
     <ClInclude Include="Objects\WObject.h" />
     <ClInclude Include="Particles\WParticles.h" />
+    <ClInclude Include="Physics\Bullet\BulletDebugger.h" />
     <ClInclude Include="Physics\Bullet\WBulletPhysics.h" />
     <ClInclude Include="Physics\Bullet\WBulletRigidBody.h" />
     <ClInclude Include="Physics\Havok\WHavokPhysics.h" />

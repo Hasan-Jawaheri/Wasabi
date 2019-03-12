@@ -186,25 +186,7 @@ WMatrix WInstance::GetWorldMatrix() {
 bool WInstance::UpdateLocals() {
 	if (m_bAltered) {
 		m_bAltered = false;
-		WVector3 _up = GetUVector();
-		WVector3 _look = GetLVector();
-		WVector3 _right = GetRVector();
-		WVector3 _pos = GetPosition();
-
-		//
-		//the world matrix is the view matrix's inverse
-		//so we build a normal view matrix and inverse it
-		//
-
-		//build world matrix
-		float x = -WVec3Dot(_right, _pos);
-		float y = -WVec3Dot(_up, _pos);
-		float z = -WVec3Dot(_look, _pos);
-		(m_worldM)(0, 0) = _right.x; (m_worldM)(0, 1) = _up.x; (m_worldM)(0, 2) = _look.x; (m_worldM)(0, 3) = 0.0f;
-		(m_worldM)(1, 0) = _right.y; (m_worldM)(1, 1) = _up.y; (m_worldM)(1, 2) = _look.y; (m_worldM)(1, 3) = 0.0f;
-		(m_worldM)(2, 0) = _right.z; (m_worldM)(2, 1) = _up.z; (m_worldM)(2, 2) = _look.z; (m_worldM)(2, 3) = 0.0f;
-		(m_worldM)(3, 0) = x;        (m_worldM)(3, 1) = y;     (m_worldM)(3, 2) = z;       (m_worldM)(3, 3) = 1.0f;
-		m_worldM = WMatrixInverse(m_worldM);
+		m_worldM = ComputeTransformation();
 
 		//scale matrix
 		m_worldM = WScalingMatrix(m_scale) * m_worldM;
@@ -515,32 +497,14 @@ void WObject::ScaleZ(float scale) {
 }
 
 WMatrix WObject::GetWorldMatrix() {
-	UpdateLocals(WVector3(0, 0, 0)); //return matrix without offsets
+	UpdateLocals();
 	return m_WorldM;
 }
 
-bool WObject::UpdateLocals(WVector3 offset) {
+bool WObject::UpdateLocals() {
 	if (m_bAltered) {
 		m_bAltered = false;
-		WVector3 _up = GetUVector();
-		WVector3 _look = GetLVector();
-		WVector3 _right = GetRVector();
-		WVector3 _pos = GetPosition();
-
-		//
-		//the world matrix is the view matrix's inverse
-		//so we build a normal view matrix and invert it
-		//
-
-		//build world matrix
-		float x = -WVec3Dot(_right, _pos) - offset.x; //apply offset
-		float y = -WVec3Dot(_up, _pos) - offset.y; //apply offset
-		float z = -WVec3Dot(_look, _pos) - offset.z; //apply offset
-		(m_WorldM)(0, 0) = _right.x; (m_WorldM)(0, 1) = _up.x; (m_WorldM)(0, 2) = _look.x; (m_WorldM)(0, 3) = 0.0f;
-		(m_WorldM)(1, 0) = _right.y; (m_WorldM)(1, 1) = _up.y; (m_WorldM)(1, 2) = _look.y; (m_WorldM)(1, 3) = 0.0f;
-		(m_WorldM)(2, 0) = _right.z; (m_WorldM)(2, 1) = _up.z; (m_WorldM)(2, 2) = _look.z; (m_WorldM)(2, 3) = 0.0f;
-		(m_WorldM)(3, 0) = x;        (m_WorldM)(3, 1) = y;     (m_WorldM)(3, 2) = z;       (m_WorldM)(3, 3) = 1.0f;
-		m_WorldM = WMatrixInverse(m_WorldM);
+		m_WorldM = ComputeTransformation();
 
 		//scale matrix
 		m_WorldM = WScalingMatrix(m_scale) * m_WorldM;

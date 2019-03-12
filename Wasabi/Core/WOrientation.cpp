@@ -9,18 +9,22 @@ WOrientation::WOrientation() {
 
 	m_bBind = false;
 }
+
 WOrientation::~WOrientation() {
 }
+
 void WOrientation::SetPosition(float x, float y, float z) {
 	m_pos = WVector3(x, y, z);
 
 	OnStateChange(CHANGE_MOTION);
 }
+
 void WOrientation::SetPosition(const WVector3 pos) {
 	m_pos = pos;
 
 	OnStateChange(CHANGE_MOTION);
 }
+
 void WOrientation::Point(float x, float y, float z) {
 	m_look = WVec3Normalize(WVector3(x, y, z) - m_pos);
 	WVector3 temp = WVec3Cross(WVector3(0, 1, 0), m_look);
@@ -29,6 +33,7 @@ void WOrientation::Point(float x, float y, float z) {
 
 	OnStateChange(CHANGE_ROTATION);
 }
+
 void WOrientation::Point(WVector3 target) {
 	m_look = WVec3Normalize(target - m_pos);
 	WVector3 temp = WVec3Cross(WVector3(0, 1, 0), m_look);
@@ -37,66 +42,8 @@ void WOrientation::Point(WVector3 target) {
 
 	OnStateChange(CHANGE_ROTATION);
 }
-void WOrientation::SetAngle(float x, float y, float z) {
-	//keep the map in -180 to 180 range
-	while (x >= 180)
-		x -= 360;
-	while (x <= -180)
-		x += 360;
 
-	while (y >= 180)
-		y -= 360;
-	while (y <= -180)
-		y += 360;
-
-	while (z >= 180)
-		z -= 360;
-	while (z <= -180)
-		z += 360;
-
-	//reset ulr vectors
-	m_right = WVector3(1.0f, 0.0f, 0.0f);
-	m_up = WVector3(0.0f, 1.0f, 0.0f);
-	m_look = WVector3(0.0f, 0.0f, 1.0f);
-
-	//re-rotate
-	Yaw(y);
-	Pitch(x);
-	Roll(z);
-
-	OnStateChange(CHANGE_ROTATION);
-}
-void WOrientation::SetAngle(WVector3 angle) {
-	//keep the map in -180 to 180 range
-	while (angle.x >= 180)
-		angle.x -= 360;
-	while (angle.x <= -180)
-		angle.x += 360;
-
-	while (angle.y >= 180)
-		angle.y -= 360;
-	while (angle.y <= -180)
-		angle.y += 360;
-
-	while (angle.z >= 180)
-		angle.z -= 360;
-	while (angle.z <= -180)
-		angle.z += 360;
-
-	//reset ulr vectors
-	m_right = WVector3(1.0f, 0.0f, 0.0f);
-	m_up = WVector3(0.0f, 1.0f, 0.0f);
-	m_look = WVector3(0.0f, 0.0f, 1.0f);
-
-	//re-rotate
-	Yaw(angle.y);
-	Pitch(angle.x);
-	Roll(angle.z);
-
-	OnStateChange(CHANGE_ROTATION);
-}
 void WOrientation::SetAngle(WQuaternion quat) {
-	//build 2 matrices
 	WMatrix m1(quat.w, quat.z, -quat.y, quat.x,
 		-quat.z, quat.w, quat.x, quat.y,
 		quat.y, -quat.x, quat.w, quat.z,
@@ -107,15 +54,16 @@ void WOrientation::SetAngle(WQuaternion quat) {
 		quat.y, -quat.x, quat.w, -quat.z,
 		quat.x, quat.y, quat.z, quat.w);
 
-	WMatrix f = m1 * m2; //combine the 2 matrices
+	WMatrix f = m1 * m2;
 
-						  //build the ulr vectors from the combined matrix
+	//build the ulr vectors from the combined matrix
 	m_up = WVector3(f(1, 0), f(1, 1), f(1, 2));
 	m_look = WVector3(f(2, 0), f(2, 1), f(2, 2));
 	m_right = WVector3(f(0, 0), f(0, 1), f(0, 2));
 
 	OnStateChange(CHANGE_ROTATION);
 }
+
 void WOrientation::SetToRotation(const WOrientation* const device) {
 	//copy input device's ulr vectors into object's ulr vectors
 	m_look = device->GetLVector();
@@ -124,6 +72,7 @@ void WOrientation::SetToRotation(const WOrientation* const device) {
 
 	OnStateChange(CHANGE_ROTATION);
 }
+
 void WOrientation::SetULRVectors(WVector3 up, WVector3 look, WVector3 right) {
 	m_up = up;
 	m_look = look;
@@ -131,6 +80,7 @@ void WOrientation::SetULRVectors(WVector3 up, WVector3 look, WVector3 right) {
 
 	OnStateChange(CHANGE_ROTATION);
 }
+
 void WOrientation::Yaw(float angle) {
 	//convert angle to radians
 	angle = W_DEGTORAD(angle);
@@ -142,6 +92,7 @@ void WOrientation::Yaw(float angle) {
 
 	OnStateChange(CHANGE_ROTATION);
 }
+
 void WOrientation::Roll(float angle) {
 	//convert angle to radians
 	angle = W_DEGTORAD(angle);
@@ -153,6 +104,7 @@ void WOrientation::Roll(float angle) {
 
 	OnStateChange(CHANGE_ROTATION);
 }
+
 void WOrientation::Pitch(float angle) {
 	//convert angle to radians
 	angle = W_DEGTORAD(angle);
@@ -164,36 +116,44 @@ void WOrientation::Pitch(float angle) {
 
 	OnStateChange(CHANGE_ROTATION);
 }
+
 void WOrientation::Move(float units) {
 	//increase on the forward axis to move forward
 	m_pos += m_look * units;
 
 	OnStateChange(CHANGE_MOTION);
 }
+
 void WOrientation::Strafe(float units) {
 	//increase on the right axis to strafe
 	m_pos += m_right * units;
 
 	OnStateChange(CHANGE_MOTION);
 }
+
 void WOrientation::Fly(float units) {
 	//increase on the forward axis to fly
 	m_pos += m_up * units;
 
 	OnStateChange(CHANGE_MOTION);
 }
+
 float WOrientation::GetPositionX() const {
 	return m_pos.x;
 }
+
 float WOrientation::GetPositionY() const {
 	return m_pos.y;
 }
+
 float WOrientation::GetPositionZ() const {
 	return m_pos.z;
 }
+
 WVector3 WOrientation::GetPosition() const {
 	return m_pos;
 }
+
 float WOrientation::GetAngleX() const {
 	WVector3 zVec(0.0f, 0.0f, 1.0f); //origin axis
 	WVector3 _2dLook(0.0f, m_look.y, m_look.z);
@@ -212,6 +172,7 @@ float WOrientation::GetAngleX() const {
 	//return result in degrees
 	return W_RADTODEG(result);
 }
+
 float WOrientation::GetAngleY() const {
 	WVector3 yVec(0.0f, 0.0f, 1.0f); //origin axis
 	WVector3 _2dLook(m_look.x, 0.0f, m_look.z);
@@ -230,6 +191,7 @@ float WOrientation::GetAngleY() const {
 	//return result in degrees
 	return W_RADTODEG(result);
 }
+
 float WOrientation::GetAngleZ() const {
 	WVector3 yVec(0.0f, 1.0f, 0.0f); //origin axis
 	WVector3 _2dLook(m_up.x, m_up.y, 0.0f);
@@ -248,38 +210,45 @@ float WOrientation::GetAngleZ() const {
 	//return result in degrees
 	return W_RADTODEG(result);
 }
-WVector3 WOrientation::GetAngle() const {
-	//return the angles as a WVector3
-	WVector3 ang;
 
-	ang.x = GetAngleX();
-	ang.y = GetAngleY();
-	ang.z = GetAngleZ();
-
-	return ang;
+WQuaternion WOrientation::GetRotation() const {
+	WMatrix matrix = ComputeTransformation();
+	float w = sqrt(1 + matrix(0, 0) + matrix(1, 1) + matrix(2, 2)) / 2;
+	float x = (matrix(2, 1) - matrix(1, 2)) / (4 * w);
+	float y = (matrix(0, 2) - matrix(2, 0)) / (4 * w);
+	float z = (matrix(1, 0) - matrix(0, 1)) / (4 * w);
+	return WQuaternion(x, y, z, w);
 }
+
 WVector3 WOrientation::GetUVector() const {
 	return m_up;
 }
+
 WVector3 WOrientation::GetLVector() const {
 	return m_look;
 }
+
 WVector3 WOrientation::GetRVector() const {
 	return m_right;
 }
+
 void WOrientation::SetBindingMatrix(WMatrix mtx) {
 	m_bBind = true;
 	m_bindMtx = mtx;
 }
+
 void WOrientation::RemoveBinding() {
 	m_bBind = false;
 }
+
 WMatrix WOrientation::GetBindingMatrix() const {
 	return m_bindMtx;
 }
+
 bool WOrientation::IsBound() const {
 	return m_bBind;
 }
+
 void WOrientation::OnStateChange(STATE_CHANGE_TYPE type) {
 	if (type == CHANGE_ROTATION) {
 		// Keep camera's axes orthogonal to eachother
@@ -291,4 +260,32 @@ void WOrientation::OnStateChange(STATE_CHANGE_TYPE type) {
 		m_right = WVec3Cross(m_up, m_look);
 		m_right = WVec3Normalize(m_right);
 	}
+}
+
+WMatrix WOrientation::ComputeTransformation() const {
+	WMatrix worldM = ComputeInverseTransformation();
+	return WMatrixInverse(worldM);
+}
+
+WMatrix WOrientation::ComputeInverseTransformation() const {
+	WMatrix worldM;
+	WVector3 _up = GetUVector();
+	WVector3 _look = GetLVector();
+	WVector3 _right = GetRVector();
+	WVector3 _pos = GetPosition();
+
+	//
+	//the world matrix is the view matrix's inverse
+	//so we build a normal view matrix and invert it
+	//
+
+	//build world matrix
+	float x = -WVec3Dot(_right, _pos);
+	float y = -WVec3Dot(_up, _pos);
+	float z = -WVec3Dot(_look, _pos);
+	(worldM)(0, 0) = _right.x; (worldM)(0, 1) = _up.x; (worldM)(0, 2) = _look.x; (worldM)(0, 3) = 0.0f;
+	(worldM)(1, 0) = _right.y; (worldM)(1, 1) = _up.y; (worldM)(1, 2) = _look.y; (worldM)(1, 3) = 0.0f;
+	(worldM)(2, 0) = _right.z; (worldM)(2, 1) = _up.z; (worldM)(2, 2) = _look.z; (worldM)(2, 3) = 0.0f;
+	(worldM)(3, 0) = x;        (worldM)(3, 1) = y;     (worldM)(3, 2) = z;       (worldM)(3, 3) = 1.0f;
+	return worldM;
 }
