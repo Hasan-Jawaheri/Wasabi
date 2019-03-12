@@ -422,14 +422,40 @@ public:
 	 * active.
 	 * @param c The pushed key
 	 */
-	virtual void OnKeydown(char c) {}
+	virtual void OnKeyDown(char c) {}
 
 	/**
 	 * This function is called whenever a key is released while this state is
 	 * active.
 	 * @param c The released key
 	 */
-	virtual void OnKeyup(char c) {}
+	virtual void OnKeyUp(char c) {}
+
+	/**
+	 * This function is called whenever a mouse-down is captured while this
+	 * state is active.
+	 * @param button  Mouse button captured
+	 * @param mx      Mouse X where the event happened
+	 * @param my      Mouse Y where the event happened
+	 */
+	virtual void OnMouseDown(enum W_MOUSEBUTTON button, int mx, int my) {}
+
+	/**
+	 * This function is called whenever a mouse-down is captured while this
+	 * state is active.
+	 * @param button  Mouse button captured
+	 * @param mx      Mouse X where the event happened
+	 * @param my      Mouse Y where the event happened
+	 */
+	virtual void OnMouseUp(enum W_MOUSEBUTTON button, int mx, int my) {}
+
+	/**
+	 * This function is called whenever the mouse moves while this state is
+	 * active.
+	 * @param mx  New mouse X
+	 * @param my  New mouse Y
+	 */
+	virtual void OnMouseMove(int mx, int my) {}
 
 	/**
 	 * This function is called whenever character input is received while this
@@ -457,3 +483,8 @@ typedef unsigned int uint;
  * @return A newly allocated Wasabi child that will run the engine
  */
 Wasabi* WInitialize();
+
+/**
+ * Runs a Wasabi instance
+ */
+int RunWasabi(Wasabi* app);

@@ -356,7 +356,7 @@ public:
 	 * @return        true if changes have occurred since the last update, false
 	 *                otherwise
 	 */
-	bool UpdateLocals(WVector3 offset = WVector3(0, 0, 0));
+	bool UpdateLocals();
 
 	virtual void OnStateChange(STATE_CHANGE_TYPE type);
 

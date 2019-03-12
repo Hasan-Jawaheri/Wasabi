@@ -51,7 +51,7 @@ WError WWC_Win32::Initialize(int width, int height) {
 
 	//create window class
 	WNDCLASSEXA wcex;
-
+	std::string classname = "WNDCLASS " + std::to_string((long)this);
 	wcex.cbSize = sizeof(WNDCLASSEXA);
 	wcex.style = (uint)m_app->engineParams["classStyle"];
 	wcex.lpfnWndProc = hMainWndProc;
@@ -62,7 +62,7 @@ WError WWC_Win32::Initialize(int width, int height) {
 	wcex.hCursor = (HCURSOR)m_app->engineParams["classCursor"];
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = (LPCSTR)m_app->engineParams["menuName"];
-	wcex.lpszClassName = "WWndClasse";
+	wcex.lpszClassName = classname.c_str();
 	wcex.hIconSm = (HICON)m_app->engineParams["classIcon_sm"];
 
 	//keep trying to register the class until a valid name exist (for multiple cores)
@@ -307,18 +307,20 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			appInst->__EXIT = true;
 		appInst->InputComponent->InsertRawInput(wParam, true);
 		if (appInst->curState)
-			appInst->curState->OnKeydown(wParam);
+			appInst->curState->OnKeyDown(wParam);
 		break;
 	case WM_KEYUP:
 		if (!appInst->InputComponent)
 			break;
 		appInst->InputComponent->InsertRawInput(wParam, false);
 		if (appInst->curState)
-			appInst->curState->OnKeyup(wParam);
+			appInst->curState->OnKeyUp(wParam);
 		break;
 	case WM_CHAR:
-		if (appInst->curState)
-			appInst->curState->OnInput(wParam);
+		if (appInst->curState) {
+			for (UINT i = 0; i < LOWORD(lParam); i++)
+				appInst->curState->OnInput(wParam);
+		}
 		break;
 	case WM_GETMINMAXINFO:
 		//set the min/max window size
@@ -336,8 +338,7 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			((WWC_Win32*)appInst->WindowComponent)->m_isMinimized = false; //flag core as not minimized to allow rendering
 			RECT rc;
 			GetClientRect(hWnd, &rc); //get window client dimensions
-
-										//re-initialize the core to fit the new size
+			//re-initialize the core to fit the new size
 			if (!appInst->Resize(rc.right - rc.left, rc.bottom - rc.top))
 				return TRUE;
 		}
@@ -347,32 +348,42 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_LBUTTONDOWN:
 		if (appInst->InputComponent)
 			((WIC_Win32*)appInst->InputComponent)->m_leftClick = true;
+		if (appInst->curState)
+			appInst->curState->OnMouseDown(MOUSE_LEFT, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_LBUTTONUP:
 		if (appInst->InputComponent)
 			((WIC_Win32*)appInst->InputComponent)->m_leftClick = false;
+		if (appInst->curState)
+			appInst->curState->OnMouseUp(MOUSE_LEFT, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_RBUTTONDOWN:
 		if (appInst->InputComponent)
 			((WIC_Win32*)appInst->InputComponent)->m_rightClick = true;
+		if (appInst->curState)
+			appInst->curState->OnMouseDown(MOUSE_RIGHT, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_RBUTTONUP:
 		if (appInst->InputComponent)
 			((WIC_Win32*)appInst->InputComponent)->m_rightClick = false;
+		if (appInst->curState)
+			appInst->curState->OnMouseUp(MOUSE_RIGHT, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_MBUTTONDOWN:
 		if (appInst->InputComponent)
 			((WIC_Win32*)appInst->InputComponent)->m_middleClick = true;
+		if (appInst->curState)
+			appInst->curState->OnMouseDown(MOUSE_MIDDLE, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_MBUTTONUP:
 		if (appInst->InputComponent)
 			((WIC_Win32*)appInst->InputComponent)->m_middleClick = false;
+		if (appInst->curState)
+			appInst->curState->OnMouseUp(MOUSE_MIDDLE, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_MOUSEMOVE:
-		if (appInst->InputComponent) {
-			//((WIC_Win32*)appInst->InputComponent)->m_mouseX = LOWORD(lParam);
-			//((WIC_Win32*)appInst->InputComponent)->m_mouseY = HIWORD(lParam);
-		}
+		if (appInst->curState)
+			appInst->curState->OnMouseMove(LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_MOUSEWHEEL:
 	{

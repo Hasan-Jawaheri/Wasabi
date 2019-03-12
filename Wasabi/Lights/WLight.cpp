@@ -110,26 +110,7 @@ WMatrix WLight::GetWorldMatrix() {
 bool WLight::UpdateLocals() {
 	if (m_bAltered) {
 		m_bAltered = false;
-		WVector3 _up = GetUVector();
-		WVector3 _look = GetLVector();
-		WVector3 _right = GetRVector();
-		WVector3 _pos = GetPosition();
-
-		//
-		// the world matrix is the view matrix's inverse
-		// so we build a normal view matrix and invert it
-		//
-
-		// build world matrix
-		float x = -WVec3Dot(_right, _pos);
-		float y = -WVec3Dot(_up, _pos);
-		float z = -WVec3Dot(_look, _pos);
-		(m_WorldM)(0, 0) = _right.x; (m_WorldM)(0, 1) = _up.x; (m_WorldM)(0, 2) = _look.x; (m_WorldM)(0, 3) = 0.0f;
-		(m_WorldM)(1, 0) = _right.y; (m_WorldM)(1, 1) = _up.y; (m_WorldM)(1, 2) = _look.y; (m_WorldM)(1, 3) = 0.0f;
-		(m_WorldM)(2, 0) = _right.z; (m_WorldM)(2, 1) = _up.z; (m_WorldM)(2, 2) = _look.z; (m_WorldM)(2, 3) = 0.0f;
-		(m_WorldM)(3, 0) = x;        (m_WorldM)(3, 1) = y;     (m_WorldM)(3, 2) = z;       (m_WorldM)(3, 3) = 1.0f;
-		m_WorldM = WMatrixInverse(m_WorldM);
-
+		m_WorldM = ComputeTransformation();
 		return true;
 	}
 

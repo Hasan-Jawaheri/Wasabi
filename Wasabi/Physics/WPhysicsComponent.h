@@ -31,15 +31,16 @@ typedef struct W_RAYCAST_OUTPUT {
  */
 class WPhysicsComponent {
 public:
-	WPhysicsComponent(class Wasabi* app) : m_app(app), RigidBodyManager(nullptr) {}
+	WPhysicsComponent(class Wasabi* app) : m_app(app), RigidBodyManager(nullptr){}
 
 	WRigidBodyManager* RigidBodyManager;
 
 	/**
 	 * Initializes the physics engine.
+	 * @param debug  If set to true, the physics will run in debug mode
 	 * @return Error code, see WError.h
 	 */
-	virtual WError Initialize() = 0;
+	virtual WError Initialize(bool debug = false) = 0;
 
 	/**
 	 * Frees all resources allocated by the physics engine.
@@ -84,21 +85,32 @@ public:
 	 * as far as the physics engine is concerned.
 	 * @param  from Starting point of the ray
 	 * @param  to   End point of the ray
-	 * @return      true if the ray intersects some geometry, false otherwise
-	 */
-	virtual bool RayCast(WVector3 from, WVector3 to) = 0;
-
-	/**
-	 * Performs a ray cast operation on the physics objects. A ray cast operation
-	 * checks if a ray segment (given to the function) intersects any geometry,
-	 * as far as the physics engine is concerned.
-	 * @param  from Starting point of the ray
-	 * @param  to   End point of the ray
 	 * @param  out  A pointer to a structure to be filled with extra output
 	 *              information
 	 * @return      true if the ray intersects some geometry, false otherwise
 	 */
-	virtual bool RayCast(WVector3 from, WVector3 to, W_RAYCAST_OUTPUT* out) = 0;
+	virtual bool RayCast(WVector3 from, WVector3 to,
+		W_RAYCAST_OUTPUT* out = nullptr) = 0;
+
+	/**
+	 * Sets the simulation speed multiplier
+	 * @param fSpeed  Speed multiplier, must be > 0 (1 is normal speed)
+	 */
+	virtual void SetSpeed(float fSpeed) = 0;
+
+	/**
+	 * Sets the physics gravity.
+	 * @param x  Gravity on the x-axis
+	 * @param y  Gravity on the y-axis
+	 * @param z  Gravity on the z-axis
+	 */
+	virtual void SetGravity(float x, float y, float z) = 0;
+
+	/**
+	 * Sets the physics gravity.
+	 * @param gravity  Physics gravity vector
+	 */
+	virtual void SetGravity(WVector3 gravity) = 0;
 
 protected:
 	/** A pointer to the Wasabi application */

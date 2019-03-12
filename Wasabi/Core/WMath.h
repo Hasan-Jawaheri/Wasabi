@@ -513,6 +513,19 @@ public:
 	}
 };
 
+
+/**
+ * @ingroup engineclass
+ *
+ * A quaternion.
+ */
+class WQuaternion : public WVector4 {
+public:
+	WQuaternion() : WVector4(0.0f, 0.0f, 0.0f, 1.0f) {}
+	WQuaternion(float fX, float fY, float fZ, float fW)
+		: WVector4(fX, fY, fZ, fW) {}
+};
+
 /**
  * @ingroup engineclass
  *
@@ -900,10 +913,3 @@ const float WPlaneDotNormal(const WPlane plane, const WVector3 vec);
  * @return       The resulting normalized plane
  */
 const WPlane WNormalizePlane(const WPlane plane);
-
-/**
- * @ingroup engineclass
- *
- * A quaternion.
- */
-typedef WVector4 WQuaternion;

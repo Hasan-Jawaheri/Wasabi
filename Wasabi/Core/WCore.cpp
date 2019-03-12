@@ -29,6 +29,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine
 int main() {
 #endif
 	Wasabi* app = WInitialize();
+	int ret = RunWasabi(app);
+	W_SAFE_DELETE(app);
+	return ret;
+}
+
+int RunWasabi(Wasabi* app) {
 	app->Timer.Start();
 	if (app && app->Setup()) {
 		unsigned int numFrames = 0;
@@ -88,8 +94,6 @@ int main() {
 
 		app->Cleanup();
 	}
-
-	W_SAFE_DELETE(app);
 
 	return 0;
 }
@@ -476,12 +480,6 @@ WError Wasabi::StartEngine(int width, int height) {
 		_DestroyResources();
 		return WError(W_ERRORUNK);
 	}
-	if (PhysicsComponent)
-		werr = PhysicsComponent->Initialize();
-	if (!werr) {
-		_DestroyResources();
-		return WError(W_ERRORUNK);
-	}
 
 	werr = Renderer->LoadDependantResources();
 	if (!werr) {
@@ -614,5 +612,9 @@ WInputComponent* Wasabi::CreateInputComponent() {
 }
 
 WPhysicsComponent* Wasabi::CreatePhysicsComponent() {
-	return new WBulletPhysics(this);
+	WBulletPhysics* physics = new WBulletPhysics(this);
+	WError werr = physics->Initialize();
+	if (!werr)
+		W_SAFE_DELETE(physics);
+	return physics;
 }
