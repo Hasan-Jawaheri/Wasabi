@@ -3,12 +3,12 @@
 #include "../Cameras/WCamera.h"
 #include "../Renderers/WRenderer.h"
 #include "../Images/WRenderTarget.h"
-#include "../Windows/WWindowComponent.h"
+#include "../WindowAndInput/WWindowAndInputComponent.h"
 
 bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, int* _x, int* _y) {
 	WCamera* cam = app->Renderer->GetDefaultRenderTarget()->GetCamera();
-	float width = app->WindowComponent->GetWindowWidth();
-	float height = app->WindowComponent->GetWindowHeight();
+	float width = app->WindowAndInputComponent->GetWindowWidth();
+	float height = app->WindowAndInputComponent->GetWindowHeight();
 	WVector3 pos = WVec3TransformCoord(point, cam->GetViewMatrix());
 
 	float fX = pos.x * cam->GetMinRange() / pos.z;

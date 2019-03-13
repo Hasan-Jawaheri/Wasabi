@@ -5,7 +5,7 @@
 #include "../Materials/WEffect.h"
 #include "../Materials/WMaterial.h"
 #include "../Geometries/WGeometry.h"
-#include "../Windows/WWindowComponent.h"
+#include "../WindowAndInput/WWindowAndInputComponent.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "../stb/stb_truetype.h"
@@ -322,8 +322,8 @@ WError WTextComponent::RenderText(std::string text, float x, float y, float fHei
 }
 
 void WTextComponent::Render(WRenderTarget* rt) {
-	float scrWidth = m_app->WindowComponent->GetWindowWidth();
-	float scrHeight = m_app->WindowComponent->GetWindowHeight();
+	float scrWidth = m_app->WindowAndInputComponent->GetWindowWidth();
+	float scrHeight = m_app->WindowAndInputComponent->GetWindowHeight();
 
 	for (int f = 0; f < m_fonts.size(); f++) {
 		W_FONT_OBJECT* font = &m_fonts[f];

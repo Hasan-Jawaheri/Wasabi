@@ -51,6 +51,8 @@ using std::basic_filebuf;
 using std::vector;
 using std::array;
 
+#define W_ENGINE_NAME "Wasabi"
+
 #define W_SAFE_RELEASE(x) { if ( x ) { (x)->Release ( ); x = NULL; } }
 #define W_SAFE_REMOVEREF(x) { if ( x ) { (x)->RemoveReference ( ); x = NULL; } }
 #define W_SAFE_DELETE(x) { if ( x ) { delete x; x = NULL; } }
@@ -117,10 +119,8 @@ public:
 	std::map<std::string, void*> engineParams;
 	/** Pointer to the attached sound component */
 	class WSoundComponent* SoundComponent;
-	/** Pointer to the attached window component */
-	class WWindowComponent* WindowComponent;
-	/** Pointer to the attached input component */
-	class WInputComponent* InputComponent;
+	/** Pointer to the attached window/input component */
+	class WWindowAndInputComponent* WindowAndInputComponent;
 	/** Pointer to the attached text component */
 	class WTextComponent* TextComponent;
 	/** Pointer to the attached physics component */
@@ -299,6 +299,11 @@ public:
 
 protected:
 	/**
+	 * Creates and initializes a VkInstance to use in the engine.
+	 */
+	virtual VkInstance Wasabi::CreateVKInstance();
+
+	/**
 	 * This function can be overloaded by the application. This function gives
 	 * the application a chance to select the physical device (A graphics card)
 	 * from the list available to Vulkan. This function is called by the engine
@@ -315,7 +320,7 @@ protected:
 	 * chance to set the renderer of the engine. Default implementation
 	 * will create a deferred renderer (WDeferredRenderer).
 	 */
-	virtual WRenderer* CreateRenderer();
+	virtual class WRenderer* CreateRenderer();
 
 	/**
 	* This function can be overloaded by the application. This function is
@@ -323,7 +328,7 @@ protected:
 	* chance to set the text component of the engine. Default implementation
 	* will create a WTextComponent.
 	*/
-	virtual WTextComponent* CreateTextComponent();
+	virtual class WTextComponent* CreateTextComponent();
 
 	/**
 	* This function can be overloaded by the application. This function is
@@ -333,27 +338,17 @@ protected:
 	* IMPORTANT: You must fully initialize the returned component, be it with
 	* ::Initialize() or any other required initialization.
 	*/
-	virtual WSoundComponent* CreateSoundComponent();
+	virtual class WSoundComponent* CreateSoundComponent();
 
 	/**
 	* This function can be overloaded by the application. This function is
 	* called by the engine in StartEngine() and will give the application a
-	* chance to set the window component of the engine. Default implementation
-	* will create the appropriate component based on the OS.
+	* chance to set the window/input component of the engine. Default
+	* implementation will create the appropriate component based on the OS.
 	* IMPORTANT: You must fully initialize the returned component, be it with
 	* ::Initialize() or any other required initialization.
 	*/
-	virtual WWindowComponent* CreateWindowComponent();
-
-	/**
-	* This function can be overloaded by the application. This function is
-	* called by the engine in StartEngine() and will give the application a
-	* chance to set the input component of the engine. Default implementation
-	* will create the appropriate component based on the OS.
-	* IMPORTANT: You must fully initialize the returned component, be it with
-	* ::Initialize() or any other required initialization.
-	*/
-	virtual WInputComponent* CreateInputComponent();
+	virtual class WWindowAndInputComponent* CreateWindowAndInputComponent();
 
 	/**
 	* This function can be overloaded by the application. This function is
@@ -363,7 +358,7 @@ protected:
 	* IMPORTANT: You must fully initialize the returned component, be it with
 	* ::Initialize() or any other required initialization.
 	*/
-	virtual WPhysicsComponent* CreatePhysicsComponent();
+	virtual class WPhysicsComponent* CreatePhysicsComponent();
 
 private:
 	/** The Vulkan instance */
@@ -493,6 +488,8 @@ typedef unsigned int uint;
 Wasabi* WInitialize();
 
 /**
- * Runs a Wasabi instance
+ * Runs a Wasabi instance. This function blocks until the instance quits.
+ * This function will run the message loop and render frames and do everything
+ * required to run the engine in the right environment.
  */
 int RunWasabi(Wasabi* app);

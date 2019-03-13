@@ -33,7 +33,6 @@
     <ClCompile Include="Geometries\WGeometry.cpp" />
     <ClCompile Include="Images\WImage.cpp" />
     <ClCompile Include="Images\WRenderTarget.cpp" />
-    <ClCompile Include="Input\Windows\WIC_Win32.cpp" />
     <ClCompile Include="Lights\WLight.cpp" />
     <ClCompile Include="Materials\WEffect.cpp" />
     <ClCompile Include="Materials\WMaterial.cpp" />
@@ -52,7 +51,7 @@
     <ClCompile Include="stb\stb_vorbis.c" />
     <ClCompile Include="Terrains\WTerrain.cpp" />
     <ClCompile Include="Texts\WText.cpp" />
-    <ClCompile Include="Windows\Windows\WWC_Win32.cpp" />
+    <ClCompile Include="WindowAndInput\Windows\WWindowsWindowAndInputComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations\WAnimation.h" />
@@ -71,8 +70,6 @@
     <ClInclude Include="Geometries\WGeometry.h" />
     <ClInclude Include="Images\WImage.h" />
     <ClInclude Include="Images\WRenderTarget.h" />
-    <ClInclude Include="Input\Windows\WIC_Win32.h" />
-    <ClInclude Include="Input\WInputComponent.h" />
     <ClInclude Include="Lights\WLight.h" />
     <ClInclude Include="Materials\WEffect.h" />
     <ClInclude Include="Materials\WMaterial.h" />
@@ -111,8 +108,8 @@
     <ClInclude Include="Terrains\WTerrain.h" />
     <ClInclude Include="Texts\WText.h" />
     <ClInclude Include="Wasabi.h" />
-    <ClInclude Include="Windows\Windows\WWC_Win32.h" />
-    <ClInclude Include="Windows\WWindowComponent.h" />
+    <ClInclude Include="WindowAndInput\Windows\WWindowsWindowAndInputComponent.h" />
+    <ClInclude Include="WindowAndInput\WWindowAndInputComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Particles\Shaders\particles_gs.glsl" />
