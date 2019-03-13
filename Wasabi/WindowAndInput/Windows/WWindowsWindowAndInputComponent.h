@@ -11,19 +11,18 @@
 
 /**
  * Creating an instance of this class creates the following engine parameters:
-	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW)));
-	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW))); // uint
-	app->engineParams.insert(std::pair<std::string, void*>("classIcon", (void*)(NULL))); // HICON
-	app->engineParams.insert(std::pair<std::string, void*>("classCursor", (void*)(LoadCursorA(NULL, MAKEINTRESOURCEA(32512))))); // HCURSOR
-	app->engineParams.insert(std::pair<std::string, void*>("menuName", (void*)(NULL))); // LPCSTR
-	app->engineParams.insert(std::pair<std::string, void*>("menuProc", (void*)(NULL))); // void (*) (HMENU, uint)
-	app->engineParams.insert(std::pair<std::string, void*>("classIcon_sm", (void*)(NULL))); // HICON
-	app->engineParams.insert(std::pair<std::string, void*>("windowMenu", (void*)(NULL))); // HMENU
-	app->engineParams.insert(std::pair<std::string, void*>("windowParent", (void*)(NULL))); // HWND
-	app->engineParams.insert(std::pair<std::string, void*>("windowStyle", (void*)(WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_VISIBLE))); // uint
-	app->engineParams.insert(std::pair<std::string, void*>("windowStyleEx", (void*)(WS_EX_OVERLAPPEDWINDOW))); // uint
-	app->engineParams.insert(std::pair<std::string, void*>("defWndX", (void*)(-1))); // int
-	app->engineParams.insert(std::pair<std::string, void*>("defWndY", (void*)(-1))); //int
+ * * "classStyle": Windows class style (Default is (void*)(CS_HREDRAW | CS_VREDRAW))
+ * * "classIcon": Windows class icon (Default is (void*)(NULL))
+ * * "classIcon_sm": Windows class small icon (Default is (void*)(NULL))
+ * * "classCursor": Windows cursor to use (Default is (void*)(LoadCursorA(NULL, MAKEINTRESOURCEA(32512)))
+ * * "menuName": Windows menu resource name (Default is (void*)(NULL))
+ * * "menuProc": Window menu procedure function (Default is (void*)(NULL))
+ * * "windowMenu": Window HMENU handle (Default is (void*)(NULL))
+ * * "windowParent": Parent window (Default is (void*)(NULL))
+ * * "windowStyle": Window style (Default is (void*)(WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_VISIBLE))
+ * * "windowStyleEx": Window extended style (Default is (void*)(WS_EX_OVERLAPPEDWINDOW))
+ * * "defWndX": Window starting X position (Default is (void*)(-1))
+ * * "defWndY": Window starting X position (Default is (void*)(-1))
  */
 class WWindowsWindowAndInputComponent : public WWindowAndInputComponent {
 	friend LRESULT CALLBACK hMainWndProc(
