@@ -24,15 +24,17 @@
  * (or terrain, particles, etc...) straight to the backbuffer, once, in one
  * pass. Forward rendering is usually fast as it has a low overhead of
  * rendering.
+ * Creating this component adds the following engine parameters:
+ * * "maxLights": Maximum number of lights that can be rendered at once (Default is (void*)8)
  *
- * To set the engine's renderer, override Wasabi::SetupComponents() and add
- * this line:
+ * To set the engine's renderer, override Wasabi::CreateRenderer() and return
+ * and instance of WForwardRenderer:
  * @code
  * Renderer = new WForwardRenderer(this);
  * @endcode
  */
 class WForwardRenderer : public WRenderer {
-	friend class WFRMaterial; // TODO: can be removed
+	friend class WFRMaterial;
 
 public:
 	WForwardRenderer(class Wasabi* const app);

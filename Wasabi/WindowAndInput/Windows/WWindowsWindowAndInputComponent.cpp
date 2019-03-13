@@ -26,7 +26,6 @@ WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent(Wasabi* const a
 	for (uint i = 0; i < 256; i++)
 		m_keyDown[i] = false;
 
-	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW)));
 	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW))); // uint
 	app->engineParams.insert(std::pair<std::string, void*>("classIcon", (void*)(NULL))); // HICON
 	app->engineParams.insert(std::pair<std::string, void*>("classCursor", (void*)(LoadCursorA(NULL, MAKEINTRESOURCEA(32512))))); // HCURSOR
