@@ -76,6 +76,9 @@
     <Filter Include="Physics\Bullet">
       <UniqueIdentifier>{9c5e046b-6a46-4110-939c-b2601b81af05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sounds\OpenAL">
+      <UniqueIdentifier>{af4f2820-4824-43ba-83d7-939dec7d3e38}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -119,9 +122,6 @@
     </ClCompile>
     <ClCompile Include="Renderers\WRenderer.cpp">
       <Filter>Renderers</Filter>
-    </ClCompile>
-    <ClCompile Include="Sounds\WSound.cpp">
-      <Filter>Sounds</Filter>
     </ClCompile>
     <ClCompile Include="Sprites\WSprite.cpp">
       <Filter>Sprites</Filter>
@@ -179,6 +179,9 @@
     </ClCompile>
     <ClCompile Include="Physics\Bullet\BulletDebugger.cpp">
       <Filter>Physics\Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="Sounds\OpenAL\WOpenAL.cpp">
+      <Filter>Sounds\OpenAL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -350,6 +353,9 @@
     </ClInclude>
     <ClInclude Include="Physics\Bullet\BulletDebugger.h">
       <Filter>Physics\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="Sounds\OpenAL\WOpenAL.h">
+      <Filter>Sounds\OpenAL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

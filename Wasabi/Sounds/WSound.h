@@ -1,21 +1,13 @@
 /*********************************************************************
 ******************* W A S A B I   E N G I N E ************************
-copyright (c) 2016 by Hassan Al-Jawaheri
-desc.: Wasabi Engine OpenAL wrapper
+copyright (c) 2016-2019 by Hassan Al-Jawaheri
+desc.: Wasabi Engine sounds interface to be implemented
 *********************************************************************/
 
 #pragma once
 
 #include "../Core/WCore.h"
 
-#include <al.h>				//openAL sound header
-#include <alc.h>			//openAL sound header
-
-#pragma comment(lib, "OpenAL32.lib") //openAL library
-
-#define W_NUM_SOUND_BUFFERS_PER_SOUND 10
-
-//forward declaration
 class WSound;
 class WBase;
 
@@ -23,100 +15,89 @@ class WSoundComponent {
 	friend class WSound;
 
 public:
-	WSoundComponent(class Wasabi* const app);
-	~WSoundComponent();
+	WSoundComponent(class Wasabi* const app) : m_app(app), SoundManager(nullptr) {}
+	~WSoundComponent() {}
 
-	ALCdevice* GetALSoundDevice() const;
-	ALCcontext* GetALSoundDeviceContext() const;
+	class WSoundManager* SoundManager;
 
-	void SetSoundSpeed(float fSpeed);
-	void SetDopplerFactor(float fFactor);
-	void SetMasterGain(float fGain);
+	/**
+	 * Initializes the sound component.
+	 * @return Error code, see WError.h
+	 */
+	virtual WError Initialize() = 0;
 
-	void SetPosition(float x, float y, float z);
-	void SetPosition(WVector3 pos);
-	void SetPosition(class WOrientation* pos);
-	void SetVelocity(float x, float y, float z);
-	void SetVelocity(WVector3 vel);
-	void SetOrientation(WVector3 look, WVector3 up);
-	void SetOrientation(class WOrientation* ori);
-	void SetToOrientationDevice(class WOrientation* ori);
+	/**
+	 * Frees all resources allocated by the sounds component.
+	 */
+	virtual void Cleanup() = 0;
 
-	WSound* GetSoundHandle(uint ID) const;
-	WSound* GetSoundHandleByIndex(uint index) const;
-	uint GetSoundsCount() const;
+	/**
+	 * Creates a new sound instance. This is equivalent to calling
+	 * new WSound(app, ID), so care must be taken to free the resource
+	 * when done with it.
+	 * @param ID  ID for the created sound
+	 * @return    A newly allocated sound instance
+	 */
+	virtual WSound* CreateSound(unsigned int ID = 0) const = 0;
+
+	virtual void SetSoundSpeed(float fSpeed) {}
+	virtual void SetDopplerFactor(float fFactor) {}
+	virtual void SetMasterGain(float fGain) {}
+
+	virtual void SetListenerPosition(float x, float y, float z) {}
+	virtual void SetListenerPosition(WVector3 pos) {}
+	virtual void SetListenerPosition(class WOrientation* pos) {}
+	virtual void SetListenerVelocity(float x, float y, float z) {}
+	virtual void SetListenerVelocity(WVector3 vel) {}
+	virtual void SetListenerOrientation(WVector3 look, WVector3 up) {}
+	virtual void SetListenerOrientation(class WOrientation* ori) {}
+	virtual void SetListenerToOrientation(class WOrientation* ori) {}
 
 protected:
+	/** A pointer to the Wasabi application */
 	class Wasabi* m_app;
-
-private:
-	ALCdevice* m_oalDevice;
-	ALCcontext* m_oalContext;
-
-	vector<WSound*> m_soundV;
-
-	void m_RegisterSound(WSound* sound);
-	void m_UnRegisterSound(WBase* base);
 };
 
 /*********************************************************************
 *********************************WSound******************************
-Sound class
+Sound class interface
 *********************************************************************/
 class WSound : public WBase {
 public:
-	WSound(Wasabi* const app, uint ID = 0);
-	~WSound();
+	WSound(Wasabi* const app, unsigned int ID = 0) : WBase(app, ID) {}
+	~WSound() {}
 
-	std::string GetTypeName() const;
+	virtual WError LoadWAV(std::string filename, uint buffer, bool bSaveData = false) = 0;
+	virtual void Play() = 0;
+	virtual void Loop() = 0;
+	virtual void Pause() = 0;
+	virtual void Reset() = 0;
+	virtual void SetTime(uint time) = 0;
+	virtual bool Playing() const = 0;
+	virtual bool Looping() const = 0;
 
-	bool Valid() const;
-	WError LoadWAV(std::string Filename, uint buffer, bool bSaveData = false);
-	WError LoadFromMemory(uint buffer, void* data, size_t dataSize,
-					ALenum format, uint frequency, bool bSaveData = false);
-	void Play();
-	void Loop();
-	void Pause();
-	void Reset();
-	void SetTime(uint time);
-	bool Playing() const;
-	bool Looping() const;
-	void SetVolume(float volume);
-	void SetPitch(float fPitch);
+	virtual void SetVolume(float volume) = 0;
+	virtual void SetPitch(float fPitch) {}
+	virtual void SetFrequency(uint buffer, uint frequency) {}
+	virtual uint GetNumChannels(uint buffer) const { return 0; }
+	virtual uint GetBitDepth(uint buffer) const { return 0; }
 
-	WError LoadFromWS(std::string filename, bool bSaveData = false);
-	WError LoadFromWS(basic_filebuf<char>* buff, uint pos,
-						bool bSaveData = false);
-	WError SaveToWS(std::string filename) const;
-	WError SaveToWS(basic_filebuf<char>* buff, uint pos) const;
+	virtual void SetPosition(float x, float y, float z) {}
+	virtual void SetPosition(WVector3 pos) {}
+	virtual void SetPosition(WOrientation* pos) {}
+	virtual void SetVelocity(float x, float y, float z) {}
+	virtual void SetVelocity(WVector3 vel) {}
+	virtual void SetDirection(WVector3 look) {}
+	virtual void SetDirection(class WOrientation* look) {}
+	virtual void SetToOrientation(class WOrientation* oriDev) {}
+};
 
-	void SetFrequency(uint buffer, uint frequency);
-	uint GetNumChannels(uint buffer) const;
-	uint GetBitDepth(uint buffer) const;
-	ALuint GetALBuffer(uint buffer) const;
-	ALuint GetALSource() const;
-
-	void SetPosition(float x, float y, float z);
-	void SetPosition(WVector3 pos);
-	void SetPosition(WOrientation* pos);
-	void SetVelocity(float x, float y, float z);
-	void SetVelocity(WVector3 vel);
-	void SetDirection(WVector3 look);
-	void SetDirection(class WOrientation* look);
-	void SetToOrientationDevice(class WOrientation* oriDev);
-
-private:
-	bool m_valid;
-	ALuint* m_buffers;
-	ALuint m_source;
-	uint m_numBuffers;
-
-	struct __SAVEDATA {
-		uint buffer;
-		ALenum format;
-		size_t dataSize;
-		void* data;
-	};
-	vector<__SAVEDATA> m_dataV;
-	bool m_bCheck(bool ignoreValidness = false) const;
+/**
+ * @ingroup engineclass
+ * Manager class for WSound.
+ */
+class WSoundManager : public WManager<WSound> {
+public:
+	WSoundManager(class Wasabi* const app) : WManager<WSound>(app) {}
+	~WSoundManager() {}
 };

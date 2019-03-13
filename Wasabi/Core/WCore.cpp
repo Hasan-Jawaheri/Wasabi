@@ -12,7 +12,6 @@
 #include "../Lights/WLight.h"
 #include "../Animations/WAnimation.h"
 #include "../Physics/WPhysicsComponent.h"
-#include "../Physics/Bullet/WBulletPhysics.h"
 #include "../Sounds/WSound.h"
 #include "../Texts/WText.h"
 #include "../Particles/WParticles.h"
@@ -576,7 +575,7 @@ WRenderer* Wasabi::CreateRenderer() {
 }
 
 WSoundComponent* Wasabi::CreateSoundComponent() {
-	return new WSoundComponent(this);
+	return nullptr;
 }
 
 WTextComponent* Wasabi::CreateTextComponent() {
@@ -612,9 +611,5 @@ WInputComponent* Wasabi::CreateInputComponent() {
 }
 
 WPhysicsComponent* Wasabi::CreatePhysicsComponent() {
-	WBulletPhysics* physics = new WBulletPhysics(this);
-	WError werr = physics->Initialize();
-	if (!werr)
-		W_SAFE_DELETE(physics);
-	return physics;
+	return nullptr;
 }

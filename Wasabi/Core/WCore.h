@@ -320,14 +320,6 @@ protected:
 	/**
 	* This function can be overloaded by the application. This function is
 	* called by the engine in StartEngine() and will give the application a
-	* chance to set the sound component of the engine. Default implementation
-	* will create a WSoundComponent.
-	*/
-	virtual WSoundComponent* CreateSoundComponent();
-
-	/**
-	* This function can be overloaded by the application. This function is
-	* called by the engine in StartEngine() and will give the application a
 	* chance to set the text component of the engine. Default implementation
 	* will create a WTextComponent.
 	*/
@@ -336,8 +328,20 @@ protected:
 	/**
 	* This function can be overloaded by the application. This function is
 	* called by the engine in StartEngine() and will give the application a
+	* chance to set the sound component of the engine. Default implementation
+	* will return null.
+	* IMPORTANT: You must fully initialize the returned component, be it with
+	* ::Initialize() or any other required initialization.
+	*/
+	virtual WSoundComponent* CreateSoundComponent();
+
+	/**
+	* This function can be overloaded by the application. This function is
+	* called by the engine in StartEngine() and will give the application a
 	* chance to set the window component of the engine. Default implementation
 	* will create the appropriate component based on the OS.
+	* IMPORTANT: You must fully initialize the returned component, be it with
+	* ::Initialize() or any other required initialization.
 	*/
 	virtual WWindowComponent* CreateWindowComponent();
 
@@ -346,6 +350,8 @@ protected:
 	* called by the engine in StartEngine() and will give the application a
 	* chance to set the input component of the engine. Default implementation
 	* will create the appropriate component based on the OS.
+	* IMPORTANT: You must fully initialize the returned component, be it with
+	* ::Initialize() or any other required initialization.
 	*/
 	virtual WInputComponent* CreateInputComponent();
 
@@ -353,7 +359,9 @@ protected:
 	* This function can be overloaded by the application. This function is
 	* called by the engine in StartEngine() and will give the application a
 	* chance to set the physics component of the engine. Default implementation
-	* will create a bullet physics instance.
+	* will return null.
+	* IMPORTANT: You must fully initialize the returned component, be it with
+	* ::Initialize() or any other required initialization.
 	*/
 	virtual WPhysicsComponent* CreatePhysicsComponent();
 

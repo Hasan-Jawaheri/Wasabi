@@ -5,6 +5,37 @@
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
 
+#ifdef _DEBUG
+#pragma comment(lib, "Bullet3Collision_vs2010_debug.lib")
+#pragma comment(lib, "Bullet3Common_vs2010_debug.lib")
+#pragma comment(lib, "Bullet3Dynamics_vs2010_debug.lib")
+#pragma comment(lib, "Bullet3Geometry_vs2010_debug.lib")
+#pragma comment(lib, "BulletCollision_vs2010_debug.lib")
+#pragma comment(lib, "BulletDynamics_vs2010_debug.lib")
+#pragma comment(lib, "LinearMath_vs2010_debug.lib")
+/*
+#pragma comment(lib, "Bullet2FileLoader_vs2010_debug.lib")
+#pragma comment(lib, "BulletFileLoader_vs2010_debug.lib")
+#pragma comment(lib, "BulletInverseDynamicsUtils_vs2010_debug.lib")
+#pragma comment(lib, "BulletInverseDynamics_vs2010_debug.lib")
+#pragma comment(lib, "BulletRobotics_vs2010_debug.lib")
+#pragma comment(lib, "BulletSoftBody_vs2010_debug.lib")
+#pragma comment(lib, "BulletWorldImporter_vs2010_debug.lib")
+#pragma comment(lib, "BulletXmlWorldImporter_vs2010_debug.lib")
+#pragma comment(lib, "BussIK_vs2010_debug.lib")
+#pragma comment(lib, "clsocket_vs2010_debug.lib")
+#pragma comment(lib, "ConvexDecomposition_vs2010_debug.lib")
+*/
+#else
+#pragma comment(lib, "Bullet3Collision_vs2010.lib")
+#pragma comment(lib, "Bullet3Common_vs2010.lib")
+#pragma comment(lib, "Bullet3Dynamics_vs2010.lib")
+#pragma comment(lib, "Bullet3Geometry_vs2010.lib")
+#pragma comment(lib, "BulletCollision_vs2010.lib")
+#pragma comment(lib, "BulletDynamics_vs2010.lib")
+#pragma comment(lib, "LinearMath_vs2010.lib")
+#endif
+
 class WBulletPhysics : public WPhysicsComponent {
 	friend class WBulletRigidBodyManager;
 	friend class WBulletRigidBody;
