@@ -92,11 +92,9 @@ private:
 
 /**
  * @ingroup engineclass
- * Manager class for WRigidBody.
+ * Bullet's manager class for WRigidBody.
  */
 class WBulletRigidBodyManager : public WRigidBodyManager {
-	friend class WRigidBody;
-
 	/**
 	 * Returns "RigidBody" string.
 	 * @return Returns "RigidBody" string
@@ -106,12 +104,6 @@ class WBulletRigidBodyManager : public WRigidBodyManager {
 public:
 	WBulletRigidBodyManager(class Wasabi* const app);
 	~WBulletRigidBodyManager();
-
-	/**
-	 * Loads the manager.
-	 * @return Error code, see WError.h
-	 */
-	WError Load();
 
 	/**
 	 * Called by WBulletPhysics after stepping the physics simulation to

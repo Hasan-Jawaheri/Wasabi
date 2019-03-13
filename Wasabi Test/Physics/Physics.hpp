@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../TestSuite.hpp"
+#include <Physics/Bullet/WBulletPhysics.h>
 #include <Renderers/WForwardRenderer.h>
 
 class PhysicsDemo : public WTestState {

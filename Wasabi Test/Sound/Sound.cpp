@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Sound.hpp"
+#include <Sounds/OpenAL/WOpenAL.h>
 
 SoundDemo::SoundDemo(Wasabi* const app) : WTestState(app) {}
 
 void SoundDemo::Load() {
-	m_sound = new WSound(m_app);
+	m_sound = new WOpenALSound(m_app);
 	m_sound->LoadWAV("Media/test.wav", 0);
 	m_sound->Play();
 }

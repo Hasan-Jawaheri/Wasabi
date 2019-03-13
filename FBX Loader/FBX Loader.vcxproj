@@ -71,16 +71,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(SolutionDir)\Wasabi\;$(FBX_SDK)\include\;$(BULLET_PATH)\src;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32\;$(SolutionDir)\Debug\;$(FBX_SDK)\lib\vs2015\x86\debug;$(BULLET_PATH)\bin;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)\Wasabi\;$(FBX_SDK)\include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;$(SolutionDir)\Debug\;$(FBX_SDK)\lib\vs2015\x86\debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\Include;$(BULLET_PATH)\src;$(SolutionDir)\Wasabi\;$(FBX_SDK)\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32\;$(SolutionDir)\Release\;$(BULLET_PATH)\bin;$(FBX_SDK)\lib\vs2015\x86\release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)\Wasabi\;$(FBX_SDK)\include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Lib32;$(SolutionDir)\Release\;$(FBX_SDK)\lib\vs2015\x86\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

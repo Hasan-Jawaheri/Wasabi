@@ -47,7 +47,7 @@
     <ClCompile Include="Renderers\WDeferredRenderer.cpp" />
     <ClCompile Include="Renderers\WForwardRenderer.cpp" />
     <ClCompile Include="Renderers\WRenderer.cpp" />
-    <ClCompile Include="Sounds\WSound.cpp" />
+    <ClCompile Include="Sounds\OpenAL\WOpenAL.cpp" />
     <ClCompile Include="Sprites\WSprite.cpp" />
     <ClCompile Include="stb\stb_vorbis.c" />
     <ClCompile Include="Terrains\WTerrain.cpp" />
@@ -87,6 +87,7 @@
     <ClInclude Include="Renderers\WDeferredRenderer.h" />
     <ClInclude Include="Renderers\WForwardRenderer.h" />
     <ClInclude Include="Renderers\WRenderer.h" />
+    <ClInclude Include="Sounds\OpenAL\WOpenAL.h" />
     <ClInclude Include="Sounds\WSound.h" />
     <ClInclude Include="Sprites\WSprite.h" />
     <ClInclude Include="stb\stb.h" />

@@ -15,10 +15,6 @@ std::string WBulletRigidBodyManager::GetTypeName() const {
 	return "RigidBodyManager";
 }
 
-WError WBulletRigidBodyManager::Load() {
-	return WError(W_SUCCEEDED);
-}
-
 void WBulletRigidBodyManager::Update(float deltaTime) {
 	for (int i = 0; i < W_HASHTABLESIZE; i++) {
 		for (int j = 0; j < m_entities[i].size(); j++) {

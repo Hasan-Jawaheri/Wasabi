@@ -1,4 +1,4 @@
-#include "WSound.h"
+#include "WOpenAL.h"
 
 template<typename T>
 T BytesTo(char* bytes, bool bLittleEndian = false) {
@@ -14,62 +14,90 @@ T BytesTo(char* bytes, bool bLittleEndian = false) {
 	return ret;
 };
 
-WSoundComponent::WSoundComponent(Wasabi* const app) {
-	m_app = app;
+WOpenALSoundComponent::WOpenALSoundComponent(Wasabi* const app) : WSoundComponent(app) {
+	SoundManager = new WOpenALSoundManager(app);
+
 	m_oalDevice = nullptr;
 	m_oalContext = nullptr;
+}
 
+WOpenALSoundComponent::~WOpenALSoundComponent() {
+	Cleanup();
+}
+
+WError WOpenALSoundComponent::Initialize() {
 	//
 	//Initialize open AL
 	//
 	m_oalDevice = alcOpenDevice(nullptr); // select the "preferred device"
 	if (m_oalDevice) {
 		m_oalContext = alcCreateContext(m_oalDevice, nullptr);
+		if (!m_oalContext) {
+			alcCloseDevice(m_oalDevice);
+			m_oalDevice = nullptr;
+			return WError(W_ERRORUNK);
+		}
 		alcMakeContextCurrent(m_oalContext);
-	}
+	} else
+		return WError(W_ERRORUNK);
+
+	return WError(W_SUCCEEDED);
 }
-WSoundComponent::~WSoundComponent() {
-	for (uint i = 0; i < m_soundV.size(); i)
-		delete (m_soundV[i]);
+
+void WOpenALSoundComponent::Cleanup() {
+	W_SAFE_DELETE(SoundManager);
 
 	// Exit open AL
-	m_oalContext = alcGetCurrentContext();
-	m_oalDevice = alcGetContextsDevice(m_oalContext);
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(m_oalContext);
 	alcCloseDevice(m_oalDevice);
 }
-ALCdevice* WSoundComponent::GetALSoundDevice(void) const {
+
+WSound* WOpenALSoundComponent::CreateSound(unsigned int ID) const {
+	return new WOpenALSound(m_app, ID);
+}
+
+ALCdevice* WOpenALSoundComponent::GetALSoundDevice(void) const {
 	return m_oalDevice;
 }
-ALCcontext* WSoundComponent::GetALSoundDeviceContext(void) const {
+
+ALCcontext* WOpenALSoundComponent::GetALSoundDeviceContext(void) const {
 	return m_oalContext;
 }
-void WSoundComponent::SetSoundSpeed(float fSpeed) {
+
+void WOpenALSoundComponent::SetSoundSpeed(float fSpeed) {
 	alSpeedOfSound(fSpeed);
 }
-void WSoundComponent::SetDopplerFactor(float fFactor) {
+
+void WOpenALSoundComponent::SetDopplerFactor(float fFactor) {
 	alDopplerFactor(fFactor);
 }
-void WSoundComponent::SetMasterGain(float fGain) {
+
+void WOpenALSoundComponent::SetMasterGain(float fGain) {
 	alListenerf(AL_GAIN, fGain);
 }
-void WSoundComponent::SetPosition(float x, float y, float z) {
+
+void WOpenALSoundComponent::SetListenerPosition(float x, float y, float z) {
 	alListener3f(AL_POSITION, x, y, z);
 }
-void WSoundComponent::SetPosition(WVector3 pos) {
+
+void WOpenALSoundComponent::SetListenerPosition(WVector3 pos) {
 	alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
 }
-void WSoundComponent::SetPosition(WOrientation* pos) {
+
+void WOpenALSoundComponent::SetListenerPosition(WOrientation* pos) {
 	alListener3f(AL_POSITION, pos->GetPositionX(), pos->GetPositionY(), pos->GetPositionZ());
 }
-void WSoundComponent::SetVelocity(float x, float y, float z) {
+
+void WOpenALSoundComponent::SetListenerVelocity(float x, float y, float z) {
 	alListener3f(AL_VELOCITY, x, y, z);
 }
-void WSoundComponent::SetVelocity(WVector3 vel) {
+
+void WOpenALSoundComponent::SetListenerVelocity(WVector3 vel) {
 	alListener3f(AL_POSITION, vel.x, vel.y, vel.z);
 }
-void WSoundComponent::SetOrientation(WVector3 look, WVector3 up) {
+
+void WOpenALSoundComponent::SetListenerOrientation(WVector3 look, WVector3 up) {
 	float fVals[6];
 	for (uint i = 0; i < 6; i++) {
 		if (i < 3)
@@ -79,7 +107,8 @@ void WSoundComponent::SetOrientation(WVector3 look, WVector3 up) {
 	}
 	alListenerfv(AL_ORIENTATION, fVals);
 }
-void WSoundComponent::SetOrientation(WOrientation* ori) {
+
+void WOpenALSoundComponent::SetListenerOrientation(WOrientation* ori) {
 	float fVals[6];
 	for (uint i = 0; i < 6; i++) {
 		if (i < 3)
@@ -89,7 +118,8 @@ void WSoundComponent::SetOrientation(WOrientation* ori) {
 	}
 	alListenerfv(AL_ORIENTATION, fVals);
 }
-void WSoundComponent::SetToOrientationDevice(WOrientation* ori) {
+
+void WOpenALSoundComponent::SetListenerToOrientation(WOrientation* ori) {
 	float fVals[6];
 	for (uint i = 0; i < 6; i++) {
 		if (i < 3)
@@ -100,45 +130,20 @@ void WSoundComponent::SetToOrientationDevice(WOrientation* ori) {
 	alListenerfv(AL_ORIENTATION, fVals);
 	alListener3f(AL_POSITION, ori->GetPositionX(), ori->GetPositionY(), ori->GetPositionZ());
 }
-WSound* WSoundComponent::GetSoundHandle(uint ID) const {
-	//return a handle to a sound if it exists
-	for (uint i = 0; i < m_soundV.size(); i++)
-		if (m_soundV[i]->GetID() == ID)
-			return m_soundV[i];
-	return nullptr;
+
+WOpenALSoundManager::WOpenALSoundManager(class Wasabi* const app)
+	: WSoundManager(app) {
 }
-WSound* WSoundComponent::GetSoundHandleByIndex(uint index) const {
-	//return a handle to a sound if it exists, do not count sounds with ID = 0
-	for (uint i = 0; i < m_soundV.size(); i++)
-		if (m_soundV[i]->GetID())
-			if (i == index)
-				return m_soundV[i];
-	return nullptr;
+
+WOpenALSoundManager::~WOpenALSoundManager() {
 }
-uint WSoundComponent::GetSoundsCount(void) const {
-	return m_soundV.size();
-}
-void WSoundComponent::m_RegisterSound(WSound* sound) {
-	//sign a sound in the sound's list, delete a sound if it already exists with the same ID (this should be used by the system only)
-	if (sound->GetID())
-		for (uint i = 0; i < m_soundV.size(); i++)
-			if (m_soundV[i]->GetID() == sound->GetID()) {
-				WSound* temp = m_soundV[i];
-				W_SAFE_DELETE(temp);
-			}
-	m_soundV.push_back(sound);
-}
-void WSoundComponent::m_UnRegisterSound(WBase* base) {
-	//remove a sound from the list
-	for (uint i = 0; i < m_soundV.size(); i++)
-		if (m_soundV[i] == base) {
-			m_soundV.erase(m_soundV.begin() + i);
-			break;
-		}
+
+std::string WOpenALSoundManager::GetTypeName() const {
+	return "SoundManager";
 }
 
 
-WSound::WSound(Wasabi* const app, uint ID) : WBase(app, ID) {
+WOpenALSound::WOpenALSound(Wasabi* const app, uint ID) : WSound(app, ID) {
 	m_valid = false;
 	m_numBuffers = W_NUM_SOUND_BUFFERS_PER_SOUND;
 	m_buffers = new ALuint[m_numBuffers];
@@ -153,9 +158,10 @@ WSound::WSound(Wasabi* const app, uint ID) : WBase(app, ID) {
 	alGetError(); //clear errors
 	alGenSources(1, &m_source);
 
-	GetAppPtr()->SoundComponent->m_RegisterSound(this);
+	m_app->SoundComponent->SoundManager->AddEntity(this);
+
 }
-WSound::~WSound(void) {
+WOpenALSound::~WOpenALSound(void) {
 	alDeleteBuffers(m_numBuffers, m_buffers);
 	alDeleteSources(1, &m_source);
 
@@ -168,14 +174,14 @@ WSound::~WSound(void) {
 
 	m_valid = false;
 
-	//unregister
-	GetAppPtr()->SoundComponent->m_UnRegisterSound(this);
+	m_app->SoundComponent->SoundManager->RemoveEntity(this);
 }
-std::string WSound::GetTypeName(void) const {
+
+std::string WOpenALSound::GetTypeName(void) const {
 	return "Sound";
 }
 
-WError WSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, ALenum format, uint frequency, bool bSaveData) {
+WError WOpenALSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, ALenum format, uint frequency, bool bSaveData) {
 	if (!m_bCheck(true)) return WError(W_ERRORUNK);
 
 	alBufferData(m_buffers[buffer], format, data, dataSize, frequency);
@@ -196,7 +202,8 @@ WError WSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, ALenum f
 
 	return WError(W_SUCCEEDED);
 }
-WError WSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) {
+
+WError WOpenALSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) {
 	if (!m_bCheck(true)) return WError(W_ERRORUNK);
 
 	std::fstream file(Filename, ios::in | ios::binary);
@@ -300,133 +307,155 @@ WError WSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) {
 
 	return WError(W_SUCCEEDED);
 }
-void WSound::Play(void) {
+
+void WOpenALSound::Play(void) {
 	if (!m_bCheck()) return;
 
 	alSourcePlay(m_source);
 	alSourcei(m_source, AL_LOOPING, AL_FALSE); //looping off
 }
-void WSound::Loop(void) {
+
+void WOpenALSound::Loop(void) {
 	if (!m_bCheck()) return;
 
 	alSourcePlay(m_source);
 	alSourcei(m_source, AL_LOOPING, AL_TRUE);
 }
-void WSound::Pause(void) {
+
+void WOpenALSound::Pause(void) {
 	if (!m_bCheck()) return;
 
 	alSourcePause(m_source);
 }
-void WSound::Reset(void) {
+
+void WOpenALSound::Reset(void) {
 	if (!m_bCheck()) return;
 
 	alSourceRewind(m_source);
 }
-void WSound::SetTime(uint time) {
+
+void WOpenALSound::SetTime(uint time) {
 	if (!m_bCheck()) return;
 
 	alSourcef(m_source, AL_SEC_OFFSET, time / 1000.0f);
 }
-bool WSound::Playing(void) const {
+
+bool WOpenALSound::Playing(void) const {
 	if (!m_bCheck()) return false;
 
 	ALint out = 0;
 	alGetSourcei(m_source, AL_SOURCE_STATE, &out);
 	return out == AL_PLAYING;
 }
-bool WSound::Looping(void) const {
+
+bool WOpenALSound::Looping(void) const {
 	if (!m_bCheck()) return false;
 
 	ALint out = 0;
 	alGetSourcei(m_source, AL_SOURCE_STATE, &out);
 	return out == AL_LOOPING;
 }
-void WSound::SetVolume(float volume) {
+
+void WOpenALSound::SetVolume(float volume) {
 	if (!m_bCheck()) return;
 
 	alSourcef(m_source, AL_GAIN, volume / 100.0f);
 }
-void WSound::SetPitch(float fPitch) {
+
+void WOpenALSound::SetPitch(float fPitch) {
 	if (!m_bCheck()) return;
 
 	alSourcei(m_source, AL_PITCH, fPitch);
 }
-void WSound::SetFrequency(uint buffer, uint frequency) {
+
+void WOpenALSound::SetFrequency(uint buffer, uint frequency) {
 	if (!m_bCheck() || buffer >= m_numBuffers) return;
 
 	alBufferi(m_buffers[buffer], AL_FREQUENCY, frequency);
 }
 
-uint WSound::GetNumChannels(uint buffer) const {
+uint WOpenALSound::GetNumChannels(uint buffer) const {
 	if (!m_bCheck() || buffer >= m_numBuffers) return 0;
 
 	ALint out = 0;
 	alGetBufferi(m_buffers[buffer], AL_CHANNELS, &out);
 	return out;
 }
-uint WSound::GetBitDepth(uint buffer) const {
+
+uint WOpenALSound::GetBitDepth(uint buffer) const {
 	if (!m_bCheck() || buffer >= m_numBuffers) return 0;
 
 	ALint out = 0;
 	alGetBufferi(m_buffers[buffer], AL_BITS, &out);
 	return out;
 }
-ALuint WSound::GetALBuffer(uint buffer) const {
+
+ALuint WOpenALSound::GetALBuffer(uint buffer) const {
 	if (!m_bCheck() || buffer >= m_numBuffers) return 0;
 
 	return m_buffers[buffer];
 }
-ALuint WSound::GetALSource(void) const {
+
+ALuint WOpenALSound::GetALSource(void) const {
 	if (!m_bCheck()) return 0;
 
 	return m_source;
 }
 
-void WSound::SetPosition(float x, float y, float z) {
+void WOpenALSound::SetPosition(float x, float y, float z) {
 	if (!m_bCheck()) return;
 
 	alSource3f(m_source, AL_POSITION, x, y, z);
 }
-void WSound::SetPosition(WVector3 pos) {
+
+void WOpenALSound::SetPosition(WVector3 pos) {
 	if (!m_bCheck()) return;
 
 	alSource3f(m_source, AL_POSITION, pos.x, pos.y, pos.z);
 }
-void WSound::SetPosition(WOrientation* pos) {
+
+void WOpenALSound::SetPosition(WOrientation* pos) {
 	if (!m_bCheck()) return;
 
 	alSource3f(m_source, AL_POSITION, pos->GetPositionX(), pos->GetPositionY(), pos->GetPositionX());
 }
-void WSound::SetVelocity(float x, float y, float z) {
+
+void WOpenALSound::SetVelocity(float x, float y, float z) {
 	if (!m_bCheck()) return;
 
 	alSource3f(m_source, AL_VELOCITY, x, y, z);
 }
-void WSound::SetVelocity(WVector3 vel) {
+
+void WOpenALSound::SetVelocity(WVector3 vel) {
 	if (!m_bCheck()) return;
 
 	alSource3f(m_source, AL_VELOCITY, vel.x, vel.y, vel.z);
 }
-void WSound::SetDirection(WVector3 look) {
+
+void WOpenALSound::SetDirection(WVector3 look) {
 	if (!m_bCheck()) return;
 
 	alSource3f(m_source, AL_DIRECTION, look.x, look.y, look.z);
 }
-void WSound::SetDirection(WOrientation* look) {
+
+void WOpenALSound::SetDirection(WOrientation* look) {
 	if (!m_bCheck()) return;
 
 	alSource3f(m_source, AL_DIRECTION, look->GetLVector()[0], look->GetLVector()[1], look->GetLVector()[2]);
 }
-void WSound::SetToOrientationDevice(WOrientation* oriDev) {
+
+void WOpenALSound::SetToOrientation(WOrientation* oriDev) {
 	if (!m_bCheck()) return;
 
 	alSource3f(m_source, AL_POSITION, oriDev->GetPositionX(), oriDev->GetPositionY(), oriDev->GetPositionX());
 	alSource3f(m_source, AL_DIRECTION, oriDev->GetLVector()[0], oriDev->GetLVector()[1], oriDev->GetLVector()[2]);
 }
-bool WSound::Valid(void) const {
+
+bool WOpenALSound::Valid(void) const {
 	return m_valid;
 }
-WError WSound::LoadFromWS(std::string filename, bool bSaveData) {
+
+WError WOpenALSound::LoadFromWALS(std::string filename, bool bSaveData) {
 	std::fstream file;
 	file.open(filename, ios::in | ios::binary);
 	if (file.fail())
@@ -465,7 +494,8 @@ WError WSound::LoadFromWS(std::string filename, bool bSaveData) {
 
 	return WError(W_SUCCEEDED);
 }
-WError WSound::LoadFromWS(basic_filebuf<char>* buff, uint pos, bool bSaveData) {
+
+WError WOpenALSound::LoadFromWALS(basic_filebuf<char>* buff, uint pos, bool bSaveData) {
 	//use the given stream
 	std::fstream file;
 	if (!buff)
@@ -506,7 +536,8 @@ WError WSound::LoadFromWS(basic_filebuf<char>* buff, uint pos, bool bSaveData) {
 
 	return WError(W_SUCCEEDED);
 }
-WError WSound::SaveToWS(std::string filename) const {
+
+WError WOpenALSound::SaveToWALS(std::string filename) const {
 	if (Valid() && m_dataV.size()) //only attempt to save if the sound is valid and there is something to save
 	{
 		//open the file for writing
@@ -548,7 +579,8 @@ WError WSound::SaveToWS(std::string filename) const {
 	return WError(W_SUCCEEDED);
 
 }
-WError WSound::SaveToWS(basic_filebuf<char>* buff, uint pos) const {
+
+WError WOpenALSound::SaveToWALS(basic_filebuf<char>* buff, uint pos) const {
 	if (Valid() && m_dataV.size()) //only attempt to save if the sound is valid and there is something to save
 	{
 		//use the given stream
@@ -587,6 +619,7 @@ WError WSound::SaveToWS(basic_filebuf<char>* buff, uint pos) const {
 
 	return WError(W_SUCCEEDED);
 }
-bool WSound::m_bCheck(bool ignoreValidness) const {
+
+bool WOpenALSound::m_bCheck(bool ignoreValidness) const {
 	return (m_valid || ignoreValidness) && m_source && m_buffers;
 }
