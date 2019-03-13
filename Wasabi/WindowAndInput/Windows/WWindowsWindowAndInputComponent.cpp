@@ -1,11 +1,16 @@
-#ifdef _WIN32
+/** @file WWindowsWindowAndInputComponent.cpp
+ *  @brief Window/input component for Windows
+ *
+ *  @author Hasan Al-Jawaheri (hbj)
+ *  @bug No known bugs.
+ */
 
-#include "WWC_Win32.h"
-#include "../../Input/Windows/WIC_Win32.h"
+#include "WWindowsWindowAndInputComponent.h"
+#include <windows.h>
 
 LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);
 
-WWC_Win32::WWC_Win32(Wasabi* app) : WWindowComponent(app) {
+WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent(Wasabi* const app) : WWindowAndInputComponent(app) {
 	m_mainWindow = nullptr;
 	m_hInstance = GetModuleHandleA(nullptr);
 	m_minWindowX = 640 / 4;
@@ -14,6 +19,12 @@ WWC_Win32::WWC_Win32(Wasabi* app) : WWindowComponent(app) {
 	m_maxWindowY = 480 * 20;
 	m_isMinimized = true;
 	m_extra_proc = nullptr;
+
+	m_rightClick = m_leftClick = m_middleClick = false;
+	m_mouseZ = 0;
+	m_escapeE = true;
+	for (uint i = 0; i < 256; i++)
+		m_keyDown[i] = false;
 
 	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW)));
 	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW))); // uint
@@ -30,7 +41,7 @@ WWC_Win32::WWC_Win32(Wasabi* app) : WWindowComponent(app) {
 	app->engineParams.insert(std::pair<std::string, void*>("defWndY", (void*)(-1))); //int
 }
 
-WError WWC_Win32::Initialize(int width, int height) {
+WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
 	//do not initialize if the window is already there
 	if (m_mainWindow) {
 		//build window rect from client rect (client rect = directx rendering rect)
@@ -84,8 +95,7 @@ WError WWC_Win32::Initialize(int width, int height) {
 	if ((int)m_app->engineParams["defWndX"] == -1 && (int)m_app->engineParams["defWndY"] == -1) {
 		x = (GetSystemMetrics(SM_CXSCREEN) / 2) - ((rc.right - rc.left) / 2);
 		y = (GetSystemMetrics(SM_CYSCREEN) / 2) - ((rc.bottom - rc.top) / 2);
-	}
-	else {
+	} else {
 		x = (int)m_app->engineParams["defWndX"];
 		y = (int)m_app->engineParams["defWndY"];
 	}
@@ -111,7 +121,7 @@ WError WWC_Win32::Initialize(int width, int height) {
 	return WError(W_SUCCEEDED);
 }
 
-bool WWC_Win32::Loop() {
+bool WWindowsWindowAndInputComponent::Loop() {
 	MSG msg;
 	while (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) //find messages
 	{
@@ -129,22 +139,26 @@ bool WWC_Win32::Loop() {
 	return !m_isMinimized;
 }
 
-void WWC_Win32::Cleanup() {
+void WWindowsWindowAndInputComponent::ShowErrorMessage(std::string error, bool warning) {
+	MessageBoxA(m_mainWindow, error.c_str(), (LPCSTR)m_app->engineParams["appName"], MB_OK | (warning ? MB_ICONWARNING : MB_ICONERROR));
+}
+
+void WWindowsWindowAndInputComponent::Cleanup() {
 	if (m_mainWindow)
 		DestroyWindow(m_mainWindow);
 }
 
-void WWC_Win32::SetWindowTitle(const char* const title) {
+void WWindowsWindowAndInputComponent::SetWindowTitle(const char* const title) {
 	//set the title of the main window
 	SetWindowTextA(m_mainWindow, title);
 }
 
-void WWC_Win32::SetWindowPosition(int x, int y) {
+void WWindowsWindowAndInputComponent::SetWindowPosition(int x, int y) {
 	//set the position of the main window
 	SetWindowPos(m_mainWindow, nullptr, x, y, 0, 0, SWP_NOSIZE);
 }
 
-void WWC_Win32::SetWindowSize(int width, int height) {
+void WWindowsWindowAndInputComponent::SetWindowSize(int width, int height) {
 	//change main window size, convert client space size to window size	RECT rc;
 	RECT rc;
 	rc.left = 0;
@@ -158,70 +172,70 @@ void WWC_Win32::SetWindowSize(int width, int height) {
 	SetWindowPos(m_mainWindow, nullptr, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE);
 }
 
-void WWC_Win32::MaximizeWindow() {
+void WWindowsWindowAndInputComponent::MaximizeWindow() {
 	//show window as maximized
 	ShowWindow(m_mainWindow, SW_SHOWMAXIMIZED);
 	m_isMinimized = false; //mark not minimized
 }
 
-void WWC_Win32::MinimizeWindow() {
+void WWindowsWindowAndInputComponent::MinimizeWindow() {
 	//show window as minimized
 	ShowWindow(m_mainWindow, SW_SHOWMINIMIZED);
 	m_isMinimized = true; //mark minimized
 }
 
-uint WWC_Win32::RestoreWindow() {
+uint WWindowsWindowAndInputComponent::RestoreWindow() {
 	//restore window
 	int result = ShowWindow(m_mainWindow, SW_RESTORE);
 	m_isMinimized = false; //mark not minimized
 	return result;
 }
 
-uint WWC_Win32::GetWindowWidth() const {
+uint WWindowsWindowAndInputComponent::GetWindowWidth() const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.right;
 }
 
-uint WWC_Win32::GetWindowHeight() const {
+uint WWindowsWindowAndInputComponent::GetWindowHeight() const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.bottom;
 }
 
-int WWC_Win32::GetWindowPositionX() const {
+int WWindowsWindowAndInputComponent::GetWindowPositionX() const {
 	//return the left coordinate of the window rect
 	RECT rc;
 	GetWindowRect(m_mainWindow, &rc);
 	return rc.left;
 }
 
-int WWC_Win32::GetWindowPositionY() const {
+int WWindowsWindowAndInputComponent::GetWindowPositionY() const {
 	//return the top coordinate of the window rect
 	RECT rc;
 	GetWindowRect(m_mainWindow, &rc);
 	return rc.top;
 }
 
-HWND WWC_Win32::GetWindow() const {
+HWND WWindowsWindowAndInputComponent::GetWindow() const {
 	//return the API HWND
 	return m_mainWindow;
 }
 
-HINSTANCE WWC_Win32::GetInstance() const {
+HINSTANCE WWindowsWindowAndInputComponent::GetInstance() const {
 	//return the instance
 	return m_hInstance;
 }
 
-void* WWC_Win32::GetPlatformHandle() const {
+void* WWindowsWindowAndInputComponent::GetPlatformHandle() const {
 	return (void*)m_hInstance;
 }
 
-void* WWC_Win32::GetWindowHandle() const {
+void* WWindowsWindowAndInputComponent::GetWindowHandle() const {
 	return (void*)m_mainWindow;
 }
 
-void WWC_Win32::SetFullScreenState(bool bFullScreen) {
+void WWindowsWindowAndInputComponent::SetFullScreenState(bool bFullScreen) {
 	//set the fullscreen state of the window
 	// TODO: implement this
 	//m_app->GetSwapChain()->SetFullscreenState(bFullScreen, nullptr);
@@ -249,29 +263,178 @@ void WWC_Win32::SetFullScreenState(bool bFullScreen) {
 	}
 }
 
-bool WWC_Win32::GetFullScreenState() const {
+bool WWindowsWindowAndInputComponent::GetFullScreenState() const {
 	DWORD dwStyle = GetWindowLongPtr(m_mainWindow, GWL_STYLE);
 	return dwStyle & WS_POPUP && !(dwStyle & WS_BORDER);
 }
 
-void WWC_Win32::SetWindowMinimumSize(int minX, int minY) {
+void WWindowsWindowAndInputComponent::SetWindowMinimumSize(int minX, int minY) {
 	m_minWindowX = minX;
 	m_minWindowY = minY;
 }
 
-void WWC_Win32::SetWindowMaximumSize(int maxX, int maxY) {
+void WWindowsWindowAndInputComponent::SetWindowMaximumSize(int maxX, int maxY) {
 	m_maxWindowX = maxX;
 	m_maxWindowY = maxY;
 }
 
-void WWC_Win32::SetWndProcCallback(LRESULT(CALLBACK *proc)(Wasabi*, HWND, UINT, WPARAM, LPARAM, bool)) {
+void WWindowsWindowAndInputComponent::SetWndProcCallback(LRESULT(CALLBACK *proc)(Wasabi*, HWND, UINT, WPARAM, LPARAM, bool)) {
 	m_extra_proc = proc;
+}
+
+bool WWindowsWindowAndInputComponent::MouseClick(W_MOUSEBUTTON button) const {
+	//return the registered click state
+
+	if (button == MOUSE_LEFT)
+		return m_leftClick;
+	else if (button == MOUSE_RIGHT)
+		return m_rightClick;
+	else if (button == MOUSE_MIDDLE)
+		return m_middleClick;
+
+	return false;
+}
+
+int WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint vpID) const {
+	//get mouse position and convert it to the desired type
+	RECT rc;
+	POINT pt, __pt;
+	GetWindowRect(m_mainWindow, &rc);
+	GetCursorPos(&__pt);
+	GetCursorPos(&pt);
+	ScreenToClient(m_mainWindow, &pt);
+
+	if (posT == MOUSEPOS_WINDOW || posT == MOUSEPOS_VIEWPORT)
+		return pt.x; //default, window position
+	/*else if (posT == MOUSEPOS_VIEWPORT) {
+		//convert the mouse position to viewport space
+		pt.x -= ((WWC_Win32*)m_app->WindowAndInputComponent)->GetViewportHandle(vpID)->vp.TopLeftX;
+
+		return pt.x;
+	}*/
+	else if (posT == MOUSEPOS_DESKTOP)
+		return __pt.x; //return desktop space position
+	else
+		return 0;
+
+	return 0;
+}
+
+int WWindowsWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint vpID) const {
+	//get mouse position and convert it to the desired type
+	RECT rc;
+	POINT pt, __pt;
+	GetWindowRect(m_mainWindow, &rc);
+	GetCursorPos(&__pt);
+	GetCursorPos(&pt);
+	ScreenToClient(m_mainWindow, &pt);
+
+	if (posT == MOUSEPOS_WINDOW || posT == MOUSEPOS_VIEWPORT)
+		return pt.y; //default, window position
+	/*else if (posT == MOUSEPOS_VIEWPORT) {
+		//convert the mouse position to viewport space
+		pt.y -= m((WWC_Win32*)m_app->WindowAndInputComponent)->GetViewportHandle(vpID)->vp.TopLeftY;
+
+		return pt.y;
+	}*/
+	else if (posT == MOUSEPOS_DESKTOP)
+		return __pt.y; //return desktop space position
+	else
+		return 0;
+
+	return 0;
+}
+
+int WWindowsWindowAndInputComponent::MouseZ() const {
+	//return registered mouse wheel position
+	return m_mouseZ;
+}
+
+bool WWindowsWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint vpID) const {
+	if (posT == MOUSEPOS_WINDOW) { //check if mouse is in the window
+		POINT pt;
+		GetCursorPos(&pt);
+		RECT rc;
+		GetWindowRect(m_mainWindow, &rc);
+		uint style = GetWindowLong(m_mainWindow, GWL_STYLE);
+		rc.left += (style & WS_BORDER ? 10 : 0);
+		rc.top += (style & WS_CAPTION ? 30 : 0);
+		rc.right -= (style & WS_BORDER ? 10 : 0);
+		rc.bottom -= (style & WS_BORDER ? 10 : 0);
+
+		//compare mouse position to window space
+		if (pt.x > rc.left && pt.x < rc.right && pt.y > rc.top && pt.y < rc.bottom)
+			return true;
+	} else if (posT == MOUSEPOS_DESKTOP)
+		return true; //the mouse is always in desktop
+	/*else if (posT == MOUSEPOS_VIEWPORT)//check if the mouse is in a viewport
+	{
+		POINT pt;
+		GetCursorPos(&pt);
+		RECT rc;
+		GetWindowRect(((WWC_Win32*)m_app->WindowAndInputComponent)->GetWindow(), &rc);
+		uint style = GetWindowLong(((WWC_Win32*)m_app->WindowAndInputComponent)->GetWindow(), GWL_STYLE);
+		rc.left += (style & WS_BORDER ? 10 : 0);
+		rc.top += (style & WS_CAPTION ? 30 : 0);
+		rc.top += (GetMenu(((WWC_Win32*)m_app->WindowAndInputComponent)->GetWindow()) == NULL ? 0 : 20);
+		rc.right -= (style & WS_BORDER ? 10 : 0);
+		rc.bottom -= (style & WS_BORDER ? 10 : 0);
+
+		_hxViewport* vp = m((WWC_Win32*)m_app->WindowAndInputComponent)->GetViewportHandle(vpID);
+		//compare to viewport coordianates
+		if (pt.x > vp->vp.TopLeftX + rc.left &&
+			pt.x < vp->vp.TopLeftX + vp->vp.Width + rc.left &&
+			pt.y > vp->vp.TopLeftY + rc.top &&
+			pt.y < vp->vp.TopLeftY + vp->vp.Height + rc.top)
+			return true;
+	}*/
+
+	return false;
+}
+
+void WWindowsWindowAndInputComponent::SetMousePosition(uint x, uint y, W_MOUSEPOSTYPE posT) {
+	if (posT == MOUSEPOS_VIEWPORT) {
+		POINT pos = { (long)x, (long)y };
+		//convert to screen space
+		ClientToScreen(m_mainWindow, &pos);
+		SetCursorPos(pos.x, pos.y);
+	} else if (posT == MOUSEPOS_DESKTOP) {
+		SetCursorPos(x, y);
+	}
+}
+
+void WWindowsWindowAndInputComponent::SetMouseZ(int value) {
+	//set the mouse wheel position
+	m_mouseZ = value;
+}
+
+void WWindowsWindowAndInputComponent::ShowCursor(bool bShow) {
+	::ShowCursor(bShow);
+}
+
+void WWindowsWindowAndInputComponent::EnableEscapeKeyQuit() {
+	m_escapeE = true;
+}
+
+void WWindowsWindowAndInputComponent::DisableEscapeKeyQuit() {
+	m_escapeE = false;
+}
+
+bool WWindowsWindowAndInputComponent::KeyDown(char key) const {
+	return m_keyDown[key];
+}
+
+void WWindowsWindowAndInputComponent::InsertRawInput(char key, bool state) {
+	m_keyDown[key] = state;
 }
 
 //window procedure
 LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	//get an inctance of the core
 	Wasabi* appInst = (Wasabi*)GetWindowLong(hWnd, GWL_USERDATA);
+	WWindowsWindowAndInputComponent* Component = nullptr;
+	if (appInst)
+		Component = (WWindowsWindowAndInputComponent*)appInst->WindowAndInputComponent;
 
 	//return default behavior if the instance is not set yet
 	if (!appInst) {
@@ -288,11 +451,11 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	LRESULT result = TRUE;
 
-	if (((WWC_Win32*)appInst->WindowComponent)->m_extra_proc)
-		((WWC_Win32*)appInst->WindowComponent)->m_extra_proc(appInst, hWnd, msg, wParam, lParam, true);
+	if (Component->m_extra_proc)
+		Component->m_extra_proc(appInst, hWnd, msg, wParam, lParam, true);
 
 	switch (msg) {
-		//quit
+	//quit
 	case WM_CLOSE:
 	case WM_QUIT:
 	case WM_DESTROY:
@@ -300,19 +463,19 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_KEYDOWN:
-		if (!appInst->InputComponent)
+		if (!Component)
 			break;
 		//ESCAPE KEY will close the application if m_escapeE is true
-		if (wParam == VK_ESCAPE && ((WIC_Win32*)appInst->InputComponent)->m_escapeE)
+		if (wParam == VK_ESCAPE && Component->m_escapeE)
 			appInst->__EXIT = true;
-		appInst->InputComponent->InsertRawInput(wParam, true);
+		Component->InsertRawInput(wParam, true);
 		if (appInst->curState)
 			appInst->curState->OnKeyDown(wParam);
 		break;
 	case WM_KEYUP:
-		if (!appInst->InputComponent)
+		if (!Component)
 			break;
-		appInst->InputComponent->InsertRawInput(wParam, false);
+		Component->InsertRawInput(wParam, false);
 		if (appInst->curState)
 			appInst->curState->OnKeyUp(wParam);
 		break;
@@ -324,18 +487,18 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_GETMINMAXINFO:
 		//set the min/max window size
-		((MINMAXINFO*)lParam)->ptMinTrackSize.x = ((WWC_Win32*)appInst->WindowComponent)->m_minWindowX;
-		((MINMAXINFO*)lParam)->ptMinTrackSize.y = ((WWC_Win32*)appInst->WindowComponent)->m_minWindowY;
-		((MINMAXINFO*)lParam)->ptMaxTrackSize.x = ((WWC_Win32*)appInst->WindowComponent)->m_maxWindowX;
-		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = ((WWC_Win32*)appInst->WindowComponent)->m_maxWindowY;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.x = Component->m_minWindowX;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.y = Component->m_minWindowY;
+		((MINMAXINFO*)lParam)->ptMaxTrackSize.x = Component->m_maxWindowX;
+		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = Component->m_maxWindowY;
 		break;
 	case WM_SIZE:
 	{
 		//flag the core as minimized to prevent rendering
 		if (wParam == SIZE_MINIMIZED)
-			((WWC_Win32*)appInst->WindowComponent)->m_isMinimized = true;
+			Component->m_isMinimized = true;
 		else {
-			((WWC_Win32*)appInst->WindowComponent)->m_isMinimized = false; //flag core as not minimized to allow rendering
+			Component->m_isMinimized = false; //flag core as not minimized to allow rendering
 			RECT rc;
 			GetClientRect(hWnd, &rc); //get window client dimensions
 			//re-initialize the core to fit the new size
@@ -346,38 +509,38 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 	//mouse input update
 	case WM_LBUTTONDOWN:
-		if (appInst->InputComponent)
-			((WIC_Win32*)appInst->InputComponent)->m_leftClick = true;
+		if (Component)
+			Component->m_leftClick = true;
 		if (appInst->curState)
 			appInst->curState->OnMouseDown(MOUSE_LEFT, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_LBUTTONUP:
-		if (appInst->InputComponent)
-			((WIC_Win32*)appInst->InputComponent)->m_leftClick = false;
+		if (Component)
+			Component->m_leftClick = false;
 		if (appInst->curState)
 			appInst->curState->OnMouseUp(MOUSE_LEFT, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_RBUTTONDOWN:
-		if (appInst->InputComponent)
-			((WIC_Win32*)appInst->InputComponent)->m_rightClick = true;
+		if (Component)
+			Component->m_rightClick = true;
 		if (appInst->curState)
 			appInst->curState->OnMouseDown(MOUSE_RIGHT, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_RBUTTONUP:
-		if (appInst->InputComponent)
-			((WIC_Win32*)appInst->InputComponent)->m_rightClick = false;
+		if (Component)
+			Component->m_rightClick = false;
 		if (appInst->curState)
 			appInst->curState->OnMouseUp(MOUSE_RIGHT, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_MBUTTONDOWN:
-		if (appInst->InputComponent)
-			((WIC_Win32*)appInst->InputComponent)->m_middleClick = true;
+		if (Component)
+			Component->m_middleClick = true;
 		if (appInst->curState)
 			appInst->curState->OnMouseDown(MOUSE_MIDDLE, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_MBUTTONUP:
-		if (appInst->InputComponent)
-			((WIC_Win32*)appInst->InputComponent)->m_middleClick = false;
+		if (Component)
+			Component->m_middleClick = false;
 		if (appInst->curState)
 			appInst->curState->OnMouseUp(MOUSE_MIDDLE, LOWORD(lParam), HIWORD(lParam));
 		break;
@@ -387,9 +550,9 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_MOUSEWHEEL:
 	{
-		if (appInst->InputComponent) {
+		if (Component) {
 			int delta = GET_WHEEL_DELTA_WPARAM(wParam);
-			((WIC_Win32*)appInst->InputComponent)->m_mouseZ += delta;
+			Component->m_mouseZ += delta;
 		}
 		break;
 	}
@@ -405,10 +568,8 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		result = DefWindowProcA(hWnd, msg, wParam, lParam);
 	}
 
-	if (((WWC_Win32*)appInst->WindowComponent)->m_extra_proc)
-		((WWC_Win32*)appInst->WindowComponent)->m_extra_proc(appInst, hWnd, msg, wParam, lParam, false);
+	if (Component->m_extra_proc)
+		Component->m_extra_proc(appInst, hWnd, msg, wParam, lParam, false);
 
 	return result;
 }
-
-#endif

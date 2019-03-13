@@ -28,7 +28,7 @@ void PhysicsDemo::Load() {
 
 void PhysicsDemo::Update(float fDeltaTime) {
 	static bool isDown = false;
-	if (!m_app->InputComponent->KeyDown(' '))
+	if (!m_app->WindowAndInputComponent->KeyDown(' '))
 		isDown = true;
 	else if (isDown) {
 		isDown = false;

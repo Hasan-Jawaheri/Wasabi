@@ -31,21 +31,19 @@ void WasabiTester::ApplyMousePivot() {
 	WCamera* cam = CameraManager->GetDefaultCamera();
 	static bool bMouseHidden = false;
 	static int lx, ly;
-	if (InputComponent->MouseClick(MOUSE_LEFT)) {
+	if (WindowAndInputComponent->MouseClick(MOUSE_LEFT)) {
 		if (!bMouseHidden) {
-			ShowCursor(FALSE);
+			WindowAndInputComponent->ShowCursor(false);
 			bMouseHidden = true;
 
-			lx = InputComponent->MouseX(MOUSEPOS_DESKTOP, 0);
-			ly = InputComponent->MouseY(MOUSEPOS_DESKTOP, 0);
+			lx = WindowAndInputComponent->MouseX(MOUSEPOS_DESKTOP, 0);
+			ly = WindowAndInputComponent->MouseY(MOUSEPOS_DESKTOP, 0);
 
-			POINT pt = { 640 / 2, 480 / 2 };
-			ClientToScreen(((WWC_Win32*)WindowComponent)->GetWindow(), &pt);
-			SetCursorPos(pt.x, pt.y);
+			WindowAndInputComponent->SetMousePosition(640 / 2, 480 / 2, MOUSEPOS_VIEWPORT);
 		}
 
-		int mx = InputComponent->MouseX(MOUSEPOS_VIEWPORT, 0);
-		int my = InputComponent->MouseY(MOUSEPOS_VIEWPORT, 0);
+		int mx = WindowAndInputComponent->MouseX(MOUSEPOS_VIEWPORT, 0);
+		int my = WindowAndInputComponent->MouseY(MOUSEPOS_VIEWPORT, 0);
 
 		int dx = mx - 640 / 2;
 		int dy = my - 480 / 2;
@@ -59,19 +57,19 @@ void WasabiTester::ApplyMousePivot() {
 		fPitch += (float)dy / 2.0f;
 
 		if (dx || dy)
-			InputComponent->SetMousePosition(640 / 2, 480 / 2);
+			WindowAndInputComponent->SetMousePosition(640 / 2, 480 / 2);
 	} else {
 		if (bMouseHidden) {
-			ShowCursor(TRUE);
+			WindowAndInputComponent->ShowCursor(true);
 			bMouseHidden = false;
 
-			SetCursorPos(lx, ly);
+			WindowAndInputComponent->SetMousePosition(lx, ly, MOUSEPOS_DESKTOP);
 		}
 	}
 
-	float fMouseZ = (float)InputComponent->MouseZ();
+	float fMouseZ = (float)WindowAndInputComponent->MouseZ();
 	fDist += (fMouseZ / 120.0f) * (abs(fDist) / 10.0f);
-	InputComponent->SetMouseZ(0);
+	WindowAndInputComponent->SetMouseZ(0);
 	fDist = min(-1, fDist);
 
 	cam->SetPosition(vPos);

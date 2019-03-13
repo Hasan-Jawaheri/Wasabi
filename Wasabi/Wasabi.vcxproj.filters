@@ -16,9 +16,6 @@
     <Filter Include="Images">
       <UniqueIdentifier>{40c7b38c-4d70-4701-ac9d-5e216c842076}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Inputs">
-      <UniqueIdentifier>{bc4bc5ee-e26b-4e64-b7b4-e2c6a08e90b9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Lights">
       <UniqueIdentifier>{029f794f-971d-4bd7-9460-ef901e0bbc45}</UniqueIdentifier>
     </Filter>
@@ -42,9 +39,6 @@
     </Filter>
     <Filter Include="Texts">
       <UniqueIdentifier>{0f35e8e5-e21e-40ae-9dd2-1562d32d30cb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Windows">
-      <UniqueIdentifier>{b9c107d0-21ae-4431-9014-b026660b9305}</UniqueIdentifier>
     </Filter>
     <Filter Include="Core\VkTools">
       <UniqueIdentifier>{6bef0043-9d81-4722-bba6-bf140cf195b6}</UniqueIdentifier>
@@ -79,6 +73,21 @@
     <Filter Include="Sounds\OpenAL">
       <UniqueIdentifier>{af4f2820-4824-43ba-83d7-939dec7d3e38}</UniqueIdentifier>
     </Filter>
+    <Filter Include="WindowAndInput">
+      <UniqueIdentifier>{44759a02-00cd-4bdd-b51a-b5df60bed0a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WindowAndInput\Windows">
+      <UniqueIdentifier>{79291343-3d33-4bb1-a097-4ac3b699d6af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WindowAndInput\Linux">
+      <UniqueIdentifier>{846ad129-45f9-4865-ba0c-635c96236b46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WindowAndInput\Mac">
+      <UniqueIdentifier>{2c936ef2-b19b-4d6e-9dce-366127a35ac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WindowAndInput\Android">
+      <UniqueIdentifier>{79e76876-2e75-488e-ba23-80da1003df7e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -98,9 +107,6 @@
     </ClCompile>
     <ClCompile Include="Images\WRenderTarget.cpp">
       <Filter>Images</Filter>
-    </ClCompile>
-    <ClCompile Include="Input\Windows\WIC_Win32.cpp">
-      <Filter>Inputs</Filter>
     </ClCompile>
     <ClCompile Include="Lights\WLight.cpp">
       <Filter>Lights</Filter>
@@ -128,9 +134,6 @@
     </ClCompile>
     <ClCompile Include="Texts\WText.cpp">
       <Filter>Texts</Filter>
-    </ClCompile>
-    <ClCompile Include="Windows\Windows\WWC_Win32.cpp">
-      <Filter>Windows</Filter>
     </ClCompile>
     <ClCompile Include="Core\WBase.cpp">
       <Filter>Core</Filter>
@@ -183,6 +186,9 @@
     <ClCompile Include="Sounds\OpenAL\WOpenAL.cpp">
       <Filter>Sounds\OpenAL</Filter>
     </ClCompile>
+    <ClCompile Include="WindowAndInput\Windows\WWindowsWindowAndInputComponent.cpp">
+      <Filter>WindowAndInput\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations\WAnimation.h">
@@ -202,12 +208,6 @@
     </ClInclude>
     <ClInclude Include="Images\WRenderTarget.h">
       <Filter>Images</Filter>
-    </ClInclude>
-    <ClInclude Include="Input\Windows\WIC_Win32.h">
-      <Filter>Inputs</Filter>
-    </ClInclude>
-    <ClInclude Include="Input\WInputComponent.h">
-      <Filter>Inputs</Filter>
     </ClInclude>
     <ClInclude Include="Lights\WLight.h">
       <Filter>Lights</Filter>
@@ -241,12 +241,6 @@
     </ClInclude>
     <ClInclude Include="Texts\WText.h">
       <Filter>Texts</Filter>
-    </ClInclude>
-    <ClInclude Include="Windows\Windows\WWC_Win32.h">
-      <Filter>Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Windows\WWindowComponent.h">
-      <Filter>Windows</Filter>
     </ClInclude>
     <ClInclude Include="Core\WBase.h">
       <Filter>Core</Filter>
@@ -356,6 +350,12 @@
     </ClInclude>
     <ClInclude Include="Sounds\OpenAL\WOpenAL.h">
       <Filter>Sounds\OpenAL</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowAndInput\WWindowAndInputComponent.h">
+      <Filter>WindowAndInput</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowAndInput\Windows\WWindowsWindowAndInputComponent.h">
+      <Filter>WindowAndInput\Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

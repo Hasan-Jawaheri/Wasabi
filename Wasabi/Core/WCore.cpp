@@ -1,6 +1,6 @@
 #include "../Core/WCore.h"
 #include "../Renderers/WDeferredRenderer.h"
-#include "../Windows/WWindowComponent.h"
+#include "../WindowAndInput/WWindowAndInputComponent.h"
 #include "../Objects/WObject.h"
 #include "../Geometries/WGeometry.h"
 #include "../Materials/WEffect.h"
@@ -18,8 +18,7 @@
 #include "../Terrains/WTerrain.h"
 
 #ifdef _WIN32
-#include "../Windows/Windows/WWC_Win32.h"
-#include "../Input/Windows/WIC_Win32.h"
+#include "../WindowAndInput/Windows/WWindowsWindowAndInputComponent.h"
 #endif
 
 #ifdef _WIN32
@@ -44,7 +43,7 @@ int RunWasabi(Wasabi* app) {
 			auto tStart = std::chrono::high_resolution_clock::now();
 			app->Timer.GetElapsedTime(true); // record elapsed time
 
-			if (app->WindowComponent && !app->WindowComponent->Loop())
+			if (app->WindowAndInputComponent && !app->WindowAndInputComponent->Loop())
 				continue;
 
 			if (deltaTime >= 0.00001f) {
@@ -106,12 +105,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(
 	const char*                 pLayerPrefix,
 	const char*                 pMessage,
 	void*                       pUserData) {
-#ifdef _WIN32
-	MessageBoxA(NULL, pMessage, "Vulkan Error", MB_OK | MB_ICONERROR);
-#elif (defined __linux__)
-	/** TODO: Do a linux message box */
-#endif
-	std::cerr << pMessage << std::endl;
+	((Wasabi*)pUserData)->WindowAndInputComponent->ShowErrorMessage(std::string(pMessage));
 	return VK_FALSE;
 }
 
@@ -128,7 +122,7 @@ Wasabi::Wasabi() : Timer(W_TIMER_SECONDS, true) {
 	m_swapChainInitialized = false;
 
 	SoundComponent = nullptr;
-	WindowComponent = nullptr;
+	WindowAndInputComponent = nullptr;
 	TextComponent = nullptr;
 	PhysicsComponent = nullptr;
 	Renderer = nullptr;
@@ -158,15 +152,15 @@ Wasabi::~Wasabi() {
 }
 
 void Wasabi::_DestroyResources() {
-	if (WindowComponent)
-		WindowComponent->Cleanup();
+	if (WindowAndInputComponent)
+		WindowAndInputComponent->Cleanup();
 	if (Renderer)
 		Renderer->_Cleanup();
 	if (PhysicsComponent)
 		PhysicsComponent->Cleanup();
 
 	W_SAFE_DELETE(SoundComponent);
-	W_SAFE_DELETE(WindowComponent);
+	W_SAFE_DELETE(WindowAndInputComponent);
 	W_SAFE_DELETE(TextComponent);
 	W_SAFE_DELETE(PhysicsComponent);
 	W_SAFE_DELETE(Renderer);
@@ -214,12 +208,12 @@ void Wasabi::SwitchState(WGameState* state) {
 		curState->Load();
 }
 
-VkInstance CreateVKInstance(const char* appName, const char* engineName) {
+VkInstance Wasabi::CreateVKInstance() {
 	/* Create Vulkan instance */
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = appName;
-	appInfo.pEngineName = engineName;
+	appInfo.pApplicationName = (const char*)engineParams["appName"];
+	appInfo.pEngineName = W_ENGINE_NAME;
 	appInfo.apiVersion = VK_API_VERSION_1_0;
 
 	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
@@ -274,7 +268,7 @@ VkInstance CreateVKInstance(const char* appName, const char* engineName) {
 		VK_DEBUG_REPORT_WARNING_BIT_EXT |
 		VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
 	callbackCreateInfo.pfnCallback = &VulkanDebugReportCallback;
-	callbackCreateInfo.pUserData = nullptr;
+	callbackCreateInfo.pUserData = this;
 
 	/* Register the callback */
 	VkDebugReportCallbackEXT callback;
@@ -285,11 +279,13 @@ VkInstance CreateVKInstance(const char* appName, const char* engineName) {
 }
 
 WError Wasabi::StartEngine(int width, int height) {
-	/* Create vulkan instance */
-	m_vkInstance = CreateVKInstance((const char*)engineParams["appName"], "Wasabi");
+	// This is created first so we can use its error message utility
+	WindowAndInputComponent = CreateWindowAndInputComponent();
+
+	// Create vulkan instance
+	m_vkInstance = CreateVKInstance();
 	if (!m_vkInstance)
 		return WError(W_FAILEDTOCREATEINSTANCE);
-
 
 	// Physical device
 	uint gpuCount = 0;
@@ -308,10 +304,6 @@ WError Wasabi::StartEngine(int width, int height) {
 		return WError(W_FAILEDTOLISTDEVICES);
 	}
 
-	// Note :
-	// This example will always use the first physical device reported,
-	// change the vector index if you have multiple Vulkan devices installed
-	// and want to use another one
 	int index = SelectGPU(physicalDevices);
 	if (index >= physicalDevices.size())
 		index = 0;
@@ -381,11 +373,9 @@ WError Wasabi::StartEngine(int width, int height) {
 	Renderer = CreateRenderer();
 	SoundComponent = CreateSoundComponent();
 	TextComponent = CreateTextComponent();
-	WindowComponent = CreateWindowComponent();
-	InputComponent = CreateInputComponent();
 	PhysicsComponent = CreatePhysicsComponent();
 
-	WError werr = WindowComponent->Initialize(width, height);
+	WError werr = WindowAndInputComponent->Initialize(width, height);
 	if (!werr) {
 		_DestroyResources();
 		return werr;
@@ -393,8 +383,8 @@ WError Wasabi::StartEngine(int width, int height) {
 
 	m_swapChain.connect(m_vkInstance, m_vkPhysDev, m_vkDevice);
 	if (!m_swapChain.initSurface(
-		WindowComponent->GetPlatformHandle(),
-		WindowComponent->GetWindowHandle())) {
+		WindowAndInputComponent->GetPlatformHandle(),
+		WindowAndInputComponent->GetWindowHandle())) {
 		_DestroyResources();
 		return WError(W_UNABLETOCREATESWAPCHAIN);
 	}
@@ -594,19 +584,10 @@ WTextComponent* Wasabi::CreateTextComponent() {
 	return tc;
 }
 
-WWindowComponent* Wasabi::CreateWindowComponent() {
+WWindowAndInputComponent* Wasabi::CreateWindowAndInputComponent() {
 #ifdef _WIN32
-	return new WWC_Win32(this);
+	return new WWindowsWindowAndInputComponent(this);
 #elif defined(__linux__)
-	return new WWC_Linux(this);
-#endif
-}
-
-WInputComponent* Wasabi::CreateInputComponent() {
-#ifdef _WIN32
-	return new WIC_Win32(this);
-#elif defined(__linux__)
-	return new WIC_Linux(this);
 #endif
 }
 

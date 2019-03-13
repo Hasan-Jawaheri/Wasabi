@@ -1,5 +1,5 @@
 #include "WCamera.h"
-#include "../Windows/WWindowComponent.h"
+#include "../WindowAndInput/WWindowAndInputComponent.h"
 
 WCameraManager::WCameraManager(Wasabi* const app) : WManager<WCamera>(app) {
 	m_default_camera = nullptr;
@@ -25,8 +25,8 @@ std::string WCameraManager::GetTypeName() const {
 
 WCamera::WCamera(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	//initialize default values
-	m_lastWidth = m_app->WindowComponent->GetWindowWidth();
-	m_lastHeight = m_app->WindowComponent->GetWindowHeight();
+	m_lastWidth = m_app->WindowAndInputComponent->GetWindowWidth();
+	m_lastHeight = m_app->WindowAndInputComponent->GetWindowHeight();
 	m_bAutoAspect = true;
 	m_fFOV = W_DEGTORAD(45);
 	m_fAspect = float((float)m_lastWidth / (float)m_lastHeight);

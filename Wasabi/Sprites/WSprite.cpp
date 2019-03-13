@@ -5,7 +5,7 @@
 #include "../Materials/WEffect.h"
 #include "../Materials/WMaterial.h"
 #include "../Geometries/WGeometry.h"
-#include "../Windows/WWindowComponent.h"
+#include "../WindowAndInput/WWindowAndInputComponent.h"
 
 struct SpriteVertex {
 	WVector2 pos, uv;
@@ -356,8 +356,8 @@ void WSprite::SetAlpha(float fAlpha) {
 }
 
 void WSprite::Render(WRenderTarget* rt) {
-	WVector2 screenDimensions = WVector2(m_app->WindowComponent->GetWindowWidth(),
-										 m_app->WindowComponent->GetWindowHeight());
+	WVector2 screenDimensions = WVector2(m_app->WindowAndInputComponent->GetWindowWidth(),
+										 m_app->WindowAndInputComponent->GetWindowHeight());
 	if (!m_geometry && !m_lastLoadFailed)
 		Load();
 

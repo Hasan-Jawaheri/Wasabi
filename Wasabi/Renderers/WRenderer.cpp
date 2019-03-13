@@ -1,6 +1,6 @@
 #include "WRenderer.h"
 #include "../Images/WRenderTarget.h"
-#include "../Windows/WWindowComponent.h"
+#include "../WindowAndInput/WWindowAndInputComponent.h"
 
 WRenderer::WRenderer(Wasabi* const app) : m_app(app) {
 	m_renderTarget = NULL;
@@ -57,7 +57,7 @@ WError WRenderer::_Initialize() {
 	// Setup swap chain and render target
 	//
 	m_renderTarget = new WRenderTarget(m_app);
-	Resize(m_app->WindowComponent->GetWindowWidth(), m_app->WindowComponent->GetWindowHeight());
+	Resize(m_app->WindowAndInputComponent->GetWindowWidth(), m_app->WindowAndInputComponent->GetWindowHeight());
 
 	return Initiailize();
 }

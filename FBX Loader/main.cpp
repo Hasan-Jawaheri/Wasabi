@@ -101,8 +101,8 @@ class FBXLoader : public Wasabi {
 
 public:
 
-	WWindowComponent* CreateWindowComponent() {
-		WWindowComponent* component = Wasabi::CreateWindowComponent();
+	WWindowAndInputComponent* CreateWindowAndInputComponent() {
+		WWindowAndInputComponent* component = Wasabi::CreateWindowAndInputComponent();
 		engineParams["windowStyle"] = (void*)((DWORD)engineParams["windowStyle"] & (~WS_VISIBLE));
 		return component;
 	}

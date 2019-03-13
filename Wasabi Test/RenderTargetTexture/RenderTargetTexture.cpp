@@ -58,8 +58,8 @@ void RenderTargetTextureDemo::Load() {
 }
 
 void RenderTargetTextureDemo::Update(float fDeltaTime) {
-	int mx = m_app->InputComponent->MouseX();
-	int my = m_app->InputComponent->MouseY();
+	int mx = m_app->WindowAndInputComponent->MouseX();
+	int my = m_app->WindowAndInputComponent->MouseY();
 
 	WVector3 pt;
 	WObject* o = m_app->ObjectManager->PickObject(mx, my, false, 0, 1, &pt);

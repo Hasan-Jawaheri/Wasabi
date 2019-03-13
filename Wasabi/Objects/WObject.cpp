@@ -8,7 +8,7 @@
 #include "../Materials/WMaterial.h"
 #include "../Materials/WEffect.h"
 #include "../Geometries/WGeometry.h"
-#include "../Windows/WWindowComponent.h"
+#include "../WindowAndInput/WWindowAndInputComponent.h"
 #include "../Animations/WAnimation.h"
 
 std::string WObjectManager::GetTypeName() const {
@@ -44,8 +44,8 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 	if (!cam)
 		return nullptr;
 
-	int Width = m_app->WindowComponent->GetWindowWidth();
-	int Height = m_app->WindowComponent->GetWindowHeight();
+	int Width = m_app->WindowAndInputComponent->GetWindowWidth();
+	int Height = m_app->WindowAndInputComponent->GetWindowHeight();
 	cam->Render(Width, Height);
 
 	WMatrix P = cam->GetProjectionMatrix();

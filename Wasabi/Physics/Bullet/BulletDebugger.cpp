@@ -1,7 +1,6 @@
 #include "BulletDebugger.h"
 #include "../../Cameras/WCamera.h"
-#include "../../Input/WInputComponent.h"
-#include "../../Windows/WWindowComponent.h"
+#include "../../WindowAndInput/WWindowAndInputComponent.h"
 #include "../../Texts/WText.h"
 #include "../../Renderers/WForwardRenderer.h"
 #include "../../Objects/WObject.h"
@@ -100,20 +99,22 @@ void BulletDebugger::ApplyMousePivot() {
 	WCamera* cam = CameraManager->GetDefaultCamera();
 	static bool bMouseHidden = false;
 	static int lx, ly;
-	if (InputComponent->MouseClick(MOUSE_LEFT)) {
+	if (WindowAndInputComponent->MouseClick(MOUSE_LEFT)) {
 		if (!bMouseHidden) {
-			ShowCursor(FALSE);
+			WindowAndInputComponent->ShowCursor(false);
 			bMouseHidden = true;
 
-			lx = InputComponent->MouseX(MOUSEPOS_DESKTOP, 0);
-			ly = InputComponent->MouseY(MOUSEPOS_DESKTOP, 0);
+			lx = WindowAndInputComponent->MouseX(MOUSEPOS_DESKTOP, 0);
+			ly = WindowAndInputComponent->MouseY(MOUSEPOS_DESKTOP, 0);
+
+			WindowAndInputComponent->SetMousePosition(800 / 2, 600 / 2, MOUSEPOS_VIEWPORT);
 		}
 
-		int mx = InputComponent->MouseX(MOUSEPOS_VIEWPORT, 0);
-		int my = InputComponent->MouseY(MOUSEPOS_VIEWPORT, 0);
+		int mx = WindowAndInputComponent->MouseX(MOUSEPOS_VIEWPORT, 0);
+		int my = WindowAndInputComponent->MouseY(MOUSEPOS_VIEWPORT, 0);
 
-		int dx = mx - 640 / 2;
-		int dy = my - 480 / 2;
+		int dx = mx - 800 / 2;
+		int dy = my - 600 / 2;
 
 		if (abs(dx) < 2)
 			dx = 0;
@@ -124,19 +125,19 @@ void BulletDebugger::ApplyMousePivot() {
 		fPitch += (float)dy / 2.0f;
 
 		if (dx || dy)
-			InputComponent->SetMousePosition(640 / 2, 480 / 2);
+			WindowAndInputComponent->SetMousePosition(800 / 2, 600 / 2);
 	} else {
 		if (bMouseHidden) {
-			ShowCursor(TRUE);
+			WindowAndInputComponent->ShowCursor(true);
 			bMouseHidden = false;
 
-			SetCursorPos(lx, ly);
+			WindowAndInputComponent->SetMousePosition(lx, ly, MOUSEPOS_DESKTOP);
 		}
 	}
 
-	float fMouseZ = (float)InputComponent->MouseZ();
+	float fMouseZ = (float)WindowAndInputComponent->MouseZ();
 	fDist += (fMouseZ / 120.0f) * (abs(fDist) / 10.0f);
-	InputComponent->SetMouseZ(0);
+	WindowAndInputComponent->SetMouseZ(0);
 	fDist = min(-1, fDist);
 
 	cam->SetPosition(vPos);
@@ -149,7 +150,7 @@ void BulletDebugger::ApplyMousePivot() {
 WError BulletDebugger::Setup() {
 	WError err = StartEngine(800, 600);
 	if (!err)
-		MessageBoxA(nullptr, err.AsString().c_str(), "Wasabi Bullet Debugger", MB_OK | MB_ICONERROR);
+		WindowAndInputComponent->ShowErrorMessage(err.AsString());
 	else {
 		m_linesDrawer = new WObject(this);
 		WEffect* fx = new WEffect(this);
