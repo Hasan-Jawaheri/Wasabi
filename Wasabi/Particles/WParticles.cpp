@@ -34,9 +34,9 @@ public:
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "world"), // world
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "view"), // view
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "proj"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "world"), // world
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "proj"), // projection
 			}),
 		};
 	}
@@ -45,9 +45,9 @@ public:
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = GetBoundResources();
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // size
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1), // alpha
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // size
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT), // alpha
 		}) };
 		LoadCodeGLSL(
 			#include "Shaders/particles_vs.glsl"
@@ -62,9 +62,9 @@ public:
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "world"), // world
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "view"), // view
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "proj"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "world"), // world
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "proj"), // projection
 			}),
 		};
 	}

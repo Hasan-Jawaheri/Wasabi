@@ -4,28 +4,79 @@
 #include <unordered_map>
 using std::unordered_map;
 
-size_t W_SHADER_VARIABLE_TYPE_SIZES[] = { 4, 4, 4, 2 };
+size_t W_SHADER_VARIABLE_TYPE_SIZES[] = { 4, 4, 4, 2, 0, 8, 12, 16, 64 };
+
+static size_t RoundedUpToMultipleOf(size_t N, size_t multiple) {
+	if (N % multiple == 0)
+		return N;
+	return N + multiple - (N % multiple);
+}
+
+W_SHADER_VARIABLE_INFO::W_SHADER_VARIABLE_INFO(
+	W_SHADER_VARIABLE_TYPE _type,
+	std::string _name
+) : type(_type), num_elems(1), name(_name) {
+	_size = W_SHADER_VARIABLE_TYPE_SIZES[(int)type];
+}
 
 W_SHADER_VARIABLE_INFO::W_SHADER_VARIABLE_INFO(
 	W_SHADER_VARIABLE_TYPE _type,
 	int _num_elems,
 	std::string _name
 ) : type(_type), num_elems(_num_elems), name(_name) {
-	_size = W_SHADER_VARIABLE_TYPE_SIZES[(int)type] * num_elems;
+	int elemSize = W_SHADER_VARIABLE_TYPE_SIZES[(int)type];
+	_size = RoundedUpToMultipleOf(elemSize, GetAlignment()) * (num_elems-1) + elemSize;
+}
+
+W_SHADER_VARIABLE_INFO::W_SHADER_VARIABLE_INFO(
+	W_SHADER_VARIABLE_TYPE _type,
+	int _num_elems,
+	int _struct_size,
+	int _struct_largest_base_alignment,
+	std::string _name
+) : type(_type), num_elems(_num_elems), struct_size(_struct_size), struct_largest_base_alignment(_struct_largest_base_alignment), name(_name) {
+	_size = RoundedUpToMultipleOf(struct_size, GetAlignment()) * (num_elems - 1) + struct_size;
 }
 
 size_t W_SHADER_VARIABLE_INFO::GetSize() const {
 	return _size;
 }
 
+size_t GetScalarAlignment(W_SHADER_VARIABLE_TYPE baseType, int numElements, int structSize, int structLargestBaseAlignment) {
+	if (numElements > 1)
+		return GetScalarAlignment(baseType, 1, structSize, structLargestBaseAlignment);
+	else if (baseType == W_TYPE_STRUCT)
+		return structLargestBaseAlignment;
+	else if (baseType == W_TYPE_HALF)
+		return 2;
+	else
+		return 4;
+}
+
+size_t GetBaseAlignment(W_SHADER_VARIABLE_TYPE baseType, int numElements, int structSize, int structLargestBaseAlignment) {
+	if (numElements > 1)
+		return GetBaseAlignment(baseType, 1, structSize, structLargestBaseAlignment);
+	else if (baseType == W_TYPE_STRUCT)
+		return structLargestBaseAlignment;
+	else if (baseType == W_TYPE_MAT4X4)
+		return GetBaseAlignment(W_TYPE_VEC_4, 1, structSize, structLargestBaseAlignment);
+	else if (baseType == W_TYPE_VEC_2)
+		return 2 * GetScalarAlignment(baseType, numElements, structSize, structLargestBaseAlignment);
+	else if (baseType == W_TYPE_VEC_3 || baseType == W_TYPE_VEC_4)
+		return 4 * GetScalarAlignment(baseType, numElements, structSize, structLargestBaseAlignment);
+	else
+		return GetScalarAlignment(baseType, numElements, structSize, structLargestBaseAlignment);
+}
+
+size_t GetExtendedAlignment(W_SHADER_VARIABLE_TYPE baseType, int numElements, int structSize, int structLargestBaseAlignment) {
+	if (baseType == W_TYPE_STRUCT || numElements > 1) {
+		return RoundedUpToMultipleOf(GetBaseAlignment(baseType, 1, structSize, structLargestBaseAlignment), 16);
+	} else
+		return GetBaseAlignment(baseType, numElements, structSize, structLargestBaseAlignment);
+}
+
 size_t W_SHADER_VARIABLE_INFO::GetAlignment() const {
-	int N = W_SHADER_VARIABLE_TYPE_SIZES[(int)type];
-	if (num_elems <= 2) // scalar or 2d vector: N or 2N
-		return N * num_elems;
-	else if (num_elems <= 4) // 3d/4d vector: 4N
-		return N * 4;
-	else // array: num_elems*N rounded up to align with 16
-		return (int)((int)(N * num_elems + 15) / 16) * 16;
+	return GetExtendedAlignment(type, num_elems, struct_size, struct_largest_base_alignment);
 }
 
 VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
@@ -66,6 +117,12 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
 		default: return VK_FORMAT_UNDEFINED;
 		}
 		break;
+	case W_TYPE_VEC_2:
+		return VK_FORMAT_R32G32_SFLOAT;
+	case W_TYPE_VEC_3:
+		return VK_FORMAT_R32G32B32_SFLOAT;
+	case W_TYPE_VEC_4:
+		return VK_FORMAT_R32G32B32A32_SFLOAT;
 	}
 	return VK_FORMAT_UNDEFINED;
 }
@@ -75,16 +132,17 @@ W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 	unsigned int index,
 	std::vector<W_SHADER_VARIABLE_INFO> v
 ) : variables(v), type(t), binding_index(index) {
-	size_t cur_offset = 0;
+	size_t curOffset = 0;
 	_offsets.resize(variables.size());
 	for (int i = 0; i < variables.size(); i++) {
-		int varsize = variables[i].GetSize();
-		int varalignment = variables[i].GetAlignment();
-		cur_offset += cur_offset % varalignment; // apply alignment
-		_offsets[i] = cur_offset;
-		cur_offset += varsize;
+		int varSize = variables[i].GetSize();
+		int varAlignment = variables[i].GetAlignment();
+		if (curOffset % varAlignment > 0)
+			curOffset += varAlignment - (curOffset % varAlignment); // apply alignment
+		_offsets[i] = curOffset;
+		curOffset += varSize;
 	}
-	_size = cur_offset;
+	_size = curOffset;
 }
 
 size_t W_BOUND_RESOURCE::GetSize() const {

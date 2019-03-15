@@ -22,13 +22,13 @@ public:
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0,{
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"), // projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gWorld"), // world
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimationTextureWidth"), // width of the animation texture
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gInstanceTextureWidth"), // width of the instance texture
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimation"), // whether or not animation is enabled
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gInstancing"), // whether or not instancing is enabled
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gProjection"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gWorld"), // world
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gView"), // view
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "gAnimationTextureWidth"), // width of the animation texture
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "gInstanceTextureWidth"), // width of the instance texture
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "gAnimation"), // whether or not animation is enabled
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "gInstancing"), // whether or not instancing is enabled
 			}),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
@@ -36,10 +36,10 @@ public:
 		m_desc.animation_texture_index = 1;
 		m_desc.instancing_texture_index = 2;
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // normal
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // tangent
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
 		}), W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone index
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weight
@@ -72,15 +72,15 @@ public:
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0,{
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "wvp"), // world * view * projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightDir"), // light direction (L vector)
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "lightSpec"), // light specular
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightColor"), // light color
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "intensity"), // light intensity
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "position"), // light color
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "range"), // light range
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "minCosAngle"), // used for spot light (angle of beam precomputed)
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "spotRadius"), // radius of the circle at the end of the cone
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "wvp"), // world * view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightDir"), // light direction (L vector)
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "lightSpec"), // light specular
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightColor"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "intensity"), // light intensity
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "position"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "range"), // light range
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "minCosAngle"), // used for spot light (angle of beam precomputed)
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "spotRadius"), // radius of the circle at the end of the cone
 			}),
 		};
 	}
@@ -89,7 +89,7 @@ public:
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = GetBoundResources();
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
 		})};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/spot_light_vs.glsl"
@@ -108,8 +108,8 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
 			SpotLightVS::GetBoundResources()[0],
 			W_BOUND_RESOURCE(W_TYPE_UBO, 3, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "viewProjInv"), // view * projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "eyePosW"), // camera position
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewProjInv"), // view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "eyePosW"), // camera position
 			}),
 		};
 		LoadCodeGLSL(
@@ -125,13 +125,13 @@ public:
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "wvp"), // world * view * projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightDir"), // light direction (L vector)
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "lightSpec"), // light specular
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightColor"), // light color
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "intensity"), // light intensity
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "position"), // light color
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "range"), // light range
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "wvp"), // world * view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightDir"), // light direction (L vector)
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "lightSpec"), // light specular
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightColor"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "intensity"), // light intensity
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "position"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "range"), // light range
 			}),
 		};
 	}
@@ -140,7 +140,7 @@ public:
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = GetBoundResources();
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
 		}) };
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/point_light_vs.glsl"
@@ -159,8 +159,8 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
 			PointLightVS::GetBoundResources()[0],
 			W_BOUND_RESOURCE(W_TYPE_UBO, 3, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "viewProjInv"), // view * projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "eyePosW"), // camera position
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewProjInv"), // view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "eyePosW"), // camera position
 			}),
 		};
 		LoadCodeGLSL(
@@ -179,18 +179,18 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "wvp"), // world * view * projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightDir"), // light direction (L vector)
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "lightSpec"), // light specular
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "lightColor"), // light color
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "intensity"), // light intensity
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "position"), // light color
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "range"), // light range
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 1, "minCosAngle"), // used for spot light (angle of beam precomputed)
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "wvp"), // world * view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightDir"), // light direction (L vector)
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "lightSpec"), // light specular
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightColor"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "intensity"), // light intensity
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "position"), // light color
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "range"), // light range
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "minCosAngle"), // used for spot light (angle of beam precomputed)
 			}),
 			W_BOUND_RESOURCE(W_TYPE_UBO, 3, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "viewProjInv"), // view * projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "eyePosW"), // camera position
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewProjInv"), // view * projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "eyePosW"), // camera position
 			}),
 		};
 		LoadCodeGLSL(
@@ -209,7 +209,7 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 0),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 			W_BOUND_RESOURCE(W_TYPE_UBO, 2, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4, "ambient"), // light ambient color
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "ambient"), // light ambient color
 			}),
 		};
 		LoadCodeGLSL(

@@ -154,6 +154,12 @@ public:
 	 * and whose type can be anything. The set variable's size must match the len
 	 * parameter for successful setting. If multiple variables have the same
 	 * name, they will all be set.
+	 * If the target variable is a structure, make sure to properly pad the members
+	 * as specified by the Vulkan specs. If the target variable is an array of
+	 * structures, you should also make sure that the structure is padded at the
+	 * end of it. Refer to: https://www.khronos.org/registry/vulkan/specs/1.0-wsi_extensions/html/vkspec.html#interfaces-resources-layout
+	 * Wasabi will automatically do the padding for all the data, except when
+	 * the user is explicitly setting structures data using this function.
 	 * @param  varName Name of the variable to set
 	 * @param  data    Address of the memory to set the variable's data to
 	 * @param  len     Length of data, in bytes

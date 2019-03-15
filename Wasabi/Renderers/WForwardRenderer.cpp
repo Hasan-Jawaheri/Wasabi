@@ -16,7 +16,7 @@ struct LightStruct {
 	WVector4 dir;
 	WVector4 pos;
 	int type;
-	float pad[3];
+	int pad[3];
 };
 
 void stringReplaceAll(std::string& source, const std::string& from, const std::string& to)
@@ -48,13 +48,13 @@ public:
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"), // projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gWorld"), // world
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimationTextureWidth"), // width of the animation texture
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gInstanceTextureWidth"), // width of the instance texture
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gAnimation"), // whether or not animation is enabled
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "gInstancing"), // whether or not instancing is enabled
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gProjection"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gWorld"), // world
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gView"), // view
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "gAnimationTextureWidth"), // width of the animation texture
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "gInstanceTextureWidth"), // width of the instance texture
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "gAnimation"), // whether or not animation is enabled
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "gInstancing"), // whether or not instancing is enabled
 			}),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 2),
@@ -62,10 +62,10 @@ public:
 		m_desc.animation_texture_index = 1;
 		m_desc.instancing_texture_index = 2;
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // tangent
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // normal
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
 		}), W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone indices
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weights
@@ -86,16 +86,15 @@ public:
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 3),
 			W_BOUND_RESOURCE(W_TYPE_UBO, 4, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4, "color"),
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "isTextured"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isTextured"),
 			}),
 			W_BOUND_RESOURCE(W_TYPE_UBO, 5, { // TODO: make a shared UBO
-				W_SHADER_VARIABLE_INFO(W_TYPE_INT, 1, "numLights"),
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "pad"),
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, (sizeof(LightStruct) / 4) * maxLights, "lights"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_INT, "numLights"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_STRUCT, maxLights, sizeof(LightStruct), 16, "lights"),
 			}),
 			W_BOUND_RESOURCE(W_TYPE_UBO, 6,{
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3, "gCamPos"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "gCamPos"),
 			}),
 		};
 		std::string code =

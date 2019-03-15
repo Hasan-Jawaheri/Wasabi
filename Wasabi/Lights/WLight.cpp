@@ -122,3 +122,39 @@ void WLight::OnStateChange(STATE_CHANGE_TYPE type) {
 
 	m_bAltered = true;
 }
+
+WError WLight::SaveToStream(WFile* file, std::ostream& outputStream) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	WVector3 pos = GetPosition();
+	WQuaternion rot = GetRotation();
+	outputStream.write((char*)&m_type, sizeof(m_type));
+	outputStream.write((char*)&m_hidden, sizeof(m_hidden));
+	outputStream.write((char*)&m_color, sizeof(m_color));
+	outputStream.write((char*)&m_range, sizeof(m_range));
+	outputStream.write((char*)&m_intensity, sizeof(m_intensity));
+	outputStream.write((char*)&m_cosAngle, sizeof(m_cosAngle));
+	outputStream.write((char*)&pos, sizeof(pos));
+	outputStream.write((char*)&rot, sizeof(rot));
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WLight::LoadFromStream(WFile* file, std::istream& inputStream) {
+	WVector3 pos;
+	WQuaternion rot;
+	inputStream.read((char*)&m_type, sizeof(m_type));
+	inputStream.read((char*)&m_hidden, sizeof(m_hidden));
+	inputStream.read((char*)&m_color, sizeof(m_color));
+	inputStream.read((char*)&m_range, sizeof(m_range));
+	inputStream.read((char*)&m_intensity, sizeof(m_intensity));
+	inputStream.read((char*)&m_cosAngle, sizeof(m_cosAngle));
+	inputStream.read((char*)&pos, sizeof(pos));
+	inputStream.read((char*)&rot, sizeof(rot));
+
+	SetPosition(pos);
+	SetAngle(rot);
+
+	return WError(W_SUCCEEDED);
+}

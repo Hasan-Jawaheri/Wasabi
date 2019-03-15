@@ -42,14 +42,18 @@ WError WFile::Open(std::string filename) {
 		if (!m_file.is_open())
 			return WError(W_FILENOTFOUND);
 	}
+	m_file.seekg(0, ios::end);
+	std::streamsize maxFileSize = m_file.tellg();
+	m_file.seekg(0);
 	m_maxId = 0;
 
 	// Read the headers
 	WError err = WError(W_SUCCEEDED);
-	if (m_fileSize == 0)
+	if (maxFileSize == 0) {
+		m_fileSize = maxFileSize;
 		CreateNewHeader();
-	else
-		err = LoadHeaders();
+	} else
+		err = LoadHeaders(maxFileSize);
 
 	return err;
 }
@@ -69,12 +73,6 @@ WError WFile::SaveAsset(WFileAsset* asset, uint* assetId) {
 	if (!m_file.is_open())
 		return WError(W_FILENOTFOUND);
 
-	if (assetId != nullptr) {
-		auto iter = m_assetsMap.find(*assetId);
-		if (iter != m_assetsMap.end())
-			return WError(W_INVALIDPARAM); // already exists
-	}
-
 	uint newAssetId = assetId == nullptr ? m_maxId + 1 : *assetId;
 
 	m_file.seekp(m_fileSize); // write it at the end
@@ -88,7 +86,8 @@ WError WFile::SaveAsset(WFileAsset* asset, uint* assetId) {
 
 	WriteAssetToHeader(WFile::FILE_ASSET(start, writtenSize, newAssetId));
 
-	*assetId = newAssetId;
+	if (assetId != nullptr)
+		*assetId = newAssetId;
 
 	return err;
 }
@@ -126,11 +125,11 @@ void WFile::ReleaseAsset(uint assetId) {
 		iter->second->loadedAsset = nullptr;
 }
 
-WError WFile::LoadHeaders() {
+WError WFile::LoadHeaders(std::streamsize maxFileSize) {
 	std::streamoff curOffset = 0;
 
 	while (curOffset != -1) {
-		if (m_fileSize < curOffset + sizeof(FILE_MAGIC) + sizeof(FILE_HEADER::dataSize) + sizeof(FILE_HEADER::nextHeader))
+		if (maxFileSize < curOffset + sizeof(FILE_MAGIC) + sizeof(FILE_HEADER::dataSize) + sizeof(FILE_HEADER::nextHeader))
 			return WError(W_INVALIDFILEFORMAT);
 
 		short magic;
@@ -150,6 +149,9 @@ WError WFile::LoadHeaders() {
 		std::streamoff curDataOffset = header.dataStart;
 		FILE_ASSET curAsset(0, 0, 0);
 		while (curDataOffset < header.dataStart + header.dataSize) {
+			if (maxFileSize < curDataOffset + FILE_ASSET::GetSize())
+				return WError(W_INVALIDFILEFORMAT);
+
 			m_file.read((char*)&curAsset, FILE_ASSET::GetSize());
 			curDataOffset += FILE_ASSET::GetSize();
 			if (curAsset.size == 0)
