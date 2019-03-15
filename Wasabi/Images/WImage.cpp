@@ -466,6 +466,7 @@ WError WImage::SaveToStream(WFile* file, std::ostream& outputStream) {
 }
 
 WError WImage::LoadFromStream(WFile* file, std::istream& inputStream) {
+	bool bDynamic = false;
 	unsigned int width, height, numComponents, componentSize;
 	VkFormat format;
 
@@ -480,7 +481,7 @@ WError WImage::LoadFromStream(WFile* file, std::istream& inputStream) {
 	if (!pixels)
 		return WError(W_OUTOFMEMORY);
 	inputStream.read((char*)pixels, dataSize);
-	WError err = CreateFromPixelsArray(pixels, width, height, false, numComponents, format, componentSize);
+	WError err = CreateFromPixelsArray(pixels, width, height, bDynamic, numComponents, format, componentSize);
 	W_SAFE_FREE(pixels);
 	return err;
 }

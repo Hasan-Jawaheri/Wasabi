@@ -62,7 +62,7 @@ protected:
 *********************************WSound******************************
 Sound class interface
 *********************************************************************/
-class WSound : public WBase {
+class WSound : public WBase, public WFileAsset {
 public:
 	WSound(Wasabi* const app, unsigned int ID = 0) : WBase(app, ID) {}
 	~WSound() {}
@@ -90,6 +90,9 @@ public:
 	virtual void SetDirection(WVector3 look) {}
 	virtual void SetDirection(class WOrientation* look) {}
 	virtual void SetToOrientation(class WOrientation* oriDev) {}
+
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) = 0;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream) = 0;
 };
 
 /**
