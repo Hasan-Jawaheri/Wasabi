@@ -455,77 +455,67 @@ bool WOpenALSound::Valid(void) const {
 	return m_valid;
 }
 
-WError WOpenALSound::LoadFromWALS(std::string filename, bool bSaveData) {
-	std::fstream file;
-	file.open(filename, ios::in | ios::binary);
-	if (file.fail())
-		return WError(W_FILENOTFOUND);
+bool WOpenALSound::m_bCheck(bool ignoreValidness) const {
+	return (m_valid || ignoreValidness) && m_source && m_buffers;
+}
 
-	float temp[3];
+WError WOpenALSound::SaveToStream(WFile* file, std::ostream& outputStream) {
+	if (Valid() && m_dataV.size()) //only attempt to save if the sound is valid and there is something to save
+	{
+		float temp[3];
 
-	//read pitch & volume
-	file.read((char*)temp, 2 * sizeof(float));
-	alSourcef(m_source, AL_PITCH, temp[0]);
-	alSourcef(m_source, AL_GAIN, temp[1]);
+		//write pitch & volume
+		alGetSourcef(m_source, AL_PITCH, &temp[0]);
+		alGetSourcef(m_source, AL_GAIN, &temp[1]);
+		outputStream.write((char*)temp, 2 * sizeof(float));
 
-	//read position & direction
-	file.read((char*)temp, 3 * sizeof(float));
-	alSource3f(m_source, AL_POSITION, temp[0], temp[1], temp[2]);
-	file.read((char*)temp, 3 * sizeof(float));
-	alSource3f(m_source, AL_DIRECTION, temp[0], temp[1], temp[2]);
+		//write position & direction
+		alGetSource3f(m_source, AL_POSITION, &temp[0], &temp[1], &temp[2]);
+		outputStream.write((char*)temp, 3 * sizeof(float));
+		alGetSource3f(m_source, AL_DIRECTION, &temp[0], &temp[1], &temp[2]);
+		outputStream.write((char*)temp, 3 * sizeof(float));
 
-	char numBuffers = 0;
-	file.read((char*)&numBuffers, 1);
-	for (uint i = 0; i < numBuffers; i++) {
-		__SAVEDATA data;
-		file.read((char*)&data.buffer, 4); //buffer index
-		file.read((char*)&data.format, sizeof(ALenum)); //buffer format
-		file.read((char*)&temp[0], 4); //frequency
-		file.read((char*)&data.dataSize, 4); //size of data
-		data.data = W_SAFE_ALLOC(data.dataSize);
-		file.read((char*)&data.data, m_dataV[i].dataSize); //data
-
-		LoadFromMemory(data.buffer, data.data, data.dataSize, data.format, temp[0], bSaveData);
-
-		W_SAFE_FREE(data.data);
-	}
-
-	file.close();
+		char numBuffers = m_dataV.size();
+		outputStream.write((char*)&numBuffers, 1);
+		for (uint i = 0; i < numBuffers; i++) {
+			outputStream.write((char*)&m_dataV[i].buffer, 4); //buffer index
+			outputStream.write((char*)&m_dataV[i].format, sizeof(ALenum)); //buffer format
+			alGetBufferf(m_buffers[m_dataV[i].buffer], AL_FREQUENCY, &temp[0]);
+			outputStream.write((char*)&temp[0], 4); //frequency
+			outputStream.write((char*)&m_dataV[i].dataSize, 4); //size of data
+			outputStream.write((char*)&m_dataV[i].data, m_dataV[i].dataSize); //data
+		}
+	} else
+		return WError(W_NOTVALID);
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WOpenALSound::LoadFromWALS(basic_filebuf<char>* buff, uint pos, bool bSaveData) {
-	//use the given stream
-	std::fstream file;
-	if (!buff)
-		return WError(W_INVALIDPARAM);
-	file.set_rdbuf(buff);
-	file.seekg(pos);
-
+WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream) {
+	bool bSaveData = false;
 	float temp[3];
 
 	//read pitch & volume
-	file.read((char*)temp, 2 * sizeof(float));
+	inputStream.read((char*)temp, 2 * sizeof(float));
 	alSourcef(m_source, AL_PITCH, temp[0]);
 	alSourcef(m_source, AL_GAIN, temp[1]);
 
 	//read position & direction
-	file.read((char*)temp, 3 * sizeof(float));
+	inputStream.read((char*)temp, 3 * sizeof(float));
 	alSource3f(m_source, AL_POSITION, temp[0], temp[1], temp[2]);
-	file.read((char*)temp, 3 * sizeof(float));
+	inputStream.read((char*)temp, 3 * sizeof(float));
 	alSource3f(m_source, AL_DIRECTION, temp[0], temp[1], temp[2]);
 
 	char numBuffers = 0;
-	file.read((char*)&numBuffers, 1);
+	inputStream.read((char*)&numBuffers, 1);
 	for (uint i = 0; i < numBuffers; i++) {
 		__SAVEDATA data;
-		file.read((char*)&data.buffer, 4); //buffer index
-		file.read((char*)&data.format, sizeof(ALenum)); //buffer format
-		file.read((char*)&temp[0], 4); //frequency
-		file.read((char*)&data.dataSize, 4); //size of data
+		inputStream.read((char*)&data.buffer, 4); //buffer index
+		inputStream.read((char*)&data.format, sizeof(ALenum)); //buffer format
+		inputStream.read((char*)&temp[0], 4); //frequency
+		inputStream.read((char*)&data.dataSize, 4); //size of data
 		data.data = W_SAFE_ALLOC(data.dataSize);
-		file.read((char*)&data.data, m_dataV[i].dataSize); //data
+		inputStream.read((char*)&data.data, m_dataV[i].dataSize); //data
 
 		WError err = LoadFromMemory(data.buffer, data.data, data.dataSize, data.format, temp[0], bSaveData);
 
@@ -535,91 +525,4 @@ WError WOpenALSound::LoadFromWALS(basic_filebuf<char>* buff, uint pos, bool bSav
 	}
 
 	return WError(W_SUCCEEDED);
-}
-
-WError WOpenALSound::SaveToWALS(std::string filename) const {
-	if (Valid() && m_dataV.size()) //only attempt to save if the sound is valid and there is something to save
-	{
-		//open the file for writing
-		std::fstream file;
-		file.open(filename, ios::out | ios::binary);
-
-		if (!file.is_open())
-			return WError(W_FILENOTFOUND);
-
-		float temp[3];
-
-		//write pitch & volume
-		alGetSourcef(m_source, AL_PITCH, &temp[0]);
-		alGetSourcef(m_source, AL_GAIN, &temp[1]);
-		file.write((char*)temp, 2 * sizeof(float));
-
-		//write position & direction
-		alGetSource3f(m_source, AL_POSITION, &temp[0], &temp[1], &temp[2]);
-		file.write((char*)temp, 3 * sizeof(float));
-		alGetSource3f(m_source, AL_DIRECTION, &temp[0], &temp[1], &temp[2]);
-		file.write((char*)temp, 3 * sizeof(float));
-
-		char numBuffers = m_dataV.size();
-		file.write((char*)&numBuffers, 1);
-		for (uint i = 0; i < numBuffers; i++) {
-			file.write((char*)&m_dataV[i].buffer, 4); //buffer index
-			file.write((char*)&m_dataV[i].format, sizeof(ALenum)); //buffer format
-			alGetBufferf(m_buffers[m_dataV[i].buffer], AL_FREQUENCY, &temp[0]);
-			file.write((char*)&temp[0], 4); //frequency
-			file.write((char*)&m_dataV[i].dataSize, 4); //size of data
-			file.write((char*)&m_dataV[i].data, m_dataV[i].dataSize); //data
-		}
-
-		file.close();
-	}
-	else
-		return WError(W_NOTVALID);
-
-	return WError(W_SUCCEEDED);
-
-}
-
-WError WOpenALSound::SaveToWALS(basic_filebuf<char>* buff, uint pos) const {
-	if (Valid() && m_dataV.size()) //only attempt to save if the sound is valid and there is something to save
-	{
-		//use the given stream
-		std::fstream file;
-		if (!buff)
-			return WError(W_INVALIDPARAM);
-		file.set_rdbuf(buff);
-		file.seekp(pos);
-
-		float temp[3];
-
-		//write pitch & volume
-		alGetSourcef(m_source, AL_PITCH, &temp[0]);
-		alGetSourcef(m_source, AL_GAIN, &temp[1]);
-		file.write((char*)temp, 2 * sizeof(float));
-
-		//write position & direction
-		alGetSource3f(m_source, AL_POSITION, &temp[0], &temp[1], &temp[2]);
-		file.write((char*)temp, 3 * sizeof(float));
-		alGetSource3f(m_source, AL_DIRECTION, &temp[0], &temp[1], &temp[2]);
-		file.write((char*)temp, 3 * sizeof(float));
-
-		char numBuffers = m_dataV.size();
-		file.write((char*)&numBuffers, 1);
-		for (uint i = 0; i < numBuffers; i++) {
-			file.write((char*)&m_dataV[i].buffer, 4); //buffer index
-			file.write((char*)&m_dataV[i].format, sizeof(ALenum)); //buffer format
-			alGetBufferf(m_buffers[m_dataV[i].buffer], AL_FREQUENCY, &temp[0]);
-			file.write((char*)&temp[0], 4); //frequency
-			file.write((char*)&m_dataV[i].dataSize, 4); //size of data
-			file.write((char*)&m_dataV[i].data, m_dataV[i].dataSize); //data
-		}
-	}
-	else
-		return WError(W_NOTVALID);
-
-	return WError(W_SUCCEEDED);
-}
-
-bool WOpenALSound::m_bCheck(bool ignoreValidness) const {
-	return (m_valid || ignoreValidness) && m_source && m_buffers;
 }

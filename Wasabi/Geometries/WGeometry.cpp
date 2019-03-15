@@ -1564,6 +1564,7 @@ WError WGeometry::SaveToStream(WFile* file, std::ostream& outputStream) {
 }
 
 WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream) {
+	bool bDynamic = false;
 	vector<W_VERTEX_DESCRIPTION> from_descs;
 	char temp[256];
 	unsigned int num_vbs;
@@ -1629,7 +1630,7 @@ WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream) {
 		if (my_desc.GetOffset("tangent") >= 0 && from_descs[0].GetOffset("tangent") == -1)
 			bCalcTangents = true;
 
-		ret = CreateFromData(convertedVB, numV, ib, numI, false, bCalcNormals, bCalcTangents);
+		ret = CreateFromData(convertedVB, numV, ib, numI, bDynamic, bCalcNormals, bCalcTangents);
 
 		W_SAFE_FREE(convertedVB);
 	}

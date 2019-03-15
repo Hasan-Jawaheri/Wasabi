@@ -79,12 +79,6 @@ public:
 	virtual void SetVolume(float volume);
 	virtual void SetPitch(float fPitch);
 
-	WError LoadFromWALS(std::string filename, bool bSaveData = false);
-	WError LoadFromWALS(basic_filebuf<char>* buff, uint pos,
-						bool bSaveData = false);
-	WError SaveToWALS(std::string filename) const;
-	WError SaveToWALS(basic_filebuf<char>* buff, uint pos) const;
-
 	virtual void SetFrequency(uint buffer, uint frequency);
 	virtual uint GetNumChannels(uint buffer) const;
 	virtual uint GetBitDepth(uint buffer) const;
@@ -99,6 +93,9 @@ public:
 	virtual void SetDirection(WVector3 look);
 	virtual void SetDirection(class WOrientation* look);
 	virtual void SetToOrientation(class WOrientation* oriDev);
+
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
 
 private:
 	bool m_valid;
