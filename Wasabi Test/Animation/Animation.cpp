@@ -18,8 +18,11 @@ void AnimationDemo::Load() {
 	geometry->RemoveReference();
 	texture->RemoveReference();
 
-	WSkeleton* animation = new WSkeleton(m_app);
-	animation->LoadFromWA("Media/dante.HXS");
+	WSkeleton* animation;
+	WFile file(m_app);
+	file.Open("Media/dante.WSBI");
+	file.LoadAsset<WSkeleton>(1, &animation);
+	file.Close();
 
 	character->SetAnimation(animation);
 	animation->SetPlaySpeed(20.0f);

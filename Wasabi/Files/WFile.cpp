@@ -12,13 +12,16 @@
 const short FILE_MAGIC = 0x3DE0;
 
 WFileAsset::WFileAsset() {
-	m_assetId = -1;
 	m_file = nullptr;
 }
 
 WFileAsset::~WFileAsset() {
 	if (m_file)
-		m_file->ReleaseAsset(m_assetId);
+		m_file->ReleaseAsset(this);
+}
+
+void WFileAsset::_MarkFileEnd(WFile* file, std::streampos pos) {
+	file->MarkFileEnd(pos);
 }
 
 WFile::WFile(Wasabi* const app) : m_app(app) {
@@ -60,31 +63,41 @@ WError WFile::Open(std::string filename) {
 
 void WFile::Close() {
 	m_file.close();
-	for (auto iter = m_assetsMap.begin(); iter != m_assetsMap.end(); iter++) {
+	for (auto iter = m_loadedAssetsMap.begin(); iter != m_loadedAssetsMap.end(); iter++) {
 		if (iter->second->loadedAsset) {
-			iter->second->loadedAsset->m_assetId = -1;
 			iter->second->loadedAsset->m_file = nullptr;
 		}
 	}
 	m_assetsMap.clear();
+	m_loadedAssetsMap.clear();
 }
 
 WError WFile::SaveAsset(WFileAsset* asset, uint* assetId) {
 	if (!m_file.is_open())
 		return WError(W_FILENOTFOUND);
 
-	uint newAssetId = assetId == nullptr ? m_maxId + 1 : *assetId;
+	auto iter = m_loadedAssetsMap.find(asset);
+	if (iter != m_loadedAssetsMap.end()) {
+		if (assetId != nullptr)
+			*assetId = iter->second->id;
+		return WError(W_SUCCEEDED);
+	}
 
 	m_file.seekp(m_fileSize); // write it at the end
 	std::streampos start = m_file.tellp();
 	WError err = asset->SaveToStream(this, m_file);
 	std::streampos writtenSize = m_file.tellp() - start;
 
-	if (!err) {
+	if (!err)
 		return err;
-	}
 
+	uint newAssetId = m_maxId + 1;
 	WriteAssetToHeader(WFile::FILE_ASSET(start, writtenSize, newAssetId));
+
+	WFile::FILE_ASSET* assetData = m_assetsMap.find(newAssetId)->second;
+	asset->m_file = this;
+	assetData->loadedAsset = asset;
+	m_loadedAssetsMap.insert(std::pair<WFileAsset*, FILE_ASSET*>(asset, assetData));
 
 	if (assetId != nullptr)
 		*assetId = newAssetId;
@@ -111,18 +124,24 @@ WError WFile::LoadGenericAsset(uint assetId, WFileAsset** assetOut, std::functio
 		err = (*assetOut)->LoadFromStream(this, m_file);
 		if (err) {
 			(*assetOut)->m_file = this;
-			(*assetOut)->m_assetId = assetId;
 			assetData->loadedAsset = (*assetOut);
+			m_loadedAssetsMap.insert(std::pair<WFileAsset*, FILE_ASSET*>(*assetOut, assetData));
 		} else
 			W_SAFE_DELETE((*assetOut)); // not using removeref because we assume that only 1 reference exists, this keeps it general and not require asset to be a WBase
 	}
 	return err;
 }
 
-void WFile::ReleaseAsset(uint assetId) {
-	auto iter = m_assetsMap.find(assetId);
-	if (iter != m_assetsMap.end())
+void WFile::MarkFileEnd(std::streampos pos) {
+	m_fileSize = max(m_fileSize, pos);
+}
+
+void WFile::ReleaseAsset(WFileAsset* asset) {
+	auto iter = m_loadedAssetsMap.find(asset);
+	if (iter != m_loadedAssetsMap.end()) {
 		iter->second->loadedAsset = nullptr;
+		m_loadedAssetsMap.erase(asset);
+	}
 }
 
 WError WFile::LoadHeaders(std::streamsize maxFileSize) {
@@ -199,7 +218,7 @@ void WFile::WriteAssetToHeader(WFile::FILE_ASSET asset) {
 	m_assetsMap.insert(std::pair<uint, FILE_ASSET*>(asset.id, curHeader->assets[curHeader->assets.size()-1]));
 
 	m_fileSize = max(m_fileSize, asset.start + asset.size);
-	m_maxId = max(m_maxId, asset.id);
+	m_maxId = max(m_maxId + 1, asset.id);
 
 	if (curHeader->assets.size() * FILE_ASSET::GetSize() >= curHeader->dataSize) {
 		CreateNewHeader();

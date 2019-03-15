@@ -42,7 +42,7 @@ void WMaterial::_DestroyResources() {
 
 	for (int i = 0; i < m_uniformBuffers.size(); i++) {
 		vkFreeMemory(device, m_uniformBuffers[i].memory, nullptr);
-		vkDestroyBuffer(device, m_uniformBuffers[i].buffer, nullptr);
+		vkDestroyBuffer(device, m_uniformBuffers[i].descriptor.buffer, nullptr);
 	}
 	m_uniformBuffers.clear();
 
@@ -101,14 +101,14 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 				bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
 				// Create a new buffer
-				VkResult err = vkCreateBuffer(device, &bufferInfo, nullptr, &ubo.buffer);
+				VkResult err = vkCreateBuffer(device, &bufferInfo, nullptr, &ubo.descriptor.buffer);
 				if (err) {
 					_DestroyResources();
 					return WError(W_UNABLETOCREATEBUFFER);
 				}
 				// Get memory requirements including size, alignment and memory type 
 				VkMemoryRequirements memReqs;
-				vkGetBufferMemoryRequirements(device, ubo.buffer, &memReqs);
+				vkGetBufferMemoryRequirements(device, ubo.descriptor.buffer, &memReqs);
 				uballocInfo.allocationSize = memReqs.size;
 				// Gets the appropriate memory type for this type of buffer allocation
 				// Only memory types that are visible to the host
@@ -116,21 +116,20 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 				// Allocate memory for the uniform buffer
 				err = vkAllocateMemory(device, &uballocInfo, nullptr, &(ubo.memory));
 				if (err) {
-					vkDestroyBuffer(device, ubo.buffer, nullptr);
+					vkDestroyBuffer(device, ubo.descriptor.buffer, nullptr);
 					_DestroyResources();
 					return WError(W_OUTOFMEMORY);
 				}
 				// Bind memory to buffer
-				err = vkBindBufferMemory(device, ubo.buffer, ubo.memory, 0);
+				err = vkBindBufferMemory(device, ubo.descriptor.buffer, ubo.memory, 0);
 				if (err) {
-					vkDestroyBuffer(device, ubo.buffer, nullptr);
+					vkDestroyBuffer(device, ubo.descriptor.buffer, nullptr);
 					vkFreeMemory(device, ubo.memory, nullptr);
 					_DestroyResources();
 					return WError(W_UNABLETOCREATEBUFFER);
 				}
 
 				// Store information in the uniform's descriptor
-				ubo.descriptor.buffer = ubo.buffer;
 				ubo.descriptor.offset = 0;
 				ubo.descriptor.range = shader->m_desc.bound_resources[j].GetSize();
 				ubo.ubo_info = &shader->m_desc.bound_resources[j];
@@ -389,6 +388,138 @@ WError WMaterial::SetInstancingTexture(WImage* img) {
 	return SetTexture(binding_index, img);
 }
 
-class WEffect* WMaterial::GetEffect() const {
+WEffect* WMaterial::GetEffect() const {
 	return m_effect;
 }
+
+WError WMaterial::SaveToStream(WFile* file, std::ostream& outputStream) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	VkDevice device = m_app->GetVulkanDevice();
+
+	// write the UBO data
+	uint tmp = m_uniformBuffers.size();
+	outputStream.write((char*)&tmp, sizeof(tmp));
+	for (uint i = 0; i < m_uniformBuffers.size(); i++) {
+		UNIFORM_BUFFER_INFO* UBO = &m_uniformBuffers[i];
+		outputStream.write((char*)&UBO->descriptor.range, sizeof(UBO->descriptor.range));
+		void* data;
+		VkResult vkRes = vkMapMemory(device, m_uniformBuffers[i].memory, 0, UBO->descriptor.range, 0, (void **)&data);
+		if (vkRes)
+			return WError(W_UNABLETOMAPBUFFER);
+		outputStream.write((char*)data, UBO->descriptor.range);
+		vkUnmapMemory(device, m_uniformBuffers[0].memory);
+	}
+
+	// write the texture data
+	tmp = m_sampler_info.size();
+	outputStream.write((char*)&tmp, sizeof(tmp));
+	std::streampos texturesOffset = outputStream.tellp();
+	for (uint i = 0; i < m_sampler_info.size(); i++) {
+		SAMPLER_INFO* SI = &m_sampler_info[i];
+		tmp = 0;
+		outputStream.write((char*)&tmp, sizeof(tmp));
+		outputStream.write((char*)&SI->sampler_info->binding_index, sizeof(SI->sampler_info->binding_index));
+	}
+	outputStream.write((char*)&tmp, sizeof(tmp)); // effect id
+	_MarkFileEnd(file, outputStream.tellp());
+
+	// save dependencies
+	for (uint i = 0; i < m_sampler_info.size(); i++) {
+		SAMPLER_INFO* SI = &m_sampler_info[i];
+		if (SI->img) {
+			WError err = file->SaveAsset(SI->img, &tmp);
+			if (!err)
+				return err;
+			outputStream.seekp(texturesOffset + std::streamoff(i * (2 * sizeof(uint))));
+			outputStream.write((char*)&tmp, sizeof(tmp));
+		}
+	}
+	WError err = file->SaveAsset(m_effect, &tmp);
+	if (!err)
+		return err;
+	outputStream.seekp(texturesOffset + std::streamoff(m_sampler_info.size() * (2 * sizeof(uint))));
+	outputStream.write((char*)&tmp, sizeof(tmp));
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream) {
+	_DestroyResources();
+
+	VkDevice device = m_app->GetVulkanDevice();
+
+	// read the UBO data
+	uint numUBOs;
+	vector<std::pair<VkDeviceSize, void*>> uboData;
+	inputStream.read((char*)&numUBOs, sizeof(numUBOs));
+	for (uint i = 0; i < numUBOs; i++) {
+		VkDeviceSize size;
+		inputStream.read((char*)&size, sizeof(size));
+		uboData.push_back(std::pair<VkDeviceSize, void*>(size, W_SAFE_ALLOC(size)));
+		inputStream.read((char*)uboData[uboData.size() - 1].second, size);
+	}
+
+	// read the texture data
+	uint numTextures;
+	vector<std::pair<uint, uint>> textureData;
+	inputStream.read((char*)&numTextures, sizeof(numTextures));
+	for (uint i = 0; i < numTextures; i++) {
+		uint tid, index;
+		inputStream.read((char*)&tid, sizeof(tid));
+		inputStream.read((char*)&index, sizeof(index));
+		textureData.push_back(std::pair<uint, uint>(tid, index));
+	}
+	uint fxId;
+	inputStream.read((char*)&fxId, sizeof(fxId));
+
+	// load dependencies
+	WEffect* fx;
+	WError err = file->LoadAsset<WEffect>(fxId, &fx);
+	if (err) {
+		err = SetEffect(fx);
+		fx->RemoveReference();
+		if (err) {
+			for (uint i = 0; i < textureData.size() && err; i++) {
+				WImage* tex;
+				err = file->LoadAsset<WImage>(textureData[i].first, &tex);
+				if (err) {
+					err = SetTexture(textureData[i].second, tex);
+					tex->RemoveReference();
+				}
+			}
+		}
+	}
+
+	if (err) {
+		if (m_uniformBuffers.size() != uboData.size())
+			err = WError(W_INVALIDFILEFORMAT);
+		else {
+			for (uint i = 0; i < m_uniformBuffers.size() && err; i++) {
+				UNIFORM_BUFFER_INFO* UBO = &m_uniformBuffers[i];
+				if (uboData[i].first != UBO->descriptor.range)
+					err = WError(W_INVALIDFILEFORMAT);
+				else {
+					void* pData;
+					VkResult vkRes = vkMapMemory(device, m_uniformBuffers[i].memory, 0, UBO->descriptor.range, 0, (void **)&pData);
+					if (vkRes)
+						err = WError(W_UNABLETOMAPBUFFER);
+					else {
+						memcpy(pData, uboData[i].second, UBO->descriptor.range);
+						vkUnmapMemory(device, m_uniformBuffers[0].memory);
+					}
+				}
+			}
+		}
+	}
+
+	for (uint i = 0; i < uboData.size(); i++)
+		W_SAFE_FREE(uboData[i].second);
+
+	if (!err)
+		_DestroyResources();
+
+	return err;
+}
+

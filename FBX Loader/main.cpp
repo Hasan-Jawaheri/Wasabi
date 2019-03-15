@@ -86,7 +86,10 @@ class FBXLoader : public Wasabi {
 		g->CreateFromData(m.vb.data(), m.vb.size(), m.ib.data(), m.ib.size(), true, false, !m.bTangents);
 		if (m.ab.size())
 			g->CreateAnimationData(m.ab.data());
-		g->SaveToWGM(filename);
+		WFile file(this);
+		file.Open(filename);
+		file.SaveAsset(g, nullptr);
+		file.Close();
 		g->RemoveReference();
 	}
 
@@ -95,7 +98,10 @@ class FBXLoader : public Wasabi {
 		WSkeleton* s = new WSkeleton(this);
 		for (auto it = anim.frames.begin(); it != anim.frames.end(); it++)
 			s->CreateKeyFrame(*it, 1.0f);
-		s->SaveToWA(filename);
+		WFile file(this);
+		file.Open(filename);
+		file.SaveAsset(s, nullptr);
+		file.Close();
 		s->RemoveReference();
 	}
 
@@ -169,7 +175,7 @@ public:
 												if (outFile[i] == '.')
 													outFile[i] = '\0';
 										}
-										strcat_s(outFile, MAX_PATH, ".WGM");
+										strcat_s(outFile, MAX_PATH, ".WSBI");
 										SaveMesh(mesh, outFile);
 									}
 								}
@@ -182,7 +188,7 @@ public:
 									//save the animation data
 									char skeletonName[256];
 									strcpy_s(skeletonName, 256, pNode->GetName());
-									strcat_s(skeletonName, 256, ".HXS");
+									strcat_s(skeletonName, 256, ".WSBI");
 									SaveAnimation(anim, skeletonName);
 									for (int i = 0; i < anim.frames.size(); i++)
 										delete anim.frames[i];

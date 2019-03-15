@@ -25,6 +25,7 @@
 
 #include "../Core/WCore.h"
 #include "WAnimation.h"
+#include <iostream>
 
 /**
  * @ingroup engineclass
@@ -165,20 +166,18 @@ public:
 	void OnStateChange(STATE_CHANGE_TYPE type);
 
 	/**
-	 * Load this bone from a file stream as a WA format.
-	 * @param  buff Pointer to a file stream
-	 * @param  pos  Position into the file stream
-	 * @return      Error code, see WError.h
+	 * Load this bone from a file stream as a bone format.
+	 * @param  inputStream Stream to read the data from
+	 * @return             Error code, see WError.h
 	 */
-	WError LoadFromWA(basic_filebuf<char>* buff, unsigned int pos);
+	WError Load(std::istream& inputStream);
 
 	/**
-	 * Save this bone to a file stream as a WA format.
-	 * @param  buff Pointer to a file stream
-	 * @param  pos  Position into the file stream
-	 * @return      Error code, see WError.h
+	 * Save this bone to a file stream as a bone format.
+	 * @param  outputStream Stream to read the data from
+	 * @return              Error code, see WError.h
 	 */
-	WError SaveToWA(basic_filebuf<char>* buff, unsigned int pos) const;
+	WError Save(std::ostream& outputStream) const;
 
 private:
 	// THE FOLLOWING VARIABLES MUST REMAIN IN THIS ORDER
@@ -388,38 +387,6 @@ public:
 	WVector3 GetCurrentParentBonePosition();
 
 	/**
-	 * Loads a skeleton from a .WA file.
-	 * @param  Filename Filename to load
-	 * @return          Error code, see WError.h
-	 */
-	virtual WError LoadFromWA(std::string Filename);
-
-	/**
-	 * Loads a skeleton from a file stream.
-	 * @param  buff a pointer to a basic_filebuf object to read from
-	 * @param  pos  position into the buffer buff
-	 * @return          Error code, see WError.h
-	 */
-	virtual WError LoadFromWA(basic_filebuf<char>* buff = nullptr,
-							  unsigned int pos = 0);
-
-	/**
-	 * Saves a skeleton to a file stream.
-	 * @param  buff a pointer to a basic_filebuf object to read from
-	 * @param  pos  position into the buffer buff
-	 * @return          Error code, see WError.h
-	 */
-	virtual WError SaveToWA(basic_filebuf<char>* buff = nullptr,
-							unsigned int pos = 0) const;
-
-	/**
-	 * Saves a skeleton to a .WA file.
-	 * @param  Filename Filename to load
-	 * @return          Error code, see WError.h
-	 */
-	virtual WError SaveToWA(std::string Filename) const;
-
-	/**
 	 * Copies another WSkeleton.
 	 * @param  from Sekelton to copy from
 	 * @return      Error code, see WError.h
@@ -440,6 +407,9 @@ public:
 	 * @return true if the skeleton is valid, false otherwise
 	 */
 	bool Valid() const;
+
+	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
 
 private:
 	/**

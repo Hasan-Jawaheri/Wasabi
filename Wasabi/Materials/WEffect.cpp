@@ -1,6 +1,8 @@
 #include "WEffect.h"
 #include "../Images/WRenderTarget.h"
+#include "../Renderers/WRenderer.h"
 
+#include <iostream>
 #include <unordered_map>
 using std::unordered_map;
 
@@ -185,6 +187,9 @@ std::string WShader::GetTypeName() const {
 
 WShader::WShader(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_module = VK_NULL_HANDLE;
+	m_code = nullptr;
+	m_codeLen = 0;
+	m_isSPIRV = false;
 	app->ShaderManager->AddEntity(this);
 }
 
@@ -192,36 +197,213 @@ WShader::~WShader() {
 	if (m_module)
 		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
 	m_module = VK_NULL_HANDLE;
+	W_SAFE_FREE(m_code);
 
 	m_app->ShaderManager->RemoveEntity(this);
 }
 
-void WShader::LoadCodeSPIRV(const char* const code, int len) {
+void WShader::LoadCodeSPIRV(const char* const code, int len, bool bSaveData) {
 	if (m_module)
 		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
 	m_module = vkTools::loadShaderFromCode(code, len, m_app->GetVulkanDevice(), (VkShaderStageFlagBits)m_desc.type);
+	if (m_module && bSaveData) {
+		m_code = (char*)W_SAFE_ALLOC(len);
+		m_codeLen = len;
+		m_isSPIRV = true;
+		memcpy(m_code, code, m_codeLen);
+	}
 }
 
-void WShader::LoadCodeGLSL(std::string code) {
+void WShader::LoadCodeGLSL(std::string code, bool bSaveData) {
 	if (m_module)
 		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
 	m_module = vkTools::loadShaderGLSLFromCode(code.c_str(), code.length(), m_app->GetVulkanDevice(), (VkShaderStageFlagBits)m_desc.type);
-}
-void WShader::LoadCodeSPIRVFromFile(std::string filename) {
-	if (m_module)
-		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
-	m_module = vkTools::loadShader(filename.c_str(), m_app->GetVulkanDevice(), (VkShaderStageFlagBits)m_desc.type);
+	if (m_module && bSaveData) {
+		m_code = (char*)W_SAFE_ALLOC(code.length());
+		m_codeLen = code.length();
+		m_isSPIRV = false;
+		memcpy(m_code, code.c_str(), m_codeLen);
+	}
 }
 
-void WShader::LoadCodeGLSLFromFile(std::string filename) {
-	if (m_module)
-		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
-	m_module = vkTools::loadShaderGLSL(filename.c_str(), m_app->GetVulkanDevice(), (VkShaderStageFlagBits)m_desc.type);
+void WShader::LoadCodeSPIRVFromFile(std::string filename, bool bSaveData) {
+	std::ifstream file;
+	file.open(filename, ios::in | ios::binary | ios::ate);
+	if (file.is_open()) {
+		std::streamsize size = file.tellg();
+		file.seekg(0, std::ios::beg);
+		vector<char> buf;
+		if (file.read(buf.data(), size))
+			LoadCodeSPIRV(buf.data(), buf.size(), bSaveData);
+		file.close();
+	}
+}
+
+void WShader::LoadCodeGLSLFromFile(std::string filename, bool bSaveData) {
+	std::ifstream file;
+	file.open(filename, ios::in | ios::ate);
+	if (file.is_open()) {
+		std::streamsize size = file.tellg();
+		file.seekg(0, std::ios::beg);
+		vector<char> buf;
+		if (file.read(buf.data(), size))
+			LoadCodeGLSL(std::string(buf.data(), buf.size()), bSaveData);
+		file.close();
+	}
 }
 
 bool WShader::Valid() const {
 	// valid when shader module exists
 	return m_module != VK_NULL_HANDLE;
+}
+
+WError WShader::SaveToStream(class WFile* file, std::ostream& outputStream) {
+	if (!Valid() || !m_code)
+		return WError(W_NOTVALID);
+
+	outputStream.write((char*)&m_isSPIRV, sizeof(m_isSPIRV));
+	outputStream.write((char*)&m_codeLen, sizeof(m_codeLen));
+	outputStream.write((char*)m_code, m_codeLen);
+
+	outputStream.write((char*)&m_desc.type, sizeof(m_desc.type));
+	outputStream.write((char*)&m_desc.animation_texture_index, sizeof(m_desc.animation_texture_index));
+	outputStream.write((char*)&m_desc.instancing_texture_index, sizeof(m_desc.instancing_texture_index));
+
+	// save the input layout
+	uint tmp;
+	tmp = m_desc.input_layouts.size();
+	outputStream.write((char*)&tmp, sizeof(tmp));
+	for (uint i = 0; i < m_desc.input_layouts.size(); i++) {
+		W_INPUT_LAYOUT* IL = &m_desc.input_layouts[i];
+		outputStream.write((char*)&IL->input_rate, sizeof(IL->input_rate));
+		tmp = IL->attributes.size();
+		outputStream.write((char*)&tmp, sizeof(tmp));
+		for (uint j = 0; j < IL->attributes.size(); j++) {
+			W_SHADER_VARIABLE_INFO* attr = &IL->attributes[j];
+			outputStream.write((char*)&attr->type, sizeof(attr->type));
+			outputStream.write((char*)&attr->num_elems, sizeof(attr->num_elems));
+			outputStream.write((char*)&attr->struct_size, sizeof(attr->struct_size));
+			outputStream.write((char*)&attr->struct_largest_base_alignment, sizeof(attr->struct_largest_base_alignment));
+			tmp = attr->name.length();
+			outputStream.write((char*)&tmp, sizeof(tmp));
+			if (tmp > 0)
+				outputStream.write((char*)attr->name.c_str(), attr->name.length());
+		}
+	}
+
+	// save the bound resources
+	tmp = m_desc.bound_resources.size();
+	outputStream.write((char*)&tmp, sizeof(tmp));
+	for (uint i = 0; i < m_desc.bound_resources.size(); i++) {
+		W_BOUND_RESOURCE* resource = &m_desc.bound_resources[i];
+		outputStream.write((char*)&resource->type, sizeof(resource->type));
+		outputStream.write((char*)&resource->binding_index, sizeof(resource->binding_index));
+		tmp = resource->variables.size();
+		outputStream.write((char*)&tmp, sizeof(tmp));
+		for (uint j = 0; j < resource->variables.size(); j++) {
+			W_SHADER_VARIABLE_INFO* attr = &resource->variables[j];
+			outputStream.write((char*)&attr->type, sizeof(attr->type));
+			outputStream.write((char*)&attr->num_elems, sizeof(attr->num_elems));
+			outputStream.write((char*)&attr->struct_size, sizeof(attr->struct_size));
+			outputStream.write((char*)&attr->struct_largest_base_alignment, sizeof(attr->struct_largest_base_alignment));
+			tmp = attr->name.length();
+			outputStream.write((char*)&tmp, sizeof(tmp));
+			if (tmp > 0)
+				outputStream.write((char*)attr->name.c_str(), attr->name.length());
+		}
+	}
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream) {
+	bool bSaveData = false;
+
+	inputStream.read((char*)&m_isSPIRV, sizeof(m_isSPIRV));
+	inputStream.read((char*)&m_codeLen, sizeof(m_codeLen));
+
+	char* code = (char*)W_SAFE_ALLOC(m_codeLen);
+	inputStream.read(code, m_codeLen);
+
+	if (m_isSPIRV)
+		LoadCodeSPIRV(m_code, m_codeLen, bSaveData);
+	else
+		LoadCodeGLSL(std::string(code, m_codeLen), bSaveData);
+
+	W_SAFE_FREE(code);
+
+	if (!m_module)
+		return WError(W_INVALIDFILEFORMAT);
+
+	inputStream.read((char*)&m_desc.type, sizeof(m_desc.type));
+	inputStream.read((char*)&m_desc.animation_texture_index, sizeof(m_desc.animation_texture_index));
+	inputStream.read((char*)&m_desc.instancing_texture_index, sizeof(m_desc.instancing_texture_index));
+
+	// load the input layout
+	uint tmp;
+	inputStream.read((char*)&tmp, sizeof(tmp));
+	m_desc.input_layouts.resize(tmp);
+	for (uint i = 0; i < m_desc.input_layouts.size(); i++) {
+		W_INPUT_LAYOUT* IL = &m_desc.input_layouts[i];
+		inputStream.read((char*)&IL->input_rate, sizeof(IL->input_rate));
+		inputStream.read((char*)&tmp, sizeof(tmp));
+		IL->attributes.resize(tmp);
+		for (uint j = 0; j < IL->attributes.size(); j++) {
+			W_SHADER_VARIABLE_INFO* attr = &IL->attributes[j];
+			inputStream.read((char*)&attr->type, sizeof(attr->type));
+			inputStream.read((char*)&attr->num_elems, sizeof(attr->num_elems));
+			inputStream.read((char*)&attr->struct_size, sizeof(attr->struct_size));
+			inputStream.read((char*)&attr->struct_largest_base_alignment, sizeof(attr->struct_largest_base_alignment));
+			tmp = attr->name.length();
+			inputStream.read((char*)&tmp, sizeof(tmp));
+			if (tmp > 0) {
+				char* name = new char[tmp];
+				inputStream.read(name, tmp);
+				attr->name = std::string(name, tmp);
+				delete[] name;
+			}
+			if (attr->type == W_TYPE_STRUCT)
+				*attr = W_SHADER_VARIABLE_INFO(attr->type, attr->num_elems, attr->struct_size, attr->struct_largest_base_alignment, attr->name);
+			else
+				*attr = W_SHADER_VARIABLE_INFO(attr->type, attr->num_elems, attr->name);
+		}
+		*IL = W_INPUT_LAYOUT(IL->attributes, IL->input_rate);
+	}
+
+	// load the bound resources
+	tmp = m_desc.bound_resources.size();
+	inputStream.read((char*)&tmp, sizeof(tmp));
+	m_desc.bound_resources.resize(tmp);
+	for (uint i = 0; i < m_desc.bound_resources.size(); i++) {
+		W_BOUND_RESOURCE* resource = &m_desc.bound_resources[i];
+		inputStream.read((char*)&resource->type, sizeof(resource->type));
+		inputStream.read((char*)&resource->binding_index, sizeof(resource->binding_index));
+		tmp = resource->variables.size();
+		inputStream.read((char*)&tmp, sizeof(tmp));
+		resource->variables.resize(tmp);
+		for (uint j = 0; j < resource->variables.size(); j++) {
+			W_SHADER_VARIABLE_INFO* attr = &resource->variables[j];
+			inputStream.read((char*)&attr->type, sizeof(attr->type));
+			inputStream.read((char*)&attr->num_elems, sizeof(attr->num_elems));
+			inputStream.read((char*)&attr->struct_size, sizeof(attr->struct_size));
+			inputStream.read((char*)&attr->struct_largest_base_alignment, sizeof(attr->struct_largest_base_alignment));
+			tmp = attr->name.length();
+			inputStream.read((char*)&tmp, sizeof(tmp));
+			if (tmp > 0) {
+				char* name = new char[tmp];
+				inputStream.read(name, tmp);
+				attr->name = std::string(name, tmp);
+				delete[] name;
+			}
+			if (attr->type == W_TYPE_STRUCT)
+				*attr = W_SHADER_VARIABLE_INFO(attr->type, attr->num_elems, attr->struct_size, attr->struct_largest_base_alignment, attr->name);
+			else
+				*attr = W_SHADER_VARIABLE_INFO(attr->type, attr->num_elems, attr->name);
+		}
+		*resource = W_BOUND_RESOURCE(resource->type, resource->binding_index, resource->variables);
+	}
+
+	return WError(W_SUCCEEDED);
 }
 
 std::string WEffectManager::GetTypeName(void) const {
@@ -650,3 +832,71 @@ size_t WEffect::GetInputLayoutSize(unsigned int layout_index) const {
 		return m_shaders[m_vertexShaderIndex]->m_desc.input_layouts[layout_index].GetSize();
 	return 0;
 }
+
+WError WEffect::SaveToStream(WFile* file, std::ostream& outputStream) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	uint tmp;
+
+	outputStream.write((char*)&m_topology, sizeof(m_topology));
+	outputStream.write((char*)&m_depthStencilState, sizeof(m_depthStencilState));
+	outputStream.write((char*)&m_rasterizationState, sizeof(m_rasterizationState));
+	tmp = m_blendStates.size();
+	outputStream.write((char*)&tmp, sizeof(tmp));
+	outputStream.write((char*)m_blendStates.data(), m_blendStates.size() * sizeof(VkPipelineColorBlendAttachmentState));
+	tmp = m_shaders.size();
+	outputStream.write((char*)&tmp, sizeof(tmp));
+	std::streampos shaderIdsBegin = outputStream.tellp();
+	for (uint i = 0; i < m_shaders.size(); i++) {
+		tmp = 0;
+		outputStream.write((char*)&tmp, sizeof(tmp));
+	}
+	_MarkFileEnd(file, outputStream.tellp());
+	for (uint i = 0; i < m_shaders.size(); i++) {
+		WError err = file->SaveAsset(m_shaders[i], &tmp);
+		if (!err)
+			return err;
+		outputStream.seekp(shaderIdsBegin + std::streamoff(i * sizeof(uint)));
+		outputStream.write((char*)&tmp, sizeof(tmp));
+	}
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream) {
+	WRenderTarget* rt = m_app->Renderer->GetDefaultRenderTarget();
+	_DestroyPipeline();
+
+	uint tmp;
+	inputStream.read((char*)&m_topology, sizeof(m_topology));
+	inputStream.read((char*)&m_depthStencilState, sizeof(m_depthStencilState));
+	inputStream.read((char*)&m_rasterizationState, sizeof(m_rasterizationState));
+	inputStream.read((char*)&tmp, sizeof(tmp));
+	m_blendStates.resize(tmp);
+	inputStream.read((char*)m_blendStates.data(), m_blendStates.size() * sizeof(VkPipelineColorBlendAttachmentState));
+	inputStream.read((char*)&tmp, sizeof(tmp));
+
+	vector<uint> dependencyIds(tmp);
+	for (uint i = 0; i < tmp; i++)
+		inputStream.read((char*)&dependencyIds[i], sizeof(uint));
+
+	WError err;
+	for (uint i = 0; i < dependencyIds.size(); i++) {
+		WShader* shader;
+		err = file->LoadAsset<WShader>(dependencyIds[i], &shader);
+		if (!err)
+			break;
+		err = BindShader(shader);
+		shader->RemoveReference(); // reference is now owned by us in BindShader, no need for this one
+		if (!err)
+			break;
+	}
+
+	if (err)
+		BuildPipeline(rt);
+	else
+		_DestroyPipeline();
+	return err;
+}
+

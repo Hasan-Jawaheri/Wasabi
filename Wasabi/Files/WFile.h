@@ -24,8 +24,10 @@ public:
 	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream) = 0;
 
 private:
-	uint m_assetId;
 	class WFile* m_file;
+
+protected:
+	void _MarkFileEnd(class WFile* file, std::streampos pos);
 };
 
 class WFile {
@@ -43,8 +45,12 @@ public:
 	template<typename T>
 	WError LoadAsset(uint assetId, T** loadedAsset) {
 		WFileAsset* asset;
+		auto iter = m_assetsMap.find(assetId);
+		bool addReference = iter != m_assetsMap.end() && iter->second->loadedAsset != nullptr;
 		WError err = LoadGenericAsset(assetId, &asset, [this]() { return new T(this->m_app); });
 		*loadedAsset = (T*)asset;
+		if (addReference)
+			(*loadedAsset)->AddReference();
 		return err;
 	}
 	WError LoadGenericAsset(uint assetId, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset);
@@ -75,9 +81,11 @@ private:
 	std::fstream m_file;
 	std::streamsize m_fileSize;
 	std::unordered_map<uint, FILE_ASSET*> m_assetsMap;
+	std::unordered_map<WFileAsset*, FILE_ASSET*> m_loadedAssetsMap;
 	std::vector<FILE_HEADER> m_headers;
 
-	void ReleaseAsset(uint assetId);
+	void MarkFileEnd(std::streampos pos);
+	void ReleaseAsset(WFileAsset* asset);
 	WError LoadHeaders(std::streamsize maxFileSize);
 	void CreateNewHeader();
 	void WriteAssetToHeader(WFile::FILE_ASSET asset);

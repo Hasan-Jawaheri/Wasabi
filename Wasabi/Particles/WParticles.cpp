@@ -41,7 +41,7 @@ public:
 		};
 	}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = GetBoundResources();
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
@@ -51,7 +51,7 @@ public:
 		}) };
 		LoadCodeGLSL(
 			#include "Shaders/particles_vs.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -69,12 +69,12 @@ public:
 		};
 	}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_GEOMETRY_SHADER;
 		m_desc.bound_resources = GetBoundResources();
 		LoadCodeGLSL(
 			#include "Shaders/particles_gs.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -82,14 +82,14 @@ class ParticlesPS : public WShader {
 public:
 	ParticlesPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
 		};
 		LoadCodeGLSL(
 			#include "Shaders/particles_ps.glsl"
-		);
+		, bSaveData);
 	}
 };
 

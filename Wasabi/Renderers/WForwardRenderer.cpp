@@ -44,7 +44,7 @@ class ForwardRendererVS : public WShader {
 public:
 	ForwardRendererVS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
@@ -72,7 +72,7 @@ public:
 		})};
 		LoadCodeGLSL(
 			#include "Shaders/Forward/vertex_shader.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -80,7 +80,7 @@ class ForwardRendererPS : public WShader {
 public:
 	ForwardRendererPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		int maxLights = (int)m_app->engineParams["maxLights"];
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
@@ -101,7 +101,7 @@ public:
 			#include "Shaders/Forward/pixel_shader.glsl"
 		;
 		stringReplaceAll(code, "~~~~maxLights~~~~", std::to_string(maxLights));
-		LoadCodeGLSL(code);
+		LoadCodeGLSL(code, bSaveData);
 	}
 };
 

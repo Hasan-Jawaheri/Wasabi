@@ -10,37 +10,47 @@ WBone::WBone() {
 	m_parent = nullptr;
 	ZeroMemory(m_name, 64);
 }
+
 WBone::~WBone() {
 	//every bone destructs it's children, thus, only base bones should be deleteded and the rest will be deleted with it
 	for (unsigned int i = 0; i < m_children.size(); i++)
 		delete m_children[i];
 }
+
 unsigned int WBone::GetIndex() const {
 	return m_index;
 }
+
 void WBone::SetIndex(unsigned int index) {
 	m_index = index;
 }
+
 void WBone::GetName(char* name, unsigned int maxChars) const {
 	strcpy_s(name, fmin(maxChars, 64), m_name);
 }
+
 void WBone::SetName(std::string name) {
 	strcpy_s(m_name, 64, name.c_str());
 }
+
 WBone* WBone::GetParent() const {
 	return m_parent;
 }
+
 void WBone::SetParent(WBone* parent) {
 	m_parent = parent;
 }
+
 unsigned int WBone::GetNumChildren() const {
 	return m_children.size();
 }
+
 WBone* WBone::GetChild(unsigned int index) const {
 	if (index >= m_children.size())
 		return nullptr;
 	return m_children[index];
 }
+
 WBone* WBone::GetChild(std::string name) const {
 	for (unsigned int i = 0; i < m_children.size(); i++)
 		if (strcmp(m_children[i]->m_name, name.c_str()) == 0)
@@ -48,30 +58,38 @@ WBone* WBone::GetChild(std::string name) const {
 
 	return nullptr;
 }
+
 void WBone::AddChild(WBone* child) {
 	m_children.push_back(child);
 }
+
 void WBone::ClearChildren() {
 	m_children.clear();
 }
+
 void WBone::SetInvBindingPose(WMatrix mtx) {
 	m_invBindingPose = mtx;
 }
+
 void WBone::Scale(float x, float y, float z) {
 	m_scale = WVector3(x, y, z);
 	m_bAltered = true;
 }
+
 void WBone::Scale(WVector3 scale) {
 	m_scale = scale;
 	m_bAltered = true;
 }
+
 WVector3 WBone::GetScale() const {
 	return m_scale;
 }
+
 WMatrix WBone::GetMatrix() {
 	UpdateLocals();
 	return m_worldM;
 }
+
 WMatrix WBone::GetRelativeMatrix() {
 	UpdateLocals();
 	WMatrix m = m_worldM;
@@ -79,9 +97,11 @@ WMatrix WBone::GetRelativeMatrix() {
 		m *= m_parent->GetRelativeMatrix();
 	return m;
 }
+
 WMatrix WBone::GetInvBindingPose() const {
 	return m_invBindingPose;
 }
+
 bool WBone::UpdateLocals() {
 	if (m_bAltered) {
 		m_bAltered = false;
@@ -117,47 +137,38 @@ bool WBone::UpdateLocals() {
 
 	return false;
 }
+
 void WBone::OnStateChange(STATE_CHANGE_TYPE type) {
 	WOrientation::OnStateChange(type);
 	m_bAltered = true;
 }
-WError WBone::LoadFromWA(basic_filebuf<char>* buff, unsigned int pos) {
-	std::fstream file;
-	if (!buff)
-		return WError(W_FILENOTFOUND);
-	file.set_rdbuf(buff);
-	file.seekg(pos);
 
+WError WBone::Load(std::istream& inputStream) {
 	WVector3 posULR[4];
-	file.read((char*)&m_worldM, sizeofBoneNoPtrs);
-	file.read((char*)posULR, sizeof(WVector3) * 4);
+	inputStream.read((char*)&m_worldM, sizeofBoneNoPtrs);
+	inputStream.read((char*)posULR, sizeof(WVector3) * 4);
 	SetPosition(posULR[0]);
 	SetULRVectors(posULR[1], posULR[2], posULR[3]);
 	unsigned int numChildren = 0;
-	file.read((char*)&numChildren, 4);
+	inputStream.read((char*)&numChildren, 4);
 	for (unsigned int i = 0; i < numChildren; i++) {
 		WBone* child = new WBone();
 		child->SetParent(this);
 		AddChild(child);
-		child->LoadFromWA(buff, file.tellg());
+		child->Load(inputStream);
 	}
 
 	return WError(W_SUCCEEDED);
 }
-WError WBone::SaveToWA(basic_filebuf<char>* buff, unsigned int pos) const {
-	std::fstream file;
-	if (!buff)
-		return WError(W_FILENOTFOUND);
-	file.set_rdbuf(buff);
-	file.seekp(pos);
 
+WError WBone::Save(std::ostream& outputStream) const {
 	WVector3 posULR[4] = { GetPosition(), GetUVector(), GetLVector(), GetRVector() };
-	file.write((char*)&m_worldM, sizeofBoneNoPtrs);
-	file.write((char*)posULR, sizeof(WVector3) * 4);
+	outputStream.write((char*)&m_worldM, sizeofBoneNoPtrs);
+	outputStream.write((char*)posULR, sizeof(WVector3) * 4);
 	unsigned int numChildren = GetNumChildren();
-	file.write((char*)&numChildren, 4);
+	outputStream.write((char*)&numChildren, 4);
 	for (unsigned int i = 0; i < numChildren; i++)
-		m_children[i]->SaveToWA(buff, file.tellp());
+		m_children[i]->Save(outputStream);
 
 	return WError(W_SUCCEEDED);
 }
@@ -211,11 +222,13 @@ WSkeleton::WSkeleton(Wasabi* const app, unsigned int ID) : WAnimation(app, ID) {
 	m_bindingScale = WVector3(1.0f, 1.0f, 1.0f);
 	m_parentBonePos = WVector3(0, 0, 0);
 }
+
 WSkeleton::~WSkeleton() {
 	for (unsigned int i = 0; i < m_bindings.size(); i++)
 		m_bindings[i].obj->RemoveBinding();
 	W_SAFE_REMOVEREF(m_boneTex);
 }
+
 WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 	if (!WAnimation::m_bFramesOwner)
 		return WError(W_ERRORUNK);
@@ -259,6 +272,7 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 
 	return err;
 }
+
 WError WSkeleton::DeleteKeyFrame(unsigned int frame) {
 	if (frame >= WAnimation::m_frames.size())
 		return WError(W_INVALIDPARAM);
@@ -269,15 +283,18 @@ WError WSkeleton::DeleteKeyFrame(unsigned int frame) {
 
 	return WError(W_SUCCEEDED);
 }
+
 WBone* WSkeleton::GetKeyFrame(unsigned int frame) {
 	if (frame >= WAnimation::m_frames.size())
 		return nullptr;
 
 	return ((_WSkeletalFrame*)WAnimation::m_frames[frame])->baseBone;
 }
+
 void WSkeleton::AddSubAnimation() {
 	WAnimation::m_subAnimations.push_back(new W_SKELETAL_SUB_ANIMATION);
 }
+
 void WSkeleton::SetSubAnimationBaseBone(unsigned int subAnimation, unsigned int boneIndex, unsigned int parentSubAnimation) {
 	if (!WAnimation::m_frames.size())
 		return;
@@ -305,6 +322,7 @@ void WSkeleton::SetSubAnimationBaseBone(unsigned int subAnimation, unsigned int 
 	} else // -1 means all bones are involved, so clear the indices to specify that
 		((W_SKELETAL_SUB_ANIMATION*)WAnimation::m_subAnimations[subAnimation])->boneIndices.clear();
 }
+
 void WSkeleton::Update(float fDeltaTime) {
 	WAnimation::Update(fDeltaTime);
 
@@ -449,9 +467,11 @@ void WSkeleton::Update(float fDeltaTime) {
 		m_boneTex->UnmapPixels();
 	}
 }
+
 WImage* WSkeleton::GetTexture() const {
 	return m_boneTex;
 }
+
 WBone* WSkeleton::GetBone(unsigned int frame, unsigned int index) const {
 	if (frame < WAnimation::m_frames.size()) {
 		for (unsigned int i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[frame])->boneV.size(); i++)
@@ -460,6 +480,7 @@ WBone* WSkeleton::GetBone(unsigned int frame, unsigned int index) const {
 	}
 	return nullptr;
 }
+
 WBone* WSkeleton::GetBone(unsigned int frame, std::string name) const {
 	if (frame < WAnimation::m_frames.size()) {
 		for (unsigned int i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[frame])->boneV.size(); i++) {
@@ -471,27 +492,33 @@ WBone* WSkeleton::GetBone(unsigned int frame, std::string name) const {
 	}
 	return nullptr;
 }
+
 void WSkeleton::Scale(float scale) {
 	for (int i = 0; i < WAnimation::m_frames.size(); i++)
 		((_WSkeletalFrame*)WAnimation::m_frames[i])->baseBone->Scale(scale, scale, scale);
 }
+
 void WSkeleton::Scale(float x, float y, float z) {
 	for (int i = 0; i < WAnimation::m_frames.size(); i++)
 		((_WSkeletalFrame*)WAnimation::m_frames[i])->baseBone->Scale(x, y, z);
 }
+
 void WSkeleton::Scale(WVector3 scale) {
 	for (int i = 0; i < WAnimation::m_frames.size(); i++)
 		((_WSkeletalFrame*)WAnimation::m_frames[i])->baseBone->Scale(scale);
 }
+
 void WSkeleton::BindToBone(WOrientation* obj, unsigned int boneID) {
 	m_bindings.push_back(WSkeleton::BONEBIND(obj, boneID));
 }
+
 void WSkeleton::UnbindFromBone(WOrientation* obj, unsigned int boneID) {
 	for (unsigned int i = 0; i < m_bindings.size(); i++)
 		if (m_bindings[i].obj == obj && m_bindings[i].boneID == boneID)
 			m_bindings.erase(m_bindings.begin() + i);
 	obj->RemoveBinding();
 }
+
 void WSkeleton::UnbindFromBone(unsigned int boneID) {
 	for (unsigned int i = 0; i < m_bindings.size(); i++)
 		if (m_bindings[i].boneID == boneID) {
@@ -499,188 +526,23 @@ void WSkeleton::UnbindFromBone(unsigned int boneID) {
 			m_bindings.erase(m_bindings.begin() + i);
 		}
 }
+
 void WSkeleton::SetBindingScale(float scale) {
 	m_bindingScale = WVector3(scale, scale, scale);
 }
+
 void WSkeleton::SetBindingScale(float x, float y, float z) {
 	m_bindingScale = WVector3(x, y, z);
 }
+
 void WSkeleton::SetBindingScale(WVector3 scale) {
 	m_bindingScale = scale;
 }
+
 WVector3 WSkeleton::GetCurrentParentBonePosition() {
 	return m_parentBonePos;
 }
-WError WSkeleton::LoadFromWA(std::string Filename) {
-	//delete the bone texture and any existing frames
-	W_SAFE_REMOVEREF(m_boneTex);
-	if (WAnimation::m_bFramesOwner)
-		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
-			W_SAFE_DELETE(WAnimation::m_frames[i]);
-	m_frames.clear();
-	m_totalTime = 0.0f;
-	//delete all subanimations - start a fresh object with only 1
-	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
-		delete m_subAnimations[i];
-	m_subAnimations.clear();
-	//add that new structure as a subanimation. casting these should be safe now
-	m_subAnimations.push_back(new W_SKELETAL_SUB_ANIMATION());
-	WAnimation::m_bFramesOwner = true;
 
-	//open the file for reading
-	std::fstream file;
-	file.open(Filename, ios::in | ios::binary | ios::ate);
-	if (!file.is_open())
-		return WError(W_FILENOTFOUND);
-
-	unsigned int fileSize = file.tellg();
-	file.seekg(0, ios::beg);
-
-	WError ret = WError(W_SUCCEEDED);
-
-	//Format: <NUMFRAMES><FRAME 1><FRAME 2>...<FRAME NUMFRAMES-1>
-	//Format: where <FRAME n>: <fTime><BASICBONE:sizeofBoneNoPtrs><NUMCHILDREN><BASICBONE><NUMCHILDREN> (recursize)
-	unsigned int numFrames = 0;
-	file.read((char*)&numFrames, 4);
-	for (unsigned int i = 0; i < numFrames; i++) {
-		float fTime = 0.0f;
-		file.read((char*)&fTime, 4);
-
-		WBone* baseBone = new WBone();
-		baseBone->LoadFromWA(file.rdbuf(), file.tellg());
-
-		ret = CreateKeyFrame(baseBone, fTime);
-		delete baseBone;
-
-		if (!ret) {
-			file.close();
-			break;
-		}
-	}
-
-	file.close();
-
-	return ret;
-}
-WError WSkeleton::SaveToWA(std::string Filename) const {
-	if (Valid()) //only attempt to save if the skeleton if its valid
-	{
-		//open the file for writing
-		std::fstream file;
-		file.open(Filename, ios::out | ios::binary);
-		if (!file.is_open())
-			return WError(W_FILENOTFOUND);
-
-		//Format: <NUMFRAMES><FRAME 1><FRAME 2>...<FRAME NUMFRAMES-1>
-		//Format: where <FRAME n>: <fTime><BASICBONE:sizeofBoneNoPtrs><NUMCHILDREN><BASICBONE><NUMCHILDREN> (recursize)
-		unsigned int numFrames = WAnimation::m_frames.size();
-		file.write((char*)&numFrames, 4);
-		for (unsigned int i = 0; i < numFrames; i++) {
-			_WSkeletalFrame* curFrame = (_WSkeletalFrame*)WAnimation::m_frames[i];
-			float fTime = curFrame->fTime;
-			file.write((char*)&fTime, 4);
-			//update all the matrices
-			vector<WBone*> boneStack;
-			boneStack.push_back(curFrame->baseBone);
-			while (boneStack.size()) {
-				WBone* b = boneStack[boneStack.size() - 1];
-				boneStack.pop_back();
-				b->UpdateLocals();
-				for (unsigned int i = 0; i < b->GetNumChildren(); i++)
-					boneStack.push_back(b->GetChild(i));
-			}
-			curFrame->baseBone->SaveToWA(file.rdbuf(), file.tellp());
-		}
-
-		//close the file
-		file.close();
-	} else
-		return WError(W_NOTVALID);
-
-	return WError(W_SUCCEEDED);
-}
-WError WSkeleton::SaveToWA(basic_filebuf<char>* buff, unsigned int pos) const {
-	if (Valid()) //only attempt to save if the mesh is valid and is not dynamic
-	{
-		//use the given stream
-		std::fstream file;
-		if (!buff)
-			return WError(W_INVALIDPARAM);
-		file.set_rdbuf(buff);
-		file.seekp(pos);
-
-		//Format: <NUMFRAMES><FRAME 1><FRAME 2>...<FRAME NUMFRAMES-1>
-		//Format: where <FRAME n>: <fTime><BASICBONE:sizeofBoneNoPtrs><NUMCHILDREN><BASICBONE><NUMCHILDREN> (recursize)
-		unsigned int numFrames = WAnimation::m_frames.size();
-		file.write((char*)&numFrames, 4);
-		for (unsigned int i = 0; i < numFrames; i++) {
-			_WSkeletalFrame* curFrame = (_WSkeletalFrame*)WAnimation::m_frames[i];
-			float fTime = curFrame->fTime;
-			file.write((char*)&fTime, 4);
-			//update all the matrices
-			vector<WBone*> boneStack;
-			boneStack.push_back(curFrame->baseBone);
-			while (boneStack.size()) {
-				WBone* b = boneStack[boneStack.size() - 1];
-				boneStack.pop_back();
-				b->UpdateLocals();
-				for (unsigned int i = 0; i < b->GetNumChildren(); i++)
-					boneStack.push_back(b->GetChild(i));
-			}
-			curFrame->baseBone->SaveToWA(buff, file.tellp());
-		}
-	} else
-		return WError(W_NOTVALID);
-
-	return WError(W_SUCCEEDED);
-}
-WError WSkeleton::LoadFromWA(basic_filebuf<char>* buff, unsigned int pos) {
-	//delete the bone texture and any existing frames
-	W_SAFE_REMOVEREF(m_boneTex);
-	if (WAnimation::m_bFramesOwner)
-		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
-			W_SAFE_DELETE(WAnimation::m_frames[i]);
-	m_frames.clear();
-	m_totalTime = 0.0f;
-	//delete all subanimations - start a fresh object with only 1
-	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
-		delete m_subAnimations[i];
-	m_subAnimations.clear();
-	//add that new structure as a subanimation. casting these should be safe now
-	m_subAnimations.push_back(new W_SKELETAL_SUB_ANIMATION());
-	WAnimation::m_bFramesOwner = true;
-
-	//use the reading stream
-	std::fstream file;
-	if (!buff)
-		return WError(W_INVALIDPARAM);
-	file.set_rdbuf(buff);
-	file.seekg(pos);
-
-	WError ret = WError(W_SUCCEEDED);
-
-	//Format: <NUMFRAMES><FRAME 1><FRAME 2>...<FRAME NUMFRAMES-1>
-	//Format: where <FRAME n>: <fTime><BASICBONE:sizeofBoneNoPtrs><NUMCHILDREN><BASICBONE><NUMCHILDREN> (recursize)
-	unsigned int numFrames = 0;
-	file.read((char*)&numFrames, 4);
-	for (unsigned int i = 0; i < numFrames; i++) {
-		float fTime = 0.0f;
-		file.read((char*)&fTime, 4);
-
-		WBone* baseBone = new WBone();
-		baseBone->LoadFromWA(buff, file.tellp());
-
-		ret = CreateKeyFrame(baseBone, fTime);
-		delete baseBone;
-
-		if (!ret) {
-			file.close();
-			break;
-		}
-	}
-
-	return ret;
-}
 WError	WSkeleton::CopyFrom(const WAnimation* const from) {
 	if (!from)
 		return WError(W_INVALIDPARAM);
@@ -713,6 +575,7 @@ WError	WSkeleton::CopyFrom(const WAnimation* const from) {
 
 	return WError(W_SUCCEEDED);
 }
+
 WError WSkeleton::UseAnimationFrames(const WAnimation* const anim) {
 	if (!anim)
 		return WError(W_INVALIDPARAM);
@@ -746,6 +609,77 @@ WError WSkeleton::UseAnimationFrames(const WAnimation* const anim) {
 	m_app->engineParams["numGeneratedMips"] = (void*)oldMips;
 	return err;
 }
+
 bool WSkeleton::Valid() const {
 	return WAnimation::m_frames.size() && m_boneTex;
+}
+
+WError WSkeleton::SaveToStream(WFile* file, std::ostream& outputStream) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	//Format: <NUMFRAMES><FRAME 1><FRAME 2>...<FRAME NUMFRAMES-1>
+	//Format: where <FRAME n>: <fTime><BASICBONE:sizeofBoneNoPtrs><NUMCHILDREN><BASICBONE><NUMCHILDREN> (recursize)
+	unsigned int numFrames = WAnimation::m_frames.size();
+	outputStream.write((char*)&numFrames, 4);
+	for (unsigned int i = 0; i < numFrames; i++) {
+		_WSkeletalFrame* curFrame = (_WSkeletalFrame*)WAnimation::m_frames[i];
+		float fTime = curFrame->fTime;
+		outputStream.write((char*)&fTime, 4);
+		//update all the matrices
+		vector<WBone*> boneStack;
+		boneStack.push_back(curFrame->baseBone);
+		while (boneStack.size()) {
+			WBone* b = boneStack[boneStack.size() - 1];
+			boneStack.pop_back();
+			b->UpdateLocals();
+			for (unsigned int i = 0; i < b->GetNumChildren(); i++)
+				boneStack.push_back(b->GetChild(i));
+		}
+		WError err = curFrame->baseBone->Save(outputStream);
+		if (!err)
+			return err;
+	}
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WSkeleton::LoadFromStream(WFile* file, std::istream& inputStream) {
+	//delete the bone texture and any existing frames
+	W_SAFE_REMOVEREF(m_boneTex);
+	if (WAnimation::m_bFramesOwner)
+		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
+			W_SAFE_DELETE(WAnimation::m_frames[i]);
+	m_frames.clear();
+	m_totalTime = 0.0f;
+	//delete all subanimations - start a fresh object with only 1
+	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
+		delete m_subAnimations[i];
+	m_subAnimations.clear();
+	//add that new structure as a subanimation. casting these should be safe now
+	m_subAnimations.push_back(new W_SKELETAL_SUB_ANIMATION());
+	WAnimation::m_bFramesOwner = true;
+
+	WError ret = WError(W_SUCCEEDED);
+
+	//Format: <NUMFRAMES><FRAME 1><FRAME 2>...<FRAME NUMFRAMES-1>
+	//Format: where <FRAME n>: <fTime><BASICBONE:sizeofBoneNoPtrs><NUMCHILDREN><BASICBONE><NUMCHILDREN> (recursize)
+	unsigned int numFrames = 0;
+	inputStream.read((char*)&numFrames, 4);
+	for (unsigned int i = 0; i < numFrames; i++) {
+		float fTime = 0.0f;
+		inputStream.read((char*)&fTime, 4);
+
+		WBone* baseBone = new WBone();
+		baseBone->Load(inputStream);
+
+		ret = CreateKeyFrame(baseBone, fTime);
+		delete baseBone;
+
+		if (!ret) {
+			break;
+		}
+	}
+
+	return ret;
 }
