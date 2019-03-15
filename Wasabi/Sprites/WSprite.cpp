@@ -30,7 +30,7 @@ class SpriteVS : public WShader {
 public:
 	SpriteVS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // position
@@ -49,7 +49,7 @@ public:
 			"	outUV = inUV;\n"
 			"	gl_Position = vec4(inPos.xy, 0.0, 1.0);\n"
 			"}\n"
-		);
+		, bSaveData);
 	}
 };
 
@@ -57,7 +57,7 @@ class SpritePS : public WShader {
 public:
 	SpritePS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0,{
@@ -81,7 +81,7 @@ public:
 			"	vec4 c = texture(sampler, inUV);\n"
 			"	outFragColor = vec4(c.rgb, c.a * ubo.alpha);\n"
 			"}\n"
-		);
+		, bSaveData);
 	}
 };
 

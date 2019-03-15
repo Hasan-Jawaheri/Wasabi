@@ -24,7 +24,7 @@
  * material, and thus object rendering requires a material (See
  * WObject::SetMaterial()).
  */
-class WMaterial : public WBase {
+class WMaterial : public WBase, public WFileAsset {
 	/**
 	 * Returns "Material" string.
 	 * @return Returns "Material" string
@@ -204,6 +204,9 @@ public:
 	 */
 	virtual bool Valid() const;
 
+	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+
 private:
 	/** The Vulkan descriptor pool used for the descriptor set */
 	VkDescriptorPool m_descriptorPool;
@@ -214,8 +217,6 @@ private:
 	vector<VkWriteDescriptorSet> m_writeDescriptorSets;
 
 	struct UNIFORM_BUFFER_INFO {
-		/** Uniform buffer handle */
-		VkBuffer buffer;
 		/** Memory backing buffer */
 		VkDeviceMemory memory;
 		/** Buffer descriptor information */

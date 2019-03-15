@@ -68,7 +68,7 @@ struct W_SUB_ANIMATION {
  * attached to an object. This base class is responsible for maintaining
  * subanimations and managing their playing and looping.
  */
-class WAnimation : public WBase {
+class WAnimation : public WBase, public WFileAsset {
 	/**
 	 * Returns "Animation" string.
 	 * @return Returns "Animation" string
@@ -207,42 +207,6 @@ public:
 	float GetTime(unsigned int subAnimation = 0) const;
 
 	/**
-	 * Loads an animation from a .WA file. This function is specific to the
-	 * implementation.
-	 * @param  Filename Filename to load
-	 * @return          Error code, see WError.h
-	 */
-	virtual WError LoadFromWA(std::string Filename) = 0;
-
-	/**
-	 * Loads an animation from a file stream. This function is specific to the
-	 * implementation.
-	 * @param  buff a pointer to a basic_filebuf object to read from
-	 * @param  pos  position into the buffer buff
-	 * @return          Error code, see WError.h
-	 */
-	virtual WError LoadFromWA(basic_filebuf<char>* buff = nullptr,
-							  unsigned int pos = 0) = 0;
-
-	/**
-	 * Saves an animation to a file stream. This function is specific to the
-	 * implementation.
-	 * @param  buff a pointer to a basic_filebuf object to read from
-	 * @param  pos  position into the buffer buff
-	 * @return          Error code, see WError.h
-	 */
-	virtual WError SaveToWA(basic_filebuf<char>* buff = nullptr,
-							unsigned int pos = 0) const = 0;
-
-	/**
-	 * Saves an animation to a .WA file. This function is specific to the
-	 * implementation.
-	 * @param  Filename Filename to load
-	 * @return          Error code, see WError.h
-	 */
-	virtual WError SaveToWA(std::string Filename) const = 0;
-
-	/**
 	 * Copies another WAnimation. This function is specific to the
 	 * implementation.
 	 * @param  from Animation to copy from
@@ -258,6 +222,9 @@ public:
 	 * @return      Error code, see WError.h
 	 */
 	virtual WError UseAnimationFrames(const WAnimation* const anim) = 0;
+
+	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream) = 0;
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream) = 0;
 
 protected:
 	/**

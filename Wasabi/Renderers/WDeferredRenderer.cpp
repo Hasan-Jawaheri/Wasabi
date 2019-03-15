@@ -18,7 +18,7 @@ class DeferredRendererVS : public WShader {
 public:
 	DeferredRendererVS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0,{
@@ -46,7 +46,7 @@ public:
 		})};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/vertex_shader.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -54,14 +54,14 @@ class DeferredRendererPS : public WShader {
 public:
 	DeferredRendererPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 3),
 		};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/pixel_shader.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -85,7 +85,7 @@ public:
 		};
 	}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = GetBoundResources();
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
@@ -93,7 +93,7 @@ public:
 		})};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/spot_light_vs.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -101,7 +101,7 @@ class SpotLightPS : public WShader {
 public:
 	SpotLightPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
@@ -114,7 +114,7 @@ public:
 		};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/spot_light_ps.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -136,7 +136,7 @@ public:
 		};
 	}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = GetBoundResources();
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
@@ -144,7 +144,7 @@ public:
 		}) };
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/point_light_vs.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -152,7 +152,7 @@ class PointLightPS : public WShader {
 public:
 	PointLightPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
@@ -165,7 +165,7 @@ public:
 		};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/point_light_ps.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -173,7 +173,7 @@ class DirectionalLightPS : public WShader {
 public:
 	DirectionalLightPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
@@ -195,7 +195,7 @@ public:
 		};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/directional_light_ps.glsl"
-		);
+		, bSaveData);
 	}
 };
 
@@ -203,7 +203,7 @@ class SceneCompositionPS : public WShader {
 public:
 	SceneCompositionPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 0),
@@ -214,7 +214,7 @@ public:
 		};
 		LoadCodeGLSL(
 			#include "Shaders/Deferred/scene_composition_ps.glsl"
-		);
+		, bSaveData);
 	}
 };
 

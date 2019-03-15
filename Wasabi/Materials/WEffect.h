@@ -82,6 +82,7 @@ enum W_VERTEX_INPUT_RATE {
  * Description of a shader variable in a UBO or vertex attribute.
  */
 typedef struct W_SHADER_VARIABLE_INFO {
+	W_SHADER_VARIABLE_INFO() {}
 	W_SHADER_VARIABLE_INFO(
 		W_SHADER_VARIABLE_TYPE _type,
 		std::string _name = ""
@@ -159,6 +160,7 @@ typedef struct W_SHADER_VARIABLE_INFO {
  * UBO.
  */
 typedef struct W_BOUND_RESOURCE {
+	W_BOUND_RESOURCE() {}
 	W_BOUND_RESOURCE(
 		W_SHADER_BOUND_RESOURCE_TYPE t,
 		unsigned int index,
@@ -279,27 +281,27 @@ typedef struct W_SHADER_DESC {
  * 	SimpleVS(class Wasabi* const app) : WShader(app) {}
  *
  * 	// We need to implement Load(), which loads the shader.
- * 	virtual void Load() {
+ * 	virtual void Load(bool bSaveData = false) {
  * 		m_desc.type = W_VERTEX_SHADER; // Creating a vertex shader
  * 		m_desc.bound_resources = {
  * 			// We have 1 UBO, bound to "location = 0" (in the shader code below)
  * 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
  * 				// projection matrix
- * 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"),
+ * 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gProjection"),
  * 				// world matrix
- * 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gWorld"),
+ * 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gWorld"),
  * 				// view matrix
- * 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"),
+ * 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gView"),
  * 			}),
  * 		};
  * 		// We have 1 per-vertex input layout
  * 		// This layout corresponds to the layout of vertices in WDefaultVertex
  * 		// which WGeometry uses by default.
  * 		m_desc.input_layouts = {W_INPUT_LAYOUT({
- * 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
- * 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // tangent
- * 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // normal
- * 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
+ * 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
+ * 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
+ * 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
+ * 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
  * 		})};
  * 		LoadCodeGLSL(
  * 			"#version 450\n"
@@ -327,7 +329,7 @@ typedef struct W_SHADER_DESC {
  * 			"               ubo.modelMatrix * \n"
  * 			"               vec4(outWorldPos, 1.0);\n"
  * 			"}\n"
- * 		);
+ * 		, bSaveData);
  * 	}
  * };
  * @endcode
@@ -338,7 +340,7 @@ typedef struct W_SHADER_DESC {
  * public:
  * 	SimplePS(class Wasabi* const app) : WShader(app) {}
  * 
- * 	virtual void Load() {
+ * 	virtual void Load(bool bSaveData = false) {
  * 		m_desc.type = W_FRAGMENT_SHADER; // Fragment (or pixel) shader
  * 		m_desc.bound_resources = {}; // no bound resources
  * 		LoadCodeGLSL(
@@ -354,7 +356,7 @@ typedef struct W_SHADER_DESC {
  * 			"void main() {\n"
  * 			"		outFragColor = vec4(inUV.x, inUV.y, 0, 1);\n"
  * 			"}\n"
- * 		);
+ * 		, bSaveData);
  * 	}
  * };
  * @endcode
@@ -373,7 +375,7 @@ typedef struct W_SHADER_DESC {
  * ps->RemoveReference();
  * @endcode
  */
-class WShader : public WBase {
+class WShader : public WBase, public WFileAsset {
 	friend class WEffect;
 	friend class WMaterial;
 
@@ -382,6 +384,10 @@ class WShader : public WBase {
 	 * @return Returns "Shader" string
 	 */
 	virtual std::string GetTypeName() const;
+
+	char* m_code;
+	int m_codeLen;
+	bool m_isSPIRV;
 
 protected:
 	/** Shader description */
@@ -395,28 +401,28 @@ protected:
 	 * @param code Address of the SPIR-V code in memory
 	 * @param len  Length of the code, in bytes
 	 */
-	void LoadCodeSPIRV(const char* const code, int len);
+	void LoadCodeSPIRV(const char* const code, int len, bool bSaveData = false);
 
 	/**
 	 * Loads GLSL shader code from a string. Loaded code will be compiled into
 	 * m_module.
 	 * @param code String containing GLSL code
 	 */
-	void LoadCodeGLSL(std::string code);
+	void LoadCodeGLSL(std::string code, bool bSaveData = false);
 
 	/**
 	 * Loads SPIR-V formatted shader code from a file. Loaded code will be
 	 * compiled into m_module.
 	 * @param filename Name of the file to load the code from
 	 */
-	void LoadCodeSPIRVFromFile(std::string filename);
+	void LoadCodeSPIRVFromFile(std::string filename, bool bSaveData = false);
 
 	/**
 	 * Loads GLSL shader code from file. Loaded code will be compiled into
 	 * m_module.
 	 * @param filename Name of the file to load the code from
 	 */
-	void LoadCodeGLSLFromFile(std::string filename);
+	void LoadCodeGLSLFromFile(std::string filename, bool bSaveData = false);
 
 public:
 	WShader(class Wasabi* const app, unsigned int ID = 0);
@@ -427,8 +433,10 @@ public:
 	 * child class. The implemented function must fill in m_module and m_desc
 	 * protected members to fully define the shader. See WShader for example
 	 * usage.
+	 * @param bSaveData  Whether or not to save the code data to be able to write
+	 *                   it to a file later
 	 */
-	virtual void Load() = 0;
+	virtual void Load(bool bSaveData = false) {}
 
 	/**
 	 * Checks the validity of the shader. A shader is valid if m_module is
@@ -436,6 +444,9 @@ public:
 	 * @return true if the shader is valid, false otherwise
 	 */
 	virtual bool Valid() const;
+
+	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
 };
 
 /**
@@ -476,7 +487,7 @@ public:
  * ps->RemoveReference();
  * @endcode
  */
-class WEffect : public WBase {
+class WEffect : public WBase, public WFileAsset {
 	friend class WMaterial;
 
 	/**
@@ -600,6 +611,9 @@ public:
 	 * @return true if the effect is valid, false otherwise
 	 */
 	virtual bool Valid() const;
+
+	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
 
 private:
 	/** List of pipelines created for this effect */
