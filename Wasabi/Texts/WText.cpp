@@ -38,9 +38,9 @@ public:
 	virtual void Load() {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // position
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 2), // UV
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // color
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // position
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
 		})};
 		LoadCodeGLSL(
 			"#version 450\n"

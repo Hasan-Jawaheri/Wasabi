@@ -41,6 +41,16 @@ enum W_SHADER_VARIABLE_TYPE {
 	W_TYPE_UINT = 2,
 	/** A half float */
 	W_TYPE_HALF = 3,
+	/** A struct */
+	W_TYPE_STRUCT = 4,
+	/** 2d vector */
+	W_TYPE_VEC_2 = 5,
+	/** 3d vector */
+	W_TYPE_VEC_3 = 6,
+	/** 4d vector */
+	W_TYPE_VEC_4 = 7,
+	/** 4x4 matrix */
+	W_TYPE_MAT4X4 = 8,
 };
 
 /**
@@ -74,7 +84,18 @@ enum W_VERTEX_INPUT_RATE {
 typedef struct W_SHADER_VARIABLE_INFO {
 	W_SHADER_VARIABLE_INFO(
 		W_SHADER_VARIABLE_TYPE _type,
+		std::string _name = ""
+	);
+	W_SHADER_VARIABLE_INFO(
+		W_SHADER_VARIABLE_TYPE _type,
 		int _num_elems,
+		std::string _name = ""
+	);
+	W_SHADER_VARIABLE_INFO(
+		W_SHADER_VARIABLE_TYPE _type,
+		int _num_elems,
+		int _struct_size,
+		int _struct_largest_base_alignment,
 		std::string _name = ""
 	);
 
@@ -82,6 +103,16 @@ typedef struct W_SHADER_VARIABLE_INFO {
 	W_SHADER_VARIABLE_TYPE type;
 	/** Number of elements in the variable (vec2 has 2 elements, etc...) */
 	int num_elems;
+	/** Valid when type == W_TYPE_STRUCT, size of the struct. Make sure to
+	 *  pad the struct such that struct_size % struct_largest_base_alignment
+	 *  is equal to zero.
+	 **/
+	int struct_size;
+	/** Valid when type == W_TYPE_STRUCT, largest alignment of a struct member
+	 * If the struct has a 4D vector or a matrix, use 16. Otherwise if it has
+	 * a 3D vector, use 12, etc... (if the largest member is a half, use 2).
+	 */
+	int struct_largest_base_alignment;
 	/** Given name for the variable, which is used by materials to set its
 	 *  value */
 	std::string name;

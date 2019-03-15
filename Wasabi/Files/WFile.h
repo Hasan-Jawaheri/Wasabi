@@ -78,7 +78,7 @@ private:
 	std::vector<FILE_HEADER> m_headers;
 
 	void ReleaseAsset(uint assetId);
-	WError LoadHeaders();
+	WError LoadHeaders(std::streamsize maxFileSize);
 	void CreateNewHeader();
 	void WriteAssetToHeader(WFile::FILE_ASSET asset);
 };

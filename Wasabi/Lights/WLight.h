@@ -37,17 +37,16 @@ enum W_LIGHT_TYPE {
  * 	 specified by SetEmittingAngle(). This is suitable for car headlights,
  * 	 torch spotlight, etc...
  */
-class WLight : public WBase, public WOrientation {
+class WLight : public WBase, public WOrientation, public WFileAsset {
 	/**
 	 * Returns "Light" string.
 	 * @return Returns "Light" string
 	 */
 	virtual std::string GetTypeName() const;
 
-protected:
+public:
 	WLight(class Wasabi* const app, W_LIGHT_TYPE type, unsigned int ID = 0);
 
-public:
 	~WLight();
 
 	/**
@@ -150,6 +149,9 @@ public:
 	virtual bool Valid() const;
 
 	virtual void OnStateChange(STATE_CHANGE_TYPE type);
+
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
 
 private:
 	/** true if the light is hidden, false otherwise */
