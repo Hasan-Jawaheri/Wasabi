@@ -445,3 +445,43 @@ unsigned int WImage::GetPixelSize() const {
 	return m_numComponents * m_componentSize;
 
 }
+
+WError WImage::SaveToStream(WFile* file, std::ostream& outputStream) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	outputStream.write((char*)&m_width, sizeof(m_width));
+	outputStream.write((char*)&m_height, sizeof(m_height));
+	outputStream.write((char*)&m_numComponents, sizeof(m_numComponents));
+	outputStream.write((char*)&m_componentSize, sizeof(m_componentSize));
+	outputStream.write((char*)&m_format, sizeof(m_format));
+
+	void* pixels;
+	WError err = MapPixels(&pixels, true);
+	if (err) {
+		outputStream.write((char*)pixels, m_width * m_height * m_numComponents * m_componentSize);
+		UnmapPixels();
+	}
+
+	return err;
+}
+
+WError WImage::LoadFromStream(WFile* file, std::istream& inputStream) {
+	unsigned int width, height, numComponents, componentSize;
+	VkFormat format;
+
+	inputStream.read((char*)&width, sizeof(m_width));
+	inputStream.read((char*)&height, sizeof(m_height));
+	inputStream.read((char*)&numComponents, sizeof(m_numComponents));
+	inputStream.read((char*)&componentSize, sizeof(m_componentSize));
+	inputStream.read((char*)&format, sizeof(m_format));
+
+	unsigned int dataSize = width * height * numComponents * componentSize;
+	void* pixels = W_SAFE_ALLOC(dataSize);
+	if (!pixels)
+		return WError(W_OUTOFMEMORY);
+	inputStream.read((char*)pixels, dataSize);
+	WError err = CreateFromPixelsArray(pixels, width, height, false, numComponents, format, componentSize);
+	W_SAFE_FREE(pixels);
+	return err;
+}

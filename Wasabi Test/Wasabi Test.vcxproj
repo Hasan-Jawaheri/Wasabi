@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation\Animation.cpp" />
+    <ClCompile Include="Files\Files.cpp" />
     <ClCompile Include="Instancing\Instancing.cpp" />
     <ClCompile Include="Lights\Lights.cpp" />
     <ClCompile Include="Particles\Particles.cpp" />
@@ -162,6 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation\Animation.hpp" />
+    <ClInclude Include="Files\Files.hpp" />
     <ClInclude Include="Instancing\Instancing.hpp" />
     <ClInclude Include="Lights\Lights.hpp" />
     <ClInclude Include="Particles\Particles.hpp" />

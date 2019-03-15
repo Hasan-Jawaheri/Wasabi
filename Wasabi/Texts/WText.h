@@ -157,7 +157,7 @@ public:
 	 * @return         Width, in pixels, of the text if it was to render using
 	 *                 the specified parameters
 	 */
-	unsigned int GetTextWidth(std::string text, float fHeight, unsigned int fontID = -1);
+	float GetTextWidth(std::string text, float fHeight, unsigned int fontID = 0);
 
 protected:
 	/** Pointer to the Wasabi class */

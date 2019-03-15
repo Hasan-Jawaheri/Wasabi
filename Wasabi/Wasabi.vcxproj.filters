@@ -88,6 +88,9 @@
     <Filter Include="WindowAndInput\Android">
       <UniqueIdentifier>{79e76876-2e75-488e-ba23-80da1003df7e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Files">
+      <UniqueIdentifier>{8dfac54d-278a-425d-bc4a-9edec888ca1b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -188,6 +191,9 @@
     </ClCompile>
     <ClCompile Include="WindowAndInput\Windows\WWindowsWindowAndInputComponent.cpp">
       <Filter>WindowAndInput\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Files\WFile.cpp">
+      <Filter>Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -356,6 +362,9 @@
     </ClInclude>
     <ClInclude Include="WindowAndInput\Windows\WWindowsWindowAndInputComponent.h">
       <Filter>WindowAndInput\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Files\WFile.h">
+      <Filter>Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

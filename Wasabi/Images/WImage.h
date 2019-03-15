@@ -17,7 +17,7 @@
  * @ingroup engineclass
  * This class represents an image, or texture, used by Wasabi.
  */
-class WImage : public WBase {
+class WImage : public WBase, public WFileAsset {
 	/**
 	 * Returns "Image" string.
 	 * @return Returns "Image" string
@@ -222,6 +222,9 @@ public:
 	 * @return true if the image is valid, false otherwise
 	 */
 	virtual bool Valid() const;
+
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
 
 private:
 	/** A staging buffer used to create the image and map/unmap (if dynamic) */
