@@ -42,9 +42,6 @@ WError WFile::Open(std::string filename) {
 		if (!m_file.is_open())
 			return WError(W_FILENOTFOUND);
 	}
-	m_file.seekg(0, ios::end);
-	m_fileSize = m_file.tellg();
-	m_file.seekg(0);
 	m_maxId = 0;
 
 	// Read the headers
@@ -85,8 +82,9 @@ WError WFile::SaveAsset(WFileAsset* asset, uint* assetId) {
 	WError err = asset->SaveToStream(this, m_file);
 	std::streampos writtenSize = m_file.tellp() - start;
 
-	if (!err)
+	if (!err) {
 		return err;
+	}
 
 	WriteAssetToHeader(WFile::FILE_ASSET(start, writtenSize, newAssetId));
 
@@ -147,6 +145,8 @@ WError WFile::LoadHeaders() {
 		if (magic != FILE_MAGIC)
 			return WError(W_INVALIDFILEFORMAT);
 
+		m_fileSize = max(m_fileSize, header.dataStart + header.dataSize);
+
 		std::streamoff curDataOffset = header.dataStart;
 		FILE_ASSET curAsset(0, 0, 0);
 		while (curDataOffset < header.dataStart + header.dataSize) {
@@ -156,6 +156,7 @@ WError WFile::LoadHeaders() {
 				break;
 			header.assets.push_back(new FILE_ASSET(curAsset));
 			m_assetsMap.insert(std::pair<uint, FILE_ASSET*>(curAsset.id, header.assets[header.assets.size() - 1]));
+			m_fileSize = max(m_fileSize, curAsset.start + curAsset.size);
 			m_maxId = max(m_maxId, curAsset.id);
 		}
 
