@@ -7,19 +7,28 @@ void FilesDemo::Load() {
 	WImage* img = new WImage(m_app);
 	img->Load("Media/dummy.bmp", true);
 
+	WGeometry* geometry = new WGeometry(m_app);
+	geometry->CreateCube(1, true);
+
 	WFile file(m_app);
 	file.Open("WFile.WSBI");
 
-	uint assetId;
-	file.SaveAsset(img, &assetId);
+	uint imgId, geoId;
+	file.SaveAsset(img, &imgId);
+	file.SaveAsset(geometry, &geoId);
 	W_SAFE_REMOVEREF(img);
+	W_SAFE_REMOVEREF(geometry);
 
-	file.LoadAsset<WImage>(assetId, &img);
+	file.LoadAsset<WImage>(imgId, &img);
+	file.LoadAsset<WGeometry>(geoId, &geometry);
 
 	file.Close();
 	
 	WSprite* spr = new WSprite(m_app);
 	spr->SetImage(img);
+
+	WObject* obj = new WObject(m_app);
+	obj->SetGeometry(geometry);
 }
 
 void FilesDemo::Update(float fDeltaTime) {

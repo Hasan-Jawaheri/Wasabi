@@ -443,7 +443,6 @@ unsigned int WImage::GetComponentSize() const {
 
 unsigned int WImage::GetPixelSize() const {
 	return m_numComponents * m_componentSize;
-
 }
 
 WError WImage::SaveToStream(WFile* file, std::ostream& outputStream) {
