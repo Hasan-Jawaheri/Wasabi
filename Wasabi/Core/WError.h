@@ -63,6 +63,8 @@ enum W_ERROR {
 	W_NORENDERTARGET = 21,
 	/** Two shaders in the given effect use the same binding index for two different resources */
 	W_INVALIDREPEATEDBINDINGINDEX = 22,
+	/** File asset already loaded */
+	W_ALREADYLOADED = 23,
 };
 
 /**

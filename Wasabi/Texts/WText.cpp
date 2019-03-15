@@ -387,7 +387,7 @@ void WTextComponent::Render(WRenderTarget* rt) {
 	}
 }
 
-unsigned int WTextComponent::GetTextWidth(std::string text, float fHeight, unsigned int fontID) {
+float WTextComponent::GetTextWidth(std::string text, float fHeight, unsigned int fontID) {
 	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(fontID);
 	if (obj != m_fonts.end()) {
 		float fScale = fHeight / (float)obj->second.char_height;

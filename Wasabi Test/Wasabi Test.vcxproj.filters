@@ -29,6 +29,9 @@
     <ClCompile Include="Physics\Physics.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
+    <ClCompile Include="Files\Files.cpp">
+      <Filter>Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestSuite.hpp" />
@@ -59,6 +62,9 @@
     <ClInclude Include="Physics\Physics.hpp">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="Files\Files.hpp">
+      <Filter>Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Lights">
@@ -87,6 +93,9 @@
     </Filter>
     <Filter Include="Physics">
       <UniqueIdentifier>{1d852a4d-533c-40a6-90c3-ec4e126e996e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Files">
+      <UniqueIdentifier>{b819ca28-922d-4b07-832e-d0b4fd965ddf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

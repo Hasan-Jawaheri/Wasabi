@@ -41,6 +41,7 @@
 #include "WError.h"
 #include "WManager.h"
 #include "WBase.h"
+#include "../Files/WFile.h"
 #include "WOrientation.h"
 #include "WTimer.h"
 #include "WMath.h"

@@ -30,6 +30,7 @@
     <ClCompile Include="Core\WOrientation.cpp" />
     <ClCompile Include="Core\WTimer.cpp" />
     <ClCompile Include="Core\WUtilities.cpp" />
+    <ClCompile Include="Files\WFile.cpp" />
     <ClCompile Include="Geometries\WGeometry.cpp" />
     <ClCompile Include="Images\WImage.cpp" />
     <ClCompile Include="Images\WRenderTarget.cpp" />
@@ -67,6 +68,7 @@
     <ClInclude Include="Core\WOrientation.h" />
     <ClInclude Include="Core\WTimer.h" />
     <ClInclude Include="Core\WUtilities.h" />
+    <ClInclude Include="Files\WFile.h" />
     <ClInclude Include="Geometries\WGeometry.h" />
     <ClInclude Include="Images\WImage.h" />
     <ClInclude Include="Images\WRenderTarget.h" />
