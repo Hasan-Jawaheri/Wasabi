@@ -142,7 +142,7 @@ struct WDefaultVertex_Animation {
  * first buffer to render (with indices) and uses the second buffer (if
  * available) for animation data.
  */
-class WGeometry : public WBase {
+class WGeometry : public WBase, public WFileAsset {
 	/**
 	 * Returns "Geometry" string.
 	 * @return Returns "Geometry" string
@@ -408,30 +408,6 @@ public:
 	WError CreateAnimationData(void* animBuf);
 
 	/**
-	 * Load a geometry from a WGM file. The geometry in the WGM file may be of
-	 * a different format, in which case this function will try to fill in the
-	 * attributes that the two formats share, discarding the rest. If no normal
-	 * or tangent data are found in the file, but are available in this
-	 * geometry's description, the function will attempt to fill them in
-	 * automatically. The function will also attempt to load animation data, if
-	 * available. However, animation data will only be loaded if it matches
-	 * exactly with this geometry's animation vertex buffer structure.
-	 * @param  filename Name of the file to load
-	 * @param  bDynamic true if the geometry will require frequent
-	 *                  modifications, false otherwise
-	 * @return          Error code, see WError.h
-	 */
-	WError LoadFromWGM(std::string filename, bool bDynamic = false);
-
-	/**
-	 * Saves this geometry's data in a WGM file. The data will be saved in the
-	 * same format of this geometry. Animation data will also be stored.
-	 * @param  filename Name of the file
-	 * @return          Error code, see WError.h
-	 */
-	WError SaveToWGM(std::string filename);
-
-	/**
 	 * Load a geometry from an HXM file. The geometry in the HXM file may be of
 	 * a different format, in which case this function will try to fill in the
 	 * attributes that the two formats share, discarding the rest. If no normal
@@ -666,6 +642,9 @@ public:
 	 * @return true if the geometry is valid, false otherwise
 	 */
 	virtual bool Valid() const;
+
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
 
 private:
 	struct {

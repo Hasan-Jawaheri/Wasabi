@@ -942,161 +942,6 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 	return ret;
 }
 
-WError WGeometry::LoadFromWGM(std::string filename, bool bDynamic) {
-	std::fstream file;
-	file.open(filename, ios::in | ios::binary);
-	if (!file.is_open())
-		return WError(W_FILENOTFOUND);
-
-	vector<W_VERTEX_DESCRIPTION> from_descs;
-	char temp[256];
-	unsigned int num_vbs;
-	file.read((char*)&num_vbs, sizeof(unsigned int));
-	if (num_vbs == 0) {
-		file.close();
-		return WError(W_INVALIDFILEFORMAT);
-	}
-
-	from_descs.resize(num_vbs);
-	for (int d = 0; d < num_vbs; d++) {
-		W_VERTEX_DESCRIPTION desc;
-		unsigned int num_attributes;
-		file.read((char*)&num_attributes, sizeof(unsigned int));
-		desc.attributes.resize(num_attributes);
-		for (int i = 0; i < num_attributes; i++) {
-			file.read((char*)&desc.attributes[i].num_components, sizeof(unsigned char));
-			unsigned int namesize = desc.attributes[i].name.length();
-			if (namesize > 255)
-				namesize = 255;
-			file.read((char*)&namesize, sizeof(unsigned int));
-			file.read(temp, namesize);
-			temp[namesize] = '\0';
-			desc.attributes[i].name = temp;
-		}
-		from_descs[d] = desc;
-	}
-
-	unsigned int numV, numI;
-	file.read((char*)&numV, sizeof(unsigned int));
-	file.read((char*)&numI, sizeof(unsigned int));
-
-	void *vb, *ib;
-	vb = W_SAFE_ALLOC(numV * from_descs[0].GetSize());
-	ib = W_SAFE_ALLOC(numI * sizeof(uint));
-	if (!ib || !vb) {
-		W_SAFE_FREE(vb);
-		W_SAFE_FREE(ib);
-		return WError(W_OUTOFMEMORY);
-	}
-
-	file.read((char*)vb, numV * from_descs[0].GetSize());
-	file.read((char*)ib, numI * sizeof(uint));
-
-	WError ret;
-	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(0);
-	void* convertedVB;
-	if (my_desc.isEqualTo(from_descs[0]))
-		convertedVB = vb;
-	else
-		convertedVB = W_SAFE_ALLOC(numV * my_desc.GetSize());
-
-	if (!convertedVB) {
-		ret = WError(W_OUTOFMEMORY);
-		W_SAFE_FREE(vb);
-	}  else {
-		if (!my_desc.isEqualTo(from_descs[0])) {
-			ConvertVertices(vb, convertedVB, numV, from_descs[0], my_desc);
-			W_SAFE_FREE(vb);
-		}
-
-		bool bCalcTangents = false, bCalcNormals = false;
-		if (my_desc.GetOffset("normal") >= 0 && from_descs[0].GetOffset("normal") == -1)
-			bCalcNormals = true;
-		if (my_desc.GetOffset("tangent") >= 0 && from_descs[0].GetOffset("tangent") == -1)
-			bCalcTangents = true;
-
-		ret = CreateFromData(convertedVB, numV, ib, numI, bDynamic, bCalcNormals, bCalcTangents);
-
-		W_SAFE_FREE(convertedVB);
-	}
-	W_SAFE_FREE(ib);
-
-	if (num_vbs > 1 && ret && GetVertexBufferCount() > 1 && from_descs[1].GetSize() == GetVertexDescription(1).GetSize()) {
-		void *ab;
-		ab = W_SAFE_ALLOC(numV * from_descs[1].GetSize());
-		file.read((char*)ab, numV * from_descs[1].GetSize());
-		ret = CreateAnimationData(ab);
-		W_SAFE_FREE(ab);
-	}
-
-	file.close();
-
-	return ret;
-}
-
-WError WGeometry::SaveToWGM(std::string filename) {
-	if (!Valid())
-		return WError(W_NOTVALID);
-
-	std::fstream file;
-	file.open(filename, ios::out | ios::binary);
-	if (!file.is_open())
-		return WError(W_FILENOTFOUND);
-
-	void *vb, *ib, *ab = nullptr;
-	WError ret = MapVertexBuffer(&vb, true);
-	if (!ret) {
-		file.close();
-		return ret;
-	}
-	ret = MapIndexBuffer((uint**)&ib, true);
-	if (!ret) {
-		UnmapVertexBuffer();
-		file.close();
-		return ret;
-	}
-	if (m_animationbuf.buffer.buf) {
-		ret = MapAnimationBuffer(&ab, true);
-		if (!ret) {
-			UnmapVertexBuffer();
-			UnmapIndexBuffer();
-			file.close();
-			return ret;
-		}
-	}
-
-	unsigned int num_vbs = m_animationbuf.buffer.buf ? 2 : 1;
-	file.write((char*)&num_vbs, sizeof(unsigned int));
-	for (int d = 0; d < num_vbs; d++) {
-		W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(d);
-		unsigned int num_attributes = my_desc.attributes.size();
-		file.write((char*)&num_attributes, sizeof(unsigned int));
-		for (int i = 0; i < num_attributes; i++) {
-			file.write((char*)&my_desc.attributes[i].num_components, sizeof(unsigned char));
-			unsigned int namesize = my_desc.attributes[i].name.length();
-			file.write((char*)&namesize, sizeof(unsigned int));
-			file.write(my_desc.attributes[i].name.c_str(), namesize);
-		}
-	}
-
-	file.write((char*)&m_vertices.count, sizeof(unsigned int));
-	file.write((char*)&m_indices.count, sizeof(unsigned int));
-	file.write((char*)vb, m_vertices.count * GetVertexDescription(0).GetSize());
-	file.write((char*)ib, m_indices.count * sizeof(uint));
-	if (ab && num_vbs > 1) {
-		file.write((char*)ab, m_animationbuf.count * GetVertexDescription(1).GetSize());
-	}
-
-	UnmapVertexBuffer();
-	UnmapIndexBuffer();
-	if (m_animationbuf.buffer.buf)
-		UnmapAnimationBuffer();
-
-	file.close();
-
-	return WError(W_SUCCEEDED);
-}
-
 WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	W_VERTEX_DESCRIPTION hx_vtx_desc = W_VERTEX_DESCRIPTION({
 		W_ATTRIBUTE_POSITION,
@@ -1662,4 +1507,141 @@ unsigned int WGeometry::GetNumIndices() const {
 
 bool WGeometry::IsRigged() const {
 	return m_animationbuf.buffer.buf != VK_NULL_HANDLE;
+}
+
+WError WGeometry::SaveToStream(WFile* file, std::ostream& outputStream) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	void *vb, *ib, *ab = nullptr;
+	WError ret = MapVertexBuffer(&vb, true);
+	if (!ret)
+		return ret;
+
+	ret = MapIndexBuffer((uint**)&ib, true);
+	if (!ret) {
+		UnmapVertexBuffer();
+		return ret;
+	}
+
+	if (m_animationbuf.buffer.buf) {
+		ret = MapAnimationBuffer(&ab, true);
+		if (!ret) {
+			UnmapVertexBuffer();
+			UnmapIndexBuffer();
+			return ret;
+		}
+	}
+
+	unsigned int num_vbs = m_animationbuf.buffer.buf ? 2 : 1;
+	outputStream.write((char*)&num_vbs, sizeof(unsigned int));
+	for (int d = 0; d < num_vbs; d++) {
+		W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(d);
+		unsigned int num_attributes = my_desc.attributes.size();
+		outputStream.write((char*)&num_attributes, sizeof(unsigned int));
+		for (int i = 0; i < num_attributes; i++) {
+			outputStream.write((char*)&my_desc.attributes[i].num_components, sizeof(unsigned char));
+			unsigned int namesize = my_desc.attributes[i].name.length();
+			outputStream.write((char*)&namesize, sizeof(unsigned int));
+			outputStream.write(my_desc.attributes[i].name.c_str(), namesize);
+		}
+	}
+
+	outputStream.write((char*)&m_vertices.count, sizeof(unsigned int));
+	outputStream.write((char*)&m_indices.count, sizeof(unsigned int));
+	outputStream.write((char*)vb, m_vertices.count * GetVertexDescription(0).GetSize());
+	outputStream.write((char*)ib, m_indices.count * sizeof(uint));
+	if (ab && num_vbs > 1) {
+		outputStream.write((char*)ab, m_animationbuf.count * GetVertexDescription(1).GetSize());
+	}
+
+	UnmapVertexBuffer();
+	UnmapIndexBuffer();
+	if (m_animationbuf.buffer.buf)
+		UnmapAnimationBuffer();
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream) {
+	vector<W_VERTEX_DESCRIPTION> from_descs;
+	char temp[256];
+	unsigned int num_vbs;
+	inputStream.read((char*)&num_vbs, sizeof(unsigned int));
+	if (num_vbs == 0)
+		return WError(W_INVALIDFILEFORMAT);
+
+	from_descs.resize(num_vbs);
+	for (int d = 0; d < num_vbs; d++) {
+		W_VERTEX_DESCRIPTION desc;
+		unsigned int num_attributes;
+		inputStream.read((char*)&num_attributes, sizeof(unsigned int));
+		desc.attributes.resize(num_attributes);
+		for (int i = 0; i < num_attributes; i++) {
+			inputStream.read((char*)&desc.attributes[i].num_components, sizeof(unsigned char));
+			unsigned int namesize = desc.attributes[i].name.length();
+			if (namesize > 255)
+				namesize = 255;
+			inputStream.read((char*)&namesize, sizeof(unsigned int));
+			inputStream.read(temp, namesize);
+			temp[namesize] = '\0';
+			desc.attributes[i].name = temp;
+		}
+		from_descs[d] = desc;
+	}
+
+	unsigned int numV, numI;
+	inputStream.read((char*)&numV, sizeof(unsigned int));
+	inputStream.read((char*)&numI, sizeof(unsigned int));
+
+	void *vb, *ib;
+	vb = W_SAFE_ALLOC(numV * from_descs[0].GetSize());
+	ib = W_SAFE_ALLOC(numI * sizeof(uint));
+	if (!ib || !vb) {
+		W_SAFE_FREE(vb);
+		W_SAFE_FREE(ib);
+		return WError(W_OUTOFMEMORY);
+	}
+
+	inputStream.read((char*)vb, numV * from_descs[0].GetSize());
+	inputStream.read((char*)ib, numI * sizeof(uint));
+
+	WError ret;
+	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(0);
+	void* convertedVB;
+	if (my_desc.isEqualTo(from_descs[0]))
+		convertedVB = vb;
+	else
+		convertedVB = W_SAFE_ALLOC(numV * my_desc.GetSize());
+
+	if (!convertedVB) {
+		ret = WError(W_OUTOFMEMORY);
+		W_SAFE_FREE(vb);
+	} else {
+		if (!my_desc.isEqualTo(from_descs[0])) {
+			ConvertVertices(vb, convertedVB, numV, from_descs[0], my_desc);
+			W_SAFE_FREE(vb);
+		}
+
+		bool bCalcTangents = false, bCalcNormals = false;
+		if (my_desc.GetOffset("normal") >= 0 && from_descs[0].GetOffset("normal") == -1)
+			bCalcNormals = true;
+		if (my_desc.GetOffset("tangent") >= 0 && from_descs[0].GetOffset("tangent") == -1)
+			bCalcTangents = true;
+
+		ret = CreateFromData(convertedVB, numV, ib, numI, false, bCalcNormals, bCalcTangents);
+
+		W_SAFE_FREE(convertedVB);
+	}
+	W_SAFE_FREE(ib);
+
+	if (num_vbs > 1 && ret && GetVertexBufferCount() > 1 && from_descs[1].GetSize() == GetVertexDescription(1).GetSize()) {
+		void *ab;
+		ab = W_SAFE_ALLOC(numV * from_descs[1].GetSize());
+		inputStream.read((char*)ab, numV * from_descs[1].GetSize());
+		ret = CreateAnimationData(ab);
+		W_SAFE_FREE(ab);
+	}
+
+	return ret;
 }
