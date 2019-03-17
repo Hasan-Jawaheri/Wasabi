@@ -17,6 +17,8 @@ WBulletPhysics::WBulletPhysics(Wasabi* app) : WPhysicsComponent(app) {
 	m_isStepping = false;
 	m_isRunning = false;
 	m_speed = 1.0f;
+
+	app->engineParams.insert(std::pair<std::string, void*>("maxBulletDebugLines", (void*)(500000))); // uint
 }
 
 WBulletPhysics::~WBulletPhysics() {
@@ -41,7 +43,7 @@ WError WBulletPhysics::Initialize(bool debug) {
 	SetGravity(0, -10, 0);
 
 	if (debug) {
-		m_debugger = new BulletDebugger(this);
+		m_debugger = new BulletDebugger(this, (uint)m_app->engineParams["maxBulletDebugLines"]);
 		m_dynamicsWorld->setDebugDrawer(m_debugger);
 		m_debugger->m_thread = std::thread(BulletDebugger::Thread, m_debugger);
 	}
