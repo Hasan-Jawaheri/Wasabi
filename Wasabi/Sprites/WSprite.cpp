@@ -248,7 +248,7 @@ WSprite::~WSprite() {
 	m_app->SpriteManager->RemoveEntity(this);
 }
 
-WError WSprite::Load() {
+WError WSprite::Load(bool bCreateMaterial) {
 	m_lastLoadFailed = true;
 	W_SAFE_REMOVEREF(m_geometry);
 	m_geometry = m_app->SpriteManager->CreateSpriteGeometry();
@@ -256,7 +256,7 @@ WError WSprite::Load() {
 		return WError(W_OUTOFMEMORY);
 	m_geometry_changed = true;
 
-	if (!m_material) {
+	if (!m_material && bCreateMaterial) {
 		WEffect* fx = m_app->SpriteManager->CreateSpriteEffect();
 		m_material = new WMaterial(m_app);
 		WError err = m_material->SetEffect(fx);
@@ -285,7 +285,8 @@ void WSprite::SetImage(WImage* img) {
 		img->AddReference();
 	}
 
-	m_material->SetTexture(1, m_img);
+	if (m_material)
+		m_material->SetTexture(1, m_img);
 }
 
 void WSprite::SetMaterial(WMaterial* mat) {
@@ -352,7 +353,8 @@ void WSprite::SetAlpha(float fAlpha) {
 		Load();
 
 	m_alpha = fAlpha;
-	m_material->SetVariableFloat("alpha", m_alpha);
+	if (m_material)
+		m_material->SetVariableFloat("alpha", m_alpha);
 }
 
 void WSprite::Render(WRenderTarget* rt) {
@@ -391,7 +393,8 @@ void WSprite::Render(WRenderTarget* rt) {
 			geometry->UnmapVertexBuffer();
 		}
 
-		m_material->Bind(rt);
+		if (m_material)
+			m_material->Bind(rt);
 		geometry->Draw(rt);
 	}
 }
@@ -442,5 +445,5 @@ unsigned int WSprite::GetPriority() const {
 
 
 bool WSprite::Valid() const {
-	return (m_material && m_material->Valid() && m_geometry && m_geometry->Valid()) && m_size.x > 0.0f && m_size.y >= 0.0f;
+	return ((!m_material || m_material->Valid()) && m_geometry && m_geometry->Valid()) && m_size.x > 0.0f && m_size.y >= 0.0f;
 }

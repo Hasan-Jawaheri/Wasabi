@@ -62,8 +62,13 @@ public:
 	/**
 	 * Loads the sprite's resources (material and geometry). If material is
 	 * already set (via SetMaterial()) then it will not be changed.
+	 * @param bCreateMaterial  If set to true, the sprite will create a
+	 *					       material for itself. Otherwise none will
+	 *                         be created and the sprite will depend on user
+	 *                         to set one before rendering
+	 * @return Error code, see WError.h
 	 */
-	WError Load();
+	WError Load(bool bCreateMaterial = true);
 
 	/**
 	 * Sets the texture of the sprite.
