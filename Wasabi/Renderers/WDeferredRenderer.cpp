@@ -702,7 +702,7 @@ WError WDeferredRenderer::LightBufferStage::_LoadDirectionalLightsAssets() {
 	}
 
 	assets.fullscreen_sprite = new WSprite(m_renderer->m_app);
-	assets.fullscreen_sprite->Load();
+	assets.fullscreen_sprite->Load(false);
 	assets.fullscreen_sprite->SetSize(m_renderer->m_width, m_renderer->m_height);
 	assets.fullscreen_sprite->Hide();
 
@@ -766,6 +766,7 @@ WError WDeferredRenderer::LightBufferStage::Render(class WCamera* cam) {
 		//
 		// render the light onto the light map
 		//
+
 		material->Bind(m_renderTarget);
 
 		if (assets.fullscreen_sprite) {
