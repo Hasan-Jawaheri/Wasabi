@@ -33,7 +33,7 @@ public:
 	WBulletRigidBody(class Wasabi* const app, unsigned int ID = 0);
 	virtual ~WBulletRigidBody();
 
-	virtual WError Create(W_RIGID_BODY_CREATE_INFO createInfo);
+	virtual WError Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveInfo = false);
 
 	virtual void Update(float deltaTime);
 
@@ -70,6 +70,9 @@ public:
 
 	virtual void OnStateChange(STATE_CHANGE_TYPE type);
 
+	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+
 private:
 	/** Set to true while inside Update() */
 	bool m_isUpdating;
@@ -83,6 +86,13 @@ private:
 	btCollisionShape* m_collisionShape;
 	/** Bullet's rigid body */
 	btRigidBody* m_rigidBody;
+
+	/** If Create is called with bSaveInfo set to true, this will point to
+	 *  a an allocated copy of it. the WOrientation* part will always be null
+	 *  and the geometry will be kept and will have a reference held (so it
+	 *  must eventually be freed)
+	 */
+	W_RIGID_BODY_CREATE_INFO* m_savedCreateInfo;
 
 	/**
 	 * Destroys all resources held by this rigid body

@@ -20,13 +20,13 @@ public:
 	virtual void Load() {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 3), // position
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // color
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
 		}) };
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gProjection"), // projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4 * 4, "gView"), // view
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gProjection"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gView"), // view
 			}),
 		};
 		LoadCodeGLSL("\

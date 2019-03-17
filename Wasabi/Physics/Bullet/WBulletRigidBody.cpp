@@ -27,6 +27,7 @@ WBulletRigidBody::WBulletRigidBody(Wasabi* const app, unsigned int ID) : WRigidB
 	m_isUpdating = false;
 	m_boundObject = nullptr;
 	m_boundObjectBase = nullptr;
+	m_savedCreateInfo = nullptr;
 
 	m_collisionShape = nullptr;
 	m_rigidBody = nullptr;
@@ -56,13 +57,17 @@ void WBulletRigidBody::_DestroyResources() {
 
 	W_SAFE_DELETE(m_rigidBody);
 	W_SAFE_DELETE(m_collisionShape);
+	if (m_savedCreateInfo) {
+		W_SAFE_REMOVEREF(m_savedCreateInfo->geometry);
+		W_SAFE_DELETE(m_savedCreateInfo);
+	}
 }
 
 bool WBulletRigidBody::Valid() const {
 	return m_rigidBody;
 }
 
-WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo) {
+WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveInfo) {
 	if (createInfo.mass < 0.0f ||
 		((createInfo.shape == RIGID_BODY_SHAPE_CONVEX || createInfo.shape == RIGID_BODY_SHAPE_MESH) && !createInfo.geometry) ||
 		(createInfo.shape == RIGID_BODY_SHAPE_MESH && createInfo.geometry->GetNumIndices() <= 0 && createInfo.isTriangleList))
@@ -139,6 +144,7 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo) {
 		createInfo.geometry->UnmapVertexBuffer();
 		if (createInfo.isTriangleList)
 			createInfo.geometry->UnmapIndexBuffer();
+		break;
 	}
 	}
 
@@ -146,6 +152,8 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo) {
 	transformation.setIdentity();
 	if (createInfo.orientation) {
 		transformation = WBTConverMatrix(createInfo.orientation->ComputeTransformation());
+		createInfo.initialPosition = createInfo.orientation->GetPosition();
+		createInfo.initialRotation = createInfo.orientation->GetRotation();
 	} else {
 		transformation.setOrigin(WBTConvertVec3(createInfo.initialPosition));
 		transformation.setRotation(WBTConvertQuaternion(createInfo.initialRotation));
@@ -168,6 +176,12 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo) {
 
 	SetBouncingPower(0.2f);
 	SetFriction(0.2f);
+
+	if (bSaveInfo) {
+		m_savedCreateInfo = new W_RIGID_BODY_CREATE_INFO(createInfo);
+		m_savedCreateInfo->orientation = nullptr;
+		m_savedCreateInfo->geometry->AddReference(); // hold a reference to the geometry
+	}
 
 	return WError(W_SUCCEEDED);
 }
@@ -301,3 +315,40 @@ void WBulletRigidBody::OnStateChange(STATE_CHANGE_TYPE type) {
 	}
 }
 
+WError WBulletRigidBody::SaveToStream(class WFile* file, std::ostream& outputStream) {
+	if (!Valid() || !m_savedCreateInfo)
+		return WError(W_NOTVALID);
+
+	outputStream.write((char*)m_savedCreateInfo, sizeof(W_RIGID_BODY_CREATE_INFO));
+	uint tmpId = 0;
+	std::streamoff geometryIdPos = outputStream.tellp();
+	outputStream.write((char*)&tmpId, sizeof(tmpId));
+
+	_MarkFileEnd(file, outputStream.tellp());
+
+	WError err = file->SaveAsset(m_savedCreateInfo->geometry, &tmpId);
+	if (err) {
+		outputStream.seekp(geometryIdPos);
+		outputStream.write((char*)&tmpId, sizeof(tmpId));
+	}
+
+	return err;
+}
+
+WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputStream) {
+	bool bSaveInfo = false;
+	_DestroyResources();
+
+	W_RIGID_BODY_CREATE_INFO info;
+	inputStream.read((char*)&info, sizeof(W_RIGID_BODY_CREATE_INFO));
+	info.orientation = nullptr;
+	uint geometryId;
+	inputStream.read((char*)&geometryId, sizeof(geometryId));
+	WError err = file->LoadAsset(geometryId, &info.geometry);
+	if (err) {
+		Create(info, bSaveInfo);
+		info.geometry->RemoveReference();
+	}
+
+	return err;
+}
