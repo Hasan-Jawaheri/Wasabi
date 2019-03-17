@@ -35,7 +35,7 @@ class TextVS : public WShader {
 public:
 	TextVS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // position
@@ -58,7 +58,7 @@ public:
 			"	outCol = inCol;\n"
 			"	gl_Position = vec4(inPos.xy, 0.0, 1.0);\n"
 			"}\n"
-		);
+		, bSaveData);
 	}
 };
 
@@ -66,7 +66,7 @@ class TextPS : public WShader {
 public:
 	TextPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 0),
@@ -85,7 +85,7 @@ public:
 			"	float c = texture(sampler, inUV).r;\n"
 			"	outFragColor = vec4(c) * inCol;\n"
 			"}\n"
-		);
+		, bSaveData);
 	}
 };
 
@@ -155,7 +155,7 @@ WError WTextComponent::Initialize() {
 		ret = CreateTextFont(0, "Arial");
 	m_curFont = 0;
 
-	return WError(W_SUCCEEDED);
+	return ret;
 }
 
 void WTextComponent::AddFontDirectory(std::string dir) {

@@ -142,6 +142,9 @@ Wasabi::Wasabi() : Timer(W_TIMER_SECONDS, true) {
 	TerrainManager = nullptr;
 
 	m_copyCommandBuffer = VK_NULL_HANDLE;
+	m_cmdPool = VK_NULL_HANDLE;
+	m_vkDevice = VK_NULL_HANDLE;
+	m_vkInstance = VK_NULL_HANDLE;
 
 	curState = nullptr;
 	__EXIT = false;
@@ -279,6 +282,8 @@ VkInstance Wasabi::CreateVKInstance() {
 }
 
 WError Wasabi::StartEngine(int width, int height) {
+	_DestroyResources();
+
 	// This is created first so we can use its error message utility
 	WindowAndInputComponent = CreateWindowAndInputComponent();
 
@@ -299,10 +304,8 @@ WError Wasabi::StartEngine(int width, int height) {
 	// Enumerate devices
 	std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
 	err = vkEnumeratePhysicalDevices(m_vkInstance, &gpuCount, physicalDevices.data());
-	if (err != VK_SUCCESS) {
-		_DestroyResources();
+	if (err != VK_SUCCESS)
 		return WError(W_FAILEDTOLISTDEVICES);
-	}
 
 	int index = SelectGPU(physicalDevices);
 	if (index >= physicalDevices.size())
@@ -313,10 +316,8 @@ WError Wasabi::StartEngine(int width, int height) {
 	uint graphicsQueueIndex = 0;
 	uint queueCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysDev, &queueCount, NULL);
-	if (queueCount == 0) {
-		_DestroyResources();
+	if (queueCount == 0)
 		return WError(W_FAILEDTOLISTDEVICES);
-	}
 
 	std::vector<VkQueueFamilyProperties> queueProps;
 	queueProps.resize(queueCount);
@@ -326,10 +327,8 @@ WError Wasabi::StartEngine(int width, int height) {
 		if (queueProps[graphicsQueueIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			break;
 	}
-	if (graphicsQueueIndex == queueCount) {
-		_DestroyResources();
+	if (graphicsQueueIndex == queueCount)
 		return WError(W_HARDWARENOTSUPPORTED);
-	}
 
 	//
 	// Create Vulkan device
@@ -356,10 +355,8 @@ WError Wasabi::StartEngine(int width, int height) {
 	}
 
 	err = vkCreateDevice(m_vkPhysDev, &deviceCreateInfo, nullptr, &m_vkDevice);
-	if (err != VK_SUCCESS) {
-		_DestroyResources();
+	if (err != VK_SUCCESS)
 		return WError(W_UNABLETOCREATEDEVICE);
-	}
 
 	// Get the graphics queue
 	vkGetDeviceQueue(m_vkDevice, graphicsQueueIndex, 0, &m_queue);
@@ -376,18 +373,14 @@ WError Wasabi::StartEngine(int width, int height) {
 	PhysicsComponent = CreatePhysicsComponent();
 
 	WError werr = WindowAndInputComponent->Initialize(width, height);
-	if (!werr) {
-		_DestroyResources();
+	if (!werr)
 		return werr;
-	}
 
 	m_swapChain.connect(m_vkInstance, m_vkPhysDev, m_vkDevice);
 	if (!m_swapChain.initSurface(
 		WindowAndInputComponent->GetPlatformHandle(),
-		WindowAndInputComponent->GetWindowHandle())) {
-		_DestroyResources();
+		WindowAndInputComponent->GetWindowHandle()))
 		return WError(W_UNABLETOCREATESWAPCHAIN);
-	}
 	m_swapChainInitialized = true;
 
 	VkCommandPoolCreateInfo cmdPoolInfo = {};
@@ -395,10 +388,8 @@ WError Wasabi::StartEngine(int width, int height) {
 	cmdPoolInfo.queueFamilyIndex = m_swapChain.queueNodeIndex;
 	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 	err = vkCreateCommandPool(m_vkDevice, &cmdPoolInfo, nullptr, &m_cmdPool);
-	if (err != VK_SUCCESS) {
-		_DestroyResources();
+	if (err != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
-	}
 
 	VkCommandBufferAllocateInfo cmdBufInfo = {};
 	// Buffer copies are done on the queue, so we need a command buffer for them
@@ -408,10 +399,8 @@ WError Wasabi::StartEngine(int width, int height) {
 	cmdBufInfo.commandBufferCount = 1;
 
 	err = vkAllocateCommandBuffers(m_vkDevice, &cmdBufInfo, &m_copyCommandBuffer);
-	if (err) {
-		_DestroyResources();
+	if (err)
 		return WError(W_OUTOFMEMORY);
-	}
 
 	ObjectManager = new WObjectManager(this);
 	GeometryManager = new WGeometryManager(this);
@@ -427,54 +416,34 @@ WError Wasabi::StartEngine(int width, int height) {
 	ParticlesManager = new WParticlesManager(this);
 	TerrainManager = new WTerrainManager(this);
 
-	if (!CameraManager->Load()) {
-		_DestroyResources();
+	if (!CameraManager->Load())
 		return WError(W_ERRORUNK);
-	}
 
 	werr = Renderer->_Initialize();
-	if (!werr) {
-		_DestroyResources();
+	if (!werr)
 		return werr;
-	}
 
-	if (!ObjectManager->Load()) {
-		_DestroyResources();
+	if (!ObjectManager->Load())
 		return WError(W_ERRORUNK);
-	}
-	if (!ImageManager->Load()) {
-		_DestroyResources();
+	if (!ImageManager->Load())
 		return WError(W_ERRORUNK);
-	}
-	if (!SpriteManager->Load()) {
-		_DestroyResources();
+	if (!SpriteManager->Load())
 		return WError(W_ERRORUNK);
-	}
-	if (!LightManager->Load()) {
-		_DestroyResources();
+	if (!LightManager->Load())
 		return WError(W_ERRORUNK);
-	}
-	if (!ParticlesManager->Load()) {
-		_DestroyResources();
+	if (!ParticlesManager->Load())
 		return WError(W_ERRORUNK);
-	}
-	if (!TerrainManager->Load()) {
-		_DestroyResources();
+	if (!TerrainManager->Load())
 		return WError(W_ERRORUNK);
-	}
 
 	if (TextComponent)
 		werr = TextComponent->Initialize();
-	if (!werr) {
-		_DestroyResources();
+	if (!werr)
 		return WError(W_ERRORUNK);
-	}
 
 	werr = Renderer->LoadDependantResources();
-	if (!werr) {
-		_DestroyResources();
+	if (!werr)
 		return werr;
-	}
 
 	return WError(W_SUCCEEDED);
 }
