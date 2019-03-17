@@ -71,7 +71,7 @@ struct W_RIGID_BODY_CREATE_INFO {
   * @ingroup engineclass
   * This is an interface for implementing a rigid body.
   */
-class WRigidBody: public WBase, public WOrientation {
+class WRigidBody: public WBase, public WOrientation, public WFileAsset {
 public:
 	WRigidBody(class Wasabi* const app, unsigned int ID = 0) : WBase(app, ID) {}
 	virtual ~WRigidBody() {}
@@ -79,9 +79,11 @@ public:
 	/**
 	 * Must be implemented to initialize the rigid body.
 	 * @param createInfo  Various parameters for the rigid body creation
+	 * @param bSaveInfo   If set to true, the rigid body will store the creation
+	 *                    information so that it can be later saved to file
 	 * @return Error code, see WError.h
 	 */
-	virtual WError Create(W_RIGID_BODY_CREATE_INFO createInfo) = 0;
+	virtual WError Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveInfo = false) = 0;
 
 	/**
 	 * Called by WBulletPhysics after stepping the physics simulation to
@@ -137,6 +139,9 @@ public:
 	virtual WVector3 getTotalTorque() const = 0;
 
 	virtual void OnStateChange(STATE_CHANGE_TYPE type) = 0;
+
+	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream) = 0;
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream) = 0;
 };
 
 /**

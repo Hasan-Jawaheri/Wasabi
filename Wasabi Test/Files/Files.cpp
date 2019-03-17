@@ -1,4 +1,5 @@
 #include "Files.hpp"
+#include <Physics/Bullet/WBulletRigidBody.h>
 #include <iostream>
 
 class VS : public WShader {
@@ -109,6 +110,9 @@ void FilesDemo::Load() {
 	obj->SetGeometry(geometry);
 	obj->SetMaterial(mat);
 
+	WRigidBody* rb = m_app->PhysicsComponent->CreateRigidBody();
+	rb->Create(W_RIGID_BODY_CREATE_INFO::ForGeometry(geometry, 1.0f, nullptr, WVector3(0, 5, 0)), true);
+
 	// empty out the file
 	std::fstream f;
 	f.open("WFile.WSBI", ios::out);
@@ -117,29 +121,35 @@ void FilesDemo::Load() {
 	WFile file(m_app);
 	file.Open("WFile.WSBI");
 
-	uint imgId, geoId, fxId, matId, objId;
+	uint imgId, geoId, fxId, matId, objId, rbId;
 	file.SaveAsset(img, &imgId);
 	file.SaveAsset(geometry, &geoId);
 	file.SaveAsset(fx, &fxId);
 	file.SaveAsset(mat, &matId);
 	file.SaveAsset(obj, &objId);
+	file.SaveAsset(rb, &rbId);
 	W_SAFE_REMOVEREF(img);
 	W_SAFE_REMOVEREF(geometry);
 	W_SAFE_REMOVEREF(fx);
 	W_SAFE_REMOVEREF(mat);
 	W_SAFE_REMOVEREF(obj);
+	W_SAFE_REMOVEREF(rb);
 
 	file.LoadAsset<WImage>(imgId, &img);
 	file.LoadAsset<WGeometry>(geoId, &geometry);
 	file.LoadAsset<WEffect>(fxId, &fx);
 	file.LoadAsset<WMaterial>(matId, &mat);
 	file.LoadAsset<WObject>(objId, &obj);
+	file.LoadAsset<WBulletRigidBody>(rbId, (WBulletRigidBody**)&rb);
 
 	file.Close();
 
 	WSprite* spr = new WSprite(m_app);
 	spr->SetImage(img);
 
+	rb->BindObject(obj, obj);
+
+	m_app->PhysicsComponent->Start();
 }
 
 void FilesDemo::Update(float fDeltaTime) {
