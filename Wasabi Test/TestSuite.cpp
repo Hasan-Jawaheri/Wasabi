@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ FilesDemo
+#define _DEMO_STATE_CLASSNAME_ PhysicsDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo
@@ -136,8 +136,17 @@ WPhysicsComponent* WasabiTester::CreatePhysicsComponent() {
 void WasabiTester::SetCameraPosition(WVector3 pos) {
 	vPos = pos;
 }
+
 void WasabiTester::SetZoom(float d) {
 	fDist = d;
+}
+
+WVector3 WasabiTester::GetCameraPosition() const {
+	return vPos;
+}
+
+float WasabiTester::GetYawAngle() const {
+	return fYaw;
 }
 
 Wasabi* WInitialize() {

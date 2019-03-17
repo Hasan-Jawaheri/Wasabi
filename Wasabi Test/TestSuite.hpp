@@ -19,6 +19,8 @@ public:
 
 	void SetCameraPosition(WVector3 pos);
 	void SetZoom(float d);
+	WVector3 GetCameraPosition() const;
+	float GetYawAngle() const;
 
 	virtual WRenderer* CreateRenderer();
 	virtual WPhysicsComponent* CreatePhysicsComponent();

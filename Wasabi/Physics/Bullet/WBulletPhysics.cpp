@@ -85,7 +85,7 @@ void WBulletPhysics::Step(float deltaTime) {
 	if (m_isRunning) {
 		m_isStepping = true;
 
-		m_dynamicsWorld->stepSimulation(fmin(deltaTime, 1.0f / 60.0f) * m_speed);
+		m_dynamicsWorld->stepSimulation(fmin(deltaTime, 1.0f / 60.0f) * m_speed, 5);
 		((WBulletRigidBodyManager*)RigidBodyManager)->Update(deltaTime);
 		if (m_debugger)
 			m_dynamicsWorld->debugDrawWorld();
@@ -102,7 +102,21 @@ WRigidBody* WBulletPhysics::CreateRigidBody(unsigned int ID) const {
 	return new WBulletRigidBody(m_app, ID);
 }
 
-bool WBulletPhysics::RayCast(WVector3 from, WVector3 to, W_RAYCAST_OUTPUT* out) {
+bool WBulletPhysics::RayCast(WVector3 _from, WVector3 _to, W_RAYCAST_OUTPUT* out) {
+	btVector3 from = WBTConvertVec3(_from);
+	btVector3 to = WBTConvertVec3(_to);
+	btCollisionWorld::ClosestRayResultCallback result(from, to);
+	m_dynamicsWorld->rayTest(from, to, result);
+
+	if (result.hasHit()) {
+		if (out) {
+			out->fDist = WVec3Length(_to - _from) * result.m_closestHitFraction;
+			out->normal = BTWConvertVec3(result.m_hitNormalWorld);
+		}
+
+		return true;
+	}
+
 	return false;
 }
 
