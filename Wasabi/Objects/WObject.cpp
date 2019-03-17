@@ -10,6 +10,7 @@
 #include "../Geometries/WGeometry.h"
 #include "../WindowAndInput/WWindowAndInputComponent.h"
 #include "../Animations/WAnimation.h"
+#include "../Animations/WSkeletalAnimation.h"
 
 std::string WObjectManager::GetTypeName() const {
 	return "Object";
@@ -329,10 +330,7 @@ WError WObject::SetAnimation(class WAnimation* animation) {
 }
 
 WError WObject::InitInstancing(unsigned int maxInstances) {
-	W_SAFE_REMOVEREF(m_instanceTexture);
-	for (int i = 0; i < m_instanceV.size(); i++)
-		delete m_instanceV[i];
-	m_instanceV.clear();
+	DestroyInstancingResources();
 
 	float fExactWidth = sqrtf(maxInstances * 4);
 	unsigned int texWidth = 2;
@@ -353,6 +351,13 @@ WError WObject::InitInstancing(unsigned int maxInstances) {
 	m_maxInstances = maxInstances;
 
 	return WError(W_SUCCEEDED);
+}
+
+void WObject::DestroyInstancingResources() {
+	W_SAFE_REMOVEREF(m_instanceTexture);
+	for (int i = 0; i < m_instanceV.size(); i++)
+		delete m_instanceV[i];
+	m_instanceV.clear();
 }
 
 WInstance* WObject::CreateInstance() {
@@ -518,5 +523,113 @@ bool WObject::UpdateLocals() {
 void WObject::OnStateChange(STATE_CHANGE_TYPE type) { //virtual method of the orientation device
 	WOrientation::OnStateChange(type); //do the default OnStateChange first
 	m_bAltered = true;
+}
+
+WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
+	if (!Valid())
+		return WError(W_NOTVALID);
+
+	outputStream.write((char*)&m_hidden, sizeof(m_hidden));
+	outputStream.write((char*)&m_bFrustumCull, sizeof(m_bFrustumCull));
+	outputStream.write((char*)&m_scale, sizeof(m_scale));
+	WVector3 pos = GetPosition();
+	outputStream.write((char*)&pos, sizeof(pos));
+	WQuaternion rot = GetRotation();
+	outputStream.write((char*)&rot, sizeof(rot));
+	m_maxInstances = m_instanceTexture ? m_maxInstances : 0;
+	outputStream.write((char*)&m_maxInstances, sizeof(m_maxInstances));
+	uint numInstances = m_instanceV.size();
+	outputStream.write((char*)&numInstances, sizeof(numInstances));
+	for (uint i = 0; i < m_instanceV.size(); i++) {
+		outputStream.write((char*)&m_instanceV[i]->m_scale, sizeof(m_instanceV[i]->m_scale));
+		pos = m_instanceV[i]->GetPosition();
+		outputStream.write((char*)&pos, sizeof(pos));
+		rot = m_instanceV[i]->GetRotation();
+		outputStream.write((char*)&rot, sizeof(rot));
+	}
+
+	uint tmpId = 0;
+	std::streamoff dependenciesStart = outputStream.tellp();
+	WFileAsset* dependencies[3] = { m_geometry, m_material, m_animation };
+	for (uint i = 0; i < sizeof(dependencies) / sizeof(WFileAsset*); i++)
+		outputStream.write((char*)&tmpId, sizeof(tmpId));
+
+	_MarkFileEnd(file, outputStream.tellp());
+
+	for (uint i = 0; i < sizeof(dependencies) / sizeof(WFileAsset*); i++) {
+		if (dependencies[i]) {
+			WError err = file->SaveAsset(dependencies[i], &tmpId);
+			if (!err)
+				return err;
+			outputStream.seekp(dependenciesStart + std::streamoff(i * sizeof(uint)));
+			outputStream.write((char*)&tmpId, sizeof(tmpId));
+		}
+	}
+
+	return WError(W_SUCCEEDED);
+}
+
+WError WObject::LoadFromStream(WFile* file, std::istream& inputStream) {
+	DestroyInstancingResources();
+
+	inputStream.read((char*)&m_hidden, sizeof(m_hidden));
+	inputStream.read((char*)&m_bFrustumCull, sizeof(m_bFrustumCull));
+	inputStream.read((char*)&m_scale, sizeof(m_scale));
+	WVector3 pos;
+	inputStream.read((char*)&pos, sizeof(pos));
+	SetPosition(pos);
+	WQuaternion rot;
+	inputStream.read((char*)&rot, sizeof(rot));
+	SetAngle(rot);
+	uint maxInstances;
+	inputStream.read((char*)&maxInstances, sizeof(maxInstances));
+	uint numInstances;
+	inputStream.read((char*)&numInstances, sizeof(numInstances));
+
+	if (maxInstances > 0) {
+		WError err = InitInstancing(maxInstances);
+		if (!err)
+			return err;
+		for (uint i = 0; i < numInstances; i++) {
+			WInstance* inst = CreateInstance();
+			inputStream.read((char*)&inst->m_scale, sizeof(inst->m_scale));
+			inputStream.read((char*)&pos, sizeof(pos));
+			inputStream.read((char*)&rot, sizeof(rot));
+			inst->SetPosition(pos);
+			inst->SetAngle(rot);
+		}
+	}
+
+	WError status(W_SUCCEEDED);
+	uint dependencyId;
+	WGeometry* geometry = nullptr;
+	WMaterial* material = nullptr;
+	WSkeleton* animation = nullptr;
+
+	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
+	if (dependencyId != 0 && status)
+		status = file->LoadAsset<WGeometry>(dependencyId, &geometry);
+	if (status)
+		status = SetGeometry(geometry);
+
+	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
+	if (dependencyId != 0 && status)
+		status = file->LoadAsset<WMaterial>(dependencyId, &material);
+	if (status)
+		SetMaterial(material);
+
+	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
+	if (dependencyId != 0 && status)
+		status = file->LoadAsset<WSkeleton>(dependencyId, &animation);
+	if (status)
+		SetAnimation(animation);
+
+	W_SAFE_REMOVEREF(geometry);
+	W_SAFE_REMOVEREF(material);
+	W_SAFE_REMOVEREF(animation);
+	if (!status)
+		DestroyInstancingResources();
+
+	return status;
 }
 

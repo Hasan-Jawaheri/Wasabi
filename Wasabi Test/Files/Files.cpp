@@ -105,6 +105,10 @@ void FilesDemo::Load() {
 	mat->SetVariableColor("color", WColor(0, 0, 1));
 	mat->SetTexture(3, img);
 
+	WObject* obj = new WObject(m_app);
+	obj->SetGeometry(geometry);
+	obj->SetMaterial(mat);
+
 	// empty out the file
 	std::fstream f;
 	f.open("WFile.WSBI", ios::out);
@@ -113,29 +117,29 @@ void FilesDemo::Load() {
 	WFile file(m_app);
 	file.Open("WFile.WSBI");
 
-	uint imgId, geoId, fxId, matId;
+	uint imgId, geoId, fxId, matId, objId;
 	file.SaveAsset(img, &imgId);
 	file.SaveAsset(geometry, &geoId);
 	file.SaveAsset(fx, &fxId);
 	file.SaveAsset(mat, &matId);
+	file.SaveAsset(obj, &objId);
 	W_SAFE_REMOVEREF(img);
 	W_SAFE_REMOVEREF(geometry);
 	W_SAFE_REMOVEREF(fx);
 	W_SAFE_REMOVEREF(mat);
+	W_SAFE_REMOVEREF(obj);
 
 	file.LoadAsset<WImage>(imgId, &img);
 	file.LoadAsset<WGeometry>(geoId, &geometry);
 	file.LoadAsset<WEffect>(fxId, &fx);
 	file.LoadAsset<WMaterial>(matId, &mat);
+	file.LoadAsset<WObject>(objId, &obj);
 
 	file.Close();
 
 	WSprite* spr = new WSprite(m_app);
 	spr->SetImage(img);
 
-	WObject* obj = new WObject(m_app);
-	obj->SetGeometry(geometry);
-	obj->SetMaterial(mat);
 }
 
 void FilesDemo::Update(float fDeltaTime) {
