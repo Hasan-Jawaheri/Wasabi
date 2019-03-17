@@ -36,6 +36,11 @@
 #pragma comment(lib, "LinearMath_vs2010.lib")
 #endif
 
+/*
+ * Creating an instance of this class creates the following engine parameters :
+ ** "maxBulletDebugLines" : Maximum number of line segments the debugger can draw
+ *                          (Default is(void*)(500000))
+ */
 class WBulletPhysics : public WPhysicsComponent {
 	friend class WBulletRigidBodyManager;
 	friend class WBulletRigidBody;

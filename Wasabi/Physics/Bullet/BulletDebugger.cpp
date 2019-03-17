@@ -85,10 +85,11 @@ public:
 	}
 };
 
-BulletDebugger::BulletDebugger(WBulletPhysics* physics) : Wasabi(), btIDebugDraw() {
+BulletDebugger::BulletDebugger(WBulletPhysics* physics, uint maxLines) : Wasabi(), btIDebugDraw() {
 	m_physics = physics;
 	m_keep_running = true;
 	m_debugMode = 1;
+	m_maxLines = maxLines;
 	fYaw = 0;
 	fPitch = 30;
 	fDist = -15;
@@ -171,8 +172,8 @@ WError BulletDebugger::Setup() {
 		W_SAFE_REMOVEREF(mat);
 
 		WGeometry* geometry = new WLinesGeometry(this);
-		void* vb = calloc(10000, geometry->GetVertexDescriptionSize());
-		geometry->CreateFromData(vb, 10000, nullptr, 0, true);
+		void* vb = calloc(m_maxLines * 2, geometry->GetVertexDescriptionSize());
+		geometry->CreateFromData(vb, m_maxLines * 2, nullptr, 0, true);
 		free(vb);
 		m_linesDrawer->SetGeometry(geometry);
 		W_SAFE_REMOVEREF(geometry);
@@ -194,7 +195,7 @@ bool BulletDebugger::Loop(float fDeltaTime) {
 
 	LineVertex* vb;
 	m_linesDrawer->GetGeometry()->MapVertexBuffer((void**)&vb);
-	for (unsigned int i = 0; i < 10000; i += 2) {
+	for (unsigned int i = 0; i < m_maxLines*2; i += 2) {
 		unsigned int lineIndex = i / 2;
 		if (lineIndex < curLines.size()) {
 			vb[i+0] = LineVertex({ curLines[lineIndex].from, curLines[lineIndex].color });

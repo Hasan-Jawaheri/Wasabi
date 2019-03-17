@@ -6,19 +6,26 @@ PhysicsDemo::PhysicsDemo(Wasabi* const app) : WTestState(app) {
 void PhysicsDemo::Load() {
 	m_app->PhysicsComponent->Start();
 
-	WGeometry* ground = new WGeometry(m_app);
-	ground->CreatePlain(100.0f, 2, 2);
+	//WGeometry* ground = new WGeometry(m_app);
+	//ground->CreatePlain(100.0f, 2, 2);
+	WGeometry* ground;
+	WFile F(m_app);
+	F.Open("Media/island.3ds.WSBI");
+	F.LoadAsset<WGeometry>(1, &ground);
+	F.Close();
+	ground->Scale(0.04);
+
 	m_ground = new WObject(m_app);
 	m_ground->SetGeometry(ground);
 	ground->RemoveReference();
 	m_groundRB = m_app->PhysicsComponent->CreateRigidBody();
 	m_groundRB->BindObject(m_ground, m_ground);
-	m_groundRB->Create(W_RIGID_BODY_CREATE_INFO::ForObject(m_ground, 0.0f));
+	m_groundRB->Create(W_RIGID_BODY_CREATE_INFO::ForComplexObject(m_ground));
 
 	WGeometry* ball = new WGeometry(m_app);
 	ball->CreateSphere(1.0f);
 	m_ball = new WObject(m_app);
-	m_ball->SetPosition(4, 5, 0);
+	m_ball->SetPosition(4, ground->GetMaxPoint().y / 10, 0);
 	m_ball->SetGeometry(ball);
 	ball->RemoveReference();
 	m_ballRB = m_app->PhysicsComponent->CreateRigidBody();
