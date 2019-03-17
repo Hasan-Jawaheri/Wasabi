@@ -215,13 +215,17 @@ void WBulletRigidBody::BindObject(WOrientation* obj, WBase* objBase) {
 }
 
 void WBulletRigidBody::SetLinearVelocity(WVector3 vel) {
-	if (m_rigidBody)
+	if (m_rigidBody) {
 		m_rigidBody->setLinearVelocity(WBTConvertVec3(vel));
+		m_rigidBody->activate();
+	}
 }
 
 void WBulletRigidBody::SetAngularVelocity(WVector3 vel) {
-	if (m_rigidBody)
+	if (m_rigidBody) {
 		m_rigidBody->setAngularVelocity(WBTConvertVec3(vel));
+		m_rigidBody->activate();
+	}
 }
 
 void WBulletRigidBody::SetLinearDamping(float power) {
@@ -255,28 +259,38 @@ void WBulletRigidBody::SetFriction(float friction) {
 }
 
 void WBulletRigidBody::ApplyForce(WVector3 force) {
-	if (m_rigidBody)
+	if (m_rigidBody) {
 		m_rigidBody->applyCentralForce(WBTConvertVec3(force));
+		m_rigidBody->activate();
+	}
 }
 
 void WBulletRigidBody::ApplyForce(WVector3 force, WVector3 relative_pos) {
-	if (m_rigidBody)
+	if (m_rigidBody) {
 		m_rigidBody->applyForce(WBTConvertVec3(force), WBTConvertVec3(relative_pos));
+		m_rigidBody->activate();
+	}
 }
 
 void WBulletRigidBody::ApplyImpulse(WVector3 impulse) {
-	if (m_rigidBody)
+	if (m_rigidBody) {
 		m_rigidBody->applyCentralImpulse(WBTConvertVec3(impulse));
+		m_rigidBody->activate();
+	}
 }
 
 void WBulletRigidBody::ApplyImpulse(WVector3 impulse, WVector3 relative_pos) {
-	if (m_rigidBody)
+	if (m_rigidBody) {
 		m_rigidBody->applyImpulse(WBTConvertVec3(impulse), WBTConvertVec3(relative_pos));
+		m_rigidBody->activate();
+	}
 }
 
 void WBulletRigidBody::ApplyTorque(WVector3 torque) {
-	if (m_rigidBody)
+	if (m_rigidBody) {
 		m_rigidBody->applyTorque(WBTConvertVec3(torque));
+		m_rigidBody->activate();
+	}
 }
 
 WVector3 WBulletRigidBody::getLinearVelocity() const {
@@ -312,6 +326,7 @@ void WBulletRigidBody::OnStateChange(STATE_CHANGE_TYPE type) {
 		btTransform mtx = WBTConverMatrix(GetWorldMatrix());
 		m_rigidBody->setWorldTransform(mtx);
 		m_rigidBody->getMotionState()->setWorldTransform(mtx);
+		m_rigidBody->activate();
 	}
 }
 
