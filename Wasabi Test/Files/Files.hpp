@@ -16,7 +16,7 @@ public:
 	virtual WRenderer* CreateRenderer() { return new WForwardRenderer(m_app); }
 	virtual WPhysicsComponent* CreatePhysicsComponent() {
 		WBulletPhysics* physics = new WBulletPhysics(m_app);
-		WError werr = physics->Initialize(true);
+		WError werr = physics->Initialize();
 		if (!werr)
 			W_SAFE_DELETE(physics);
 		return physics;
