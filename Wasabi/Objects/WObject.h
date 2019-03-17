@@ -117,7 +117,7 @@ private:
  * object's desired position, orientation and scale. A WObject also provides
  * an easy way to apply animations and instancing on rendered geometry.
  */
-class WObject : public WBase, public WOrientation {
+class WObject : public WBase, public WOrientation, public WFileAsset {
 	/**
 	 * Returns "Object" string.
 	 * @return Returns "Object" string
@@ -210,6 +210,11 @@ public:
 	 * @return              Error code, see WError.h
 	 */
 	WError InitInstancing(unsigned int maxInstances);
+
+	/**
+	 * Cleans up all instancing assets, and disables instancing.
+	 */
+	void DestroyInstancingResources();
 
 	/**
 	 * Creates an instance of this object. Instancing has to be initialized prior
@@ -369,6 +374,12 @@ public:
 	 * @return true if the object is valid, false otherwise
 	 */
 	virtual bool Valid() const;
+
+	/**
+	 * Animations can only be saved if they are an instance of WSkeleton
+	 */
+	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
 
 private:
 	/** Attached geometry */
