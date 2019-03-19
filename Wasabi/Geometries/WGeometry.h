@@ -647,7 +647,7 @@ public:
 	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
 
 private:
-	struct {
+	struct STAGED_BUFFER {
 		/** Number of vertices */
 		int count;
 		/** Vertex buffer */
@@ -656,29 +656,9 @@ private:
 		W_BUFFER staging;
 		/** Set to true if the last vertex map operation was read only */
 		bool readOnlyMap;
-	} m_vertices;
-
-	struct {
-		/** Number of indices */
-		int count;
-		/** Index buffer */
-		W_BUFFER buffer;
-		/** Staging index buffer, used for dynamic access */
-		W_BUFFER staging;
-		/** Set to true if the last index map operation was read only */
-		bool readOnlyMap;
-	} m_indices;
-
-	struct {
-		/** Number of vertices */
-		int count;
-		/** Animation vertex buffer */
-		W_BUFFER buffer;
-		/** Staging animation vertex buffer, used for dynamic access */
-		W_BUFFER staging;
-		/** Set to true if the last animation vertex map operation was read only */
-		bool readOnlyMap;
-	} m_animationbuf;
+		/** Mapped data received from vkMapMemory */
+		void* mappedData;
+	} m_vertices, m_indices, m_animationbuf;
 
 	/** Maximum boundary */
 	WVector3 m_maxPt;
