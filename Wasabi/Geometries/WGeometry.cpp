@@ -1052,6 +1052,7 @@ WError WGeometry::MapVertexBuffer(void** const vb, bool bReadOnly) {
 	VkResult err = vkMapMemory(device, b->mem, 0, m_vertices.count * vtx_size, 0, vb);
 	if (err)
 		return WError(W_NOTVALID);
+	m_vertices.mappedData = *vb;
 
 	return WError(W_SUCCEEDED);
 }
@@ -1068,6 +1069,7 @@ WError WGeometry::MapIndexBuffer(uint** const ib, bool bReadOnly) {
 	VkResult err = vkMapMemory(device, b->mem, 0, m_indices.count * sizeof(uint), 0, (void**)ib);
 	if (err)
 		return WError(W_NOTVALID);
+	m_indices.mappedData = *ib;
 
 	return WError(W_SUCCEEDED);
 }
@@ -1085,88 +1087,80 @@ WError WGeometry::MapAnimationBuffer(void** const ab, bool bReadOnly) {
 	VkResult err = vkMapMemory(device, b->mem, 0, m_animationbuf.count * vtx_size, 0, ab);
 	if (err)
 		return WError(W_NOTVALID);
+	m_animationbuf.mappedData = *ab;
 
 	return WError(W_SUCCEEDED);
 }
 
 void WGeometry::UnmapVertexBuffer() {
 	VkDevice device = m_app->GetVulkanDevice();
-	if (m_dynamic) {
-		vkUnmapMemory(device, m_vertices.buffer.mem);
-	} else {
-		vkUnmapMemory(device, m_vertices.staging.mem);
-		if (!m_vertices.readOnlyMap) {
-			VkBufferCopy copyRegion = {};
+	vkUnmapMemory(device, m_vertices.buffer.mem);
+	if (!m_vertices.readOnlyMap)
+		_CalcMinMax(m_vertices.mappedData, m_vertices.count);
 
-			VkResult err = m_app->BeginCommandBuffer();
-			if (err)
-				return;
+	if (!m_dynamic && !m_vertices.readOnlyMap) {
+		VkBufferCopy copyRegion = {};
 
-			// Vertex buffer
-			copyRegion.size = m_vertices.count * GetVertexDescription(0).GetSize();
-			vkCmdCopyBuffer(
-				m_app->GetCommandBuffer(),
-				m_vertices.staging.buf,
-				m_vertices.buffer.buf,
-				1,
-				&copyRegion);
+		VkResult err = m_app->BeginCommandBuffer();
+		if (err)
+			return;
 
-			m_app->EndCommandBuffer();
-		}
+		// Vertex buffer
+		copyRegion.size = m_vertices.count * GetVertexDescription(0).GetSize();
+		vkCmdCopyBuffer(
+			m_app->GetCommandBuffer(),
+			m_vertices.staging.buf,
+			m_vertices.buffer.buf,
+			1,
+			&copyRegion);
+
+		m_app->EndCommandBuffer();
 	}
 }
 
 void WGeometry::UnmapIndexBuffer() {
 	VkDevice device = m_app->GetVulkanDevice();
-	if (m_dynamic) {
-		vkUnmapMemory(device, m_indices.buffer.mem);
-	} else {
-		vkUnmapMemory(device, m_indices.staging.mem);
-		if (!m_indices.readOnlyMap) {
-			VkBufferCopy copyRegion = {};
+	vkUnmapMemory(device, m_indices.buffer.mem);
+	if (!m_dynamic && !m_indices.readOnlyMap) {
+		VkBufferCopy copyRegion = {};
 
-			VkResult err = m_app->BeginCommandBuffer();
-			if (err)
-				return;
+		VkResult err = m_app->BeginCommandBuffer();
+		if (err)
+			return;
 
-			// Index buffer
-			copyRegion.size = m_indices.count * sizeof(uint);
-			vkCmdCopyBuffer(
-				m_app->GetCommandBuffer(),
-				m_indices.staging.buf,
-				m_indices.buffer.buf,
-				1,
-				&copyRegion);
+		// Index buffer
+		copyRegion.size = m_indices.count * sizeof(uint);
+		vkCmdCopyBuffer(
+			m_app->GetCommandBuffer(),
+			m_indices.staging.buf,
+			m_indices.buffer.buf,
+			1,
+			&copyRegion);
 
-			m_app->EndCommandBuffer();
-		}
+		m_app->EndCommandBuffer();
 	}
 }
 
 void WGeometry::UnmapAnimationBuffer() {
 	VkDevice device = m_app->GetVulkanDevice();
-	if (m_dynamic) {
-		vkUnmapMemory(device, m_animationbuf.buffer.mem);
-	} else {
-		vkUnmapMemory(device, m_animationbuf.staging.mem);
-		if (!m_animationbuf.readOnlyMap) {
-			VkBufferCopy copyRegion = {};
+	vkUnmapMemory(device, m_animationbuf.buffer.mem);
+	if (!m_dynamic && !m_animationbuf.readOnlyMap) {
+		VkBufferCopy copyRegion = {};
 
-			VkResult err = m_app->BeginCommandBuffer();
-			if (err)
-				return;
+		VkResult err = m_app->BeginCommandBuffer();
+		if (err)
+			return;
 
-			// Vertex buffer
-			copyRegion.size = m_animationbuf.count * GetVertexDescription(1).GetSize();
-			vkCmdCopyBuffer(
-				m_app->GetCommandBuffer(),
-				m_animationbuf.staging.buf,
-				m_animationbuf.buffer.buf,
-				1,
-				&copyRegion);
+		// Vertex buffer
+		copyRegion.size = m_animationbuf.count * GetVertexDescription(1).GetSize();
+		vkCmdCopyBuffer(
+			m_app->GetCommandBuffer(),
+			m_animationbuf.staging.buf,
+			m_animationbuf.buffer.buf,
+			1,
+			&copyRegion);
 
-			m_app->EndCommandBuffer();
-		}
+		m_app->EndCommandBuffer();
 	}
 }
 
