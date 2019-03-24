@@ -30,21 +30,38 @@ WForwardRenderStageObjectVS::WForwardRenderStageObjectVS(Wasabi* const app) : WS
 }
 
 void WForwardRenderStageObjectVS::Load(bool bSaveData) {
-	m_desc.type = W_VERTEX_SHADER;
-	m_desc.bound_resources = {
+	int maxLights = (int)m_app->engineParams["maxLights"];
+	m_desc = GetDesc(maxLights);
+	std::string code =
+		#include "Shaders/vertex_shader.glsl"
+	;
+	_StringReplaceAll(code, "~~~~maxLights~~~~", std::to_string(maxLights));
+	LoadCodeGLSL(code, bSaveData);
+}
+
+W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
+	W_SHADER_DESC desc;
+	desc.type = W_VERTEX_SHADER;
+	desc.bound_resources = {
 		W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerObject", {
-			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projectionMatrix"), // projection
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
-			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "animationTextureWidth"), // width of the animation texture
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "instanceTextureWidth"), // width of the instance texture
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isAnimated"), // whether or not animation is enabled
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isInstanced"), // whether or not instancing is enabled
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"),
 		}),
-		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, 0, "animationTexture"),
-		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 2, 0, "instancingTexture"),
+		W_BOUND_RESOURCE(W_TYPE_UBO, 1, 1, "uboPerFrame", {
+			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
+			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projectionMatrix"), // projection
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "camPosW"),
+			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "numLights"),
+			W_SHADER_VARIABLE_INFO(W_TYPE_STRUCT, maxLights, sizeof(LightStruct), 16, "lights"),
+		}),
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 2, 0, "animationTexture"),
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 3, 0, "instancingTexture"),
 	};
-	m_desc.input_layouts = {W_INPUT_LAYOUT({
+	desc.input_layouts = { W_INPUT_LAYOUT({
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
@@ -52,10 +69,8 @@ void WForwardRenderStageObjectVS::Load(bool bSaveData) {
 	}), W_INPUT_LAYOUT({
 		W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone indices
 		W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weights
-	})};
-	LoadCodeGLSL(
-		#include "Shaders/vertex_shader.glsl"
-	, bSaveData);
+	}) };
+	return desc;
 }
 
 WForwardRenderStageObjectPS::WForwardRenderStageObjectPS(Wasabi* const app) : WShader(app) {
@@ -63,19 +78,7 @@ WForwardRenderStageObjectPS::WForwardRenderStageObjectPS(Wasabi* const app) : WS
 
 void WForwardRenderStageObjectPS::Load(bool bSaveData) {
 	int maxLights = (int)m_app->engineParams["maxLights"];
-	m_desc.type = W_FRAGMENT_SHADER;
-	m_desc.bound_resources = {
-		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 3, 0, "diffuseTexture"),
-		W_BOUND_RESOURCE(W_TYPE_UBO, 4, 0, "uboPerObjectPS", {
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"),
-			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isTextured"),
-		}),
-		W_BOUND_RESOURCE(W_TYPE_UBO, 5, 1, "uboPerFrame", {
-			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "numLights"),
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "camPosW"),
-			W_SHADER_VARIABLE_INFO(W_TYPE_STRUCT, maxLights, sizeof(LightStruct), 16, "lights"),
-		}),
-	};
+	m_desc = GetDesc(maxLights);
 	std::string code =
 		#include "Shaders/pixel_shader.glsl"
 	;
@@ -83,11 +86,22 @@ void WForwardRenderStageObjectPS::Load(bool bSaveData) {
 	LoadCodeGLSL(code, bSaveData);
 }
 
+W_SHADER_DESC WForwardRenderStageObjectPS::GetDesc(int maxLights) {
+	W_SHADER_DESC desc;
+	desc.type = W_FRAGMENT_SHADER;
+	desc.bound_resources = {
+		WForwardRenderStageObjectVS::GetDesc(maxLights).bound_resources[0],
+		WForwardRenderStageObjectVS::GetDesc(maxLights).bound_resources[1],
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture"),
+	};
+	return desc;
+}
+
 WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) {
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = RENDER_STAGE_TARGET_BACK_BUFFER;
 
-	m_lights = new WForwardRenderStageObjectPS::LightStruct[(int)m_app->engineParams["maxLights"]];
+	m_lights = new LightStruct[(int)m_app->engineParams["maxLights"]];
 
 	m_defaultFX = nullptr;
 	m_perFrameMaterial = nullptr;
@@ -147,9 +161,11 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 				numLights++;
 			}
 		}
+		m_perFrameMaterial->SetVariableMatrix("viewMatrix", cam->GetViewMatrix());
+		m_perFrameMaterial->SetVariableMatrix("projectionMatrix", cam->GetProjectionMatrix());
 		m_perFrameMaterial->SetVariableVector3("camPosW", cam->GetPosition());
 		m_perFrameMaterial->SetVariableInt("numLights", numLights);
-		m_perFrameMaterial->SetVariableData("lights", m_lights, sizeof(WForwardRenderStageObjectPS::LightStruct) * numLights);
+		m_perFrameMaterial->SetVariableData("lights", m_lights, sizeof(LightStruct) * numLights);
 
 		m_perFrameMaterial->Bind(rt);
 
@@ -162,8 +178,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 			if (!object->GetAnimation()) {
 				WMaterial* material = m_objectMaterials.GetResourceOf(object);
 				if (material) {
-					material->Bind(rt);
-					object->Render(rt);
+					object->Render(rt, material);
 				}
 			}
 		}
@@ -175,8 +190,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 			if (object->GetAnimation()) {
 				WMaterial* material = m_objectMaterials.GetResourceOf(object);
 				if (material) {
-					material->Bind(rt);
-					object->Render(rt);
+					object->Render(rt, material);
 				}
 			}
 		}

@@ -133,36 +133,34 @@ public:
 	 * its valid (see Valid()) and not hidden (see Hide()). If frustum culling
 	 * is enabled (see EnableFrustumCulling()), the object will only render if
 	 * it is within the viewing frustum of the render target's camera. Before an
-	 * object binds its attached material (WMaterial::Bind()), it will set the
+	 * object binds the provided material (WMaterial::Bind()), it will set the
 	 * following variables and resources in the material, if they exist:
-	 * * "gWorld" (WMatrix) will be set to the world matrix of this object.
-	 * * "gProjection" (WMatrix) will be set to the projection matrix of the
-	 * 		camera.
-	 * * "gView" (WMatrix) will be set to the view matrix of the camera.
-	 * * "gCamPos" (WVector3) will be set to the world position of the camera.
-	 * * "gAnimation" (int) will be set to 1 if animation data is provided,
+	 * * "worldMatrix" (WMatrix) will be set to the world matrix of this object.
+	 * * "color" (WColor) will be set to the color of this object.
+	 * * "isAnimated" (int) will be set to 1 if animation data is available,
 	 * 		0 otherwise.
-	 * * "gInstancing" (int) will be set to 1 if instancing data is provided,
+	 * * "isInstanced" (int) will be set to 1 if instancing data is available,
 	 * 		0 otherwise.
-	 * * "gAnimationTextureWidth" (int) will be set to the width of the
+	 * * "animationTextureWidth" (int) will be set to the width of the
 	 * 		animation texture. This will only be set if gAnimation was set to 1.
-	 * * "gInstanceTextureWidth" (int) will be set to the width of the
+	 * * "instanceTextureWidth" (int) will be set to the width of the
 	 * 		instancing texture. This will only be set if gInstancing was set to 1.
-	 * * WMaterial::SetAnimationTexture() will be called and assigned the
-	 * 	 animation texture from the attached animation. This will only occur if
-	 * 	 gAnimation was set to 1.
-	 * * WMaterial::SetInstancingTexture() will be called and assigned the
-	 * 	 instancing texture created by this object. This will only occur if
-	 * 	 gInstancing was set to 1.
+	 * * texture "textureAnimation" will be assigned to the animation texture
+	 *      from the attached animation. This will only occur if isAnimated was
+	 *      set to 1.
+	 * * texture "textureInstancing" will be assigned to the instancing texture
+	 * 	    created by this object. This will only occur if isInstanced was set
+	 *      to 1.
 	 *
 	 * If the object's instancing is initiated (see InitInstancing()), and there
 	 * is at least one instance created (see CreateInstance()), the object will
 	 * be rendered using geometry instancing.
 	 * 
 	 * @param rt              Render target to render to.
+	 * @param material        Material to fill in with object data and bind
 	 * @param updateInstances Whether or not to update the instances data
 	 */
-	void Render(class WRenderTarget* rt, bool updateInstances = true);
+	void Render(class WRenderTarget* rt, class WMaterial* material, bool updateInstances = true);
 
 	/**
 	 * Sets the attached geometry.
@@ -243,6 +241,12 @@ public:
 	 * @return Number of currently created instances of the object
 	 */
 	unsigned int GetInstancesCount() const;
+
+	/**
+	 * Sets the object's color.
+	 * @param color  New color
+	 */
+	void SetColor(WColor color);
 
 	/**
 	 * Shows the object, allowing to render.
@@ -330,6 +334,8 @@ private:
 	class WGeometry* m_geometry;
 	/** Attached animation */
 	class WAnimation* m_animation;
+	/** Color of the object */
+	WColor m_color;
 	/** true if the world matrix needs to be updated, false otherwise */
 	bool m_bAltered;
 	/** true if the object is hidden, false otherwise */

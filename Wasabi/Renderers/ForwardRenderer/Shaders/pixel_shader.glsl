@@ -11,16 +11,24 @@ struct Light {
 	int type;
 };
 
-layout(set = 0, binding = 3) uniform sampler2D diffuseTexture;
-layout(set = 0, binding = 4) uniform UBO {
+layout(set = 0, binding = 0) uniform UBO {
+	mat4 worldMatrix;
+	int animationTextureWidth;
+	int instanceTextureWidth;
+	int isAnimated;
+	int isInstanced;
 	vec4 color;
-	int isTextured;
 } uboPerObject;
-layout(set = 1, binding = 5) uniform LUBO {
-	int numLights;
+
+layout(set = 1, binding = 1) uniform LUBO {
+	mat4 viewMatrix;
+	mat4 projectionMatrix;
 	vec3 camPosW;
+	int numLights;
 	Light lights[~~~~maxLights~~~~];
 } uboPerFrame;
+
+layout(set = 0, binding = 4) uniform sampler2D diffuseTexture;
 
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inWorldPos;
@@ -69,10 +77,7 @@ vec3 SpotLight(in vec3 pos, in vec3 dir, in vec3 col, in float intensity, in flo
 }
 
 void main() {
-	if (uboPerObject.isTextured == 1)
-		outFragColor = texture(diffuseTexture, inUV);
-	else
-		outFragColor = uboPerObject.color;
+	outFragColor = texture(diffuseTexture, inUV) + uboPerObject.color;
 	vec3 lighting = vec3(0,0,0);
 	for (int i = 0; i < uboPerFrame.numLights; i++) {
 		if (uboPerFrame.lights[i].type == 0)

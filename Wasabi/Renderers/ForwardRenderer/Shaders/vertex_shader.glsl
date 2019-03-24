@@ -11,17 +11,32 @@ layout(location = 3) in vec2 inUV;
 layout(location = 4) in uvec4 boneIndex;
 layout(location = 5) in vec4 boneWeight;
 
+struct Light {
+	vec4 color;
+	vec4 dir;
+	vec4 pos;
+	int type;
+};
+
 layout(set = 0, binding = 0) uniform UBO {
-	mat4 projectionMatrix;
 	mat4 worldMatrix;
-	mat4 viewMatrix;
 	int animationTextureWidth;
 	int instanceTextureWidth;
 	int isAnimated;
 	int isInstanced;
+	vec4 color;
 } uboPerObject;
-layout(set = 0, binding = 1) uniform sampler2D animationTexture;
-layout(set = 0, binding = 2) uniform sampler2D instancingTexture;
+
+layout(set = 1, binding = 1) uniform LUBO {
+	mat4 viewMatrix;
+	mat4 projectionMatrix;
+	vec3 camPosW;
+	int numLights;
+	Light lights[~~~~maxLights~~~~];
+} uboPerFrame;
+
+layout(set = 0, binding = 2) uniform sampler2D animationTexture;
+layout(set = 0, binding = 3) uniform sampler2D instancingTexture;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outWorldPos;
@@ -97,6 +112,6 @@ void main() {
 	vec4 localPos2 = instMtx * vec4(localPos1.xyz, 1.0);
 	outWorldPos = (uboPerObject.worldMatrix * localPos2).xyz;
 	outWorldNorm = (uboPerObject.worldMatrix * vec4(inNorm.xyz, 0.0)).xyz;
-	gl_Position = uboPerObject.projectionMatrix * uboPerObject.viewMatrix * vec4(outWorldPos, 1.0);
+	gl_Position = uboPerFrame.projectionMatrix * uboPerFrame.viewMatrix * vec4(outWorldPos, 1.0);
 }
 )"

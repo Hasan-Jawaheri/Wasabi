@@ -4,24 +4,26 @@
 #include "../Common/ResourceCollection.h"
 #include "../../Materials/WEffect.h"
 
+struct LightStruct {
+	WVector4 color;
+	WVector4 dir;
+	WVector4 pos;
+	int type;
+	int pad[3];
+};
+
 class WForwardRenderStageObjectVS : public WShader {
 public:
 	WForwardRenderStageObjectVS(class Wasabi* const app);
 	virtual void Load(bool bSaveData = false);
+	static W_SHADER_DESC GetDesc(int maxLights);
 };
 
 class WForwardRenderStageObjectPS : public WShader {
 public:
 	WForwardRenderStageObjectPS(class Wasabi* const app);
 	virtual void Load(bool bSaveData = false);
-
-	struct LightStruct {
-		WVector4 color;
-		WVector4 dir;
-		WVector4 pos;
-		int type;
-		int pad[3];
-	};
+	static W_SHADER_DESC GetDesc(int maxLights);
 };
 
 class WForwardRenderStage : public WRenderStage {
@@ -29,7 +31,7 @@ class WForwardRenderStage : public WRenderStage {
 	class WMaterial* m_perFrameMaterial;
 	ResourceCollection<class WObject, class WMaterial> m_objectMaterials;
 
-	WForwardRenderStageObjectPS::LightStruct* m_lights;
+	LightStruct* m_lights;
 
 public:
 	WForwardRenderStage(class Wasabi* const app);
