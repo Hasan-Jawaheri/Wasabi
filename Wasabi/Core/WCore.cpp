@@ -1,10 +1,14 @@
 #include "../Core/WCore.h"
-#include "../Renderers/WDeferredRenderer.h"
+#if 0
+#include "../Renderers/DeferredRenderer/WDeferredRenderer.h"
+#else
+#include "../Renderers/ForwardRenderer/WForwardRenderer.h"
+#endif
 #include "../WindowAndInput/WWindowAndInputComponent.h"
 #include "../Objects/WObject.h"
 #include "../Geometries/WGeometry.h"
 #include "../Materials/WEffect.h"
-#include "../Materials/WEffect.h"
+#include "../Materials/WMaterial.h"
 #include "../Cameras/WCamera.h"
 #include "../Images/WImage.h"
 #include "../Images/WRenderTarget.h"
@@ -530,7 +534,7 @@ int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {
 }
 
 WRenderer* Wasabi::CreateRenderer() {
-	return new WDeferredRenderer(this);
+	return new WForwardRenderer(this);
 }
 
 WSoundComponent* Wasabi::CreateSoundComponent() {

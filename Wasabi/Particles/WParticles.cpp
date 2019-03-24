@@ -33,7 +33,7 @@ public:
 
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
-			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerParticles", {
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "world"), // world
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "proj"), // projection
@@ -61,7 +61,7 @@ public:
 
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
-			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerParticles", {
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "world"), // world
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "proj"), // projection
@@ -85,7 +85,7 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 1),
+			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "textureDiffuse"),
 		};
 		LoadCodeGLSL(
 			#include "Shaders/particles_ps.glsl"
@@ -281,7 +281,12 @@ WError WParticlesManager::Load() {
 		fx->SetRasterizationState(rasterization_state);
 		fx->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
 
-		werr = fx->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
+		// ------------------------------------------------------------------------------------------------------------
+		// ------------------------------------------------------------------------------------------------------------
+		// ------------------------------------------------------------------------------------------------------------
+		// ------------------------------------------------------------------------------------------------------------
+		// ------------------------------------------------------------------------------------------------------------
+		//werr = fx->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
 		if (!werr)
 			return werr;
 	}
@@ -369,7 +374,12 @@ WError WParticles::Create(class WEffect* effect, unsigned int max_particles, WPa
 	m_geometry = new WParticlesGeometry(m_app);
 	m_material = new WMaterial(m_app);
 
-	m_material->SetEffect(effect);
+	// ------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------------------
+	//m_material->SetEffect(effect);
 
 	WParticlesVertex* vertices = new WParticlesVertex[max_particles];
 	WError err = m_geometry->CreateFromData(vertices, max_particles, nullptr, 0, true);
@@ -405,7 +415,12 @@ void WParticles::Render(class WRenderTarget* const rt) {
 			unsigned int num_particles = m_behavior->UpdateAndCopyToVB(cur_time, vb, m_maxParticles);
 			m_geometry->UnmapVertexBuffer();
 
-			m_material->Bind(rt);
+			// ------------------------------------------------------------------------------------------------------------
+			// ------------------------------------------------------------------------------------------------------------
+			// ------------------------------------------------------------------------------------------------------------
+			// ------------------------------------------------------------------------------------------------------------
+			// ------------------------------------------------------------------------------------------------------------
+			// ------------------------------------------------------------------------------------------------------------m_material->Bind(rt);
 			m_geometry->Draw(rt, num_particles, 1, false);
 		}
 	}

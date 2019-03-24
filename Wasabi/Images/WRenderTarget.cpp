@@ -168,7 +168,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* ta
 }
 
 WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<class WImage*> targets, WImage* depth) {
-	if (!targets.size() || (depth && !depth->Valid()))
+	if ((!targets.size() && (!depth || !depth->Valid())) || (depth && !depth->Valid()))
 		return WError(W_INVALIDPARAM);
 	for (auto it = targets.begin(); it != targets.end(); it++)
 		if (!(*it) || !(*it)->Valid())

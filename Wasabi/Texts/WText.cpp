@@ -69,20 +69,20 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 0),
+			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 0, "textureFont"),
 		};
 		LoadCodeGLSL(
 			"#version 450\n"
 			"#extension GL_ARB_separate_shader_objects : enable\n"
 			"#extension GL_ARB_shading_language_420pack : enable\n"
 			""
-			"layout(binding = 0) uniform sampler2D sampler;\n"
+			"layout(binding = 0) uniform sampler2D textureFont;\n"
 			"layout(location = 0) in vec2 inUV;\n"
 			"layout(location = 1) in vec4 inCol;\n"
 			"layout(location = 0) out vec4 outFragColor;\n"
 			""
 			"void main() {\n"
-			"	float c = texture(sampler, inUV).r;\n"
+			"	float c = texture(textureFont, inUV).r;\n"
 			"	outFragColor = vec4(c) * inCol;\n"
 			"}\n"
 		, bSaveData);
@@ -147,7 +147,7 @@ WError WTextComponent::Initialize() {
 	dss.front = dss.back;
 	m_textEffect->SetDepthStencilState(dss);
 
-	ret = m_textEffect->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
+	ret = m_textEffect->BuildPipeline(m_app->Renderer->GetRenderTarget());
 	vs->RemoveReference();
 	ps->RemoveReference();
 
@@ -223,9 +223,17 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 	}
 
 	f.textMaterial = new WMaterial(m_app);
-	err = f.textMaterial->SetEffect(m_textEffect);
+	err = f.textMaterial->CreateForEffect(m_textEffect);
 	if (!err) {
 		delete[] (stbtt_bakedchar*)f.cdata;
+		f.img->RemoveReference();
+		W_SAFE_REMOVEREF(f.textMaterial);
+		return err;
+	}
+
+	err = f.textMaterial->SetTexture(0, f.img);
+	if (!err) {
+		delete[](stbtt_bakedchar*)f.cdata;
 		f.img->RemoveReference();
 		W_SAFE_REMOVEREF(f.textMaterial);
 		return err;
@@ -325,13 +333,16 @@ void WTextComponent::Render(WRenderTarget* rt) {
 	float scrWidth = m_app->WindowAndInputComponent->GetWindowWidth();
 	float scrHeight = m_app->WindowAndInputComponent->GetWindowHeight();
 
+	bool isEffectBound = false;
 	for (int f = 0; f < m_fonts.size(); f++) {
 		W_FONT_OBJECT* font = &m_fonts[f];
 		TextVertex* vb = nullptr;
 		int curvert = 0;
 		if (font->texts.size()) {
-			font->textMaterial->SetTexture(0, font->img);
+			if (!isEffectBound)
+				m_textEffect->Bind(rt);
 			font->textMaterial->Bind(rt);
+			isEffectBound = true;
 			font->textGeometry->MapVertexBuffer((void**)&vb);
 		}
 		for (auto text : font->texts) {

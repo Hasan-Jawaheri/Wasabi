@@ -19,14 +19,6 @@ std::string WObjectManager::GetTypeName() const {
 WObjectManager::WObjectManager(class Wasabi* const app) : WManager<WObject>(app) {
 }
 
-void WObjectManager::Render(WRenderTarget* rt) {
-	for (int i = 0; i < W_HASHTABLESIZE; i++) {
-		for (int j = 0; j < m_entities[i].size(); j++) {
-			m_entities[i][j]->Render(rt);
-		}
-	}
-}
-
 WError WObjectManager::Load() {
 	return WError(W_SUCCEEDED);
 }
@@ -41,7 +33,7 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 	};
 	vector<pickStruct> pickedObjects;
 
-	WCamera* cam = m_app->Renderer->GetDefaultRenderTarget()->GetCamera();
+	WCamera* cam = m_app->Renderer->GetRenderTarget()->GetCamera();
 	if (!cam)
 		return nullptr;
 
@@ -212,7 +204,6 @@ void WInstance::OnStateChange(STATE_CHANGE_TYPE type) {
 
 WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_instanceV(0) {
 	m_geometry = nullptr;
-	m_material = app->Renderer->CreateDefaultMaterial();
 	m_animation = nullptr;
 
 	m_hidden = false;
@@ -229,7 +220,6 @@ WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_instanc
 
 WObject::~WObject() {
 	W_SAFE_REMOVEREF(m_geometry);
-	W_SAFE_REMOVEREF(m_material);
 	W_SAFE_REMOVEREF(m_animation);
 
 	VkDevice device = m_app->GetVulkanDevice();
@@ -246,14 +236,10 @@ std::string WObject::GetTypeName() const {
 }
 
 bool WObject::Valid() const {
-	if (m_geometry && m_material && m_geometry->Valid() && m_material->Valid())
-		if (m_geometry->GetVertexDescriptionSize(0) == m_material->GetEffect()->GetInputLayoutSize(0))
-			return true;
-
-	return false;
+	return m_geometry && m_geometry->Valid();
 }
 
-void WObject::Render(WRenderTarget* rt) {
+void WObject::Render(WRenderTarget* rt, bool updateInstances) {
 	if (Valid() && !m_hidden) {
 		WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();
@@ -262,34 +248,35 @@ void WObject::Render(WRenderTarget* rt) {
 				return;
 		}
 
-		_UpdateInstanceBuffer();
+		if (updateInstances)
+			_UpdateInstanceBuffer();
 
-		m_material->SetVariableMatrix("gWorld", worldM);
-		m_material->SetVariableMatrix("gProjection", cam->GetProjectionMatrix());
-		m_material->SetVariableMatrix("gView", cam->GetViewMatrix());
-		m_material->SetVariableVector3("gCamPos", cam->GetPosition());
-		// animation variables
 		bool is_animated = m_animation && m_animation->Valid() && m_geometry->IsRigged();
 		bool is_instanced = m_instanceV.size() > 0;
-		m_material->SetVariableInt("gAnimation", is_animated ? 1 : 0);
-		m_material->SetVariableInt("gInstancing", is_instanced ? 1 : 0);
-		if (is_animated) {
-			WImage* animTex = m_animation->GetTexture();
-			m_material->SetVariableInt("gAnimationTextureWidth", animTex->GetWidth());
-			m_material->SetAnimationTexture(animTex);
-		}
-		// instancing variables
-		if (is_instanced) {
-			m_material->SetVariableInt("gInstanceTextureWidth", m_instanceTexture->GetWidth());
-			m_material->SetInstancingTexture(m_instanceTexture);
-		}
 
-		WError err;
-		// bind the pipeline
-		err = m_material->Bind(rt, is_animated ? 2 : 1);
+#if 0
+		if (updateMaterial) {
+			m_material->SetVariableMatrix("gWorld", worldM);
+			m_material->SetVariableMatrix("gProjection", cam->GetProjectionMatrix());
+			m_material->SetVariableMatrix("gView", cam->GetViewMatrix());
+			m_material->SetVariableVector3("gCamPos", cam->GetPosition());
+			// animation variables
+			m_material->SetVariableInt("gAnimation", is_animated ? 1 : 0);
+			m_material->SetVariableInt("gInstancing", is_instanced ? 1 : 0);
+			if (is_animated) {
+				WImage* animTex = m_animation->GetTexture();
+				m_material->SetVariableInt("gAnimationTextureWidth", animTex->GetWidth());
+				m_material->SetAnimationTexture(animTex);
+			}
+			// instancing variables
+			if (is_instanced) {
+				m_material->SetVariableInt("gInstanceTextureWidth", m_instanceTexture->GetWidth());
+				m_material->SetInstancingTexture(m_instanceTexture);
+			}
+		}
+#endif
 
-		// bind the rest of the buffers and draw
-		err = m_geometry->Draw(rt, -1, fmax(m_instanceV.size(), 1), is_animated);
+		WError err = m_geometry->Draw(rt, -1, fmax(m_instanceV.size(), 1), is_animated);
 	}
 }
 
@@ -300,18 +287,6 @@ WError WObject::SetGeometry(class WGeometry* geometry) {
 	m_geometry = geometry;
 	if (geometry) {
 		m_geometry->AddReference();
-	}
-
-	return WError(W_SUCCEEDED);
-}
-
-WError WObject::SetMaterial(class WMaterial* material) {
-	if (m_material)
-		m_material->RemoveReference();
-
-	m_material = material;
-	if (material) {
-		m_material->AddReference();
 	}
 
 	return WError(W_SUCCEEDED);
@@ -423,10 +398,6 @@ WGeometry* WObject::GetGeometry() const {
 	return m_geometry;
 }
 
-WMaterial* WObject::GetMaterial() const {
-	return m_material;
-}
-
 WAnimation* WObject::GetAnimation() const {
 	return m_animation;
 }
@@ -464,41 +435,9 @@ WVector3 WObject::GetScale() const {
 	return m_scale;
 }
 
-float WObject::GetScaleX() const {
-	return m_scale.x;
-}
-
-float WObject::GetScaleY() const {
-	return m_scale.y;
-}
-
-float WObject::GetScaleZ() const {
-	return m_scale.z;
-}
-
-void WObject::Scale(float x, float y, float z) {
-	m_bAltered = true;
-	m_scale = WVector3(x, y, z);
-}
-
 void WObject::Scale(WVector3 scale) {
 	m_bAltered = true;
 	m_scale = scale;
-}
-
-void WObject::ScaleX(float scale) {
-	m_bAltered = true;
-	m_scale.x = scale;
-}
-
-void WObject::ScaleY(float scale) {
-	m_bAltered = true;
-	m_scale.y = scale;
-}
-
-void WObject::ScaleZ(float scale) {
-	m_bAltered = true;
-	m_scale.z = scale;
 }
 
 WMatrix WObject::GetWorldMatrix() {
@@ -550,7 +489,7 @@ WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
 
 	uint tmpId = 0;
 	std::streamoff dependenciesStart = outputStream.tellp();
-	WFileAsset* dependencies[3] = { m_geometry, m_material, m_animation };
+	WFileAsset* dependencies[3] = { m_geometry, m_animation };
 	for (uint i = 0; i < sizeof(dependencies) / sizeof(WFileAsset*); i++)
 		outputStream.write((char*)&tmpId, sizeof(tmpId));
 
@@ -603,7 +542,6 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream) {
 	WError status(W_SUCCEEDED);
 	uint dependencyId;
 	WGeometry* geometry = nullptr;
-	WMaterial* material = nullptr;
 	WSkeleton* animation = nullptr;
 
 	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
@@ -614,18 +552,11 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream) {
 
 	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
 	if (dependencyId != 0 && status)
-		status = file->LoadAsset<WMaterial>(dependencyId, &material);
-	if (status)
-		SetMaterial(material);
-
-	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
-	if (dependencyId != 0 && status)
 		status = file->LoadAsset<WSkeleton>(dependencyId, &animation);
 	if (status)
 		SetAnimation(animation);
 
 	W_SAFE_REMOVEREF(geometry);
-	W_SAFE_REMOVEREF(material);
 	W_SAFE_REMOVEREF(animation);
 	if (!status)
 		DestroyInstancingResources();

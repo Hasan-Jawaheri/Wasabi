@@ -20,9 +20,10 @@
  * WEffects and their shaders. Parameters include all types of variables and
  * textures. WMaterials provide a convenient interface for setting values
  * without having to deal with memory mapping between the host and the client
- * (The RAM and the GPU memory). An effect (WEffect) cannot be used without a
- * material, and thus object rendering requires a material (See
- * WObject::SetMaterial()).
+ * (The RAM and the GPU memory). In Vulkan terms, a WMaterial is a descriptor
+ * set that is a subset of all descriptors of a WEffect. Each material may
+ * have a descriptor set containing all bound resources of a WEffect, or only
+ * a subset of them.
  */
 class WMaterial : public WBase, public WFileAsset {
 	/**
@@ -36,26 +37,28 @@ public:
 	~WMaterial();
 
 	/**
-	 * Sets the effect that this material will use.
-	 * @param  effect Effect to use
-	 * @return        Error code, see WError.h
+	 * Builds the material's resources to be used for a certain effect. The
+	 * material may be created for only a subset of the bound resources of
+	 * the WEffect using the boundResources parameter.
+	 * @param  effect      Effect to use
+	 * @param  bindingSet  Set index to use from effect
+	 * @return             Error code, see WError.h
 	 */
-	WError SetEffect(class WEffect* const effect);
+	WError CreateForEffect(class WEffect* const effect, uint bindingSet = 0);
 
 	/**
-	 * Binds the material and its effect to the graphics pipeline. A child class
-	 * may choose to override this to change the binding procedure, or apply a
-	 * certain operation upon binding. The render target must have its Begin()
-	 * function called before this function is called.
-	 * @param  rt                 Render target whose pipeline is being used
-	 * @param  num_vertex_buffers Number of vertex buffers that the material
-	 *                            needs to render, valid values are either 0 if
-	 *                            the effect uses no vertex buffers, or 1 to the
-	 *                            number of input layouts in the effect
-	 * @return                    Error code, see WError.h
+	 * Binds the resources to the pipeline. In Vulkan terms, this binds the descriptor
+	 * set associated with this material.
+	 * @param  rt  Render target to bind to its command buffer
+	 * @return     Error code, see WError.h
 	 */
-	virtual WError Bind(class WRenderTarget* rt,
-						unsigned int num_vertex_buffers = -1);
+	virtual WError Bind(class WRenderTarget* rt);
+
+	/**
+	 * Retrieves the Vulkan descriptor set created by this material.
+	 * @return Material's descriptor set
+	 */
+	VkDescriptorSet GetDescriptorSet() const;
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -176,26 +179,12 @@ public:
 	WError SetTexture(int binding_index, class WImage* img);
 
 	/**
-	 * Sets the texture that the effect marks as the animation texture, if it
-	 * exists.
-	 * @param  img The image to set the texture to, can be nullptr
-	 * @return     Error code, see WError.h
+	 * Sets a texture in the bound effect.
+	 * @param  name  Name of the texture to bind to
+	 * @param  img   The image to set the texture to, can be nullptr
+	 * @return       Error code, see WError.h
 	 */
-	WError SetAnimationTexture(class WImage* img);
-
-	/**
-	 * Sets the texture that the effect marks as the instancing texture, if it
-	 * exists.
-	 * @param  img The image to set the texture to, can be nullptr
-	 * @return     Error code, see WError.h
-	 */
-	WError SetInstancingTexture(class WImage* img);
-
-	/**
-	 * Retrieves the bound effect.
-	 * @return The bound effect
-	 */
-	class WEffect* GetEffect() const;
+	WError SetTexture(std::string name, class WImage* img);
 
 	/**
 	 * Checks the validity of the material. A material is valid if it has a
@@ -208,10 +197,14 @@ public:
 	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
 
 private:
+	/** Effect that this material is bound to */
+	class WEffect* m_effect;
 	/** The Vulkan descriptor pool used for the descriptor set */
 	VkDescriptorPool m_descriptorPool;
 	/** The Vulkan descriptor set object */
 	VkDescriptorSet m_descriptorSet;
+	/** The set index of m_descriptorSet */
+	uint m_setIndex;
 	/** An array to hold write descriptor sets (filled/initialized on every
 	    Bind() call) */
 	vector<VkWriteDescriptorSet> m_writeDescriptorSets;
@@ -221,6 +214,10 @@ private:
 		VkDeviceMemory memory;
 		/** Buffer descriptor information */
 		VkDescriptorBufferInfo descriptor;
+		/** Current data in the material's buffer, before it is copied to GPU memory */
+		void* data;
+		/** Specifies whether or not data has changed and needs to be copied to GPU memory */
+		bool dirty;
 		/** Pointer to the ubo description in the effect */
 		struct W_BOUND_RESOURCE* ubo_info;
 	};
@@ -237,8 +234,6 @@ private:
 	};
 	/** List of all textures (or samplers) for the effect */
 	vector<SAMPLER_INFO> m_sampler_info;
-	/** The bound effect */
-	class WEffect* m_effect;
 
 	/**
 	 * Frees all resources allocated for the material.

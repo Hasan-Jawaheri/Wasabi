@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Wasabi.h>
-#include <Renderers/WDeferredRenderer.h>
+#include <Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class WasabiTester : public Wasabi {
 	class WTestState* m_state;
@@ -31,7 +31,7 @@ public:
 	WTestState(Wasabi* const app) : WGameState(app) {}
 
 	virtual WRenderer* CreateRenderer() {
-		return new WDeferredRenderer(m_app);
+		return new WForwardRenderer(m_app);
 	}
 	virtual WPhysicsComponent* CreatePhysicsComponent() {
 		return nullptr;

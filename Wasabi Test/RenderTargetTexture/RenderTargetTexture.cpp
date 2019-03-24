@@ -1,4 +1,4 @@
-#pragma once
+#if 0
 
 #include "RenderTargetTexture.hpp"
 
@@ -92,3 +92,6 @@ void RenderTargetTextureDemo::Cleanup() {
 	rt->RemoveReference();
 	rtImg->RemoveReference();
 }
+
+
+#endif

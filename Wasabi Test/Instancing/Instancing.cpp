@@ -1,3 +1,5 @@
+#if 0
+
 #include "Instancing.hpp"
 
 InstancingDemo::InstancingDemo(Wasabi* const app) : WTestState(app) {
@@ -6,13 +8,14 @@ InstancingDemo::InstancingDemo(Wasabi* const app) : WTestState(app) {
 void InstancingDemo::Load() {
 	geometry = new WGeometry(m_app);
 	geometry->LoadFromHXM("Media/dante.HXM");
+	//geometry->CreateCube(0.9);
 
 	texture = new WImage(m_app);
 	texture->Load("Media/dante.bmp");
 
 	character = new WObject(m_app);
 	character->SetGeometry(geometry);
-	((WFRMaterial*)character->GetMaterial())->Texture(texture);
+	character->GetMaterial()->SetTexture(0, texture);
 
 	int instancing = 2;
 
@@ -34,7 +37,7 @@ void InstancingDemo::Load() {
 				if (instancing == 1) {
 					WObject* c = new WObject(m_app);
 					c->SetGeometry(geometry);
-					((WFRMaterial*)c->GetMaterial())->Texture(texture);
+					c->GetMaterial()->SetTexture(0, texture);
 					c->SetPosition(px, 0, pz);
 					objectsV.push_back(c);
 				}
@@ -53,3 +56,5 @@ void InstancingDemo::Cleanup() {
 	for (unsigned int i = 0; i < objectsV.size(); i++)
 		objectsV[i]->RemoveReference();
 }
+
+#endif

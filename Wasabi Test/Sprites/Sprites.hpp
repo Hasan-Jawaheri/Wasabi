@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../TestSuite.hpp"
-#include <Renderers/WForwardRenderer.h>
+#include <Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class SpritesDemo : public WTestState {
 	WSprite* m_sprites[3];

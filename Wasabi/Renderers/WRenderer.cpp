@@ -1,4 +1,5 @@
 #include "WRenderer.h"
+#include "WRenderStage.h"
 #include "../Images/WRenderTarget.h"
 #include "../WindowAndInput/WWindowAndInputComponent.h"
 
@@ -15,6 +16,8 @@ void WRenderer::_Cleanup() {
 		vkDestroySemaphore(m_device, m_semaphores.renderComplete, nullptr);
 	m_semaphores.presentComplete = VK_NULL_HANDLE;
 	m_semaphores.renderComplete = VK_NULL_HANDLE;
+
+	SetRenderingStages(std::vector<WRenderStage*>({}));
 
 	W_SAFE_REMOVEREF(m_renderTarget);
 
@@ -73,7 +76,29 @@ void WRenderer::_Render() {
 
 	m_renderTarget->UseFrameBuffer(currentBuffer);
 
-	Render(m_renderTarget);
+	WRenderTarget* currentRT = nullptr;
+	for (auto it = m_renderStages.begin(); it != m_renderStages.end(); it++) {
+		WRenderStage* stage = *it;
+		if (stage->m_stageDescription.target != RENDER_STAGE_TARGET_PREVIOUS) {
+			if (currentRT)
+				currentRT->End();
+			if (stage->m_renderTarget)
+				currentRT = stage->m_renderTarget;
+			else
+				currentRT = m_renderTarget;
+			WError status = currentRT->Begin();
+			if (!status)
+				return;
+		}
+		WError status = stage->Render(this, currentRT, -1);
+		if (!status)
+			return;
+	}
+	if (!currentRT) {
+		currentRT = m_renderTarget;
+		currentRT->Begin();
+	}
+	currentRT->End(false);
 
 	// Command buffer to be sumitted to the queue
 	VkCommandBuffer cmdBuf = m_renderTarget->GetCommnadBuffer();
@@ -95,7 +120,7 @@ void WRenderer::_Render() {
 	vkDeviceWaitIdle(m_device);
 }
 
-WError WRenderer::Resize(unsigned int width, unsigned int height) {
+WError WRenderer::Resize(uint width, uint height) {
 	if (m_width == width && m_height == height)
 		return W_SUCCEEDED;
 
@@ -159,13 +184,74 @@ WError WRenderer::Resize(unsigned int width, unsigned int height) {
 	vkQueueWaitIdle(m_queue);
 	vkDeviceWaitIdle(m_device);
 
+	for (auto it = m_renderStages.begin(); it != m_renderStages.end(); it++) {
+		WError err = (*it)->Resize(width, height);
+		if (!err)
+			return err;
+	}
+
 	return WError(W_SUCCEEDED);
+}
+
+WError WRenderer::SetRenderingStages(std::vector<WRenderStage*> stages) {
+	for (auto it = m_renderStages.begin(); it != m_renderStages.end(); it++)
+		(*it)->Cleanup();
+	m_renderStages.clear();
+
+	if (stages.size() > 0) {
+		if (stages[0]->m_stageDescription.target == RENDER_STAGE_TARGET_PREVIOUS)
+			return WError(W_INVALIDPARAM);
+
+		W_RENDER_STAGE_TARGET lastTarget = RENDER_STAGE_TARGET_PREVIOUS;
+		for (auto it = stages.begin(); it != stages.end(); it++)
+			if ((*it)->m_stageDescription.target != RENDER_STAGE_TARGET_PREVIOUS)
+				lastTarget = (*it)->m_stageDescription.target;
+		if (lastTarget != RENDER_STAGE_TARGET_BACK_BUFFER)
+			return WError(W_INVALIDPARAM);
+
+		uint w = m_app->WindowAndInputComponent->GetWindowWidth();
+		uint h = m_app->WindowAndInputComponent->GetWindowHeight();
+		for (uint i = 0; i < stages.size(); i++) {
+			m_renderStages.push_back(stages[i]);
+			WError err = stages[i]->Initialize(m_renderStages, w, h);
+			if (!err) {
+				SetRenderingStages(std::vector<WRenderStage*>({}));
+				return err;
+			}
+		}
+	}
+
+	return WError(W_SUCCEEDED);
+}
+
+WRenderStage* WRenderer::GetRenderStage(std::string stageName) const {
+	for (auto it = m_renderStages.begin(); it != m_renderStages.end(); it++) {
+		if ((*it)->m_stageDescription.name == stageName)
+			return *it;
+	}
+	return nullptr;
+}
+
+WRenderTarget* WRenderer::GetRenderTarget(std::string stageName) const {
+	if (stageName == "")
+		return m_renderTarget;
+
+	WRenderTarget* currentRT = nullptr;
+	for (auto it = m_renderStages.begin(); it != m_renderStages.end(); it++) {
+		WRenderStage* stage = *it;
+		if (stage->m_stageDescription.target != RENDER_STAGE_TARGET_PREVIOUS) {
+			if (stage->m_renderTarget)
+				currentRT = stage->m_renderTarget;
+			else
+				currentRT = m_renderTarget;
+			if (stage->m_stageDescription.name == stageName)
+				return currentRT;
+		}
+	}
+
+	return currentRT;
 }
 
 VkQueue WRenderer::GetQueue() const {
 	return m_queue;
-}
-
-WRenderTarget* WRenderer::GetDefaultRenderTarget() const {
-	return m_renderTarget;
 }

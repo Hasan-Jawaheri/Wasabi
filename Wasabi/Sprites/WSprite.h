@@ -28,35 +28,9 @@ class WSprite : public WBase {
 	 */
 	virtual std::string GetTypeName() const;
 
-	/** True if the last call to Load() failed */
-	bool m_lastLoadFailed;
-	/** true if the sprite is hidden (will no render), false otherwise */
-	bool m_hidden;
-	/** Texture of the sprite */
-	class WImage* m_img;
-	/** Screen-space position of the sprite */
-	WVector2 m_pos;
-	/** Size of the sprite, in pixels */
-	WVector2 m_size;
-	/** Rotation center of the sprite relative to top-left corner, in pixels */
-	WVector2 m_rotationCenter;
-	/** Angle of the sprite, in radians */
-	float m_angle;
-	/** Priority of the sprite, higher priority sprites render over lower ones */
-	unsigned int m_priority;
-	/** Alpha (transparency) of the sprite, 0 being fully transparent and 1 being
-	    fully opaque */
-	float m_alpha;
-	/** true if position/size/etc... changed and geometry needs to be rebuilt */
-	bool m_geometry_changed;
-
-	/** Rendering material */
-	class WMaterial* m_material;
-	/** Rendering geometry */
-	class WGeometry* m_geometry;
-
 public:
 	WSprite(Wasabi* const app, unsigned int ID = 0);
+	WSprite(Wasabi* const app, class WMaterial* material, unsigned int ID = 0);
 	~WSprite();
 
 	/**
@@ -82,20 +56,18 @@ public:
 	 * Layout:
 	 * - W_VERTEX_ATTRIBUTE("pos2", 2)
 	 * - W_ATTRIBUTE_UV
-	 * The default vertex shader can be used from
-	 * WSpriteManager::GetSpriteVertexShader().
+	 * The default vertex shader can be used from the default sprites render stage
 	 * The input geometry is 2 triangles with 4 vertices.
 	 *
-	 * @param mat Material to set
+	 * @param mat Material to set, cannot be null
 	 */
 	void SetMaterial(class WMaterial* mat);
 
 	/**
-	 * Sets the position of the sprite in screen-space.
-	 * @param x X-coordinate in screen-space
-	 * @param y Y-coordinate in screen-space
+	 * Retrieves the current material.
+	 * @return  Currently used material
 	 */
-	void SetPosition(float x, float y);
+	class WMaterial* GetMaterial() const;
 
 	/**
 	 * Sets the position of the sprite in screen-space.
@@ -109,13 +81,6 @@ public:
 	 * @param units Units to move forward by
 	 */
 	void Move(float units);
-
-	/**
-	 * Sets the size of the sprite.
-	 * @param sizeX Width of the sprite, in pixels
-	 * @param sizeY Height of the sprite, in pixels
-	 */
-	void SetSize(float sizeX, float sizeY);
 
 	/**
 	 * Sets the size of the sprite.
@@ -161,13 +126,6 @@ public:
 	void SetPriority(unsigned int priority);
 
 	/**
-	 * Sets the alpha value for the sprite. Alpha represents the transparency of
-	 * the sprite, 0 being fully transparent and 1 being fully opaque.
-	 * @param fAlpha New alpha value for the sprite
-	 */
-	void SetAlpha(float fAlpha);
-
-	/**
 	 * Renders the sprite. The sprite will not render if its hidden or invalid
 	 * (see Valid()).
 	 * Material settings during render:
@@ -200,34 +158,10 @@ public:
 	float GetAngle() const;
 
 	/**
-	 * Retrieves the x-position of the sprite.
-	 * @return X-position of the sprite, in screen-space
-	 */
-	float GetPositionX() const;
-
-	/**
-	 * Retrieves the y-position of the sprite.
-	 * @return Y-position of the sprite, in screen-space
-	 */
-	float GetPositionY() const;
-
-	/**
 	 * Retrieves the position of the sprite.
 	 * @return XY-coordinates of the sprite, in screen-space
 	 */
 	WVector2 GetPosition() const;
-
-	/**
-	 * Retrieves the width of the sprite.
-	 * @return Width of the sprite, in pixels
-	 */
-	float GetSizeX() const;
-
-	/**
-	 * Retrieves the height of the sprite.
-	 * @return Height of the sprite, in pixels
-	 */
-	float GetSizeY() const;
 
 	/**
 	 * Retrieves the size of the sprite.
@@ -247,6 +181,31 @@ public:
 	 * @return true if the sprite is valid, false otherwise
 	 */
 	virtual bool Valid() const;
+
+private:
+	/** True if the last call to Load() failed */
+	bool m_lastLoadFailed;
+	/** true if the sprite is hidden (will no render), false otherwise */
+	bool m_hidden;
+	/** Texture of the sprite */
+	class WImage* m_img;
+	/** Screen-space position of the sprite */
+	WVector2 m_pos;
+	/** Size of the sprite, in pixels */
+	WVector2 m_size;
+	/** Rotation center of the sprite relative to top-left corner, in pixels */
+	WVector2 m_rotationCenter;
+	/** Angle of the sprite, in radians */
+	float m_angle;
+	/** Priority of the sprite, higher priority sprites render over lower ones */
+	unsigned int m_priority;
+	/** true if position/size/etc... changed and geometry needs to be rebuilt */
+	bool m_geometryChanged;
+
+	/** Rendering material, null if default */
+	class WMaterial* m_material;
+	/** Rendering geometry */
+	class WGeometry* m_geometry;
 };
 
 /**
@@ -262,15 +221,6 @@ class WSpriteManager : public WManager<WSprite> {
 	 */
 	virtual std::string GetTypeName() const;
 
-	/** Geometry used to render full-screen sprites */
-	class WGeometry* m_spriteFullscreenGeometry;
-	/** Vertex shader used by all sprites */
-	class WShader* m_spriteVertexShader;
-	/** Default pixel shader used by sprites */
-	class WShader* m_spritePixelShader;
-
-	class WGeometry* CreateSpriteGeometry() const;
-
 public:
 	WSpriteManager(class Wasabi* const app);
 	~WSpriteManager();
@@ -281,41 +231,9 @@ public:
 	 */
 	WError Load();
 
-	/**
-	 * Renders the sprites to a render target.
-	 * @param rt Render target to render to
-	 */
-	void Render(class WRenderTarget* rt);
+private:
+	/** Geometry used to render full-screen sprites */
+	class WGeometry* m_spriteFullscreenGeometry;
 
-	/**
-	 * Retrieves the default vertex shader that sprites use.
-	 * @return Default vertex shader that sprites use
-	 */
-	class WShader* GetSpriteVertexShader() const;
-
-	/**
-	 * Retrieves the default pixel shader that sprites can use.
-	 * @return Default pixel shader that sprites can use
-	 */
-	class WShader* GetSpritePixelShader() const;
-
-	/**
-	 * Creates a new WEffect using the default sprite vertex shader and a
-	 * supplied pixel shader and other states
-	 * @param ps  A pixel/fragment shader to use. If none is provided, the
-	 *            default pixel shader will be used
-	 * @param bs  Blend state to use. If none is provided, the default
-	 *            blend state will be used (do not set .colorWriteMask to 0)
-	 * @param bs  Depth/stencil state to use. If none is provided, the default
-	 *            depth/stencil state will be used
-	 * @param bs  Rasterization state to use. If none is provided, the default
-	 *            rasterization state will be used
-	 * @return    Newly created effect, or nullptr on failure
-	 */
-	class WEffect* CreateSpriteEffect(
-		WShader* ps = nullptr,
-		VkPipelineColorBlendAttachmentState bs = {},
-		VkPipelineDepthStencilStateCreateInfo dss = {},
-		VkPipelineRasterizationStateCreateInfo rs = {}
-	) const;
+	class WGeometry* CreateSpriteGeometry() const;
 };

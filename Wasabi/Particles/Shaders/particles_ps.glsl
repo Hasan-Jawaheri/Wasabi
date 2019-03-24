@@ -7,10 +7,10 @@ layout(location = 0) in vec2 inUV;
 layout(location = 1) in float inAlpha;
 layout(location = 0) out vec4 outFragColor;
 
-layout(binding = 1) uniform sampler2D samplerColor;
+layout(binding = 1) uniform sampler2D textureDiffuse;
 
 void main() {
-	vec4 color = texture(samplerColor, inUV).rgba;
+	vec4 color = texture(textureDiffuse, inUV).rgba;
 	color.a *= inAlpha;
 	outFragColor = color;
 }

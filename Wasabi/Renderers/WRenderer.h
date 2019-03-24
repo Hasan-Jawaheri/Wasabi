@@ -12,8 +12,6 @@
 
 #include "../Core/WCore.h"
 
-#define STRINGIFY_INCLUDE(src) #src
-
 /** Specifies which components are to be rendered. The fields can be bitwise
 		OR'ed (e.g. RENDER_FILTER_OBJECTS | RENDER_FILTER_PARTICLES) to add
 		multiple filters. */
@@ -28,6 +26,12 @@ enum W_RENDER_FILTER {
 	RENDER_FILTER_PARTICLES = 8,
 	/** Render terrains */
 	RENDER_FILTER_TERRAIN = 16,
+};
+
+/** Specifies the type of a texture sampler */
+enum W_TEXTURE_SAMPLER_TYPE {
+	/** Default renderer's sampler */
+	TEXTURE_SAMPLER_DEFAULT = 0,
 };
 
 /**
@@ -81,19 +85,6 @@ public:
 	virtual WError LoadDependantResources();
 
 	/**
-	 * Renders the scene to a certain render target. This function should be
-	 * implemented by a child class and it should perform the child-specific
-	 * rendering procedure. For a renderer bound to Wasabi, this function will be
-	 * called during Wasabi's Wasabi::StartEngine() call. The Render call must
-	 * perform Begin() and End() for the given render target and the End() must
-	 * NOT submit (first parameter must be false).
-	 * @param rt     Render target to render the scene to
-	 * @param filter A filter, represented by a bitfield whose bits are any
-	 *               combination of W_RENDER_FILTER flags
-	 */
-	virtual void Render(class WRenderTarget* rt, unsigned int filter = -1) = 0;
-
-	/**
 	 * Frees all resources allocated by the renderer. This function should be
 	 * implemented by a child class and it should perform the child-specific
 	 * cleanup procedure. For a renderer bound to Wasabi, this function will be
@@ -111,37 +102,46 @@ public:
 	 * @param  height New screen (window) height
 	 * @return        Error code, see WError
 	 */
-	virtual WError Resize(unsigned int width, unsigned int height);
+	virtual WError Resize(uint width, uint height);
 
 	/**
-	 * Returns a pointer to a newly allocated material that performs the default
-	 * rendering for this particular renderer. This function should be
-	 * implemented by a child class and should ideally return a material that
-	 * works with the renderer without any further initialization. The returned
-	 * material should be freed (via WMaterial::RemoveReference()) by the caller.
-	 * @return Newly allocated material
+	 * Destroys the previously set render stages and assigns the new ones. This
+	 * function will call Initialize on all the render stages. Render stages
+	 * define the sequence of rendering events that happen when each frame is
+	 * rendered.
+	 * @param stages  Render stages to use
+	 * @return        Error code, see WError
 	 */
-	virtual class WMaterial* CreateDefaultMaterial() = 0;
+	WError SetRenderingStages(std::vector<class WRenderStage*> stages);
 
 	/**
-	 * Retrieves a default Vulkan image sampler used by materials for attaching
-	 * textures to the graphics pipeline.
-	 * @return A handle of a usable Vulkan image sampler
+	 * Retrieves a set render stage with a given name.
+	 * @param stageName  Name of the stage to retrieve
+	 * @return           Render stage requested
 	 */
-	virtual VkSampler GetDefaultSampler() const = 0;
+	class WRenderStage* GetRenderStage(std::string stageName) const;
+
+	/**
+	 * Retrieves the render target of a given render stage. If stageName is "",
+	 * this will return the backbuffer's render target
+	 * @param stageName  Name of the stage, using "" will return the backbuffer's
+	 *                   render target
+	 * @return           Pointer to the render target of the given stage
+	 */
+	class WRenderTarget* GetRenderTarget(std::string stageName = "") const;
+
+	/**
+	 * Retrieves a Vulkan image sampler of a given type
+	 * @param type  Type of the requested sampler
+	 * @return      A handle of a usable Vulkan image sampler
+	 */
+	virtual VkSampler GetTextureSampler(W_TEXTURE_SAMPLER_TYPE type = TEXTURE_SAMPLER_DEFAULT) const = 0;
 
 	/**
 	 * Retrieves the currently used Vulkan graphics queue.
 	 * @return Currently used Vulkan graphics queue
 	 */
 	VkQueue GetQueue() const;
-
-	/**
-	 * Retrieves the default render target, which should be bound to the
-	 * backbuffer (via the swapchain) and should render ultimately on-screen.
-	 * @return Pointer to the default render target
-	 */
-	class WRenderTarget* GetDefaultRenderTarget() const;
 
 protected:
 	/** Pointer to the Wasabi application */
@@ -154,6 +154,8 @@ protected:
 	VulkanSwapChain* m_swapChain;
 	/** Default render target */
 	WRenderTarget* m_renderTarget;
+	/***/
+	std::vector<class WRenderStage*> m_renderStages;
 
 	// Synchronization semaphores
 	struct {

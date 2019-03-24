@@ -3,7 +3,7 @@
 WPhysicsComponent* PhysicsDemo::CreatePhysicsComponent() {
 	WBulletPhysics* physics = new WBulletPhysics(m_app);
 	m_app->engineParams["maxBulletDebugLines"] = (void*)10000;
-	WError werr = physics->Initialize(true);
+	WError werr = physics->Initialize(false);
 	if (!werr)
 		W_SAFE_DELETE(physics);
 	return physics;
@@ -22,7 +22,6 @@ void PhysicsDemo::Load() {
 	F.Open("Media/track01_.3ds.WSBI");
 	F.LoadAsset<WGeometry>(1, &ground);
 	F.Close();
-	ground->Scale(0.002);
 
 	m_ground = new WObject(m_app);
 	m_ground->SetGeometry(ground);
@@ -30,7 +29,6 @@ void PhysicsDemo::Load() {
 	m_groundRB = m_app->PhysicsComponent->CreateRigidBody();
 	m_groundRB->BindObject(m_ground, m_ground);
 	m_groundRB->Create(W_RIGID_BODY_CREATE_INFO::ForComplexObject(m_ground));
-	m_ground->GetMaterial()
 
 	WGeometry* ball = new WGeometry(m_app);
 	ball->CreateSphere(1.0f);

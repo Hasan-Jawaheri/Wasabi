@@ -12,6 +12,7 @@
 #pragma once
 
 #include "../Core/WCore.h"
+#include <unordered_map>
 
 /**
  * @ingroup engineclass
@@ -61,7 +62,7 @@ enum W_SHADER_BOUND_RESOURCE_TYPE {
 	/** Bound resource is a UBO */
 	W_TYPE_UBO = 0,
 	/** Bound resource is a combined sampler (texture) */
-	W_TYPE_SAMPLER = 1,
+	W_TYPE_TEXTURE = 1,
 };
 
 /**
@@ -163,7 +164,16 @@ typedef struct W_BOUND_RESOURCE {
 	W_BOUND_RESOURCE() {}
 	W_BOUND_RESOURCE(
 		W_SHADER_BOUND_RESOURCE_TYPE t,
-		unsigned int index,
+		uint index,
+		std::string name,
+		std::vector<W_SHADER_VARIABLE_INFO> v =
+			std::vector<W_SHADER_VARIABLE_INFO>()
+	);
+	W_BOUND_RESOURCE(
+		W_SHADER_BOUND_RESOURCE_TYPE t,
+		uint index,
+		uint set,
+		std::string name,
 		std::vector<W_SHADER_VARIABLE_INFO> v =
 			std::vector<W_SHADER_VARIABLE_INFO>()
 	);
@@ -171,7 +181,11 @@ typedef struct W_BOUND_RESOURCE {
 	/** Type of this resource */
 	W_SHADER_BOUND_RESOURCE_TYPE type;
 	/** Index in the shader at which the resource is bound */
-	unsigned int binding_index;
+	uint binding_index;
+	/** The set at which the resource is bound */
+	uint binding_set;
+	/** Name of this bound resource */
+	std::string name;
 	/** Variables of this resource (in case of a UBO), which is empty for
 		textures */
 	std::vector<W_SHADER_VARIABLE_INFO> variables;
@@ -241,9 +255,6 @@ typedef struct W_INPUT_LAYOUT {
  * Description of a shader to be bound to an effect.
  */
 typedef struct W_SHADER_DESC {
-	W_SHADER_DESC()
-		: animation_texture_index(-1), instancing_texture_index(-1) {
-	}
 	/** Type of the shader */
 	W_SHADER_TYPE type;
 	/** A list of bound resources (including UBOs and samplers/textures) */
@@ -251,12 +262,6 @@ typedef struct W_SHADER_DESC {
 	/** A list of input layouts that bind to the shader. There should be one
 			vertex buffer present to bind to every input layout in the shader */
 	std::vector<W_INPUT_LAYOUT> input_layouts;
-	/** Binding index of a texture (which must exist in bound_resources) that
-			has been specifically marked to be used for animation */
-	unsigned int animation_texture_index;
-	/** Binding index of a texture (which must exist in bound_resources) that
-			has been specifically marked to be used for instancing */
-	unsigned int instancing_texture_index;
 } W_SHADER_DESC;
 
 /**
@@ -564,9 +569,10 @@ public:
 	WError BuildPipeline(class WRenderTarget* rt);
 
 	/**
-	 * Binds the effect to render command buffer of the specified render target.
-	 * The render target must have its Begin() function called before this
-	 * function is called.
+	 * Binds the effect (pipeline) to render command buffer of the specified
+	 * render target. The render target must have its Begin() function called
+	 * before this function is called. Binding an effect means binding all
+	 * descriptor sets of all specified materials and binding the effect's pipeline.
 	 * @param  rt                 Render target to bind to its command buffer
 	 * @param  num_vertex_buffers Number of vertex buffers that the effect
 	 *                            should expect to be bound on the pipeline,
@@ -575,19 +581,20 @@ public:
 	 *                            if no input layouts are present)
 	 * @return                    Error code, see WError.h
 	 */
-	WError Bind(class WRenderTarget* rt, unsigned int num_vertex_buffers = -1);
+	WError Bind(class WRenderTarget* rt, uint num_vertex_buffers = -1);
 	
 	/**
 	 * Retrieves the layout of the pipelines created by this effect.
 	 * @return The Vulkan pipeline layout for the effect's pipelines
 	 */
-	VkPipelineLayout* GetPipelineLayout();
+	VkPipelineLayout GetPipelineLayout() const;
 
 	/**
 	 * Retrieves the Vulkan descriptor set layout.
+	 * @param  Index of the specified set
 	 * @return The Vulkan descriptor set layout
 	 */
-	VkDescriptorSetLayout* GetDescriptorSetLayout();
+	VkDescriptorSetLayout GetDescriptorSetLayout(uint setIndex = 0) const;
 
 	/**
 	 * Retrieves an input layout supplied by one of the bound shaders.
@@ -625,7 +632,7 @@ private:
 	/** Vulkan pipeline layout used for the pipelines creation */
 	VkPipelineLayout m_pipelineLayout;
 	/** Descriptor set layout that can be used to make descriptor sets */
-	VkDescriptorSetLayout m_descriptorSetLayout;
+	unordered_map<uint, VkDescriptorSetLayout> m_descriptorSetLayouts;
 
 	/** Vulkan primitive topology to use for the next pipeline generation */
 	VkPrimitiveTopology m_topology;

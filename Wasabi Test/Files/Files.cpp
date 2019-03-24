@@ -1,3 +1,5 @@
+#if 0
+
 #include "Files.hpp"
 #include <Physics/Bullet/WBulletRigidBody.h>
 #include <iostream>
@@ -157,3 +159,4 @@ void FilesDemo::Update(float fDeltaTime) {
 
 void FilesDemo::Cleanup() {
 }
+#endif

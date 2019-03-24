@@ -159,9 +159,10 @@ public:
 	 * is at least one instance created (see CreateInstance()), the object will
 	 * be rendered using geometry instancing.
 	 * 
-	 * @param rt Render target to render to.
+	 * @param rt              Render target to render to.
+	 * @param updateInstances Whether or not to update the instances data
 	 */
-	void Render(class WRenderTarget* rt);
+	void Render(class WRenderTarget* rt, bool updateInstances = true);
 
 	/**
 	 * Sets the attached geometry.
@@ -169,13 +170,6 @@ public:
 	 * @return          Error code, see WError.h
 	 */
 	WError SetGeometry(class WGeometry* geometry);
-
-	/**
-	 * Sets the attached material.
-	 * @param  material Material to attach, or nullptr to remove the attachment
-	 * @return          Error code, see WError.h
-	 */
-	WError SetMaterial(class WMaterial* material);
 
 	/**
 	 * Sets the attached animation.
@@ -189,12 +183,6 @@ public:
 	 * @return Attached geometry, nullptr if none exists
 	 */
 	class WGeometry* GetGeometry() const;
-
-	/**
-	 * Retrieves the attached material.
-	 * @return Attached material, nullptr if none exists
-	 */
-	class WMaterial* GetMaterial() const;
 
 	/**
 	 * Retrieves the attached animation.
@@ -294,59 +282,15 @@ public:
 
 	/**
 	 * Sets the scale of this object.
-	 * @param x X scale multiplier
-	 * @param y Y scale multiplier
-	 * @param z Z scale multiplier
-	 */
-	void Scale(float x, float y, float z);
-
-	/**
-	 * Sets the scale of this object.
 	 * @param scale Scale factor components
 	 */
 	void Scale(WVector3 scale);
-
-	/**
-	 * Sets the X scale of this object.
-	 * @param scale Scale factor
-	 */
-	void ScaleX(float scale);
-
-	/**
-	 * Sets the Y scale of this object.
-	 * @param scale Scale factor
-	 */
-	void ScaleY(float scale);
-
-	/**
-	 * Sets the Z scale of this object.
-	 * @param scale Scale factor
-	 */
-	void ScaleZ(float scale);
 
 	/**
 	 * Retrieves the scale factors of this object.
 	 * @return 3D vector containing the scale factors
 	 */
 	WVector3 GetScale() const;
-
-	/**
-	 * Retrieves the X scale of this object.
-	 * @return Scale factor
-	 */
-	float GetScaleX() const;
-
-	/**
-	 * Retrieves the Y scale of this object.
-	 * @return Scale factor
-	 */
-	float GetScaleY() const;
-
-	/**
-	 * Retrieves the Z scale of this object.
-	 * @return Scale factor
-	 */
-	float GetScaleZ() const;
 
 	/**
 	 * Retrieves the world matrix computed so far. A call to UpdateLocals()
@@ -384,8 +328,6 @@ public:
 private:
 	/** Attached geometry */
 	class WGeometry* m_geometry;
-	/** Attached material */
-	class WMaterial* m_material;
 	/** Attached animation */
 	class WAnimation* m_animation;
 	/** true if the world matrix needs to be updated, false otherwise */
@@ -462,13 +404,6 @@ public:
 						unsigned int iObjEndID = 0,
 						WVector3* pt = nullptr, WVector2* uv = nullptr,
 						unsigned int* faceIndex = nullptr) const;
-
-	/**
-	 * Renders all objects registered by this manager (by calling their
-	 * WObject::Render() function).
-	 * @param rt Render target to render to
-	 */
-	void Render(class WRenderTarget* rt);
 
 	/**
 	 * Loads the manager.

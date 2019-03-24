@@ -302,7 +302,7 @@ protected:
 	/**
 	 * Creates and initializes a VkInstance to use in the engine.
 	 */
-	virtual VkInstance Wasabi::CreateVKInstance();
+	virtual VkInstance CreateVKInstance();
 
 	/**
 	 * This function can be overloaded by the application. This function gives

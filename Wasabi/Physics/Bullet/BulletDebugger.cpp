@@ -1,8 +1,10 @@
+#if 0
+
 #include "BulletDebugger.h"
 #include "../../Cameras/WCamera.h"
 #include "../../WindowAndInput/WWindowAndInputComponent.h"
 #include "../../Texts/WText.h"
-#include "../../Renderers/WForwardRenderer.h"
+#include "../../Renderers/ForwardRenderer/WForwardRenderer.h"
 #include "../../Objects/WObject.h"
 #include "../../Geometries/WGeometry.h"
 #include "../../Materials/WMaterial.h"
@@ -258,3 +260,5 @@ void BulletDebugger::Thread(void* debugger_ptr) {
 	BulletDebugger* debugger = (BulletDebugger*)debugger_ptr;
 	RunWasabi(debugger);
 }
+
+#endif

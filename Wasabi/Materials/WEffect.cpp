@@ -1,4 +1,5 @@
 #include "WEffect.h"
+#include "WMaterial.h"
 #include "../Images/WRenderTarget.h"
 #include "../Renderers/WRenderer.h"
 
@@ -26,8 +27,7 @@ W_SHADER_VARIABLE_INFO::W_SHADER_VARIABLE_INFO(
 	int _num_elems,
 	std::string _name
 ) : type(_type), num_elems(_num_elems), name(_name) {
-	int elemSize = W_SHADER_VARIABLE_TYPE_SIZES[(int)type];
-	_size = RoundedUpToMultipleOf(elemSize, GetAlignment()) * (num_elems-1) + elemSize;
+	_size = W_SHADER_VARIABLE_TYPE_SIZES[(int)type] * num_elems;
 }
 
 W_SHADER_VARIABLE_INFO::W_SHADER_VARIABLE_INFO(
@@ -131,9 +131,18 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
 
 W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 	W_SHADER_BOUND_RESOURCE_TYPE t,
-	unsigned int index,
+	uint index,
+	std::string _name,
 	std::vector<W_SHADER_VARIABLE_INFO> v
-) : variables(v), type(t), binding_index(index) {
+) : W_BOUND_RESOURCE(t, index, 0, _name, v) {}
+
+W_BOUND_RESOURCE::W_BOUND_RESOURCE(
+	W_SHADER_BOUND_RESOURCE_TYPE t,
+	uint index,
+	uint set,
+	std::string _name,
+	std::vector<W_SHADER_VARIABLE_INFO> v
+) : variables(v), type(t), binding_index(index), binding_set(set), name(_name) {
 	size_t curOffset = 0;
 	_offsets.resize(variables.size());
 	for (int i = 0; i < variables.size(); i++) {
@@ -266,8 +275,6 @@ WError WShader::SaveToStream(class WFile* file, std::ostream& outputStream) {
 	outputStream.write((char*)m_code, m_codeLen);
 
 	outputStream.write((char*)&m_desc.type, sizeof(m_desc.type));
-	outputStream.write((char*)&m_desc.animation_texture_index, sizeof(m_desc.animation_texture_index));
-	outputStream.write((char*)&m_desc.instancing_texture_index, sizeof(m_desc.instancing_texture_index));
 
 	// save the input layout
 	uint tmp;
@@ -298,6 +305,9 @@ WError WShader::SaveToStream(class WFile* file, std::ostream& outputStream) {
 		W_BOUND_RESOURCE* resource = &m_desc.bound_resources[i];
 		outputStream.write((char*)&resource->type, sizeof(resource->type));
 		outputStream.write((char*)&resource->binding_index, sizeof(resource->binding_index));
+		tmp = resource->name.size();
+		outputStream.write((char*)&tmp, sizeof(tmp));
+		outputStream.write(resource->name.c_str(), tmp);
 		tmp = resource->variables.size();
 		outputStream.write((char*)&tmp, sizeof(tmp));
 		for (uint j = 0; j < resource->variables.size(); j++) {
@@ -336,8 +346,6 @@ WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream) {
 		return WError(W_INVALIDFILEFORMAT);
 
 	inputStream.read((char*)&m_desc.type, sizeof(m_desc.type));
-	inputStream.read((char*)&m_desc.animation_texture_index, sizeof(m_desc.animation_texture_index));
-	inputStream.read((char*)&m_desc.instancing_texture_index, sizeof(m_desc.instancing_texture_index));
 
 	// load the input layout
 	uint tmp;
@@ -378,7 +386,13 @@ WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream) {
 		W_BOUND_RESOURCE* resource = &m_desc.bound_resources[i];
 		inputStream.read((char*)&resource->type, sizeof(resource->type));
 		inputStream.read((char*)&resource->binding_index, sizeof(resource->binding_index));
-		tmp = resource->variables.size();
+		inputStream.read((char*)&tmp, sizeof(tmp));
+		if (tmp > 0) {
+			char* name = new char[tmp];
+			inputStream.read(name, tmp);
+			resource->name = std::string(name, tmp);
+			delete[] name;
+		}
 		inputStream.read((char*)&tmp, sizeof(tmp));
 		resource->variables.resize(tmp);
 		for (uint j = 0; j < resource->variables.size(); j++) {
@@ -400,7 +414,7 @@ WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream) {
 			else
 				*attr = W_SHADER_VARIABLE_INFO(attr->type, attr->num_elems, attr->name);
 		}
-		*resource = W_BOUND_RESOURCE(resource->type, resource->binding_index, resource->variables);
+		*resource = W_BOUND_RESOURCE(resource->type, resource->binding_index, resource->name, resource->variables);
 	}
 
 	return WError(W_SUCCEEDED);
@@ -419,7 +433,6 @@ WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_depthSt
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 	m_pipelineLayout = VK_NULL_HANDLE;
-	m_descriptorSetLayout = VK_NULL_HANDLE;
 
 	VkPipelineColorBlendAttachmentState blendState = {};
 	blendState.colorWriteMask = 0xf;
@@ -529,13 +542,13 @@ void WEffect::_DestroyPipeline() {
 
 	if (m_pipelineLayout)
 		vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
-	if (m_descriptorSetLayout)
-		vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
+	for (auto it = m_descriptorSetLayouts.begin(); it != m_descriptorSetLayouts.end(); it++)
+		vkDestroyDescriptorSetLayout(device, it->second, nullptr);
+	m_descriptorSetLayouts.clear();
 	for (int i = 0; i < m_pipelines.size(); i++)
 		vkDestroyPipeline(device, m_pipelines[i], nullptr);
 	m_pipelines.clear();
-
-	m_descriptorSetLayout = VK_NULL_HANDLE;
+	
 	m_pipelineLayout = VK_NULL_HANDLE;
 }
 
@@ -567,53 +580,65 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	// Create descriptor set layout
 	//
 	unordered_map<int, W_BOUND_RESOURCE> used_bindings;
-	vector<VkDescriptorSetLayoutBinding> layoutBindings;
+	unordered_map<uint, vector<VkDescriptorSetLayoutBinding>> layoutBindingsMap;
 	for (int i = 0; i < m_shaders.size(); i++) {
 		if (m_shaders[i]->m_desc.bound_resources.size()) {
 			for (int j = 0; j < m_shaders[i]->m_desc.bound_resources.size(); j++) {
+				W_BOUND_RESOURCE* boundResource = &m_shaders[i]->m_desc.bound_resources[j];
 				VkDescriptorSetLayoutBinding layoutBinding = {};
 				layoutBinding.stageFlags = (VkShaderStageFlagBits)m_shaders[i]->m_desc.type;
 				layoutBinding.pImmutableSamplers = NULL;
 
-				auto used_bindings_iter = used_bindings.find(m_shaders[i]->m_desc.bound_resources[j].binding_index);
+				auto used_bindings_iter = used_bindings.find(boundResource->binding_index);
 				if (used_bindings_iter != used_bindings.end()) {
 					// repeated binding index, don't add it to the layoutBindings again and make sure it's the same UBO if it's a UBO
-					if (m_shaders[i]->m_desc.bound_resources[j].type == W_TYPE_UBO && used_bindings_iter->second.type == W_TYPE_UBO) {
+					if (boundResource->type == W_TYPE_UBO && used_bindings_iter->second.type == W_TYPE_UBO) {
 						if (!used_bindings_iter->second.IsSimilarTo(m_shaders[i]->m_desc.bound_resources[j]))
 							return WError(W_INVALIDREPEATEDBINDINGINDEX);
 					}
 					// add this shader stage to the possible stages for that binding index
-					for (int k = 0; k < layoutBindings.size(); k++)
-						if (layoutBindings[k].binding == m_shaders[i]->m_desc.bound_resources[j].binding_index)
-							layoutBindings[k].stageFlags |= m_shaders[i]->m_desc.type;
+					for (auto mapIter = layoutBindingsMap.begin(); mapIter != layoutBindingsMap.end(); mapIter++)
+						for (auto vecIter = mapIter->second.begin(); vecIter != mapIter->second.end(); vecIter++)
+							if (vecIter->binding == boundResource->binding_index)
+								vecIter->stageFlags |= m_shaders[i]->m_desc.type;
 					continue;
 				}
 
-				if (m_shaders[i]->m_desc.bound_resources[j].type == W_TYPE_UBO) {
-					layoutBinding.binding = m_shaders[i]->m_desc.bound_resources[j].binding_index;
+				if (boundResource->type == W_TYPE_UBO) {
+					layoutBinding.binding = boundResource->binding_index;
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 					layoutBinding.descriptorCount = 1;
-					layoutBindings.push_back(layoutBinding);
-					used_bindings.insert(std::pair<int, W_BOUND_RESOURCE>(m_shaders[i]->m_desc.bound_resources[j].binding_index, m_shaders[i]->m_desc.bound_resources[j]));
-				} else if (m_shaders[i]->m_desc.bound_resources[j].type == W_TYPE_SAMPLER) {
-					layoutBinding.binding = m_shaders[i]->m_desc.bound_resources[j].binding_index;
+					used_bindings.insert(std::pair<int, W_BOUND_RESOURCE>(boundResource->binding_index, m_shaders[i]->m_desc.bound_resources[j]));
+				} else if (boundResource->type == W_TYPE_TEXTURE) {
+					layoutBinding.binding = boundResource->binding_index;
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 					layoutBinding.descriptorCount = 1;
-					layoutBindings.push_back(layoutBinding);
 				}
+				auto iter = layoutBindingsMap.find(boundResource->binding_set);
+				if (iter == layoutBindingsMap.end()) {
+					layoutBindingsMap.insert(std::pair<uint, vector<VkDescriptorSetLayoutBinding>>(boundResource->binding_set, { layoutBinding }));
+				} else
+					iter->second.push_back(layoutBinding);
 			}
 		}
 	}
 
-	VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-	descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptorLayout.pNext = NULL;
-	descriptorLayout.bindingCount = layoutBindings.size();
-	descriptorLayout.pBindings = layoutBindings.data();
+	VkResult err;
 
-	VkResult err = vkCreateDescriptorSetLayout(device, &descriptorLayout, NULL, &m_descriptorSetLayout);
-	if (err) {
-		return WError(W_FAILEDTOCREATEDESCRIPTORSETLAYOUT);
+	vector<VkDescriptorSetLayout> descriptorSetLayoutVector;
+	for (auto it = layoutBindingsMap.begin(); it != layoutBindingsMap.end(); it++) {
+		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorLayout.pNext = NULL;
+		descriptorLayout.bindingCount = it->second.size();
+		descriptorLayout.pBindings = it->second.data();
+
+		VkDescriptorSetLayout descriptorSetLayout;
+		err = vkCreateDescriptorSetLayout(device, &descriptorLayout, NULL, &descriptorSetLayout);
+		if (err)
+			return WError(W_FAILEDTOCREATEDESCRIPTORSETLAYOUT);
+		m_descriptorSetLayouts.insert(std::pair<uint, VkDescriptorSetLayout>(it->first, descriptorSetLayout));
+		descriptorSetLayoutVector.push_back(descriptorSetLayout);
 	}
 
 	// Create the pipeline layout that is used to generate the rendering pipelines that
@@ -621,15 +646,12 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
 	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pPipelineLayoutCreateInfo.pNext = NULL;
-	pPipelineLayoutCreateInfo.setLayoutCount = 1;
-	pPipelineLayoutCreateInfo.pSetLayouts = &m_descriptorSetLayout;
+	pPipelineLayoutCreateInfo.setLayoutCount = descriptorSetLayoutVector.size();
+	pPipelineLayoutCreateInfo.pSetLayouts = descriptorSetLayoutVector.data();
 
 	err = vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &m_pipelineLayout);
-	if (err) {
-		vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
-		m_descriptorSetLayout = VK_NULL_HANDLE;
+	if (err)
 		return WError(W_FAILEDTOCREATEPIPELINELAYOUT);
-	}
 
 	//IA state
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
@@ -783,23 +805,13 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	m_pipelines.resize(pipelineCreateInfos.size()); // one with 0 VBs, 1 VB, 2 VBs, ..., ILs.size() VBs
 	err = vkCreateGraphicsPipelines(device, rt->GetPipelineCache(), m_pipelines.size(),
 									pipelineCreateInfos.data(), nullptr, m_pipelines.data());
-	if (err) {
-		vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
-		vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
-		m_pipelineLayout = VK_NULL_HANDLE;
-		m_descriptorSetLayout = VK_NULL_HANDLE;
-		for (int i = 0; i < m_pipelines.size(); i++) {
-			if (m_pipelines[i] != VK_NULL_HANDLE)
-				vkDestroyPipeline(device, m_pipelines[i], nullptr);
-		}
-		m_pipelines.clear();
+	if (err)
 		return WError(W_FAILEDTOCREATEPIPELINE);
-	}
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WEffect::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
+WError WEffect::Bind(WRenderTarget* rt, uint num_vertex_buffers) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
@@ -807,18 +819,21 @@ WError WEffect::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	unsigned int pipeline = fmin(num_vertex_buffers == 0 ? 0 : num_vertex_buffers - 1, m_pipelines.size()-1);
+	unsigned int pipeline = fmin(num_vertex_buffers == 0 ? 0 : num_vertex_buffers - 1, m_pipelines.size() - 1);
 	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[pipeline]);
 
 	return WError(W_SUCCEEDED);
 }
 
-VkPipelineLayout* WEffect::GetPipelineLayout() {
-	return &m_pipelineLayout;
+VkPipelineLayout WEffect::GetPipelineLayout() const {
+	return m_pipelineLayout;
 }
 
-VkDescriptorSetLayout* WEffect::GetDescriptorSetLayout() {
-	return &m_descriptorSetLayout;
+VkDescriptorSetLayout WEffect::GetDescriptorSetLayout(uint setIndex) const {
+	auto it = m_descriptorSetLayouts.find(setIndex);
+	if (it == m_descriptorSetLayouts.end())
+		return VK_NULL_HANDLE;
+	return it->second;
 }
 
 W_INPUT_LAYOUT WEffect::GetInputLayout(unsigned int layout_index) const {
@@ -865,7 +880,9 @@ WError WEffect::SaveToStream(WFile* file, std::ostream& outputStream) {
 }
 
 WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream) {
-	WRenderTarget* rt = m_app->Renderer->GetDefaultRenderTarget();
+#if 0
+#endif
+	WRenderTarget* rt = m_app->Renderer->GetRenderTarget();
 	_DestroyPipeline();
 
 	uint tmp;

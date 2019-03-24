@@ -44,7 +44,7 @@ public:
 
 	template<typename T>
 	WError LoadAsset(uint assetId, T** loadedAsset) {
-		WFileAsset* asset;
+		WFileAsset* asset = nullptr;
 		auto iter = m_assetsMap.find(assetId);
 		bool addReference = iter != m_assetsMap.end() && iter->second->loadedAsset != nullptr;
 		WError err = LoadGenericAsset(assetId, &asset, [this]() { return new T(this->m_app); });

@@ -2,7 +2,7 @@
 
 #include "../TestSuite.hpp"
 #include <Physics/Bullet/WBulletPhysics.h>
-#include <Renderers/WForwardRenderer.h>
+#include <Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class FilesDemo : public WTestState {
 

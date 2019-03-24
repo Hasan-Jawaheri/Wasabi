@@ -27,6 +27,7 @@ SpritesDemo::SpritesDemo(Wasabi* const app) : WTestState(app) {
 }
 
 void SpritesDemo::Load() {
+#if 0
 	m_sprites[0] = new WSprite(m_app);
 	m_sprites[0]->Load();
 	WImage* img = new WImage(m_app);
@@ -40,7 +41,7 @@ void SpritesDemo::Load() {
 	img->Load("Media/checker.bmp");
 	m_sprites[1]->SetImage(img);
 	img->RemoveReference();
-	m_sprites[1]->SetPosition(100, 100);
+	m_sprites[1]->SetPosition(WVector2(100, 100));
 	m_sprites[1]->SetAlpha(0.5f);
 
 	m_sprites[2] = new WSprite(m_app);
@@ -49,13 +50,14 @@ void SpritesDemo::Load() {
 	WEffect* fx = m_app->SpriteManager->CreateSpriteEffect(pixel_shader);
 	pixel_shader->RemoveReference();
 	WMaterial* mat = new WMaterial(m_app);
-	mat->SetEffect(fx);
+	mat->CreateForEffect(fx);
 	fx->RemoveReference();
 	m_sprites[2]->SetMaterial(mat);
 	mat->RemoveReference();
 	m_sprites[2]->Load();
-	m_sprites[2]->SetPosition(200, 200);
-	m_sprites[2]->SetSize(200, 200);
+	m_sprites[2]->SetPosition(WVector2(200, 200));
+	m_sprites[2]->SetSize(WVector2(200, 200));
+#endif
 }
 
 void SpritesDemo::Update(float fDeltaTime) {
