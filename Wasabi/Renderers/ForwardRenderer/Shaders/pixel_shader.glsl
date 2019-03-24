@@ -11,12 +11,12 @@ struct Light {
 	int type;
 };
 
-layout(binding = 3, set = 0) uniform sampler2D diffuseTexture;
-layout(binding = 4, set = 0) uniform UBO {
+layout(set = 0, binding = 3) uniform sampler2D diffuseTexture;
+layout(set = 0, binding = 4) uniform UBO {
 	vec4 color;
 	int isTextured;
 } uboPerObject;
-layout(binding = 5, set = 1) uniform LUBO {
+layout(set = 1, binding = 5) uniform LUBO {
 	int numLights;
 	vec3 camPosW;
 	Light lights[~~~~maxLights~~~~];

@@ -156,6 +156,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 				m_app->ImageManager->GetDefaultImage()->AddReference();
 				sampler.descriptor.sampler = m_app->Renderer->GetTextureSampler();
 				sampler.descriptor.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+				sampler.descriptor.imageView = sampler.img->GetView();
 				sampler.sampler_info = &shader->m_desc.bound_resources[j];
 				m_sampler_info.push_back(sampler);
 			}
@@ -203,7 +204,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 		// Create descriptor set
 		//
 
-		VkDescriptorSetLayout layout = effect->GetDescriptorSetLayout();
+		VkDescriptorSetLayout layout = effect->GetDescriptorSetLayout(bindingSet);
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = m_descriptorPool;
@@ -215,6 +216,35 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 			_DestroyResources();
 			return WError(W_OUTOFMEMORY);
 		}
+
+		// Update descriptor sets determining the shader binding points
+		// For every binding point used in a shader there needs to be one
+		// descriptor set matching that binding point
+		vector<VkWriteDescriptorSet> writes;
+		for (int i = 0; i < m_uniformBuffers.size(); i++) {
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = m_descriptorSet;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			writeDescriptorSet.pBufferInfo = &m_uniformBuffers[i].descriptor;
+			writeDescriptorSet.dstBinding = m_uniformBuffers[i].ubo_info->binding_index;
+
+			writes.push_back(writeDescriptorSet);
+		}
+		for (int i = 0; i < m_sampler_info.size(); i++) {
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = m_descriptorSet;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
+			writeDescriptorSet.dstBinding = m_sampler_info[i].sampler_info->binding_index;
+
+			writes.push_back(writeDescriptorSet);
+		}
+
+		vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, NULL);
 	}
 
 	m_effect = effect;
@@ -235,7 +265,7 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 		return WError(W_NORENDERTARGET);
 
 	// update textures that changed
-	/*int curDescriptorIndex = 0;
+	int curDescriptorIndex = 0;
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
 		if (m_sampler_info[i].img && m_sampler_info[i].img->Valid()) {
@@ -260,7 +290,7 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 	// update dirty UBOs
 	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
 		if (ubo->dirty) {
-			uint8_t *pData;
+			void *pData;
 			VkResult vkRes = vkMapMemory(device, ubo->memory, ubo->descriptor.offset, ubo->descriptor.range, 0, (void **)&pData);
 			if (vkRes)
 				return WError(W_UNABLETOMAPBUFFER);
@@ -268,7 +298,7 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 			vkUnmapMemory(device, ubo->memory);
 			ubo->dirty = true;
 		}
-	}*/
+	}
 
 	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_effect->GetPipelineLayout(), m_setIndex, 1, &m_descriptorSet, 0, nullptr);
 

@@ -11,7 +11,7 @@ layout(location = 3) in vec2 inUV;
 layout(location = 4) in uvec4 boneIndex;
 layout(location = 5) in vec4 boneWeight;
 
-layout(binding = 0, set = 0) uniform UBO {
+layout(set = 0, binding = 0) uniform UBO {
 	mat4 projectionMatrix;
 	mat4 worldMatrix;
 	mat4 viewMatrix;
@@ -20,8 +20,8 @@ layout(binding = 0, set = 0) uniform UBO {
 	int isAnimated;
 	int isInstanced;
 } uboPerObject;
-layout(binding = 1, set = 0) uniform sampler2D animationTexture;
-layout(binding = 2, set = 0) uniform sampler2D instancingTexture;
+layout(set = 0, binding = 1) uniform sampler2D animationTexture;
+layout(set = 0, binding = 2) uniform sampler2D instancingTexture;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outWorldPos;
