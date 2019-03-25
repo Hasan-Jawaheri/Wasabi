@@ -48,6 +48,31 @@ WError WSpriteManager::Load() {
 	return WError(W_SUCCEEDED);
 }
 
+WError WSpriteManager::Resize(unsigned int width, unsigned int height) {
+	uint numSprites = GetEntitiesCount();
+	for (uint i = 0; i < numSprites; i++)
+		GetEntityByIndex(i)->m_geometryChanged = true;
+	return WError(W_SUCCEEDED);
+}
+
+WSprite* WSpriteManager::CreateSprite(WImage* img, unsigned int ID) const {
+	WGeometry* geometry = CreateSpriteGeometry();
+	if (!geometry)
+		return nullptr;
+
+	WSprite* sprite = new WSprite(m_app, ID);
+	sprite->m_geometry = geometry;
+	if (img) {
+		sprite->GetMaterial()->SetTexture("diffuseTexture", img);
+		sprite->SetSize(img);
+	}
+	WMaterial* mat = sprite->GetMaterial();
+	if (mat) {
+		mat->SetVariableFloat("alpha", 1.0f);
+	}
+	return sprite;
+}
+
 WGeometry* WSpriteManager::CreateSpriteGeometry() const {
 	const unsigned int num_verts = 4;
 	SpriteVertex vb[num_verts];
@@ -76,78 +101,23 @@ std::string WSprite::GetTypeName() const {
 
 WSprite::WSprite(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_hidden = false;
-	m_img = nullptr;
 	m_geometry = nullptr;
 	m_angle = 0.0f;
 	m_pos = WVector2();
 	m_size = WVector2();
 	m_rotationCenter = WVector2();
 	m_priority = 0;
-	m_lastLoadFailed = false;
 	m_geometryChanged = true;
-	m_material = nullptr;
-
-	app->SpriteManager->AddEntity(this);
-}
-
-WSprite::WSprite(Wasabi* const app, WMaterial* material, unsigned int ID) : WBase(app, ID) {
-	m_hidden = false;
-	m_img = nullptr;
-	m_geometry = nullptr;
-	m_angle = 0.0f;
-	m_pos = WVector2();
-	m_size = WVector2();
-	m_rotationCenter = WVector2();
-	m_priority = 0;
-	m_lastLoadFailed = false;
-	m_geometryChanged = true;
-	SetMaterial(material);
 
 	app->SpriteManager->AddEntity(this);
 }
 
 WSprite::~WSprite() {
-	W_SAFE_REMOVEREF(m_img);
 	W_SAFE_REMOVEREF(m_geometry);
+
+	ClearEffects();
 
 	m_app->SpriteManager->RemoveEntity(this);
-}
-
-WError WSprite::Load(bool bCreateMaterial) {
-	m_lastLoadFailed = true;
-	W_SAFE_REMOVEREF(m_geometry);
-	m_geometry = m_app->SpriteManager->CreateSpriteGeometry();
-	if (!m_geometry)
-		return WError(W_OUTOFMEMORY);
-	m_geometryChanged = true;
-	m_lastLoadFailed = false;
-	return WError(W_SUCCEEDED);
-}
-
-void WSprite::SetImage(WImage* img) {
-	if (!m_geometry && !m_lastLoadFailed)
-		Load();
-
-	W_SAFE_REMOVEREF(m_img);
-
-	m_img = img;
-
-	if (img) {
-		SetSize(WVector2(img->GetWidth(), img->GetHeight()));
-		img->AddReference();
-	}
-}
-
-void WSprite::SetMaterial(WMaterial* mat) {
-	if (mat) { // don't accept nullptr materials
-		W_SAFE_REMOVEREF(m_material);
-		m_material = mat;
-		mat->AddReference();
-	}
-}
-
-WMaterial* WSprite::GetMaterial() const {
-	return m_material;
 }
 
 void WSprite::SetPosition(WVector2 pos) {
@@ -163,6 +133,10 @@ void WSprite::Move(float units) {
 void WSprite::SetSize(WVector2 size) {
 	m_size = size;
 	m_geometryChanged = true;
+}
+
+void WSprite::SetSize(WImage* image) {
+	SetSize(WVector2(image->GetWidth(), image->GetHeight()));
 }
 
 void WSprite::SetAngle(float fAngle) {
@@ -190,44 +164,43 @@ void WSprite::SetPriority(unsigned int priority) {
 	m_geometryChanged = true;
 }
 
+bool WSprite::WillRender(WRenderTarget* rt) {
+	return !m_hidden && Valid();
+}
+
 void WSprite::Render(WRenderTarget* rt) {
 	WVector2 screenDimensions = WVector2(m_app->WindowAndInputComponent->GetWindowWidth(),
 										 m_app->WindowAndInputComponent->GetWindowHeight());
-	if (!m_geometry && !m_lastLoadFailed)
-		Load();
+	WGeometry* geometry = m_geometry;
 
-	if (!m_hidden && Valid()) {
-		WGeometry* geometry = m_geometry;
+	if (WVec2LengthSq(m_pos) < 0.1f && WVec2LengthSq(m_size - screenDimensions) < 0.1f && fabs(m_angle) < 0.001f) {
+		geometry = m_app->SpriteManager->m_spriteFullscreenGeometry;
+	} else {
+		if (m_geometryChanged) {
+			SpriteVertex* vb;
+			geometry->MapVertexBuffer((void**)&vb);
 
-		if (WVec2LengthSq(m_pos) < 0.1f && WVec2LengthSq(m_size - screenDimensions) < 0.1f && fabs(m_angle) < 0.001f) {
-			geometry = m_app->SpriteManager->m_spriteFullscreenGeometry;
-		} else {
-			if (m_geometryChanged) {
-				SpriteVertex* vb;
-				geometry->MapVertexBuffer((void**)&vb);
+			WVector2 rc = m_rotationCenter + m_pos;
 
-				WVector2 rc = m_rotationCenter + m_pos;
+			vb[0].pos = m_pos - rc;
+			vb[1].pos = m_pos + WVector2(m_size.x, 0) - rc;
+			vb[2].pos = m_pos + WVector2(0, m_size.y) - rc;
+			vb[3].pos = m_pos + WVector2(m_size.x, m_size.y) - rc;
 
-				vb[0].pos = m_pos - rc;
-				vb[1].pos = m_pos + WVector2(m_size.x, 0) - rc;
-				vb[2].pos = m_pos + WVector2(0, m_size.y) - rc;
-				vb[3].pos = m_pos + WVector2(m_size.x, m_size.y) - rc;
-
-				WMatrix rotMtx = WRotationMatrixZ(m_angle) * WTranslationMatrix(rc.x, rc.y, 0);
-				for (int i = 0; i < 4; i++) {
-					WVector3 pos = WVector3(vb[i].pos.x, vb[i].pos.y, 0.0f);
-					pos = WVec3TransformCoord(pos, rotMtx);
-					vb[i].pos = WVector2(pos.x, pos.y);
-					vb[i].pos = vb[i].pos * 2.0f / screenDimensions - WVector2(1, 1);
-				}
-				m_geometryChanged = false;
+			WMatrix rotMtx = WRotationMatrixZ(m_angle) * WTranslationMatrix(rc.x, rc.y, 0);
+			for (int i = 0; i < 4; i++) {
+				WVector3 pos = WVector3(vb[i].pos.x, vb[i].pos.y, 0.0f);
+				pos = WVec3TransformCoord(pos, rotMtx);
+				vb[i].pos = WVector2(pos.x, pos.y);
+				vb[i].pos = vb[i].pos * 2.0f / screenDimensions - WVector2(1, 1);
 			}
-
-			geometry->UnmapVertexBuffer();
+			m_geometryChanged = false;
 		}
 
-		geometry->Draw(rt);
+		geometry->UnmapVertexBuffer();
 	}
+
+	geometry->Draw(rt);
 }
 
 void WSprite::Show() {
@@ -258,7 +231,6 @@ unsigned int WSprite::GetPriority() const {
 	return m_priority;
 }
 
-
 bool WSprite::Valid() const {
-	return ((!m_material || m_material->Valid()) && m_geometry && m_geometry->Valid()) && m_size.x > 0.0f && m_size.y >= 0.0f;
+	return (m_geometry && m_geometry->Valid()) && m_size.x > 0.0f && m_size.y >= 0.0f;
 }

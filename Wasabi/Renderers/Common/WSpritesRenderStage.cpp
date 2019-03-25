@@ -56,6 +56,19 @@ void WSpritePS::Load(bool bSaveData) {
 	, bSaveData);
 }
 
+WSpritesRenderStage::SpriteKey::SpriteKey(WSprite* spr) {
+	sprite = spr;
+	fx = spr->GetDefaultEffect();
+	priority = spr->GetPriority();
+}
+
+const bool WSpritesRenderStage::SpriteKey::operator< (const SpriteKey& that) const {
+	if (priority != that.priority)
+		return priority < that.priority;
+
+	return (void*)fx < (void*)that.fx ? true : fx == that.fx ? (sprite < that.sprite) : false;
+}
+
 WSpritesRenderStage::WSpritesRenderStage(Wasabi* const app, bool backbuffer) : WRenderStage(app) {
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = backbuffer ? RENDER_STAGE_TARGET_BACK_BUFFER : RENDER_STAGE_TARGET_PREVIOUS;
@@ -76,24 +89,56 @@ WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (!m_spriteFX)
 		return WError(W_ERRORUNK);
 
-	m_spriteMaterials.Initialize(m_stageDescription.name, m_app->SpriteManager, [this](WSprite*) { return this->CreateDefaultSpriteMaterial(); });
+	m_app->SpriteManager->RegisterChangeCallback(m_stageDescription.name, [this](WSprite* s, bool added) {
+		if (added) {
+			if (!s->GetDefaultEffect())
+				s->AddEffect(this->m_spriteFX);
+			SpriteKey key(s);
+			this->m_allSprites.insert(std::make_pair(key, s));
+		} else {
+			auto iter = this->m_allSprites.find(SpriteKey(s));
+			if (iter != this->m_allSprites.end())
+				this->m_allSprites.erase(iter);
+			else {
+				// the sprite seems to have changed and then removed before we cloud reindex it in the render loop
+				// need to find it manually now...
+				for (auto it = this->m_allSprites.begin(); it != this->m_allSprites.end(); it++) {
+					if (it->second == s) {
+						this->m_allSprites.erase(it);
+						break;
+					}
+				}
+			}
+		}
+	});
 
 	return WError(W_SUCCEEDED);
 }
 
 WError WSpritesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
 	if (filter & RENDER_FILTER_SPRITES) {
-		uint numSprites = m_app->SpriteManager->GetEntitiesCount();
+		WEffect* boundFX = nullptr;
+		std::vector<SpriteKey> reindexSprites;
+		for (auto it = m_allSprites.begin(); it != m_allSprites.end(); it++) {
+			WSprite* sprite = it->second;
+			WEffect* effect = sprite->GetDefaultEffect();
+			WMaterial* material = sprite->GetMaterial(effect);
+			if (material && sprite->WillRender(rt)) {
+				uint priority = sprite->GetPriority();
+				if (boundFX != effect) {
+					effect->Bind(rt);
+					boundFX = effect;
+				}
+				if (priority != it->first.priority || effect != it->first.fx)
+					reindexSprites.push_back(it->first);
 
-		// Render default effect sprites
-		m_spriteFX->Bind(rt);
-		for (uint i = 0; i < numSprites; i++) {
-			WSprite* sprite = m_app->SpriteManager->GetEntityByIndex(i);
-			WMaterial* material = m_spriteMaterials.GetResourceOf(sprite);
-			if (material) {
 				material->Bind(rt);
 				sprite->Render(rt);
 			}
+		}
+		for (auto it = reindexSprites.begin(); it != reindexSprites.end(); it++) {
+			m_allSprites.erase(*it);
+			m_allSprites.insert(std::make_pair(SpriteKey(it->sprite), it->sprite));
 		}
 	}
 
@@ -103,7 +148,7 @@ WError WSpritesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 void WSpritesRenderStage::Cleanup() {
 	WRenderStage::Cleanup();
 	W_SAFE_REMOVEREF(m_spriteFX);
-	m_spriteMaterials.Cleanup();
+	m_app->SpriteManager->RemoveChangeCallback(m_stageDescription.name);
 }
 
 WError WSpritesRenderStage::Resize(uint width, uint height) {
@@ -171,13 +216,6 @@ WEffect* WSpritesRenderStage::CreateSpriteEffect(
 	}
 
 	return spriteFX;
-}
-
-WMaterial* WSpritesRenderStage::CreateDefaultSpriteMaterial() const {
-	WMaterial* mat = new WMaterial(m_app);
-	if (!mat->CreateForEffect(m_spriteFX))
-		W_SAFE_REMOVEREF(mat);
-	return mat;
 }
 
 WShader* WSpritesRenderStage::GetSpriteVertexShader() const {

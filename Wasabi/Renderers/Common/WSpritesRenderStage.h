@@ -1,8 +1,10 @@
 #pragma once
 
 #include "../WRenderStage.h"
-#include "../Common/ResourceCollection.h"
 #include "../../Materials/WEffect.h"
+#include "../../Sprites/WSprite.h"
+
+#include <map>
 
 class WSpriteVS : public WShader {
 public:
@@ -24,7 +26,16 @@ class WSpritesRenderStage : public WRenderStage {
 	/** Default sprite effect */
 	class WEffect* m_spriteFX;
 
-	ResourceCollection<class WSprite, class WMaterial> m_spriteMaterials;
+	struct SpriteKey {
+		uint priority;
+		class WEffect* fx;
+		class WSprite* sprite;
+
+		SpriteKey(class WSprite* sprite);
+		const bool operator< (const SpriteKey& that) const;
+	};
+	/** Sorted container for all the sprites to be rendered by this stage */
+	std::map<SpriteKey, class WSprite*> m_allSprites;
 
 public:
 	WSpritesRenderStage(class Wasabi* const app, bool backbuffer = false);
@@ -65,10 +76,4 @@ public:
 		VkPipelineDepthStencilStateCreateInfo dss = {},
 		VkPipelineRasterizationStateCreateInfo rs = {}
 	) const;
-
-	/**
-	 * Creates a material for a default sprite effect.
-	 * @return  Newly allocated and initialized material
-	 */
-	class WMaterial* CreateDefaultSpriteMaterial() const;
 };

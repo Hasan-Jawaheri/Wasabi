@@ -582,6 +582,13 @@ public:
 	 * @return                    Error code, see WError.h
 	 */
 	WError Bind(class WRenderTarget* rt, uint num_vertex_buffers = -1);
+
+	/**
+	 * Allocates a new material for this effect.
+	 * @param bindingSet  The binding set to use from this effect
+	 * @return            Newly allocated and initialized material
+	 */
+	class WMaterial* CreateMaterial(uint bindingSet = 0);
 	
 	/**
 	 * Retrieves the layout of the pipelines created by this effect.

@@ -23,6 +23,15 @@ WError WObjectManager::Load() {
 	return WError(W_SUCCEEDED);
 }
 
+WObject* WObjectManager::CreateObject(unsigned int ID) const {
+	WObject* object = new WObject(m_app, ID);
+	WMaterial* mat = object->GetMaterial();
+	if (mat) {
+		mat->SetVariableColor("color", WColor(0.0f, 0.0f, 0.0f, 0.0f));
+	}
+	return object;
+}
+
 WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iObjStartID, unsigned int iObjEndID,
 									WVector3* _pt, WVector2* uv, unsigned int* faceIndex) const {
 	struct pickStruct {
@@ -212,7 +221,6 @@ WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_instanc
 
 	m_WorldM = WMatrix();
 	m_scale = WVector3(1.0f, 1.0f, 1.0f);
-	m_color = WColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	m_instanceTexture = nullptr;
 
@@ -229,6 +237,8 @@ WObject::~WObject() {
 		delete m_instanceV[i];
 	m_instanceV.clear();
 
+	ClearEffects();
+
 	m_app->ObjectManager->RemoveEntity(this);
 }
 
@@ -240,42 +250,46 @@ bool WObject::Valid() const {
 	return m_geometry && m_geometry->Valid();
 }
 
-void WObject::Render(WRenderTarget* rt, WMaterial* material, bool updateInstances) {
+bool WObject::WillRender(WRenderTarget* rt) {
 	if (Valid() && !m_hidden) {
 		WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();
 		if (m_bFrustumCull) {
 			if (!InCameraView(cam))
-				return;
+				return false;
 		}
-
-		if (updateInstances)
-			_UpdateInstanceBuffer();
-
-		bool is_animated = m_animation && m_animation->Valid() && m_geometry->IsRigged();
-		bool is_instanced = m_instanceV.size() > 0;
-
-		if (material) {
-			material->SetVariableMatrix("worldMatrix", worldM);
-			material->SetVariableColor("color", m_color);
-			// animation variables
-			material->SetVariableInt("isAnimated", is_animated ? 1 : 0);
-			material->SetVariableInt("isInstanced", is_instanced ? 1 : 0);
-			if (is_animated) {
-				WImage* animTex = m_animation->GetTexture();
-				material->SetVariableInt("animationTextureWidth", animTex->GetWidth());
-				material->SetTexture("textureAnimation", animTex);
-			}
-			// instancing variables
-			if (is_instanced) {
-				material->SetVariableInt("instanceTextureWidth", m_instanceTexture->GetWidth());
-				material->SetTexture("textureInstancing", m_instanceTexture);
-			}
-			material->Bind(rt);
-		}
-
-		WError err = m_geometry->Draw(rt, -1, fmax(m_instanceV.size(), 1), is_animated);
+		return true;
 	}
+	return false;
+}
+
+void WObject::Render(WRenderTarget* rt, WMaterial* material, bool updateInstances) {
+	if (updateInstances)
+		_UpdateInstanceBuffer();
+
+	bool is_animated = m_animation && m_animation->Valid() && m_geometry->IsRigged();
+	bool is_instanced = m_instanceV.size() > 0;
+
+	if (material) {
+		WMatrix worldM = GetWorldMatrix();
+		material->SetVariableMatrix("worldMatrix", worldM);
+		// animation variables
+		material->SetVariableInt("isAnimated", is_animated ? 1 : 0);
+		material->SetVariableInt("isInstanced", is_instanced ? 1 : 0);
+		if (is_animated) {
+			WImage* animTex = m_animation->GetTexture();
+			material->SetVariableInt("animationTextureWidth", animTex->GetWidth());
+			material->SetTexture("animationTexture", animTex);
+		}
+		// instancing variables
+		if (is_instanced) {
+			material->SetVariableInt("instanceTextureWidth", m_instanceTexture->GetWidth());
+			material->SetTexture("instancingTexture", m_instanceTexture);
+		}
+		material->Bind(rt);
+	}
+
+	WError err = m_geometry->Draw(rt, -1, fmax(m_instanceV.size(), 1), is_animated);
 }
 
 WError WObject::SetGeometry(class WGeometry* geometry) {
@@ -390,10 +404,6 @@ void WObject::_UpdateInstanceBuffer() {
 		}
 		m_instancesDirty = false;
 	}
-}
-
-void WObject::SetColor(WColor color) {
-	m_color = color;
 }
 
 WGeometry* WObject::GetGeometry() const {

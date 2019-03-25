@@ -219,6 +219,9 @@
     <ClCompile Include="Renderers\ForwardRenderer\WForwardRenderStage.cpp">
       <Filter>Renderers\ForwardRenderer</Filter>
     </ClCompile>
+    <ClCompile Include="Materials\WMaterialsStore.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations\WAnimation.h">
@@ -408,8 +411,8 @@
     <ClInclude Include="Renderers\ForwardRenderer\WForwardRenderStage.h">
       <Filter>Renderers\ForwardRenderer</Filter>
     </ClInclude>
-    <ClInclude Include="Renderers\Common\ResourceCollection.h">
-      <Filter>Renderers\Common</Filter>
+    <ClInclude Include="Materials\WMaterialsStore.h">
+      <Filter>Materials</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

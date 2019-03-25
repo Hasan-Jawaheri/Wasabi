@@ -1,6 +1,5 @@
-#if 0
-
 #include "Animation.hpp"
+#include <Renderers/ForwardRenderer/WForwardRenderStage.h>
 
 AnimationDemo::AnimationDemo(Wasabi* const app) : WTestState(app) {
 }
@@ -12,9 +11,9 @@ void AnimationDemo::Load() {
 	WImage* texture = new WImage(m_app);
 	texture->Load("Media/dante.bmp");
 
-	character = new WObject(m_app);
+	character = m_app->ObjectManager->CreateObject();
 	character->SetGeometry(geometry);
-	character->GetMaterial()->SetTexture(0, texture);
+	character->GetMaterial()->SetVariableColor("color", WColor(1, 0, 0));
 
 	// don't need these anymore, character has the reference to them
 	geometry->RemoveReference();
@@ -42,5 +41,3 @@ void AnimationDemo::Update(float fDeltaTime) {
 void AnimationDemo::Cleanup() {
 	character->RemoveReference();
 }
-
-#endif

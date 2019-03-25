@@ -37,6 +37,7 @@
     <ClCompile Include="Lights\WLight.cpp" />
     <ClCompile Include="Materials\WEffect.cpp" />
     <ClCompile Include="Materials\WMaterial.cpp" />
+    <ClCompile Include="Materials\WMaterialsStore.cpp" />
     <ClCompile Include="Objects\WObject.cpp" />
     <ClCompile Include="Particles\WParticles.cpp" />
     <ClCompile Include="Physics\Bullet\BulletDebugger.cpp" />
@@ -81,6 +82,7 @@
     <ClInclude Include="Lights\WLight.h" />
     <ClInclude Include="Materials\WEffect.h" />
     <ClInclude Include="Materials\WMaterial.h" />
+    <ClInclude Include="Materials\WMaterialsStore.h" />
     <ClInclude Include="Objects\WObject.h" />
     <ClInclude Include="Particles\WParticles.h" />
     <ClInclude Include="Physics\Bullet\BulletDebugger.h" />
@@ -90,7 +92,6 @@
     <ClInclude Include="Physics\WPhysicsComponent.h" />
     <ClInclude Include="Physics\WRigidBody.h" />
     <ClInclude Include="Renderers\Common\CommonRenderStages.h" />
-    <ClInclude Include="Renderers\Common\ResourceCollection.h" />
     <ClInclude Include="Renderers\Common\WSpritesRenderStage.h" />
     <ClInclude Include="Renderers\DeferredRenderer\WDeferredRenderer.h" />
     <ClInclude Include="Renderers\DeferredRenderer\WGBufferRenderStage.h" />

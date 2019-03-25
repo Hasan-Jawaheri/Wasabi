@@ -23,7 +23,7 @@ void PhysicsDemo::Load() {
 	F.LoadAsset<WGeometry>(1, &ground);
 	F.Close();
 
-	m_ground = new WObject(m_app);
+	m_ground = m_app->ObjectManager->CreateObject();
 	m_ground->SetGeometry(ground);
 	ground->RemoveReference();
 	m_groundRB = m_app->PhysicsComponent->CreateRigidBody();
@@ -32,7 +32,7 @@ void PhysicsDemo::Load() {
 
 	WGeometry* ball = new WGeometry(m_app);
 	ball->CreateSphere(1.0f);
-	m_ball = new WObject(m_app);
+	m_ball = m_app->ObjectManager->CreateObject();
 	m_ball->SetPosition(ground->GetMaxPoint().x - 20, ground->GetMaxPoint().y + 10, 0);
 	m_ball->SetGeometry(ball);
 	ball->RemoveReference();

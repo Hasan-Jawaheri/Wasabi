@@ -453,6 +453,9 @@ WError Wasabi::StartEngine(int width, int height) {
 }
 
 WError Wasabi::Resize(unsigned int width, unsigned int height) {
+	WError err = SpriteManager->Resize(width, height);
+	if (!err)
+		return err;
 	return Renderer->Resize(width, height);
 }
 

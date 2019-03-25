@@ -13,6 +13,7 @@
 #pragma once
 
 #include "../Core/WCore.h"
+#include "../Materials/WMaterialsStore.h"
 
 /**
  * @ingroup engineclass
@@ -117,16 +118,25 @@ private:
  * object's desired position, orientation and scale. A WObject also provides
  * an easy way to apply animations and instancing on rendered geometry.
  */
-class WObject : public WBase, public WOrientation, public WFileAsset {
+class WObject : public WBase, public WOrientation, public WFileAsset, public WMaterialsStore {
+	friend class WObjectManager;
+
 	/**
 	 * Returns "Object" string.
 	 * @return Returns "Object" string
 	 */
 	virtual std::string GetTypeName() const;
 
-public:
 	WObject(Wasabi* const app, unsigned int ID = 0);
 	~WObject();
+
+public:
+
+	/**
+	 * Checks whether a call to Render() will cause any rendering (draw call) to
+	 * happen.
+	 */
+	bool WillRender(class WRenderTarget* rt);
 
 	/**
 	 * Renders this object. An object will only render to the render target if
@@ -136,7 +146,6 @@ public:
 	 * object binds the provided material (WMaterial::Bind()), it will set the
 	 * following variables and resources in the material, if they exist:
 	 * * "worldMatrix" (WMatrix) will be set to the world matrix of this object.
-	 * * "color" (WColor) will be set to the color of this object.
 	 * * "isAnimated" (int) will be set to 1 if animation data is available,
 	 * 		0 otherwise.
 	 * * "isInstanced" (int) will be set to 1 if instancing data is available,
@@ -145,10 +154,10 @@ public:
 	 * 		animation texture. This will only be set if gAnimation was set to 1.
 	 * * "instanceTextureWidth" (int) will be set to the width of the
 	 * 		instancing texture. This will only be set if gInstancing was set to 1.
-	 * * texture "textureAnimation" will be assigned to the animation texture
+	 * * texture "animationTexture" will be assigned to the animation texture
 	 *      from the attached animation. This will only occur if isAnimated was
 	 *      set to 1.
-	 * * texture "textureInstancing" will be assigned to the instancing texture
+	 * * texture "instancingTexture" will be assigned to the instancing texture
 	 * 	    created by this object. This will only occur if isInstanced was set
 	 *      to 1.
 	 *
@@ -243,12 +252,6 @@ public:
 	unsigned int GetInstancesCount() const;
 
 	/**
-	 * Sets the object's color.
-	 * @param color  New color
-	 */
-	void SetColor(WColor color);
-
-	/**
 	 * Shows the object, allowing to render.
 	 */
 	void Show();
@@ -334,8 +337,6 @@ private:
 	class WGeometry* m_geometry;
 	/** Attached animation */
 	class WAnimation* m_animation;
-	/** Color of the object */
-	WColor m_color;
 	/** true if the world matrix needs to be updated, false otherwise */
 	bool m_bAltered;
 	/** true if the object is hidden, false otherwise */
@@ -378,6 +379,19 @@ public:
 	WObjectManager(class Wasabi* const app);
 
 	/**
+	 * Loads the manager.
+	 * @return Error code, see WError.h
+	 */
+	WError Load();
+
+	/**
+	 * Allocates and initializes a new object.
+	 * @param ID  Id of the new object
+	 * @return    New object
+	 */
+	WObject* CreateObject(unsigned int ID = 0) const;
+
+	/**
 	 * Checks if an object is in the view in the default renderer's camera and
 	 * and part of that object is at the given (x,y) coordinates on the screen.
 	 * If multiple objects are under the (x,y) coordinate, the one with the
@@ -406,14 +420,8 @@ public:
 	 *                     was picked
 	 */
 	WObject* PickObject(int x, int y, bool bAnyHit,
-						unsigned int iObjStartID = 0,
-						unsigned int iObjEndID = 0,
-						WVector3* pt = nullptr, WVector2* uv = nullptr,
-						unsigned int* faceIndex = nullptr) const;
-
-	/**
-	 * Loads the manager.
-	 * @return Error code, see WError.h
-	 */
-	WError Load();
+		unsigned int iObjStartID = 0,
+		unsigned int iObjEndID = 0,
+		WVector3* pt = nullptr, WVector2* uv = nullptr,
+		unsigned int* faceIndex = nullptr) const;
 };

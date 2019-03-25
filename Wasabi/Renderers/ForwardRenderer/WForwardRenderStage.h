@@ -1,8 +1,9 @@
 #pragma once
 
 #include "../WRenderStage.h"
-#include "../Common/ResourceCollection.h"
 #include "../../Materials/WEffect.h"
+#include "../../Materials/WMaterial.h"
+#include "../../Objects/WObject.h"
 
 struct LightStruct {
 	WVector4 color;
@@ -29,7 +30,17 @@ public:
 class WForwardRenderStage : public WRenderStage {
 	class WEffect* m_defaultFX;
 	class WMaterial* m_perFrameMaterial;
-	ResourceCollection<class WObject, class WMaterial> m_objectMaterials;
+
+	struct ObjectKey {
+		class WEffect* fx;
+		class WObject* obj;
+		bool animated;
+
+		ObjectKey(class WObject* object);
+		const bool operator< (const ObjectKey& that) const;
+	};
+	/** Sorted container for all the objects to be rendered by this stage */
+	std::map<ObjectKey, class WObject*> m_allObjects;
 
 	LightStruct* m_lights;
 
@@ -40,10 +51,4 @@ public:
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter);
 	virtual void Cleanup();
 	virtual WError Resize(uint width, uint height);
-
-	/**
-	 * Creates a material for a default object effect.
-	 * @return  Newly allocated and initialized material
-	 */
-	class WMaterial* CreateDefaultObjectMaterial() const;
 };

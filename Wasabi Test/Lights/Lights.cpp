@@ -9,7 +9,7 @@ void LightsDemo::Load() {
 	srand(2);
 
 	// Create the plain
-	m_plain = new WObject(m_app);
+	m_plain = m_app->ObjectManager->CreateObject();
 	WGeometry* plainGeometry = new WGeometry(m_app);
 	plainGeometry->CreatePlain(50.0f, 0, 0);
 	m_plain->SetGeometry(plainGeometry);
@@ -21,7 +21,7 @@ void LightsDemo::Load() {
 	for (int i = 0; i < 40; i++) {
 		float x = 30.0f * (float)(rand() % 10000) / 10000.0f - 15.0f;
 		float z = 30.0f * (float)(rand() % 10000) / 10000.0f - 15.0f;
-		WObject* box = new WObject(m_app);
+		WObject* box = m_app->ObjectManager->CreateObject();
 		box->SetGeometry(boxGeometry);
 		box->SetPosition(x, 1.0f, z);
 		m_boxes.push_back(box);

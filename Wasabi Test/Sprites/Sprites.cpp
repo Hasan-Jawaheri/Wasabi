@@ -1,10 +1,11 @@
 #include "Sprites.hpp"
+#include <Renderers/Common/WSpritesRenderStage.h>
 
 class CustomSpritePS : public WShader {
 public:
 	CustomSpritePS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 		};
@@ -17,9 +18,9 @@ public:
 			"layout(location = 0) out vec4 outFragColor;\n"
 			""
 			"void main() {\n"
-			"	outFragColor = vec4(inUV.xy, 0, 0.5);\n"
+			"	outFragColor = vec4(inUV.xy, 0, 0.65);\n"
 			"}\n"
-		);
+		, bSaveData);
 	}
 };
 
@@ -27,37 +28,34 @@ SpritesDemo::SpritesDemo(Wasabi* const app) : WTestState(app) {
 }
 
 void SpritesDemo::Load() {
-#if 0
-	m_sprites[0] = new WSprite(m_app);
-	m_sprites[0]->Load();
-	WImage* img = new WImage(m_app);
-	img->Load("Media/dummy.bmp");
-	m_sprites[0]->SetImage(img);
-	img->RemoveReference();
+	WImage* img;
 
-	m_sprites[1] = new WSprite(m_app);
-	m_sprites[1]->Load();
+	img = new WImage(m_app);
+	img->Load("Media/dummy.bmp");
+	m_sprites[0] = m_app->SpriteManager->CreateSprite(img);
+	img->RemoveReference();
+	m_sprites[0]->SetPriority(1);
+
 	img = new WImage(m_app);
 	img->Load("Media/checker.bmp");
-	m_sprites[1]->SetImage(img);
-	img->RemoveReference();
+	m_sprites[1] = m_app->SpriteManager->CreateSprite(img);
 	m_sprites[1]->SetPosition(WVector2(100, 100));
-	m_sprites[1]->SetAlpha(0.5f);
+	m_sprites[1]->GetMaterial()->SetVariableFloat("alpha", 0.5f);
+	img->RemoveReference();
+	m_sprites[1]->SetPriority(2);
 
-	m_sprites[2] = new WSprite(m_app);
+	
 	WShader* pixel_shader = new CustomSpritePS(m_app);
 	pixel_shader->Load();
-	WEffect* fx = m_app->SpriteManager->CreateSpriteEffect(pixel_shader);
+	WEffect* spriteFX = ((WSpritesRenderStage*)m_app->Renderer->GetRenderStage("WSpritesRenderStage"))->CreateSpriteEffect(pixel_shader);
 	pixel_shader->RemoveReference();
-	WMaterial* mat = new WMaterial(m_app);
-	mat->CreateForEffect(fx);
-	fx->RemoveReference();
-	m_sprites[2]->SetMaterial(mat);
-	mat->RemoveReference();
-	m_sprites[2]->Load();
+
+	m_sprites[2] = m_app->SpriteManager->CreateSprite(img);
+	m_sprites[2]->RemoveEffect(m_sprites[2]->GetDefaultEffect());
+	m_sprites[2]->AddEffect(spriteFX);
+	spriteFX->RemoveReference();
 	m_sprites[2]->SetPosition(WVector2(200, 200));
-	m_sprites[2]->SetSize(WVector2(200, 200));
-#endif
+	m_sprites[2]->SetSize(WVector2(400, 200));
 }
 
 void SpritesDemo::Update(float fDeltaTime) {

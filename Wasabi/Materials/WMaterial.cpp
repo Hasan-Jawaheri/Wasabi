@@ -403,7 +403,6 @@ WError WMaterial::SetTexture(std::string name, WImage* img) {
 				m_app->ImageManager->GetDefaultImage()->AddReference();
 			}
 
-			m_sampler_info[i].descriptor.imageView = m_sampler_info[i].img->GetView();
 			isFound = true;
 		}
 	}

@@ -825,6 +825,13 @@ WError WEffect::Bind(WRenderTarget* rt, uint num_vertex_buffers) {
 	return WError(W_SUCCEEDED);
 }
 
+WMaterial* WEffect::CreateMaterial(uint bindingSet) {
+	WMaterial* material = new WMaterial(m_app);
+	if (!material->CreateForEffect(this, bindingSet))
+		W_SAFE_REMOVEREF(material);
+	return material;
+}
+
 VkPipelineLayout WEffect::GetPipelineLayout() const {
 	return m_pipelineLayout;
 }

@@ -13,6 +13,7 @@
 #pragma once
 
 #include "../Core/WCore.h"
+#include "../Materials/WMaterialsStore.h"
 
 /**
  * @ingroup engineclass
@@ -21,53 +22,33 @@
  * position, orientation, and other properties for an image to be drawn on
  * screen.
  */
-class WSprite : public WBase {
+class WSprite : public WBase, public WMaterialsStore {
+	friend class WSpriteManager;
+
 	/**
 	 * Returns "Sprite" string.
 	 * @return Returns "Sprite" string
 	 */
 	virtual std::string GetTypeName() const;
 
-public:
 	WSprite(Wasabi* const app, unsigned int ID = 0);
-	WSprite(Wasabi* const app, class WMaterial* material, unsigned int ID = 0);
 	~WSprite();
 
-	/**
-	 * Loads the sprite's resources (material and geometry). If material is
-	 * already set (via SetMaterial()) then it will not be changed.
-	 * @param bCreateMaterial  If set to true, the sprite will create a
-	 *					       material for itself. Otherwise none will
-	 *                         be created and the sprite will depend on user
-	 *                         to set one before rendering
-	 * @return Error code, see WError.h
-	 */
-	WError Load(bool bCreateMaterial = true);
+public:
 
 	/**
-	 * Sets the texture of the sprite.
-	 * @param img Texture to use
+	 * Checks whether a call to Render() will cause any rendering (draw call) to
+	 * happen.
 	 */
-	void SetImage(class WImage* img);
+	bool WillRender(class WRenderTarget* rt);
 
 	/**
-	 * Sets a custom material to be used for rendering the sprite. The material's
-	 * effect should use a vertex shader with the following input layout:
-	 * Layout:
-	 * - W_VERTEX_ATTRIBUTE("pos2", 2)
-	 * - W_ATTRIBUTE_UV
-	 * The default vertex shader can be used from the default sprites render stage
-	 * The input geometry is 2 triangles with 4 vertices.
-	 *
-	 * @param mat Material to set, cannot be null
+	 * Renders the sprite. The sprite will not render if its hidden or invalid
+	 * (see Valid()).
+	 * @param rt        Render target to render to
+	 * @param material  Material to use to render the sprite
 	 */
-	void SetMaterial(class WMaterial* mat);
-
-	/**
-	 * Retrieves the current material.
-	 * @return  Currently used material
-	 */
-	class WMaterial* GetMaterial() const;
+	void Render(class WRenderTarget* rt);
 
 	/**
 	 * Sets the position of the sprite in screen-space.
@@ -87,6 +68,12 @@ public:
 	 * @param size Width and height of the sprite, in pixels
 	 */
 	void SetSize(WVector2 size);
+
+	/**
+	 * Sets the size of the sprite to the size of an image
+	 * @param image Image to use its size
+	 */
+	void SetSize(class WImage* image);
 
 	/**
 	 * Sets the angle (clockwise rotation) of the sprite.
@@ -124,16 +111,6 @@ public:
 	 * @param priority New priority to set
 	 */
 	void SetPriority(unsigned int priority);
-
-	/**
-	 * Renders the sprite. The sprite will not render if its hidden or invalid
-	 * (see Valid()).
-	 * Material settings during render:
-	 * - Variable "alpha" will be set to the sprite's alpha
-	 * - Texture slot 1 will be set to the sprite's current texture
-	 * @param rt Render target to render to
-	 */
-	void Render(class WRenderTarget* rt);
 
 	/**
 	 * Show the sprite.
@@ -183,12 +160,8 @@ public:
 	virtual bool Valid() const;
 
 private:
-	/** True if the last call to Load() failed */
-	bool m_lastLoadFailed;
 	/** true if the sprite is hidden (will no render), false otherwise */
 	bool m_hidden;
-	/** Texture of the sprite */
-	class WImage* m_img;
 	/** Screen-space position of the sprite */
 	WVector2 m_pos;
 	/** Size of the sprite, in pixels */
@@ -202,8 +175,6 @@ private:
 	/** true if position/size/etc... changed and geometry needs to be rebuilt */
 	bool m_geometryChanged;
 
-	/** Rendering material, null if default */
-	class WMaterial* m_material;
 	/** Rendering geometry */
 	class WGeometry* m_geometry;
 };
@@ -230,6 +201,23 @@ public:
 	 * @return Error code, see WError.h
 	 */
 	WError Load();
+
+	/**
+	 * Called when the application window is resized.
+	 * @param width  New screen width
+	 * @param height New screen height
+	 * @return Error code, see WError.h
+	 */
+	WError Resize(unsigned int width, unsigned int height);
+
+	/**
+	 * Allocates and initializes a new sprite. If an image is supplied, it
+	 * will be set to the default sprite's material texture "diffuseTexture".
+	 * @param img Image to set to the new sprite
+	 * @param ID  Id of the new image
+	 * @return    New sprite
+	 */
+	WSprite* CreateSprite(class WImage* img = nullptr, unsigned int ID = 0) const;
 
 private:
 	/** Geometry used to render full-screen sprites */

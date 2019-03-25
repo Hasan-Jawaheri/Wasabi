@@ -222,13 +222,12 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 		return err;
 	}
 
-	f.textMaterial = new WMaterial(m_app);
-	err = f.textMaterial->CreateForEffect(m_textEffect);
-	if (!err) {
+	f.textMaterial = m_textEffect->CreateMaterial();
+	if (!f.textMaterial) {
 		delete[] (stbtt_bakedchar*)f.cdata;
 		f.img->RemoveReference();
 		W_SAFE_REMOVEREF(f.textMaterial);
-		return err;
+		return WError(W_OUTOFMEMORY);
 	}
 
 	err = f.textMaterial->SetTexture(0, f.img);

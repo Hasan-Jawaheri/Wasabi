@@ -26,13 +26,13 @@
  * a subset of them.
  */
 class WMaterial : public WBase, public WFileAsset {
+	friend class WEffect;
 	/**
 	 * Returns "Material" string.
 	 * @return Returns "Material" string
 	 */
 	virtual std::string GetTypeName() const;
 
-public:
 	WMaterial(class Wasabi* const app, unsigned int ID = 0);
 	~WMaterial();
 
@@ -46,6 +46,7 @@ public:
 	 */
 	WError CreateForEffect(class WEffect* const effect, uint bindingSet = 0);
 
+public:
 	/**
 	 * Binds the resources to the pipeline. In Vulkan terms, this binds the descriptor
 	 * set associated with this material.
