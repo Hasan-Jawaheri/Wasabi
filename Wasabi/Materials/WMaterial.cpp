@@ -296,7 +296,7 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 				return WError(W_UNABLETOMAPBUFFER);
 			memcpy(pData, ubo->data, ubo->descriptor.range);
 			vkUnmapMemory(device, ubo->memory);
-			ubo->dirty = true;
+			ubo->dirty = false;
 		}
 	}
 
@@ -354,7 +354,7 @@ WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 			if (strcmp(info->variables[j].name.c_str(), varName) == 0) {
 				size_t varsize = info->variables[j].GetSize();
 				size_t offset = info->OffsetAtVariable(j);
-				if (varsize < len)
+				if (varsize < len || offset + len > ubo->descriptor.range)
 					return WError(W_INVALIDPARAM);
 				memcpy((char*)ubo->data + offset, data, len);
 				ubo->dirty = true;

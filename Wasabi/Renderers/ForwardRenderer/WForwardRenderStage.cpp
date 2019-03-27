@@ -26,8 +26,7 @@ static void _StringReplaceAll(std::string& source, const std::string& from, cons
 	source.swap(newString);
 }
 
-WForwardRenderStageObjectVS::WForwardRenderStageObjectVS(Wasabi* const app) : WShader(app) {
-}
+WForwardRenderStageObjectVS::WForwardRenderStageObjectVS(Wasabi* const app) : WShader(app) {}
 
 void WForwardRenderStageObjectVS::Load(bool bSaveData) {
 	int maxLights = (int)m_app->engineParams["maxLights"];
@@ -49,7 +48,7 @@ W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "instanceTextureWidth"), // width of the instance texture
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isAnimated"), // whether or not animation is enabled
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isInstanced"), // whether or not instancing is enabled
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"),
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"), // object color
 		}),
 		W_BOUND_RESOURCE(W_TYPE_UBO, 1, 1, "uboPerFrame", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
@@ -73,8 +72,7 @@ W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
 	return desc;
 }
 
-WForwardRenderStageObjectPS::WForwardRenderStageObjectPS(Wasabi* const app) : WShader(app) {
-}
+WForwardRenderStageObjectPS::WForwardRenderStageObjectPS(Wasabi* const app) : WShader(app) {}
 
 void WForwardRenderStageObjectPS::Load(bool bSaveData) {
 	int maxLights = (int)m_app->engineParams["maxLights"];
@@ -113,14 +111,16 @@ WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = RENDER_STAGE_TARGET_BACK_BUFFER;
 
-	m_lights = new LightStruct[(int)m_app->engineParams["maxLights"]];
+	m_lights.resize((int)m_app->engineParams["maxLights"]);
 
 	m_defaultFX = nullptr;
 	m_perFrameMaterial = nullptr;
 }
 
 WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
-	WRenderStage::Initialize(previousStages, width, height);
+	WError err = WRenderStage::Initialize(previousStages, width, height);
+	if (!err)
+		return err;
 
 	WForwardRenderStageObjectVS* vs = new WForwardRenderStageObjectVS(m_app);
 	vs->Load();
@@ -129,7 +129,7 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	ps->Load();
 
 	m_defaultFX = new WEffect(m_app);
-	WError err = m_defaultFX->BindShader(vs);
+	err = m_defaultFX->BindShader(vs);
 	if (err) {
 		err = m_defaultFX->BindShader(ps);
 		if (err) {
@@ -145,28 +145,9 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (!m_perFrameMaterial)
 		return WError(W_ERRORUNK);
 
-	m_app->ObjectManager->RegisterChangeCallback(m_stageDescription.name, [this](WObject* o, bool added) {
-		if (added) {
-			if (!o->GetDefaultEffect())
-				o->AddEffect(this->m_defaultFX, 0);
-			ObjectKey key(o);
-			this->m_allObjects.insert(std::make_pair(key, o));
-		} else {
-			auto iter = this->m_allObjects.find(ObjectKey(o));
-			if (iter != this->m_allObjects.end())
-				this->m_allObjects.erase(iter);
-			else {
-				// the sprite seems to have changed and then removed before we cloud reindex it in the render loop
-				// need to find it manually now...
-				for (auto it = this->m_allObjects.begin(); it != this->m_allObjects.end(); it++) {
-					if (it->second == o) {
-						this->m_allObjects.erase(it);
-						break;
-					}
-				}
-			}
-		}
-	});
+	for (unsigned int i = 0; i < m_app->ObjectManager->GetEntitiesCount(); i++)
+		OnObjectChange(m_app->ObjectManager->GetEntityByIndex(i), true);
+	m_app->ObjectManager->RegisterChangeCallback(m_stageDescription.name, [this](WObject* o, bool a) {this->OnObjectChange(o, a); });
 
 	return WError(W_SUCCEEDED);
 }
@@ -175,10 +156,9 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 	if (filter & RENDER_FILTER_OBJECTS) {
 		WCamera* cam = rt->GetCamera();
 
-		// create the lights UBO data
-		int maxLights = (int)m_app->engineParams["maxLights"];
+		// create the per-frame UBO data
 		int numLights = 0;
-		for (int i = 0; numLights < maxLights; i++) {
+		for (int i = 0; numLights < m_lights.size(); i++) {
 			WLight* light = m_app->LightManager->GetEntityByIndex(i);
 			if (!light)
 				break;
@@ -197,8 +177,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 		m_perFrameMaterial->SetVariableMatrix("projectionMatrix", cam->GetProjectionMatrix());
 		m_perFrameMaterial->SetVariableVector3("camPosW", cam->GetPosition());
 		m_perFrameMaterial->SetVariableInt("numLights", numLights);
-		m_perFrameMaterial->SetVariableData("lights", m_lights, sizeof(LightStruct) * numLights);
-
+		m_perFrameMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
 		m_perFrameMaterial->Bind(rt);
 
 		uint numObjects = m_app->ObjectManager->GetEntitiesCount();
@@ -230,6 +209,29 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 	}
 
 	return WError(W_SUCCEEDED);
+}
+
+void WForwardRenderStage::OnObjectChange(class WObject* object, bool added) {
+	if (added) {
+		if (!object->GetDefaultEffect())
+			object->AddEffect(this->m_defaultFX, 0);
+		ObjectKey key(object);
+		this->m_allObjects.insert(std::make_pair(key, object));
+	} else {
+		auto iter = this->m_allObjects.find(ObjectKey(object));
+		if (iter != this->m_allObjects.end())
+			this->m_allObjects.erase(iter);
+		else {
+			// the sprite seems to have changed and then removed before we cloud reindex it in the render loop
+			// need to find it manually now...
+			for (auto it = this->m_allObjects.begin(); it != this->m_allObjects.end(); it++) {
+				if (it->second == object) {
+					this->m_allObjects.erase(it);
+					break;
+				}
+			}
+		}
+	}
 }
 
 void WForwardRenderStage::Cleanup() {

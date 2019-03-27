@@ -6,10 +6,10 @@ R"(
 layout(location = 0) in vec4 inPos;
 layout(location = 0) out vec4 outFragColor;
 
-layout(binding = 1) uniform sampler2D normalSampler;
-layout(binding = 2) uniform sampler2D depthSampler;
+layout(set = 1, binding = 1) uniform sampler2D normalTexture;
+layout(set = 1, binding = 2) uniform sampler2D depthTexture;
 
-layout(binding = 0) uniform UBOPerLight {
+layout(set = 0, binding = 0) uniform UBOPerLight {
 	mat4 wvp;
 	vec3 lightDir;
 	float lightSpec;
@@ -18,9 +18,10 @@ layout(binding = 0) uniform UBOPerLight {
 	vec3 position;
 	float range;
 	float minCosAngle;
+	float spotRadius;
 } uboPerLight;
 
-layout(binding = 3) uniform UBOPerFrame {
+layout(set = 1, binding = 3) uniform UBOPerFrame {
 	mat4 projInv;
 } uboPerFrame;
 
@@ -67,13 +68,13 @@ vec4 Spotlight(vec3 pos, vec3 norm) {
 
 void main() {
 	vec2 uv = (inPos.xy/inPos.w + 1) / 2;
-	float z = texture(depthSampler, uv).r;
+	float z = texture(depthTexture, uv).r;
 	float x = uv.x * 2.0f - 1.0f;
 	float y = uv.y * 2.0f - 1.0f;
 	vec4 vPositionVS = uboPerFrame.projInv * vec4 (x, y, z, 1.0f);
 	vec3 pixelPosition = vPositionVS.xyz / vPositionVS.w;
 
-	vec4 normalT = texture(normalSampler, uv); //rgb norm, a spec
+	vec4 normalT = texture(normalTexture, uv); //rgb norm, a spec
 
 	//clip(normalT.x + normalT.y + normalT.z - 0.01); // reject pixel
 	vec3 pixelNormal = normalize((normalT.xyz * 2.0f) - 1.0f);

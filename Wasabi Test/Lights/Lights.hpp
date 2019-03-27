@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../TestSuite.hpp"
-#include <Renderers/ForwardRenderer/WForwardRenderer.h>
+#include <Renderers/DeferredRenderer/WDeferredRenderer.h>
 
 class LightsDemo : public WTestState {
 	WObject* m_plain;
@@ -15,5 +15,5 @@ public:
 	virtual void Update(float fDeltaTime);
 	virtual void Cleanup();
 
-	virtual WRenderer* CreateRenderer() { return new WForwardRenderer(m_app); }
+	virtual WRenderer* CreateRenderer() { return new WDeferredRenderer(m_app); }
 };

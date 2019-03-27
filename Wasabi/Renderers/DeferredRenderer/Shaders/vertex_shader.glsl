@@ -11,28 +11,33 @@ layout(location = 3) in vec2 inUV;
 layout(location = 4) in uvec4 boneIndex;
 layout(location = 5) in vec4 boneWeight;
 
-layout(binding = 1) uniform UBO {
-	mat4 projectionMatrix;
+layout(set = 0, binding = 0) uniform UBOPerObject {
 	mat4 worldMatrix;
-	mat4 viewMatrix;
 	int animationTextureWidth;
 	int instanceTextureWidth;
 	int isAnimated;
 	int isInstanced;
-} ubo;
-layout(binding = 2) uniform sampler2D animationTexture;
-layout(binding = 3) uniform sampler2D instancingTexture;
+	vec4 color;
+} uboPerObject;
+
+layout(set = 1, binding = 1) uniform UBOPerFrame {
+	mat4 viewMatrix;
+	mat4 projectionMatrix;
+} uboPerFrame;
+
+layout(set = 0, binding = 2) uniform sampler2D animationTexture;
+layout(set = 0, binding = 3) uniform sampler2D instancingTexture;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outViewPos;
 layout(location = 2) out vec3 outViewNorm;
 
 mat4x4 LoadInstanceMatrix() {
-	if (ubo.isInstanced == 1) {
+	if (uboPerObject.isInstanced == 1) {
 		uint baseIndex = 4 * gl_InstanceIndex;
 
-		uint baseU = baseIndex % ubo.instanceTextureWidth;
-		uint baseV = baseIndex / ubo.instanceTextureWidth;
+		uint baseU = baseIndex % uboPerObject.instanceTextureWidth;
+		uint baseV = baseIndex / uboPerObject.instanceTextureWidth;
 
 		vec4 m1 = texelFetch(instancingTexture, ivec2(baseU + 0, baseV), 0);
 		vec4 m2 = texelFetch(instancingTexture, ivec2(baseU + 1, baseV), 0);
@@ -55,8 +60,8 @@ mat4x4 LoadBoneMatrix(uint boneID)
 {
 	uint baseIndex = 4 * boneID;
 
-	uint baseU = baseIndex % ubo.animationTextureWidth;
-	uint baseV = baseIndex / ubo.animationTextureWidth;
+	uint baseU = baseIndex % uboPerObject.animationTextureWidth;
+	uint baseV = baseIndex / uboPerObject.animationTextureWidth;
 
 	vec4 m1 = texelFetch(animationTexture, ivec2(baseU + 0, baseV), 0);
 	vec4 m2 = texelFetch(animationTexture, ivec2(baseU + 1, baseV), 0);
@@ -75,9 +80,9 @@ mat4x4 LoadBoneMatrix(uint boneID)
 
 void main() {
 	outUV = inUV;
-	mat4x4 animMtx = mat4x4(1.0) * (1-ubo.isAnimated);
+	mat4x4 animMtx = mat4x4(1.0) * (1-uboPerObject.isAnimated);
 	mat4x4 instMtx = LoadInstanceMatrix();
-	if (boneWeight.x * ubo.isAnimated > 0.001f) {
+	if (boneWeight.x * uboPerObject.isAnimated > 0.001f) {
 		animMtx += boneWeight.x * LoadBoneMatrix(boneIndex.x); 
 		if (boneWeight.y > 0.001f) {
 			animMtx += boneWeight.y * LoadBoneMatrix(boneIndex.y); 
@@ -91,8 +96,8 @@ void main() {
 	}
 	vec4 localPos1 = animMtx * vec4(inPos.xyz, 1.0);
 	vec4 localPos2 = instMtx * vec4(localPos1.xyz, 1.0);
-	outViewPos = (ubo.viewMatrix * ubo.worldMatrix * localPos2).xyz;
-	outViewNorm = (ubo.viewMatrix * ubo.worldMatrix * vec4(inNorm.xyz, 0.0)).xyz;
-	gl_Position = ubo.projectionMatrix * vec4(outViewPos, 1.0);
+	outViewPos = (uboPerFrame.viewMatrix * uboPerObject.worldMatrix * localPos2).xyz;
+	outViewNorm = (uboPerFrame.viewMatrix * uboPerObject.worldMatrix * vec4(inNorm.xyz, 0.0)).xyz;
+	gl_Position = uboPerFrame.projectionMatrix * vec4(outViewPos, 1.0);
 }
 )"

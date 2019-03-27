@@ -59,10 +59,8 @@ WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint
 
 			if (m_stageDescription.colorOutputs[i].isFromPreviousStage) {
 				WImage* previousImg = nullptr;
-
 				for (int i = previousStages.size() - 2; i >= 0 && !previousImg; i--)
 					previousImg = previousStages[i]->GetOutputImage(m_stageDescription.colorOutputs[i].name);
-
 				if (!previousImg)
 					return WError(W_NOTVALID);
 				previousImg->AddReference();
@@ -72,18 +70,18 @@ WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint
 			}
 		}
 
-		if (m_stageDescription.depthOutput.name == "")
-			return WError(W_NOTVALID);
-
-		if (m_stageDescription.depthOutput.isFromPreviousStage) {
-			WImage* previousImg = nullptr;
-
-			if (!previousImg)
-				return WError(W_NOTVALID);
-			previousImg->AddReference();
-			m_depthOutput = previousImg;
-		} else {
-			m_depthOutput = new WImage(m_app);
+		if (m_stageDescription.depthOutput.name != "") {
+			if (m_stageDescription.depthOutput.isFromPreviousStage) {
+				WImage* previousImg = nullptr;
+				for (int i = previousStages.size() - 2; i >= 0 && !previousImg; i--)
+					previousImg = previousStages[i]->GetOutputImage(m_stageDescription.depthOutput.name);
+				if (!previousImg)
+					return WError(W_NOTVALID);
+				previousImg->AddReference();
+				m_depthOutput = previousImg;
+			} else {
+				m_depthOutput = new WImage(m_app);
+			}
 		}
 	}
 

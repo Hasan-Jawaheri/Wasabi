@@ -47,7 +47,7 @@ void SpritesDemo::Load() {
 	
 	WShader* pixel_shader = new CustomSpritePS(m_app);
 	pixel_shader->Load();
-	WEffect* spriteFX = ((WSpritesRenderStage*)m_app->Renderer->GetRenderStage("WSpritesRenderStage"))->CreateSpriteEffect(pixel_shader);
+	WEffect* spriteFX = m_app->SpriteManager->CreateSpriteEffect(nullptr, pixel_shader);
 	pixel_shader->RemoveReference();
 
 	m_sprites[2] = m_app->SpriteManager->CreateSprite(img);

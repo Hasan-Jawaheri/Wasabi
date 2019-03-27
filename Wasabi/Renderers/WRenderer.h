@@ -131,6 +131,13 @@ public:
 	class WRenderTarget* GetRenderTarget(std::string stageName = "") const;
 
 	/**
+	 * Retrieves a render target output image from a currently set render stage.
+	 * @param imageName  Name of the image in one of the render stages
+	 * @return           Pointer to the render target image with the given name
+	 */
+	class WImage* GetRenderTargetImage(std::string imageName) const;
+
+	/**
 	 * Retrieves a Vulkan image sampler of a given type
 	 * @param type  Type of the requested sampler
 	 * @return      A handle of a usable Vulkan image sampler

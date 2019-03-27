@@ -6,7 +6,7 @@ R"(
 layout(location = 0) in vec3 inPos;
 layout(location = 0) out vec4 outPos;
 
-layout(binding = 0) uniform UBOPerLight {
+layout(set = 0, binding = 0) uniform UBOPerLight {
 	mat4 wvp;
 	vec3 lightDir;
 	float lightSpec;

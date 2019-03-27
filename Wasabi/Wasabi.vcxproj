@@ -47,6 +47,7 @@
     <ClCompile Include="Physics\WRigidBody.cpp" />
     <ClCompile Include="Renderers\Common\CommonRenderStages.cpp" />
     <ClCompile Include="Renderers\Common\WSpritesRenderStage.cpp" />
+    <ClCompile Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.cpp" />
     <ClCompile Include="Renderers\DeferredRenderer\WDeferredRenderer.cpp" />
     <ClCompile Include="Renderers\DeferredRenderer\WGBufferRenderStage.cpp" />
     <ClCompile Include="Renderers\DeferredRenderer\WLightBufferRenderStage.cpp" />
@@ -93,6 +94,7 @@
     <ClInclude Include="Physics\WRigidBody.h" />
     <ClInclude Include="Renderers\Common\CommonRenderStages.h" />
     <ClInclude Include="Renderers\Common\WSpritesRenderStage.h" />
+    <ClInclude Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.h" />
     <ClInclude Include="Renderers\DeferredRenderer\WDeferredRenderer.h" />
     <ClInclude Include="Renderers\DeferredRenderer\WGBufferRenderStage.h" />
     <ClInclude Include="Renderers\DeferredRenderer\WLightBufferRenderStage.h" />

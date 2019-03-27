@@ -3,20 +3,21 @@ R"(
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
 
-layout(binding = 2) uniform sampler2D colorSampler;
-layout(binding = 3) uniform sampler2D lightSampler;
-layout(binding = 4) uniform sampler2D normalSampler;
-layout(binding = 5) uniform sampler2D depthSampler;
-layout(binding = 6) uniform sampler2D backfaceDepthSampler;
-layout(binding = 7) uniform sampler2D randomSampler;
+layout(set = 1, binding = 2) uniform sampler2D diffuseTexture;
+layout(set = 1, binding = 3) uniform sampler2D lightTexture;
+layout(set = 1, binding = 4) uniform sampler2D normalTexture;
+layout(set = 1, binding = 5) uniform sampler2D depthTexture;
+layout(set = 1, binding = 6) uniform sampler2D backfaceDepthTexture;
+layout(set = 1, binding = 7) uniform sampler2D randomTexture;
+
 layout(location = 0) in vec2 inUV;
 layout(location = 0) out vec4 outFragColor;
 
-layout(binding = 0) uniform UBO {
+layout(set = 0, binding = 0) uniform UBOPerFrame {
 	mat4x4 projInv;
-} ubo;
+} uboPerFrame;
 
-layout(binding=1) uniform UBOParams {
+layout(set = 1, binding = 1) uniform UBOParams {
 	vec4 ambient;
 	float SSAOSampleRadius;
 	float SSAOIntensity;
@@ -26,28 +27,28 @@ layout(binding=1) uniform UBOParams {
 } uboParams;
 
 vec3 getPosition(vec2 uv) {
-	float z = texture(depthSampler, uv).r;
+	float z = texture(depthTexture, uv).r;
 	float x = uv.x * 2.0f - 1.0f;
 	float y = uv.y * 2.0f - 1.0f;
-	vec4 vPositionVS = ubo.projInv * vec4 (x, y, z, 1.0f);
+	vec4 vPositionVS = uboPerFrame.projInv * vec4 (x, y, z, 1.0f);
 	return vPositionVS.xyz / vPositionVS.w;
 }
 
 vec3 getPositionBackface(vec2 uv) {
-	float z = texture(backfaceDepthSampler, uv).r;
+	float z = texture(backfaceDepthTexture, uv).r;
 	float x = uv.x * 2.0f - 1.0f;
 	float y = uv.y * 2.0f - 1.0f;
-	vec4 vPositionVS = ubo.projInv * vec4 (x, y, z, 1.0f);
+	vec4 vPositionVS = uboPerFrame.projInv * vec4 (x, y, z, 1.0f);
 	return vPositionVS.xyz / vPositionVS.w;
 }
 
 vec3 getNormal(vec2 uv) {
-	vec4 normalT = texture(normalSampler, uv); //rgb norm, a spec
+	vec4 normalT = texture(normalTexture, uv); //rgb norm, a spec
 	return normalize((normalT.xyz * 2.0f) - 1.0f);
 }
 
 vec2 getRandom(vec2 uv) {
-	return texture(randomSampler, vec2(2500,1000) * uv / 100).xy * 2.0f - 1.0f;
+	return texture(randomTexture, vec2(2500,1000) * uv / 100).xy * 2.0f - 1.0f;
 }
 
 float getAmbientOcclusion(vec2 tcoord, vec2 uv, vec3 p, vec3 cnorm) {
@@ -73,8 +74,8 @@ float getBackfaceAmbientOcclusion(vec2 tcoord, vec2 uv, vec3 p, vec3 cnorm) {
 }
 
 void main() {
-	vec4 color = texture(colorSampler, inUV);
-	vec4 light = texture(lightSampler, inUV);
+	vec4 color = texture(diffuseTexture, inUV);
+	vec4 light = texture(lightTexture, inUV);
 
 	vec2 occludersUVs[4] = {vec2(1, 0), vec2(-1, 0), vec2(0, 1), vec2(0, -1)};
 	vec3 occluderPos = getPosition(inUV);

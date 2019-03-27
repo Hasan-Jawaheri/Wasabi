@@ -20,7 +20,9 @@ class WLightBufferRenderStage : public WRenderStage {
 		class WEffect* effect;
 		/** A sprite that renders at full-screen (for directional lights), only one of fullscreen_sprite and geometry is not null */
 		class WSprite* fullscreen_sprite;
-		/** Render material */
+		/** Per-frame material for this light type */
+		class WMaterial* perFrameMaterial;
+		/** Render materials for all lights of this type */
 		unordered_map<class WLight*, class WMaterial*> material_map;
 
 		LightTypeAssets() : geometry(nullptr), fullscreen_sprite(nullptr), effect(nullptr) {}
@@ -32,11 +34,11 @@ class WLightBufferRenderStage : public WRenderStage {
 	std::unordered_map<int, LightTypeAssets> m_lightRenderingAssets;
 
 	/** Initializes point lights assets */
-	WError _LoadPointLightsAssets();
+	WError LoadPointLightsAssets();
 	/** Initializes spot light assets */
-	WError _LoadSpotLightsAssets();
+	WError LoadSpotLightsAssets();
 	/** Initializes directional lights assets */
-	WError _LoadDirectionalLightsAssets();
+	WError LoadDirectionalLightsAssets();
 
 	/**
 	 * Callback called whenever a light is added/removed from the lights manager
@@ -47,7 +49,7 @@ public:
 	WLightBufferRenderStage(class Wasabi* const app);
 
 	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height);
-	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter) = 0;
+	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter);
 	virtual void Cleanup();
 	virtual WError Resize(uint width, uint height);
 };

@@ -42,7 +42,9 @@ class WForwardRenderStage : public WRenderStage {
 	/** Sorted container for all the objects to be rendered by this stage */
 	std::map<ObjectKey, class WObject*> m_allObjects;
 
-	LightStruct* m_lights;
+	void OnObjectChange(class WObject* object, bool added);
+
+	std::vector<LightStruct> m_lights;
 
 public:
 	WForwardRenderStage(class Wasabi* const app);

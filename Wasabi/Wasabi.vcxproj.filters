@@ -222,6 +222,9 @@
     <ClCompile Include="Materials\WMaterialsStore.cpp">
       <Filter>Materials</Filter>
     </ClCompile>
+    <ClCompile Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.cpp">
+      <Filter>Renderers\DeferredRenderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations\WAnimation.h">
@@ -413,6 +416,9 @@
     </ClInclude>
     <ClInclude Include="Materials\WMaterialsStore.h">
       <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.h">
+      <Filter>Renderers\DeferredRenderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

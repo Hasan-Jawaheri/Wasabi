@@ -1,21 +1,17 @@
 #include "WForwardRenderer.h"
 #include "../WRenderer.h"
-#include "../WRenderStage.h"
-#include "../../Lights/WLight.h"
-#include "../../Materials/WMaterial.h"
-#include "../../Materials/WEffect.h"
-#include "../../Images/WRenderTarget.h"
 #include "WForwardRenderStage.h"
 #include "../Common/WSpritesRenderStage.h"
 #include "../Common/CommonRenderStages.h"
 
 WForwardRenderer::WForwardRenderer(Wasabi* const app) : WRenderer(app) {
 	m_sampler = VK_NULL_HANDLE;
-	m_lights = nullptr;
 	m_app->engineParams.insert(std::pair<std::string, void*>("maxLights", (void*)8));
 }
 
 WError WForwardRenderer::Initiailize() {
+	Cleanup();
+
 	//
 	// Create the texture sampler
 	//
@@ -58,8 +54,6 @@ void WForwardRenderer::Cleanup() {
 	if (m_sampler)
 		vkDestroySampler(m_device, m_sampler, nullptr);
 	m_sampler = VK_NULL_HANDLE;
-
-	W_SAFE_DELETE_ARRAY(m_lights);
 }
 
 VkSampler WForwardRenderer::GetTextureSampler(W_TEXTURE_SAMPLER_TYPE type) const {

@@ -252,6 +252,18 @@ WRenderTarget* WRenderer::GetRenderTarget(std::string stageName) const {
 	return currentRT;
 }
 
+WImage* WRenderer::GetRenderTargetImage(std::string imageName) const {
+	for (auto it = m_renderStages.begin(); it != m_renderStages.end(); it++) {
+		if ((*it)->m_stageDescription.depthOutput.name == imageName)
+			return (*it)->m_depthOutput;
+		for (uint i = 0; i < (*it)->m_stageDescription.colorOutputs.size(); i++)
+			if ((*it)->m_stageDescription.colorOutputs[i].name == imageName)
+				return (*it)->m_colorOutputs[i];
+	}
+
+	return nullptr;
+}
+
 VkQueue WRenderer::GetQueue() const {
 	return m_queue;
 }
