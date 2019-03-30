@@ -125,9 +125,11 @@ public:
 	/**
 	 * Ends recording commands on the copy command buffer and submits it to the
 	 * graphics queue.
+	 * @param waitQueue   Whether or not to wait for the queue to finish copying
+	 * @param signalFence A fence to signal when GPU finishes with the submission
 	 * @return A Vulkan result, VK_SUCCESS on success
 	 */
-	VkResult EndCopyCommandBuffer(VkFence signalFence = VK_NULL_HANDLE);
+	VkResult EndCopyCommandBuffer(bool waitQueue, VkFence signalFence = VK_NULL_HANDLE);
 
 	/**
 	 * Retrieves the copy command buffer that is used with BeginCopyCommandBuffer()

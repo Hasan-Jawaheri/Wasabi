@@ -3,6 +3,7 @@
 #include "Lights.hpp"
 
 LightsDemo::LightsDemo(Wasabi* const app) : WTestState(app) {
+	m_plain = nullptr;
 }
 
 void LightsDemo::Load() {
@@ -70,12 +71,12 @@ void LightsDemo::Load() {
 void LightsDemo::Update(float fDeltaTime) {
 	for (auto it = m_boxes.begin(); it != m_boxes.end(); it++) {
 		WObject* box = *it;
-		box->Yaw(10.0f * fDeltaTime);
+		//box->Yaw(10.0f * fDeltaTime);
 	}
 }
 
 void LightsDemo::Cleanup() {
-	m_plain->RemoveReference();
+	W_SAFE_REMOVEREF(m_plain);
 
 	for (auto it = m_boxes.begin(); it != m_boxes.end(); it++)
 		(*it)->RemoveReference();

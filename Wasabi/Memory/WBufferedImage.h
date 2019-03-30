@@ -8,14 +8,10 @@ public:
 	WBufferedImage2D();
 
 	VkResult Create(class Wasabi* app, uint numBuffers, uint width, uint height, VkFormat format, void* texels = nullptr, W_MEMORY_STORAGE memory = W_MEMORY_DEVICE_LOCAL, VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT);
-	void WaitForFullCreation(class Wasabi* app);
 	void Destroy(class Wasabi* app);
 
 	VkResult Map(class Wasabi* app, uint bufferIndex, void** texels, W_MAP_FLAGS flags);
 	void Unmap(class Wasabi* app, uint bufferIndex);
-
-	VkResult Flush(class Wasabi* app, uint bufferIndex);
-	VkResult Invalidate(class Wasabi* app, uint bufferIndex);
 
 	VkImageView GetView(class Wasabi* app, uint bufferIndex) const;
 
@@ -29,8 +25,4 @@ private:
 
 	void* m_readOnlyMemory;
 	std::vector<WVulkanImage> m_images;
-	mutable std::vector<WVulkanBuffer> m_stagingBuffers;
-	mutable std::vector<VkFence> m_stagingCopyFences;
-
-	void CheckCopyFence(class Wasabi* app, uint bufferIndex) const;
 };

@@ -165,7 +165,7 @@ VkResult WVulkanMemoryManager::BeginCopyCommandBuffer() {
 	return vkBeginCommandBuffer(m_copyCommandBuffer, &cmdBufferBeginInfo);
 }
 
-VkResult WVulkanMemoryManager::EndCopyCommandBuffer(VkFence signalFence) {
+VkResult WVulkanMemoryManager::EndCopyCommandBuffer(bool waitQueue, VkFence signalFence) {
 	VkSubmitInfo copySubmitInfo = {};
 	VkResult err = vkEndCommandBuffer(m_copyCommandBuffer);
 	if (err)
@@ -177,13 +177,13 @@ VkResult WVulkanMemoryManager::EndCopyCommandBuffer(VkFence signalFence) {
 	copySubmitInfo.pCommandBuffers = &m_copyCommandBuffer;
 
 	err = vkQueueSubmit(m_graphicsQueue, 1, &copySubmitInfo, signalFence);
-	if (err)
+	if (err != VK_SUCCESS)
 		return err;
-	err = vkQueueWaitIdle(m_graphicsQueue);
-	if (err)
-		return err;
+	
+	if (waitQueue)
+		err = vkQueueWaitIdle(m_graphicsQueue);
 
-	return VK_SUCCESS;
+	return err;
 }
 
 VkCommandBuffer WVulkanMemoryManager::GetCopyCommandBuffer() const {

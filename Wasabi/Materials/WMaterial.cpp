@@ -37,8 +37,6 @@ void WMaterial::_DestroyResources() {
 	VkDevice device = m_app->GetVulkanDevice();
 
 	for (int i = 0; i < m_uniformBuffers.size(); i++) {
-		if (m_uniformBuffers[i].buffer.Valid())
-			m_uniformBuffers[i].buffer.Unmap(m_app, 0);
 		m_uniformBuffers[i].buffer.Destroy(m_app);
 		W_SAFE_FREE(m_uniformBuffers[i].data);
 	}
@@ -93,12 +91,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 
 				UNIFORM_BUFFER_INFO ubo = {};
 				ubo.ubo_info = &shader->m_desc.bound_resources[j];
-				VkResult result = ubo.buffer.Create(m_app, 1, ubo.ubo_info->GetSize() * numBuffers, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, nullptr, W_MEMORY_HOST_VISIBLE);
-				if (result == VK_SUCCESS) {
-					result = ubo.buffer.Map(m_app, 0, &ubo.mappedBufferData, W_MAP_READ | W_MAP_WRITE);
-					if (result != VK_SUCCESS)
-						ubo.buffer.Destroy(m_app);
-				}
+				VkResult result = ubo.buffer.Create(m_app, numBuffers, ubo.ubo_info->GetSize(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, nullptr, W_MEMORY_HOST_VISIBLE);
 				if (result != VK_SUCCESS) {
 					_DestroyResources();
 					return WError(W_OUTOFMEMORY);
@@ -109,8 +102,8 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 				ubo.descriptorBufferInfos.resize(numBuffers);
 				for (uint b = 0; b < numBuffers; b++) {
 					ubo.dirty[b] = false;
-					ubo.descriptorBufferInfos[b].buffer = ubo.buffer.GetBuffer(m_app, 0);
-					ubo.descriptorBufferInfos[b].offset = b * ubo.ubo_info->GetSize();
+					ubo.descriptorBufferInfos[b].buffer = ubo.buffer.GetBuffer(m_app, b);
+					ubo.descriptorBufferInfos[b].offset = 0;
 					ubo.descriptorBufferInfos[b].range = ubo.ubo_info->GetSize();
 				}
 
@@ -218,8 +211,10 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 	// update UBOs that changed
 	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
 		if (ubo->dirty[bufferIndex]) {
-			memcpy((char*)ubo->mappedBufferData + ubo->descriptorBufferInfos[bufferIndex].offset, ubo->data, ubo->descriptorBufferInfos[bufferIndex].range);
-			ubo->buffer.Flush(m_app, 0, ubo->descriptorBufferInfos[bufferIndex].offset, ubo->descriptorBufferInfos[bufferIndex].range);
+			void* pBufferData;
+			ubo->buffer.Map(m_app, bufferIndex, &pBufferData, W_MAP_WRITE);
+			memcpy((char*)pBufferData + ubo->descriptorBufferInfos[bufferIndex].offset, ubo->data, ubo->descriptorBufferInfos[bufferIndex].range);
+			ubo->buffer.Unmap(m_app, bufferIndex);
 			ubo->dirty[bufferIndex] = false;
 		}
 

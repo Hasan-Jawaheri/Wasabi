@@ -15,6 +15,7 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 	if (memory == W_MEMORY_DEVICE_LOCAL_HOST_COPY && !data)
 		return VK_ERROR_INITIALIZATION_FAILED;
 
+	WVulkanBuffer stagingBuffer;
 	for (uint i = 0; i < numBuffers; i++) {
 		VkMemoryPropertyFlags bufferMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // device local means only GPU can access it, more efficient
 		if (data && (memory == W_MEMORY_DEVICE_LOCAL || memory == W_MEMORY_DEVICE_LOCAL_HOST_COPY)) {
@@ -23,7 +24,7 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 		} else if (memory == W_MEMORY_HOST_VISIBLE) {
 			// don't use a staging buffer for dynamic buffers, instead, just make them
 			// host-visible so the CPU can directly access them
-			bufferMemoryFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+			bufferMemoryFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 		}
 
 		//
@@ -47,7 +48,6 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 		// If the resource is host-visible or no initial data is provided, we won't
 		// need to perform the staging operation.
 		//
-		WVulkanBuffer stagingBuffer;
 		if (data && (memory == W_MEMORY_DEVICE_LOCAL || memory == W_MEMORY_DEVICE_LOCAL_HOST_COPY)) {
 			VkBufferCreateInfo stagingBufferCreateInfo = {};
 			stagingBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -58,7 +58,6 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 			result = stagingBuffer.Create(app, stagingBufferCreateInfo, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 			if (result != VK_SUCCESS)
 				break;
-			m_stagingBuffers.push_back(stagingBuffer);
 
 			void* pStagingMem;
 			result = vkMapMemory(device, stagingBuffer.mem, 0, size, 0, &pStagingMem);
@@ -111,23 +110,9 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 				1, &bufferMemoryBarrier,
 				0, nullptr);
 
-			// create a fence that will be signalled when the copy is done so we can
-			// then delete the staging buffer
-			VkFenceCreateInfo fenceCreateInfo = {};
-			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-			fenceCreateInfo.flags = 0; // the fence is not signalled
-			VkFence copyFence = VK_NULL_HANDLE;
-			VkResult fenceCreateResult = vkCreateFence(device, &fenceCreateInfo, nullptr, &copyFence);
-			if (fenceCreateResult == VK_SUCCESS)
-				m_stagingCopyFences.push_back(copyFence);
-
-			result = app->MemoryManager->EndCopyCommandBuffer(copyFence);
+			result = app->MemoryManager->EndCopyCommandBuffer(true);
 			if (result != VK_SUCCESS)
 				break;
-			if (fenceCreateResult != VK_SUCCESS) {
-				result = fenceCreateResult;
-				break;
-			}
 
 			if (memory == W_MEMORY_DEVICE_LOCAL_HOST_COPY) {
 				m_readOnlyMemory = W_SAFE_ALLOC(size);
@@ -146,74 +131,24 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 
 	m_bufferSize = size;
 
-	if (result != VK_SUCCESS)
+	if (result != VK_SUCCESS) {
+		stagingBuffer.Destroy(app);
 		Destroy(app);
+	}
+
 	return result;
 }
 
 void WBufferedBuffer::Destroy(Wasabi* app) {
 	VkDevice device = app->GetVulkanDevice();
-	for (auto it = m_stagingBuffers.begin(); it != m_stagingBuffers.end(); it++)
-		it->Destroy(app);
 	for (auto it = m_buffers.begin(); it != m_buffers.end(); it++)
 		it->Destroy(app);
-	for (auto it = m_stagingCopyFences.begin(); it != m_stagingCopyFences.end(); it++) {
-		if (*it != VK_NULL_HANDLE)
-			vkDestroyFence(device, *it, nullptr);
-	}
-	m_stagingBuffers.clear();
 	m_buffers.clear();
-	m_stagingCopyFences.clear();
 	m_bufferSize = 0;
 	W_SAFE_FREE(m_readOnlyMemory);
 }
 
-void WBufferedBuffer::WaitForFullCreation(Wasabi* app) {
-	if (m_stagingCopyFences.size() > 0) {
-		VkDevice device = app->GetVulkanDevice();
-		std::vector<VkFence> fences;
-		for (auto it = m_stagingCopyFences.begin(); it != m_stagingCopyFences.end(); it++) {
-			if (*it != VK_NULL_HANDLE)
-				fences.push_back(*it);
-		}
-		vkWaitForFences(device, fences.size(), fences.data(), VK_TRUE, -1);
-
-		for (auto it = fences.begin(); it != fences.end(); it++)
-			vkDestroyFence(device, *it, nullptr);
-		m_stagingCopyFences.clear();
-		m_stagingBuffers.clear();
-	}
-}
-
-void WBufferedBuffer::CheckCopyFence(Wasabi* app, uint bufferIndex) const {
-	//
-	// Check if we can delete the staging buffers: First check if the fence
-	// at the given index is signalled (and if so, destroy the fence and the
-	// staging buffer), then check if all fences are signalled to clear the
-	// vectors.
-	//
-	if (m_stagingCopyFences.size() > 0) {
-		VkDevice device = app->GetVulkanDevice();
-		VkFence fence = m_stagingCopyFences[bufferIndex];
-		if (fence != VK_NULL_HANDLE && vkGetFenceStatus(device, fence) != VK_NOT_READY) {
-			vkDestroyFence(device, fence, nullptr);
-			m_stagingCopyFences[bufferIndex] = VK_NULL_HANDLE;
-			m_stagingBuffers[bufferIndex].Destroy(app);
-
-			bool bAllFencesSignalled = true;
-			for (auto it = m_stagingCopyFences.begin(); it != m_stagingCopyFences.end(); it++) {
-				if (*it != VK_NULL_HANDLE)
-					bAllFencesSignalled = false;
-			}
-			if (bAllFencesSignalled) {
-				m_stagingCopyFences.clear();
-				m_stagingBuffers.clear();
-			}
-		}
-	}
-}
-
-VkResult WBufferedBuffer::Flush(class Wasabi* app, uint bufferIndex, size_t offset, size_t size) {
+/*VkResult WBufferedBuffer::Flush(class Wasabi* app, uint bufferIndex, size_t offset, size_t size) {
 	VkDevice device = app->GetVulkanDevice();
 	VkMappedMemoryRange memRange = {};
 	memRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -224,7 +159,7 @@ VkResult WBufferedBuffer::Flush(class Wasabi* app, uint bufferIndex, size_t offs
 	if (result != VK_SUCCESS)
 		return result;
 
-	result = app->MemoryManager->BeginCopyCommandBuffer();
+	/ *result = app->MemoryManager->BeginCopyCommandBuffer();
 	if (result != VK_SUCCESS)
 		return result;
 
@@ -248,7 +183,8 @@ VkResult WBufferedBuffer::Flush(class Wasabi* app, uint bufferIndex, size_t offs
 		1, &bufferMemoryBarrier,
 		0, nullptr);
 
-	return app->MemoryManager->EndCopyCommandBuffer();
+	return app->MemoryManager->EndCopyCommandBuffer(false);* /
+	return result;
 }
 
 VkResult WBufferedBuffer::Invalidate(class Wasabi* app, uint bufferIndex, size_t offset, size_t size) {
@@ -259,7 +195,7 @@ VkResult WBufferedBuffer::Invalidate(class Wasabi* app, uint bufferIndex, size_t
 	memRange.size = size == -1 ? m_bufferSize : size;
 	memRange.memory = m_buffers[bufferIndex].mem;
 	return vkInvalidateMappedMemoryRanges(device, 1, &memRange);
-}
+}*/
 
 VkResult WBufferedBuffer::Map(Wasabi* app, uint bufferIndex, void** data, W_MAP_FLAGS flags) {
 	VkResult result = VK_RESULT_MAX_ENUM;
@@ -272,11 +208,11 @@ VkResult WBufferedBuffer::Map(Wasabi* app, uint bufferIndex, void** data, W_MAP_
 		}
 
 		VkDevice device = app->GetVulkanDevice();
-		if (flags & W_MAP_READ) {
+		/*if (flags & W_MAP_READ) {
 			result = Invalidate(app, bufferIndex);
 			if (result != VK_SUCCESS)
 				return result;
-		}
+		}*/
 		result = vkMapMemory(device, m_buffers[bufferIndex].mem, 0, m_bufferSize, 0, data);
 		if (result == VK_SUCCESS)
 			m_lastMapFlags = flags;
@@ -288,9 +224,9 @@ void WBufferedBuffer::Unmap(Wasabi* app, uint bufferIndex) {
 	if (m_lastMapFlags != W_MAP_UNDEFINED) {
 		if (!m_readOnlyMemory) {
 			VkDevice device = app->GetVulkanDevice();
-			if (m_lastMapFlags & W_MAP_WRITE) {
+			/*if (m_lastMapFlags & W_MAP_WRITE) {
 				Flush(app, bufferIndex);
-			}
+			}*/
 
 			vkUnmapMemory(device, m_buffers[bufferIndex].mem);
 		}
@@ -300,8 +236,8 @@ void WBufferedBuffer::Unmap(Wasabi* app, uint bufferIndex) {
 }
 
 VkBuffer WBufferedBuffer::GetBuffer(Wasabi* app, uint bufferIndex) {
-	CheckCopyFence(app, bufferIndex);
-	return m_buffers[bufferIndex % m_buffers.size()].buf;
+	bufferIndex = bufferIndex % m_buffers.size();
+	return m_buffers[bufferIndex].buf;
 }
 
 bool WBufferedBuffer::Valid() const {

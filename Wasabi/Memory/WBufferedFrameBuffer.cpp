@@ -11,7 +11,6 @@ VkResult WBufferedFrameBuffer::CreateForSwapchain(Wasabi* app, uint numBuffers, 
 	result = m_swapchainDepthBuffer.Create(app, numBuffers, width, height, depthFormat, nullptr, W_MEMORY_DEVICE_LOCAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 	if (result != VK_SUCCESS)
 		return result;
-	m_swapchainDepthBuffer.WaitForFullCreation(app);
 
 	std::vector<VkImageView> attachments(2);
 	VkFramebufferCreateInfo frameBufferCreateInfo = {};

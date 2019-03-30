@@ -124,13 +124,6 @@ WError WRenderStage::Resize(uint width, uint height) {
 		WError status = m_renderTarget->Create(width, height, m_colorOutputs, m_depthOutput);
 		if (!status)
 			return status;
-
-		for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
-			if (abs(-1000000.0f - m_stageDescription.colorOutputs[i].clearColor.r) > W_EPSILON)
-				m_renderTarget->SetClearColor(m_stageDescription.colorOutputs[i].clearColor, i);
-		}
-		if (abs(-1000000.0f - m_stageDescription.depthOutput.clearColor.r) > W_EPSILON)
-			m_renderTarget->SetClearColor(m_stageDescription.depthOutput.clearColor, m_stageDescription.colorOutputs.size());
 	} else if (m_stageDescription.target == RENDER_STAGE_TARGET_BACK_BUFFER) {
 		VkFormat colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
 		VkFormat depthFormat; // Find a suitable depth format
@@ -145,6 +138,13 @@ WError WRenderStage::Resize(uint width, uint height) {
 		if (!status)
 			return status;
 	}
+
+	for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
+		if (abs(-1000000.0f - m_stageDescription.colorOutputs[i].clearColor.r) > W_EPSILON)
+			m_renderTarget->SetClearColor(m_stageDescription.colorOutputs[i].clearColor, i);
+	}
+	if (abs(-1000000.0f - m_stageDescription.depthOutput.clearColor.r) > W_EPSILON)
+		m_renderTarget->SetClearColor(m_stageDescription.depthOutput.clearColor, m_stageDescription.colorOutputs.size());
 
 	return WError(W_SUCCEEDED);
 }

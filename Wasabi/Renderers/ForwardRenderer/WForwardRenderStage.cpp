@@ -186,7 +186,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 		WEffect* boundFX = nullptr;
 		bool isBoundFXAnimated = false;
 		std::vector<ObjectKey> reindexObjects;
-		/*for (auto it = m_allObjects.begin(); it != m_allObjects.end(); it++) {
+		for (auto it = m_allObjects.begin(); it != m_allObjects.end(); it++) {
 			WObject* object = it->second;
 			WEffect* effect = object->GetDefaultEffect();
 			WMaterial* material = object->GetMaterial(effect);
@@ -202,7 +202,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 
 				object->Render(rt, material);
 			}
-		}*/
+		}
 		for (auto it = reindexObjects.begin(); it != reindexObjects.end(); it++) {
 			m_allObjects.erase(*it);
 			m_allObjects.insert(std::make_pair(ObjectKey(it->obj), it->obj));
