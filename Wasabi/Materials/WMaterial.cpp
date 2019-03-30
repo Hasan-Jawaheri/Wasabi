@@ -37,8 +37,9 @@ void WMaterial::_DestroyResources() {
 	VkDevice device = m_app->GetVulkanDevice();
 
 	for (int i = 0; i < m_uniformBuffers.size(); i++) {
-		vkFreeMemory(device, m_uniformBuffers[i].memory, nullptr);
-		vkDestroyBuffer(device, m_uniformBuffers[i].descriptor.buffer, nullptr);
+		if (m_uniformBuffers[i].buffer.Valid())
+			m_uniformBuffers[i].buffer.Unmap(m_app, 0);
+		m_uniformBuffers[i].buffer.Destroy(m_app);
 		W_SAFE_FREE(m_uniformBuffers[i].data);
 	}
 	m_uniformBuffers.clear();
@@ -72,6 +73,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 	//
 	// Create the uniform buffers
 	//
+	uint numBuffers = (uint)m_app->engineParams["bufferingCount"];
 	for (int i = 0; i < effect->m_shaders.size(); i++) {
 		WShader* shader = effect->m_shaders[i];
 		for (int j = 0; j < shader->m_desc.bound_resources.size(); j++) {
@@ -89,55 +91,28 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 				if (already_added)
 					continue;
 
-				UNIFORM_BUFFER_INFO ubo;
-
-				VkBufferCreateInfo bufferInfo = {};
-				VkMemoryAllocateInfo uballocInfo = {};
-				uballocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-				uballocInfo.pNext = NULL;
-				uballocInfo.allocationSize = 0;
-				uballocInfo.memoryTypeIndex = 0;
-
-				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				bufferInfo.size = shader->m_desc.bound_resources[j].GetSize();
-				bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-				// Create a new buffer
-				VkResult err = vkCreateBuffer(device, &bufferInfo, nullptr, &ubo.descriptor.buffer);
-				if (err) {
-					_DestroyResources();
-					return WError(W_UNABLETOCREATEBUFFER);
+				UNIFORM_BUFFER_INFO ubo = {};
+				ubo.ubo_info = &shader->m_desc.bound_resources[j];
+				VkResult result = ubo.buffer.Create(m_app, 1, ubo.ubo_info->GetSize() * numBuffers, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, nullptr, W_MEMORY_HOST_VISIBLE);
+				if (result == VK_SUCCESS) {
+					result = ubo.buffer.Map(m_app, 0, &ubo.mappedBufferData, W_MAP_READ | W_MAP_WRITE);
+					if (result != VK_SUCCESS)
+						ubo.buffer.Destroy(m_app);
 				}
-				// Get memory requirements including size, alignment and memory type 
-				VkMemoryRequirements memReqs;
-				vkGetBufferMemoryRequirements(device, ubo.descriptor.buffer, &memReqs);
-				uballocInfo.allocationSize = memReqs.size;
-				// Gets the appropriate memory type for this type of buffer allocation
-				// Only memory types that are visible to the host
-				m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &uballocInfo.memoryTypeIndex);
-				// Allocate memory for the uniform buffer
-				err = vkAllocateMemory(device, &uballocInfo, nullptr, &(ubo.memory));
-				if (err) {
-					vkDestroyBuffer(device, ubo.descriptor.buffer, nullptr);
+				if (result != VK_SUCCESS) {
 					_DestroyResources();
 					return WError(W_OUTOFMEMORY);
 				}
-				// Bind memory to buffer
-				err = vkBindBufferMemory(device, ubo.descriptor.buffer, ubo.memory, 0);
-				if (err) {
-					vkDestroyBuffer(device, ubo.descriptor.buffer, nullptr);
-					vkFreeMemory(device, ubo.memory, nullptr);
-					_DestroyResources();
-					return WError(W_UNABLETOCREATEBUFFER);
+
+				ubo.data = W_SAFE_ALLOC(ubo.ubo_info->GetSize());
+				ubo.dirty.resize(numBuffers);
+				ubo.descriptorBufferInfos.resize(numBuffers);
+				for (uint b = 0; b < numBuffers; b++) {
+					ubo.dirty[b] = false;
+					ubo.descriptorBufferInfos[b].buffer = ubo.buffer.GetBuffer(m_app, 0);
+					ubo.descriptorBufferInfos[b].offset = b * ubo.ubo_info->GetSize();
+					ubo.descriptorBufferInfos[b].range = ubo.ubo_info->GetSize();
 				}
-
-				// Store information in the uniform's descriptor
-				ubo.descriptor.offset = 0;
-				ubo.descriptor.range = shader->m_desc.bound_resources[j].GetSize();
-				ubo.ubo_info = &shader->m_desc.bound_resources[j];
-
-				ubo.data = W_SAFE_ALLOC(ubo.descriptor.range);
-				ubo.dirty = false;
 
 				m_uniformBuffers.push_back(ubo);
 			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_TEXTURE) {
@@ -153,16 +128,18 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 
 				SAMPLER_INFO sampler = {};
 				sampler.img = m_app->ImageManager->GetDefaultImage();
-				m_app->ImageManager->GetDefaultImage()->AddReference();
+				sampler.img->AddReference();
 				sampler.descriptor.sampler = m_app->Renderer->GetTextureSampler();
 				sampler.descriptor.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-				sampler.descriptor.imageView = sampler.img->GetView();
+				sampler.descriptor.imageView = VK_NULL_HANDLE; // // will be assigned in the Bind() function
 				sampler.sampler_info = &shader->m_desc.bound_resources[j];
 				m_sampler_info.push_back(sampler);
 			}
 		}
 	}
-	m_writeDescriptorSets = vector<VkWriteDescriptorSet>(m_sampler_info.size());
+	m_writeDescriptorSets.resize(numBuffers);
+	for (auto it = m_writeDescriptorSets.begin(); it != m_writeDescriptorSets.end(); it++)
+		it->resize(m_sampler_info.size() + m_uniformBuffers.size());
 
 	//
 	// Create descriptor pool
@@ -216,35 +193,6 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 			_DestroyResources();
 			return WError(W_OUTOFMEMORY);
 		}
-
-		// Update descriptor sets determining the shader binding points
-		// For every binding point used in a shader there needs to be one
-		// descriptor set matching that binding point
-		vector<VkWriteDescriptorSet> writes;
-		for (int i = 0; i < m_uniformBuffers.size(); i++) {
-			VkWriteDescriptorSet writeDescriptorSet = {};
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = m_descriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			writeDescriptorSet.pBufferInfo = &m_uniformBuffers[i].descriptor;
-			writeDescriptorSet.dstBinding = m_uniformBuffers[i].ubo_info->binding_index;
-
-			writes.push_back(writeDescriptorSet);
-		}
-		for (int i = 0; i < m_sampler_info.size(); i++) {
-			VkWriteDescriptorSet writeDescriptorSet = {};
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = m_descriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
-			writeDescriptorSet.dstBinding = m_sampler_info[i].sampler_info->binding_index;
-
-			writes.push_back(writeDescriptorSet);
-		}
-
-		vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, NULL);
 	}
 
 	m_effect = effect;
@@ -264,41 +212,49 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
+	int numUpdateDescriptors = 0;
+	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+
+	// update UBOs that changed
+	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
+		if (ubo->dirty[bufferIndex]) {
+			memcpy((char*)ubo->mappedBufferData + ubo->descriptorBufferInfos[bufferIndex].offset, ubo->data, ubo->descriptorBufferInfos[bufferIndex].range);
+			ubo->buffer.Flush(m_app, 0, ubo->descriptorBufferInfos[bufferIndex].offset, ubo->descriptorBufferInfos[bufferIndex].range);
+			ubo->dirty[bufferIndex] = false;
+		}
+
+		VkWriteDescriptorSet writeDescriptorSet = {};
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.dstSet = m_descriptorSet;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDescriptorSet.pBufferInfo = &ubo->descriptorBufferInfos[bufferIndex];
+		writeDescriptorSet.dstBinding = ubo->ubo_info->binding_index;
+
+		m_writeDescriptorSets[bufferIndex][numUpdateDescriptors++] = writeDescriptorSet;
+	}
+
 	// update textures that changed
-	int curDescriptorIndex = 0;
-	for (int i = 0; i < m_sampler_info.size(); i++) {
-		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
-		if (m_sampler_info[i].img && m_sampler_info[i].img->Valid()) {
-			if (m_sampler_info[i].descriptor.imageView != m_sampler_info[i].img->GetView()) {
-				m_sampler_info[i].descriptor.imageView = m_sampler_info[i].img->GetView();
+	for (auto sampler = m_sampler_info.begin(); sampler != m_sampler_info.end(); sampler++) {
+		W_BOUND_RESOURCE* info = sampler->sampler_info;
+		if (sampler->img && sampler->img->Valid()) {
+			if (sampler->descriptor.imageView != sampler->img->GetView()) {
+				sampler->descriptor.imageView = sampler->img->GetView();
 
 				VkWriteDescriptorSet writeDescriptorSet = {};
 				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				writeDescriptorSet.dstSet = m_descriptorSet;
 				writeDescriptorSet.descriptorCount = 1;
 				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
+				writeDescriptorSet.pImageInfo = &sampler->descriptor;
 				writeDescriptorSet.dstBinding = info->binding_index;
 
-				m_writeDescriptorSets[curDescriptorIndex++] = writeDescriptorSet;
+				m_writeDescriptorSets[bufferIndex][numUpdateDescriptors++] = writeDescriptorSet;
 			}
 		}
 	}
-	if (curDescriptorIndex)
-		vkUpdateDescriptorSets(device, curDescriptorIndex, m_writeDescriptorSets.data(), 0, NULL);
-
-	// update dirty UBOs
-	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
-		if (ubo->dirty) {
-			void *pData;
-			VkResult vkRes = vkMapMemory(device, ubo->memory, ubo->descriptor.offset, ubo->descriptor.range, 0, (void **)&pData);
-			if (vkRes)
-				return WError(W_UNABLETOMAPBUFFER);
-			memcpy(pData, ubo->data, ubo->descriptor.range);
-			vkUnmapMemory(device, ubo->memory);
-			ubo->dirty = false;
-		}
-	}
+	if (numUpdateDescriptors > 0)
+		vkUpdateDescriptorSets(device, numUpdateDescriptors, m_writeDescriptorSets[bufferIndex].data(), 0, NULL);
 
 	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_effect->GetPipelineLayout(), m_setIndex, 1, &m_descriptorSet, 0, nullptr);
 
@@ -347,6 +303,7 @@ WError WMaterial::SetVariableColor(const char* varName, WColor col) {
 
 WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 	VkDevice device = m_app->GetVulkanDevice();
+	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
 	bool isFound = false;
 	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
 		W_BOUND_RESOURCE* info = ubo->ubo_info;
@@ -354,10 +311,11 @@ WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 			if (strcmp(info->variables[j].name.c_str(), varName) == 0) {
 				size_t varsize = info->variables[j].GetSize();
 				size_t offset = info->OffsetAtVariable(j);
-				if (varsize < len || offset + len > ubo->descriptor.range)
+				if (varsize < len || offset + len > ubo->descriptorBufferInfos[bufferIndex].range)
 					return WError(W_INVALIDPARAM);
 				memcpy((char*)ubo->data + offset, data, len);
-				ubo->dirty = true;
+				for (uint d = 0; d < ubo->dirty.size(); d++)
+					ubo->dirty[d] = true;
 				isFound = true;
 			}
 		}
@@ -420,8 +378,9 @@ WError WMaterial::SaveToStream(WFile* file, std::ostream& outputStream) {
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	for (uint i = 0; i < m_uniformBuffers.size(); i++) {
 		UNIFORM_BUFFER_INFO* UBO = &m_uniformBuffers[i];
-		outputStream.write((char*)&UBO->descriptor.range, sizeof(UBO->descriptor.range));
-		outputStream.write((char*)UBO->data, UBO->descriptor.range);
+		tmp = UBO->ubo_info->GetSize();
+		outputStream.write((char*)&tmp, sizeof(tmp));
+		outputStream.write((char*)UBO->data, tmp);
 	}
 
 	// write the texture data
@@ -512,10 +471,10 @@ WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream) {
 		else {
 			for (uint i = 0; i < m_uniformBuffers.size() && err; i++) {
 				UNIFORM_BUFFER_INFO* UBO = &m_uniformBuffers[i];
-				if (uboData[i].first != UBO->descriptor.range)
+				if (uboData[i].first != UBO->ubo_info->GetSize())
 					err = WError(W_INVALIDFILEFORMAT);
 				else
-					memcpy(UBO->data, uboData[i].second, UBO->descriptor.range);
+					memcpy(UBO->data, uboData[i].second, uboData[i].first);
 			}
 		}
 	}

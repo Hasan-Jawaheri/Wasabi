@@ -8,6 +8,13 @@ enum W_RENDER_STAGE_TARGET {
 	RENDER_STAGE_TARGET_PREVIOUS = 2,
 };
 
+enum W_RENDER_STAGE_FLAGS {
+	RENDER_STAGE_FLAG_NONE = 0,
+	RENDER_STAGE_FLAG_SPRITES_RENDER_STAGE = 1,
+	RENDER_STAGE_FLAG_TEXTS_RENDER_STAGE = 2,
+	RENDER_STAGE_FLAG_PICKING_RENDER_STAGE = 4,
+};
+
 class WRenderStage {
 	friend class WRenderer;
 
@@ -35,6 +42,7 @@ protected:
 		W_RENDER_STAGE_TARGET target;
 		std::vector<OUTPUT_IMAGE> colorOutputs;
 		OUTPUT_IMAGE depthOutput;
+		uint flags;
 	} m_stageDescription;
 
 public:

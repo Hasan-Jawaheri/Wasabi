@@ -321,7 +321,7 @@ WError WLightBufferRenderStage::LoadPointLightsAssets() {
 	if (werr) {
 		werr = assets.effect->BindShader(pixel_shader);
 		if (werr) {
-			werr = assets.effect->BuildPipeline(m_app->Renderer->GetRenderTarget(m_stageDescription.name));
+			werr = assets.effect->BuildPipeline(m_renderTarget);
 
 			assets.perFrameMaterial = assets.effect->CreateMaterial(1);
 			assets.perFrameMaterial->SetTexture(1, m_app->Renderer->GetRenderTargetImage("GBufferViewSpaceNormal"));
@@ -358,7 +358,7 @@ WError WLightBufferRenderStage::LoadSpotLightsAssets() {
 	if (werr) {
 		werr = assets.effect->BindShader(pixel_shader);
 		if (werr) {
-			werr = assets.effect->BuildPipeline(m_app->Renderer->GetRenderTarget(m_stageDescription.name));
+			werr = assets.effect->BuildPipeline(m_renderTarget);
 
 			assets.perFrameMaterial = assets.effect->CreateMaterial(1);
 			assets.perFrameMaterial->SetTexture(1, m_app->Renderer->GetRenderTargetImage("GBufferViewSpaceNormal"));
@@ -384,7 +384,7 @@ WError WLightBufferRenderStage::LoadDirectionalLightsAssets() {
 	WShader* pixel_shader = new DirectionalLightPS(m_app);
 	pixel_shader->Load();
 
-	assets.effect = m_app->SpriteManager->CreateSpriteEffect(m_app->Renderer->GetRenderTarget(m_stageDescription.name));
+	assets.effect = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget);
 	W_SAFE_REMOVEREF(pixel_shader);
 	if (!assets.effect)
 		return WError(W_OUTOFMEMORY);

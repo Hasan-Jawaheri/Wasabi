@@ -97,6 +97,9 @@
     <Filter Include="Renderers\Common">
       <UniqueIdentifier>{51799f31-939b-4f0d-97d2-0b8339a0db1a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{897e1cb9-582b-47db-ac50-8c18c13659bb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -224,6 +227,18 @@
     </ClCompile>
     <ClCompile Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.cpp">
       <Filter>Renderers\DeferredRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\WVulkanMemoryManager.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\WBufferedImage.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\WBufferedFrameBuffer.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\WBufferedBuffer.cpp">
+      <Filter>Memory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -419,6 +434,21 @@
     </ClInclude>
     <ClInclude Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.h">
       <Filter>Renderers\DeferredRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\WVulkanMemoryManager.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\WBufferedImage.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\WBufferedFrameBuffer.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\WCommon.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\WBufferedBuffer.h">
+      <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

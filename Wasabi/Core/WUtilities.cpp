@@ -6,7 +6,7 @@
 #include "../WindowAndInput/WWindowAndInputComponent.h"
 
 bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, int* _x, int* _y) {
-	WCamera* cam = app->Renderer->GetRenderTarget()->GetCamera();
+	WCamera* cam = app->Renderer->GetRenderTarget(app->Renderer->GetPickingRenderStageName())->GetCamera();
 	float width = app->WindowAndInputComponent->GetWindowWidth();
 	float height = app->WindowAndInputComponent->GetWindowHeight();
 	WVector3 pos = WVec3TransformCoord(point, cam->GetViewMatrix());

@@ -85,6 +85,8 @@ std::string WSpriteManager::GetTypeName() const {
 
 WSpriteManager::WSpriteManager(class Wasabi* const app) : WManager<WSprite>(app) {
 	m_spriteFullscreenGeometry = nullptr;
+	m_spriteVertexShader = nullptr;
+	m_spritePixelShader = nullptr;
 }
 
 WSpriteManager::~WSpriteManager() {
@@ -208,7 +210,7 @@ WEffect* WSpriteManager::CreateSpriteEffect(
 
 	spriteFX->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP); // we use a triangle strip with not index buffer
 
-	err = spriteFX->BuildPipeline(rt ? rt : m_app->Renderer->GetRenderTarget());
+	err = spriteFX->BuildPipeline(rt ? rt : m_app->Renderer->GetRenderTarget(m_app->Renderer->GetSpritesRenderStageName()));
 
 	if (!err) {
 		spriteFX->RemoveReference();
@@ -310,7 +312,7 @@ void WSprite::Render(WRenderTarget* rt) {
 	} else {
 		if (m_geometryChanged) {
 			SpriteVertex* vb;
-			geometry->MapVertexBuffer((void**)&vb);
+			geometry->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
 
 			WVector2 rc = m_rotationCenter + m_pos;
 

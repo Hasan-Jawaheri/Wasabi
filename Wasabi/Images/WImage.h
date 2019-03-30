@@ -18,6 +18,8 @@
  * This class represents an image, or texture, used by Wasabi.
  */
 class WImage : public WBase, public WFileAsset {
+	friend class WRenderTarget;
+
 	/**
 	 * Returns "Image" string.
 	 * @return Returns "Image" string
@@ -95,32 +97,26 @@ public:
 	 * delete[] pixels;
 	 * @endcode
 	 * 
-	 * @param  pixels         A pointer to the memory containing the pixels. If NULL,
+	 * @param  texels         A pointer to the memory containing the pixels. If NULL,
 	 *                        the image will not have initial data.
 	 * @param  width          Width of the image
 	 * @param  height         Height of the image
-	 * @param  bDynamic       Should be set to true for images that will be
+	 * @param  isDynamic      Should be set to true for images that will be
 	 *                        modified in the future (via MapPixels() and
 	 *                        UnmapPixels()). Setting this to true results in
 	 *                        using more memory
-	 * @param  num_components Number of components of each pixel in pixels (
-	 *                        valid values are 1, 2, 3 and 4)
-	 * @param  fmt            If set to VK_FORMAT_UNDEFINED, the image format
-	 *                        will be chosen automatically, otherwise fmt will
-	 *                        be used
-	 * @param  comp_size      The size of each component (in bytes) of a pixel
-	 *                        in the pixels array. This should only be used if
-	 *                        fmt is not VK_FORMAT_UNDEFINED, otherwise it should
-	 *                        be 4 (sizeof (float))
+	 * @param  isRenderTargetAttachment
+	 *                        Whether or not this image will be used as an
+	 *                        attachment of a WRenderTarget
+	 * @param  format         Image format
 	 * @return                Error code, see WError.h
 	 */
-	WError CreateFromPixelsArray(void*			pixels,
-								 unsigned int	width,
-								 unsigned int	height,
-								 bool			bDynamic = false,
-								 unsigned int	num_components = 4,
-								 VkFormat		fmt = VK_FORMAT_UNDEFINED,
-								 size_t			comp_size = sizeof(float));
+	WError CreateFromPixelsArray(void*			texels,
+								 uint			width,
+								 uint			height,
+								 VkFormat		format,
+								 bool			isRenderTargetAttachment = false,
+								 bool			isDynamic = false);
 
 	/**
 	 * Loads an image from a file. The image format can be any of the formats
@@ -136,10 +132,17 @@ public:
 	/**
 	 * Copy another WImage. Only images created with bDynamic == true can be
 	 * copied.
-	 * @param  image Pointer to the image to copy from, which should be dynamic
+	 * @param  image          Pointer to the (dynamic) image to copy from
+	 * @param  isRenderTargetAttachment
+	 *                        Whether or not this image will be used as an
+	 *                        attachment of a WRenderTarget
+	 * @param  isDynamic      Should be set to true for images that will be
+	 *                        modified in the future (via MapPixels() and
+	 *                        UnmapPixels()). Setting this to true results in
+	 *                        using more memory
 	 * @return       Error code, see WError.h
 	 */
-	WError CopyFrom(WImage* const image);
+	WError CopyFrom(WImage* const image, bool isRenderTargetAttachment = false, bool isDynamic = false);
 
 	/**
 	 * Maps the pixels of the image for reading or writing. Only images created
@@ -156,11 +159,10 @@ public:
 	 * 
 	 * @param  pixels    The address of a pointer to have it point to the mapped
 	 *                   memory of the pixels
-	 * @param  bReadOnly Set to true if you intend to only read from the pixels
-	 *                   array, false if you want to modify the pixels
+	 * @param  flags     Map flags (bitwise OR'd), specifying read/write intention
 	 * @return           Error code, see WError.h
 	 */
-	WError MapPixels(void** const pixels, bool bReadOnly = false);
+	WError MapPixels(void** const pixels, W_MAP_FLAGS flags);
 
 	/**
 	 * Unmaps pixels from a previous MapPixels() call. If MapPixels was called
@@ -199,16 +201,11 @@ public:
 	unsigned int GetHeight() const;
 
 	/**
-	 * Retrieves the number of components in each pixels of this image.
-	 * @return Number of components per pixel
+	 * Returns true if the image is valid. The image is valid if it has a usable
+	 * Vulkan image view.
+	 * @return true if the image is valid, false otherwise
 	 */
-	unsigned int GetNumComponents() const;
-
-	/**
-	 * Retrieves the size of each component in a pixel.
-	 * @return Size of a component, in bytes
-	 */
-	unsigned int GetComponentSize() const;
+	virtual bool Valid() const;
 
 	/**
 	 * Retrieves the size of a pixel in this image.
@@ -216,41 +213,17 @@ public:
 	 */
 	unsigned int GetPixelSize() const;
 
-	/**
-	 * Returns true if the image is valid. The image is valid if it has a usable
-	 * Vulkan image view.
-	 * @return true if the image is valid, false otherwise
-	 */
-	virtual bool Valid() const;
-
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
 	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
 
 private:
-	/** A staging buffer used to create the image and map/unmap (if dynamic) */
-	VkBuffer m_stagingBuffer;
-	/** Memory backing the staging buffer */
-	VkDeviceMemory m_stagingMemory;
-	/** Vulkan image handle */
-	VkImage m_image;
-	/** Memory backing the Vulkan image */
-	VkDeviceMemory m_deviceMemory;
-	/** The Vulkan image view handle */
-	VkImageView m_view;
+	WBufferedImage2D m_bufferedImage;
 	/** The Vulkan format */
 	VkFormat m_format;
-	/** true if the last MapPixels() was read-only */
-	bool m_readOnlyMap;
 	/** Width of the image, in pixels */
 	unsigned int m_width;
 	/** Height of the image, in pixels */
 	unsigned int m_height;
-	/** Size of the entire image memory buffer, in bytes, for mapping */
-	unsigned int m_mapSize;
-	/** Number of pixel components */
-	unsigned int m_numComponents;
-	/** Size of each pixel component, in bytes */
-	unsigned int m_componentSize;
 
 	/**
 	 * Cleanup all image resources (including all Vulkan-related resources)

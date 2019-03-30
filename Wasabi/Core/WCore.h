@@ -13,44 +13,16 @@
 
 #pragma once
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-#ifndef VK_USE_PLATFORM_WIN32_KHR
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#elif (defined __linux__)
-#ifndef VK_USE_PLATFORM_XCB_KHR
-#define VK_USE_PLATFORM_XCB_KHR
-#endif
-#endif
-#include "vulkan/vulkan.h"
-#pragma comment (lib, "vulkan-1.lib")
-#include "VkTools/vulkanswapchain.hpp"
-#include "VkTools/vulkantools.h"
-
-#include <math.h>
-#include <float.h>
-#include <climits>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <map>
-#include <array>
-#include <chrono>
-
-#include "WError.h"
+#include "WCommon.h"
 #include "WManager.h"
 #include "WBase.h"
-#include "../Files/WFile.h"
 #include "WOrientation.h"
-#include "WTimer.h"
-#include "WMath.h"
 #include "WUtilities.h"
-
-using std::ios;
-using std::basic_filebuf;
-using std::vector;
-using std::array;
+#include "../Files/WFile.h"
+#include "../Memory/WVulkanMemoryManager.h"
+#include "../Memory/WBufferedBuffer.h"
+#include "../Memory/WBufferedImage.h"
+#include "../Memory/WBufferedFrameBuffer.h"
 
 #define W_ENGINE_NAME "Wasabi"
 
@@ -68,31 +40,6 @@ using std::array;
 #endif
 
 /**
- * Wrapper for a Vulkan buffer an its backing memory.
- */
-struct W_BUFFER {
-	/** Vulkan buffer */
-	VkBuffer buf;
-	/** buf's backing memory */
-	VkDeviceMemory mem;
-
-	W_BUFFER() : buf(VK_NULL_HANDLE), mem(VK_NULL_HANDLE) {}
-
-	/**
-	 * Destroy the buffer and its backing memory
-	 * @param device The Vulkan device used to crate the buffer
-	 */
-	void Destroy(VkDevice device) {
-		if (buf)
-			vkDestroyBuffer(device, buf, nullptr);
-		if (mem)
-			vkFreeMemory(device, mem, nullptr);
-		buf = VK_NULL_HANDLE;
-		mem = VK_NULL_HANDLE;
-	}
-};
-
-/**
  * @ingroup engineclass
  * Main application class. This class is abstract and one must implement its
  * three methods (Setup, Loop and Cleanup) to be able to run the engine.
@@ -103,6 +50,10 @@ public:
 	 * A map of various parameters used by the engine. Built-in parameters are:
 	 * * "appName": Pointer to the name of the application. Default is
 	 * 	  (void*)"Wasabi".
+	 * * "bufferingCount": Buffering count, usually double (2) or triple (3) is
+	 *                     used. Buffering defines the maximum number of frames
+	 *                     that can be all in-flight (rendering) at the same time.
+	 *                     Default is 2.
 	 * * "fontBmpSize": The size of the font bitmap when a new font is created.
 	 * 		default is (void*)(512).
 	 * * "fontBmpCharHeight": The height of each character when a new font bitmap
@@ -118,6 +69,8 @@ public:
 	 * 		crated. Default is (void*)(1).
 	 */
 	std::map<std::string, void*> engineParams;
+	/** Pointer to the vulkan memory manager */
+	class WVulkanMemoryManager* MemoryManager;
 	/** Pointer to the attached sound component */
 	class WSoundComponent* SoundComponent;
 	/** Pointer to the attached window/input component */
@@ -260,44 +213,6 @@ public:
 	 */
 	VulkanSwapChain* GetSwapChain();
 
-	/**
-	 * Retrieves an engine-initialized Vulkan command pool.
-	 * @return A Vulkan command pool
-	 */
-	VkCommandPool GetCommandPool() const;
-
-	/**
-	 * Retrieves the index of a Vulakn memory type that is compatible with the
-	 * requested memory type and properties
-	 * @param typeBits   A 32-bit value, in which each bit represents a usable
-	 *                   memory type
-	 * @param properties The requested memory properties to be found
-	 * @param typeIndex  Pointer to an index to be filled
-	 */
-	void GetMemoryType(uint typeBits, VkFlags properties,
-					   uint* typeIndex) const;
-
-	/**
-	 * Starts recording commands on the dummy command buffer, which can be
-	 * acquired using GetCommandBuffer().
-	 * @return A Vulkan result, VK_SUCCESS on success
-	 */
-	VkResult BeginCommandBuffer();
-
-	/**
-	 * Ends recording commands on the dummy command buffer and submits it to the
-	 * graphics queue.
-	 * @return A Vulkan result, VK_SUCCESS on success
-	 */
-	VkResult EndCommandBuffer();
-
-	/**
-	 * Retrieves the dummy command buffer that is used with BeginCommandBuffer()
-	 * and EndCommandBuffer().
-	 * @return The dummy command buffer
-	 */
-	VkCommandBuffer GetCommandBuffer() const;
-
 protected:
 	/**
 	 * Creates and initializes a VkInstance to use in the engine.
@@ -369,21 +284,11 @@ private:
 	/** The used Vulkan virtual device */
 	VkDevice m_vkDevice;
 	/** The used graphics queue */
-	VkQueue m_queue;
+	VkQueue m_graphicsQueue;
 	/** The swap chain */
 	VulkanSwapChain m_swapChain;
 	/** true if the swap chain has been initialized yet, false otherwise */
 	bool m_swapChainInitialized;
-	/** Vulkan properties of the physical devices */
-	VkPhysicalDeviceProperties m_deviceProperties;
-	/** Vulkan features of the physical device */
-	VkPhysicalDeviceFeatures m_deviceFeatures;
-	/** Memory types available on the device */
-	VkPhysicalDeviceMemoryProperties m_deviceMemoryProperties;
-	/** Command pool created by the engine */
-	VkCommandPool m_cmdPool;
-	/** A dummy command buffer for general use */
-	VkCommandBuffer m_copyCommandBuffer;
 
 	/**
 	 * Destroys all resources of the engine.

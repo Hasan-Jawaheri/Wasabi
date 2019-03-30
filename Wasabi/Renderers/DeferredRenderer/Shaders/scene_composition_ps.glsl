@@ -48,7 +48,7 @@ vec3 getNormal(vec2 uv) {
 }
 
 vec2 getRandom(vec2 uv) {
-	return texture(randomTexture, vec2(2500,1000) * uv / 100).xy * 2.0f - 1.0f;
+	return vec2(0,0);//texture(randomTexture, vec2(2500,1000) * uv / 100).xy * 2.0f - 1.0f;
 }
 
 float getAmbientOcclusion(vec2 tcoord, vec2 uv, vec3 p, vec3 cnorm) {

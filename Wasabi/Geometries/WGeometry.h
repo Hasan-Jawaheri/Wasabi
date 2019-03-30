@@ -224,11 +224,11 @@ public:
 	 * @param  vb            A pointer to the memory containing the vertex data,
 	 *                       which must be a valid contiguous memory of size
 	 *                       <a>num_verts*GetVertexDescription(0).GetSize()</a>
-	 * @param  num_verts     Number of vertices in vb
+	 * @param  numVerts      Number of vertices in vb
 	 * @param  ib            A pointer to the memory containing the index data,
 	 *                       which must be a valid contiguous memory of size
 	 *                       <a>num_indices*sizeof(uint)</a>
-	 * @param  num_indices   Number of indices in ab
+	 * @param  numIndices    Number of indices in ab
 	 * @param  bDynamic      true if the geometry will require frequent
 	 *                       modifications, false otherwise
 	 * @param  bCalcNormals  Setting this to true will cause this function to
@@ -242,8 +242,8 @@ public:
 	 *                       GetVertexDescription(0)) for the geometry
 	 * @return               Error code, see WError.h
 	 */
-	WError CreateFromData(void* vb, unsigned int num_verts,
-						  void* ib, unsigned int num_indices, bool bDynamic = false,
+	WError CreateFromData(void* vb, unsigned int numVerts,
+						  void* ib, unsigned int numIndices, bool bDynamic = false,
 						  bool bCalcNormals = false, bool bCalcTangents = false);
 
 	/**
@@ -437,11 +437,10 @@ public:
 	 * 
 	 * @param  vb        The address of a pointer to have it point to the mapped
 	 *                   memory of the vertices
-	 * @param  bReadOnly Set to true if you intend to only read from the vertex
-	 *                   array, false if you want to modify the vertices
+	 * @param  flags     Map flags (bitwise OR'd), specifying read/write intention
 	 * @return           Error code, see WError.h
 	 */
-	WError MapVertexBuffer(void** const vb, bool bReadOnly = false);
+	WError MapVertexBuffer(void** const vb, W_MAP_FLAGS mapFlags);
 
 	/**
 	 * Map the index buffer of this geometry. This will fail if there is no
@@ -461,23 +460,20 @@ public:
 	 * 
 	 * @param  ib        The address of a pointer to have it point to the mapped
 	 *                   memory of the indices
-	 * @param  bReadOnly Set to true if you intend to only read from the index
-	 *                   array, false if you want to modify the indices
+	 * @param  flags     Map flags (bitwise OR'd), specifying read/write intention
 	 * @return           Error code, see WError.h
 	 */
-	WError MapIndexBuffer(uint** const ib, bool bReadOnly = false);
+	WError MapIndexBuffer(uint** const ib, W_MAP_FLAGS mapFlags);
 
 	/**
 	 * Map the animation buffer of this geometry. This will fail if there is no
 	 * animation data, the geometry is dynamic or if the geometry is immutable.
 	 * @param  ab        The address of a pointer to have it point to the mapped
 	 *                   memory of the animation vertices
-	 * @param  bReadOnly Set to true if you intend to only read from the
-	 *                   animation vertex array, false if you want to modify the
-	 *                   animation vertices
+	 * @param  flags     Map flags (bitwise OR'd), specifying read/write intention
 	 * @return           Error code, see WError.h
 	 */
-	WError MapAnimationBuffer(void** const ab, bool bReadOnly = false);
+	WError MapAnimationBuffer(void** const ab, W_MAP_FLAGS mapFlags);
 
 	/**
 	 * Unmap vertices from a previous MapVertexBuffer() call. If
@@ -647,27 +643,23 @@ public:
 	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
 
 private:
-	struct STAGED_BUFFER {
-		/** Number of vertices */
-		int count;
-		/** Vertex buffer */
-		W_BUFFER buffer;
-		/** Staging vertex buffer, used for dynamic access */
-		W_BUFFER staging;
-		/** Set to true if the last vertex map operation was read only */
-		bool readOnlyMap;
-		/** Mapped data received from vkMapMemory */
-		void* mappedData;
-	} m_vertices, m_indices, m_animationbuf;
+	/** Vertex buffer */
+	WBufferedBuffer m_vertices;
+	/** Index buffer */
+	WBufferedBuffer m_indices;
+	/** Animation vertex buffer */
+	WBufferedBuffer m_animationbuf;
+	/** Number of vertices */
+	uint m_numVertices;
+	/** Number of indices */
+	uint m_numIndices;
+	/** Currently mapped vertex buffer (only valid if mapped for writing) */
+	void* m_mappedVertexBufferForWrite;
 
 	/** Maximum boundary */
 	WVector3 m_maxPt;
 	/** Minimum boundary */
 	WVector3 m_minPt;
-	/** true if the geometry is dynamic, false otherwise */
-	bool m_dynamic;
-	/** true if the geometry is immutable, false otherwise */
-	bool m_immutable;
 
 	/**
 	 * Destroys all the geometry resources.

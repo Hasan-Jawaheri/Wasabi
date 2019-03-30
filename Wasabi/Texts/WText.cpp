@@ -147,7 +147,7 @@ WError WTextComponent::Initialize() {
 	dss.front = dss.back;
 	m_textEffect->SetDepthStencilState(dss);
 
-	ret = m_textEffect->BuildPipeline(m_app->Renderer->GetRenderTarget());
+	ret = m_textEffect->BuildPipeline(m_app->Renderer->GetRenderTarget(m_app->Renderer->GetTextsRenderStageName()));
 	vs->RemoveReference();
 	ps->RemoveReference();
 
@@ -213,7 +213,7 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 	}
 
 	f.img = new WImage(m_app);
-	WError err = f.img->CreateFromPixelsArray(temp_bitmap, bmp_size, bmp_size, false, 1, VK_FORMAT_R8_UNORM, 1);
+	WError err = f.img->CreateFromPixelsArray(temp_bitmap, bmp_size, bmp_size, VK_FORMAT_R8_UNORM);
 	delete[] temp_bitmap;
 
 	if (!err) {
@@ -342,7 +342,7 @@ void WTextComponent::Render(WRenderTarget* rt) {
 				m_textEffect->Bind(rt);
 			font->textMaterial->Bind(rt);
 			isEffectBound = true;
-			font->textGeometry->MapVertexBuffer((void**)&vb);
+			font->textGeometry->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
 		}
 		for (auto text : font->texts) {
 			float x = text.x * 2.0f / scrWidth - 1.0f;

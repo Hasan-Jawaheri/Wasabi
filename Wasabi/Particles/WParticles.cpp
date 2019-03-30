@@ -412,7 +412,7 @@ void WParticles::Render(class WRenderTarget* const rt) {
 
 			// update the geometry
 			WParticlesVertex* vb;
-			m_geometry->MapVertexBuffer((void**)&vb);
+			m_geometry->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
 			float cur_time = m_app->Timer.GetElapsedTime();
 			unsigned int num_particles = m_behavior->UpdateAndCopyToVB(cur_time, vb, m_maxParticles);
 			m_geometry->UnmapVertexBuffer();

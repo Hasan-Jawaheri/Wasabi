@@ -250,8 +250,7 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 
 	WError err = WError(W_SUCCEEDED);
 
-	if (!m_boneTex) //first frame will create the texture
-	{
+	if (!m_boneTex) { //first frame will create the texture
 		float fExactWidth = sqrtf(f->boneV.size() * 4);
 		unsigned int texWidth = 2;
 		while (fExactWidth > texWidth)
@@ -265,7 +264,7 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 		m_boneTex = new WImage(m_app);
 		int oldMips = (int)m_app->engineParams["numGeneratedMips"];
 		m_app->engineParams["numGeneratedMips"] = (void*)1;
-		err = m_boneTex->CreateFromPixelsArray(texData, texWidth, texWidth, true);
+		err = m_boneTex->CreateFromPixelsArray(texData, texWidth, texWidth, VK_FORMAT_R32G32B32A32_SFLOAT, false, true);
 		m_app->engineParams["numGeneratedMips"] = (void*)oldMips;
 		W_SAFE_DELETE_ARRAY(texData);
 	}
@@ -329,7 +328,7 @@ void WSkeleton::Update(float fDeltaTime) {
 	if (WAnimation::m_frames.size()) {
 		unsigned int texWidth = m_boneTex->GetWidth();
 		float* texData = nullptr;
-		m_boneTex->MapPixels((void**)&texData);
+		m_boneTex->MapPixels((void**)&texData, W_MAP_WRITE);
 		if (!texData)
 			return;
 

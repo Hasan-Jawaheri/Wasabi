@@ -22,6 +22,7 @@ WError WParticlesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uin
 WTextsRenderStage::WTextsRenderStage(Wasabi* const app, bool backbuffer) : WRenderStage(app) {
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = backbuffer ? RENDER_STAGE_TARGET_BACK_BUFFER : RENDER_STAGE_TARGET_PREVIOUS;
+	m_stageDescription.flags = RENDER_STAGE_FLAG_TEXTS_RENDER_STAGE;
 }
 
 WError WTextsRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {

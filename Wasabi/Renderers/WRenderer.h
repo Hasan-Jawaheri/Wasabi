@@ -122,8 +122,23 @@ public:
 	class WRenderStage* GetRenderStage(std::string stageName) const;
 
 	/**
+	 * @return The name of the sprites render stage
+	 */
+	std::string GetSpritesRenderStageName() const;
+
+	/**
+	 * @return The name of the text render stage
+	 */
+	std::string GetTextsRenderStageName() const;
+
+	/**
+	 * @return The name of the render stage to use its render target camera for picking
+	 */
+	std::string GetPickingRenderStageName() const;
+
+	/**
 	 * Retrieves the render target of a given render stage. If stageName is "",
-	 * this will return the backbuffer's render target
+	 * this will return the backbuffer's render target, which is always the last
 	 * @param stageName  Name of the stage, using "" will return the backbuffer's
 	 *                   render target
 	 * @return           Pointer to the render target of the given stage
@@ -138,11 +153,31 @@ public:
 	class WImage* GetRenderTargetImage(std::string imageName) const;
 
 	/**
+	 * Retrieves the swap chain.
+	 */
+	VulkanSwapChain* GetSwapchain() const;
+
+	/**
 	 * Retrieves a Vulkan image sampler of a given type
 	 * @param type  Type of the requested sampler
 	 * @return      A handle of a usable Vulkan image sampler
 	 */
 	virtual VkSampler GetTextureSampler(W_TEXTURE_SAMPLER_TYPE type = TEXTURE_SAMPLER_DEFAULT) const = 0;
+
+	/**
+	 * Retrieves the primary command buffer used in the current frame (should be
+	 * called within a WRenderStage's render).
+	 * @return  Current primary command buffer for the frame
+	 */
+	VkCommandBuffer GetCurrentPrimaryCommandBuffer() const;
+
+	/**
+	 * Retrieves the current buffering index. The current buffering index is the
+	 * index of buffers that should be used for the current frame (safe to
+	 * assume GPU access to it is done). All memory access to those buffers have
+	 * to use a memory barriers to ensure no races happen.
+	 */
+	uint GetCurrentBufferingIndex() const;
 
 	/**
 	 * Retrieves the currently used Vulkan graphics queue.
@@ -159,23 +194,44 @@ protected:
 	VkQueue m_queue;
 	/** Vulkan swap chain */
 	VulkanSwapChain* m_swapChain;
-	/** Default render target */
-	WRenderTarget* m_renderTarget;
-	/***/
+	/** Currently set rendering stages */
 	std::vector<class WRenderStage*> m_renderStages;
+	/** Currently set rendering stages, stored in an unordered map for quick access */
+	std::unordered_map<std::string, class WRenderStage*> m_renderStageMap;
+	/** Name of the currently set render stage that renders to the back buffer */
+	std::string m_backbufferRenderStageName;
+	/** Name of the currently set render stage for sprites */
+	std::string m_spritesRenderStageName;
+	/** Name of the currently set render stage for texts */
+	std::string m_textsRenderStageName;
+	/** Name of the currently set render stage for picking objects */
+	std::string m_pickingRenderStageName;
 
 	// Synchronization semaphores
-	struct {
-		/** Semaphore to synchronize swap chain image presentation */
-		VkSemaphore presentComplete;
-		/** Semaphore to synchronize command buffer submission and execution */
-		VkSemaphore renderComplete;
-	} m_semaphores;
+	struct PerBufferResources {
+		/** Primary command buffer for rendering, one per buffer. */
+		std::vector<VkCommandBuffer> primaryCommandBuffers;
+		/** Semaphores to synchronize swap chain image presentation, one per buffer.
+		    Ensures that the image is displayed before we start submitting new commands
+		    to the queue */
+		std::vector<VkSemaphore> presentComplete;
+		/** Semaphores to synchronize command buffer submission and execution, one
+		    per buffer. Ensures that the image is not presented until all commands have
+			been sumbitted and executed */
+		std::vector<VkSemaphore> renderComplete;
+		/** Memory fences, one per buffer, to ensure that the next frame which uses
+		    that buffer will wait until the memory fence has been signalled (which
+			means that previous frame which used this buffer index is done with the
+			memory and it is safe to write to it) */
+		std::vector<VkFence> memoryFences;
+		/** Index currently used, this is not the same as the framebuffer returned
+		    by VkAcquireNExtImageKHR, it is independent and round-robin'd */
+		uint curIndex;
 
-	/** Vulkan format of the depth buffer of the swap chain */
-	VkFormat m_depthFormat;
-	/** Vulkan format of the color buffer(s) of the swap chain */
-	VkFormat m_colorFormat;
+		VkResult Create(class Wasabi* app, uint numBuffers);
+		void Destroy(class Wasabi* app);
+	} m_perBufferResources;
+
 	/** Current width of the screen (window client) */
 	uint m_width;
 	/** Current height of the screen (window client) */

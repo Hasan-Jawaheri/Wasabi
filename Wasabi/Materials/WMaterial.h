@@ -208,22 +208,24 @@ private:
 	uint m_setIndex;
 	/** An array to hold write descriptor sets (filled/initialized on every
 	    Bind() call) */
-	vector<VkWriteDescriptorSet> m_writeDescriptorSets;
+	std::vector<std::vector<VkWriteDescriptorSet>> m_writeDescriptorSets;
 
 	struct UNIFORM_BUFFER_INFO {
-		/** Memory backing buffer */
-		VkDeviceMemory memory;
-		/** Buffer descriptor information */
-		VkDescriptorBufferInfo descriptor;
+		/** Uniform buffer resource */
+		WBufferedBuffer buffer;
+		/** Mapped buffer data (we map once, and unmap when material is destroyed) */
+		void* mappedBufferData;
+		/** Descriptor buffers, one for each buffer in the buffered buffer above */
+		std::vector<VkDescriptorBufferInfo> descriptorBufferInfos;
 		/** Current data in the material's buffer, before it is copied to GPU memory */
 		void* data;
-		/** Specifies whether or not data has changed and needs to be copied to GPU memory */
-		bool dirty;
+		/** Specifies whether or not data has changed and needs to be copied to GPU memory (one flag per buffer) */
+		std::vector<bool> dirty;
 		/** Pointer to the ubo description in the effect */
 		struct W_BOUND_RESOURCE* ubo_info;
 	};
 	/** List of the uniform buffers for the effect */
-	vector<UNIFORM_BUFFER_INFO> m_uniformBuffers;
+	std::vector<UNIFORM_BUFFER_INFO> m_uniformBuffers;
 
 	struct SAMPLER_INFO {
 		/** Descriptor information for the texture */
@@ -234,7 +236,7 @@ private:
 		struct W_BOUND_RESOURCE* sampler_info;
 	};
 	/** List of all textures (or samplers) for the effect */
-	vector<SAMPLER_INFO> m_sampler_info;
+	std::vector<SAMPLER_INFO> m_sampler_info;
 
 	/**
 	 * Frees all resources allocated for the material.

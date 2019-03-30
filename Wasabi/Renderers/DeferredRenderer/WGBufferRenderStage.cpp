@@ -85,6 +85,7 @@ WGBufferRenderStage::WGBufferRenderStage(Wasabi* const app) : WRenderStage(app) 
 		WRenderStage::OUTPUT_IMAGE("GBufferDiffuse", VK_FORMAT_R8G8B8A8_UNORM, 4, 1, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
 		WRenderStage::OUTPUT_IMAGE("GBufferViewSpaceNormal", VK_FORMAT_R8G8B8A8_UNORM, 4, 1, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
 	});
+	m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
 
 	m_GBufferFX = nullptr;
 	m_perFrameMaterial = nullptr;
@@ -106,7 +107,7 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (err) {
 		err = m_GBufferFX->BindShader(ps);
 		if (err) {
-			err = m_GBufferFX->BuildPipeline(m_app->Renderer->GetRenderTarget(m_stageDescription.name));
+			err = m_GBufferFX->BuildPipeline(m_renderTarget);
 		}
 	}
 	W_SAFE_REMOVEREF(ps);

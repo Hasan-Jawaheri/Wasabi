@@ -38,6 +38,10 @@
     <ClCompile Include="Materials\WEffect.cpp" />
     <ClCompile Include="Materials\WMaterial.cpp" />
     <ClCompile Include="Materials\WMaterialsStore.cpp" />
+    <ClCompile Include="Memory\WBufferedBuffer.cpp" />
+    <ClCompile Include="Memory\WBufferedFrameBuffer.cpp" />
+    <ClCompile Include="Memory\WBufferedImage.cpp" />
+    <ClCompile Include="Memory\WVulkanMemoryManager.cpp" />
     <ClCompile Include="Objects\WObject.cpp" />
     <ClCompile Include="Particles\WParticles.cpp" />
     <ClCompile Include="Physics\Bullet\BulletDebugger.cpp" />
@@ -69,6 +73,7 @@
     <ClInclude Include="Core\VkTools\vulkanswapchain.hpp" />
     <ClInclude Include="Core\VkTools\vulkantools.h" />
     <ClInclude Include="Core\WBase.h" />
+    <ClInclude Include="Core\WCommon.h" />
     <ClInclude Include="Core\WCore.h" />
     <ClInclude Include="Core\WError.h" />
     <ClInclude Include="Core\WManager.h" />
@@ -84,6 +89,10 @@
     <ClInclude Include="Materials\WEffect.h" />
     <ClInclude Include="Materials\WMaterial.h" />
     <ClInclude Include="Materials\WMaterialsStore.h" />
+    <ClInclude Include="Memory\WBufferedBuffer.h" />
+    <ClInclude Include="Memory\WBufferedFrameBuffer.h" />
+    <ClInclude Include="Memory\WBufferedImage.h" />
+    <ClInclude Include="Memory\WVulkanMemoryManager.h" />
     <ClInclude Include="Objects\WObject.h" />
     <ClInclude Include="Particles\WParticles.h" />
     <ClInclude Include="Physics\Bullet\BulletDebugger.h" />

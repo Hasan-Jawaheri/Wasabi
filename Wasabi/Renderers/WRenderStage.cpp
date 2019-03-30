@@ -26,6 +26,7 @@ WRenderStage::WRenderStage(class Wasabi* const app) {
 	m_app = app;
 	m_renderTarget = nullptr;
 	m_depthOutput = nullptr;
+	m_stageDescription = {};
 }
 
 WRenderTarget* WRenderStage::GetRenderTarget() const {
@@ -51,7 +52,7 @@ WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint
 		if (m_stageDescription.colorOutputs.size() == 0 && m_stageDescription.depthOutput.name == "")
 			return WError(W_NOTVALID);
 
-		m_renderTarget = new WRenderTarget(m_app);
+		m_renderTarget = m_app->RenderTargetManager->CreateRenderTarget();
 
 		for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
 			if (m_stageDescription.colorOutputs[i].name == "")
@@ -83,13 +84,18 @@ WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint
 				m_depthOutput = new WImage(m_app);
 			}
 		}
+	} else if (m_stageDescription.target == RENDER_STAGE_TARGET_BACK_BUFFER) {
+		m_renderTarget = m_app->RenderTargetManager->CreateRenderTarget();
+	} else if (m_stageDescription.target == RENDER_STAGE_TARGET_PREVIOUS) {
+		m_renderTarget = previousStages[previousStages.size() - 2]->m_renderTarget;
 	}
 
 	return Resize(width, height);
 }
 
 void WRenderStage::Cleanup() {
-	W_SAFE_REMOVEREF(m_renderTarget);
+	if (m_stageDescription.target != RENDER_STAGE_TARGET_PREVIOUS)
+		W_SAFE_REMOVEREF(m_renderTarget);
 	for (auto it = m_colorOutputs.begin(); it != m_colorOutputs.end(); it++)
 		W_SAFE_REMOVEREF((*it));
 	m_colorOutputs.clear();
@@ -103,14 +109,14 @@ WError WRenderStage::Resize(uint width, uint height) {
 			desc = m_stageDescription.colorOutputs[i];
 			WImage* output = m_colorOutputs[i];
 			if (output) {
-				WError status = output->CreateFromPixelsArray(nullptr, width, height, false, desc.numComponents, desc.format, desc.componentSize);
+				WError status = output->CreateFromPixelsArray(nullptr, width, height, desc.format, true);
 				if (!status)
 					return status;
 			}
 		}
 		desc = m_stageDescription.depthOutput;
 		if (m_depthOutput) {
-			WError status = m_depthOutput->CreateFromPixelsArray(nullptr, width, height, false, desc.numComponents, desc.format, desc.componentSize);
+			WError status = m_depthOutput->CreateFromPixelsArray(nullptr, width, height, desc.format, true);
 			if (!status)
 				return status;
 		}
@@ -125,6 +131,19 @@ WError WRenderStage::Resize(uint width, uint height) {
 		}
 		if (abs(-1000000.0f - m_stageDescription.depthOutput.clearColor.r) > W_EPSILON)
 			m_renderTarget->SetClearColor(m_stageDescription.depthOutput.clearColor, m_stageDescription.colorOutputs.size());
+	} else if (m_stageDescription.target == RENDER_STAGE_TARGET_BACK_BUFFER) {
+		VkFormat colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+		VkFormat depthFormat; // Find a suitable depth format
+		VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(m_app->GetVulkanPhysicalDevice(), &depthFormat);
+		if (!validDepthFormat)
+			return WError(W_HARDWARENOTSUPPORTED);
+
+		vector<VkImageView> swapchainViews;
+		for (int i = 0; i < m_app->Renderer->GetSwapchain()->imageCount; i++)
+			swapchainViews.push_back(m_app->Renderer->GetSwapchain()->buffers[i].view);
+		WError status = m_renderTarget->Create(width, height, swapchainViews.data(), swapchainViews.size(), colorFormat, depthFormat);
+		if (!status)
+			return status;
 	}
 
 	return WError(W_SUCCEEDED);

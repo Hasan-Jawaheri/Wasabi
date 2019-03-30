@@ -22,14 +22,17 @@ const bool WSpritesRenderStage::SpriteKey::operator< (const SpriteKey& that) con
 WSpritesRenderStage::WSpritesRenderStage(Wasabi* const app, bool backbuffer) : WRenderStage(app) {
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = backbuffer ? RENDER_STAGE_TARGET_BACK_BUFFER : RENDER_STAGE_TARGET_PREVIOUS;
+	m_stageDescription.flags = RENDER_STAGE_FLAG_SPRITES_RENDER_STAGE;
 
 	m_defaultSpriteFX = nullptr;
 }
 
 WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
-	WRenderStage::Initialize(previousStages, width, height);
+	WError err = WRenderStage::Initialize(previousStages, width, height);
+	if (!err)
+		return err;
 
-	m_defaultSpriteFX = m_app->SpriteManager->CreateSpriteEffect();
+	m_defaultSpriteFX = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget);
 	if (!m_defaultSpriteFX)
 		return WError(W_ERRORUNK);
 

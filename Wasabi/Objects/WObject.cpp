@@ -42,7 +42,7 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 	};
 	vector<pickStruct> pickedObjects;
 
-	WCamera* cam = m_app->Renderer->GetRenderTarget()->GetCamera();
+	WCamera* cam = m_app->Renderer->GetRenderTarget(m_app->Renderer->GetPickingRenderStageName())->GetCamera();
 	if (!cam)
 		return nullptr;
 
@@ -326,7 +326,7 @@ WError WObject::InitInstancing(unsigned int maxInstances) {
 
 	float* texData = new float[texWidth * texWidth * 4];
 	m_instanceTexture = new WImage(m_app);
-	WError ret = m_instanceTexture->CreateFromPixelsArray(texData, texWidth, texWidth, true);
+	WError ret = m_instanceTexture->CreateFromPixelsArray(texData, texWidth, texWidth, VK_FORMAT_R32G32B32A32_SFLOAT, false, true);
 	W_SAFE_DELETE_ARRAY(texData);
 
 	if (!ret) {
@@ -393,7 +393,7 @@ void WObject::_UpdateInstanceBuffer() {
 				bReconstruct = true;
 		if (bReconstruct) {
 			void* pData;
-			WError ret = m_instanceTexture->MapPixels(&pData);
+			WError ret = m_instanceTexture->MapPixels(&pData, W_MAP_WRITE);
 			if (ret) {
 				for (unsigned int i = 0; i < m_instanceV.size(); i++) {
 					WMatrix m = m_instanceV[i]->m_worldM;

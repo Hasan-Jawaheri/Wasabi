@@ -110,6 +110,7 @@ const bool WForwardRenderStage::ObjectKey::operator< (const ObjectKey& that) con
 WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) {
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = RENDER_STAGE_TARGET_BACK_BUFFER;
+	m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
 
 	m_lights.resize((int)m_app->engineParams["maxLights"]);
 
@@ -133,7 +134,7 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (err) {
 		err = m_defaultFX->BindShader(ps);
 		if (err) {
-			err = m_defaultFX->BuildPipeline(m_app->Renderer->GetRenderTarget(m_stageDescription.name));
+			err = m_defaultFX->BuildPipeline(m_renderTarget);
 		}
 	}
 	W_SAFE_REMOVEREF(vs);
@@ -185,7 +186,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 		WEffect* boundFX = nullptr;
 		bool isBoundFXAnimated = false;
 		std::vector<ObjectKey> reindexObjects;
-		for (auto it = m_allObjects.begin(); it != m_allObjects.end(); it++) {
+		/*for (auto it = m_allObjects.begin(); it != m_allObjects.end(); it++) {
 			WObject* object = it->second;
 			WEffect* effect = object->GetDefaultEffect();
 			WMaterial* material = object->GetMaterial(effect);
@@ -201,7 +202,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 
 				object->Render(rt, material);
 			}
-		}
+		}*/
 		for (auto it = reindexObjects.begin(); it != reindexObjects.end(); it++) {
 			m_allObjects.erase(*it);
 			m_allObjects.insert(std::make_pair(ObjectKey(it->obj), it->obj));

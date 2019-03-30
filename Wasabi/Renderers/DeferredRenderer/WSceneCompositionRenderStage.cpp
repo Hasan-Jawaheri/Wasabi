@@ -6,6 +6,7 @@
 #include "../../Materials/WEffect.h"
 #include "../../Materials/WMaterial.h"
 #include "../../Cameras/WCamera.h"
+#include "../../Images/WImage.h"
 #include "../../WindowAndInput/WWindowAndInputComponent.h"
 
 class DeferredRendererPSDepth : public WShader {
@@ -65,7 +66,9 @@ WSceneCompositionRenderStage::WSceneCompositionRenderStage(Wasabi* const app) : 
 }
 
 WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
-	Cleanup();
+	WError err = WRenderStage::Initialize(previousStages, width, height);
+	if (!err)
+		return err;
 
 	m_fullscreenSprite = m_app->SpriteManager->CreateSprite();
 	if (!m_fullscreenSprite)
@@ -81,8 +84,7 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	SceneCompositionPS* pixelShader = new SceneCompositionPS(m_app);
 	pixelShader->Load();
 
-	WRenderTarget* myRT = m_app->Renderer->GetRenderTarget(m_stageDescription.name);
-	m_effect = m_app->SpriteManager->CreateSpriteEffect(myRT, pixelShader, bs);
+	m_effect = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget, pixelShader, bs);
 	W_SAFE_REMOVEREF(pixelShader);
 	if (!m_effect)
 		return WError(W_OUTOFMEMORY);
@@ -93,7 +95,7 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	if (!m_perFrameMaterial || !m_constantsMaterial)
 		return WError(W_ERRORUNK);
 
-	m_currentCameraFarPlane = myRT->GetCamera()->GetMaxRange();
+	m_currentCameraFarPlane = m_renderTarget->GetCamera()->GetMaxRange();
 	m_constantsMaterial->SetVariableColor("ambient", WColor(0.3f, 0.3f, 0.3f));
 	m_constantsMaterial->SetVariableFloat("SSAOSampleRadius", 0.1f);
 	m_constantsMaterial->SetVariableFloat("SSAOIntensity", 1.0f);
@@ -105,7 +107,15 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	m_constantsMaterial->SetTexture("lightTexture", m_app->Renderer->GetRenderTargetImage("LightBuffer"));
 	m_constantsMaterial->SetTexture("normalTexture", m_app->Renderer->GetRenderTargetImage("GBufferViewSpaceNormal"));
 	m_constantsMaterial->SetTexture("depthTexture", m_app->Renderer->GetRenderTargetImage("GBufferDepth"));
-	//m_constantsMaterial->SetTexture("backfaceDepthTexture", m_app->Renderer->GetRenderTargetImage(""));
+	WImage* backfaceDepthImg = m_app->Renderer->GetRenderTargetImage("GBufferBackfaceDepth");
+	if (!backfaceDepthImg) {
+		backfaceDepthImg = new WImage(m_app);
+		WColor pixels[1] = { WColor(0.0f, 0.0f, 0.0f, 0.0f) };
+		backfaceDepthImg->CreateFromPixelsArray(pixels, 1, 1, VK_FORMAT_R32G32B32_SFLOAT, true);
+		m_constantsMaterial->SetTexture("backfaceDepthTexture", backfaceDepthImg);
+		backfaceDepthImg->RemoveReference();
+	} else
+		m_constantsMaterial->SetTexture("backfaceDepthTexture", backfaceDepthImg);
 	//m_constantsMaterial->SetTexture("randomTexture", m_app->Renderer->GetRenderTargetImage(""));
 
 	return WError(W_SUCCEEDED);
@@ -135,6 +145,7 @@ void WSceneCompositionRenderStage::Cleanup() {
 }
 
 WError WSceneCompositionRenderStage::Resize(uint width, uint height) {
-	m_fullscreenSprite->SetSize(WVector2(width, height));
+	if (m_fullscreenSprite)
+		m_fullscreenSprite->SetSize(WVector2(width, height));
 	return WRenderStage::Resize(width, height);
 }
