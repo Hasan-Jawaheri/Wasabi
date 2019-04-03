@@ -96,8 +96,10 @@ void main() {
 	}
 	vec4 localPos1 = animMtx * vec4(inPos.xyz, 1.0);
 	vec4 localPos2 = instMtx * vec4(localPos1.xyz, 1.0);
+	vec4 localNorm1 = animMtx * vec4(inNorm.xyz, 0.0f);
+	vec4 localNorm2 = instMtx * vec4(localNorm1.xyz, 0.0f);
 	outViewPos = (uboPerFrame.viewMatrix * uboPerObject.worldMatrix * localPos2).xyz;
-	outViewNorm = (uboPerFrame.viewMatrix * uboPerObject.worldMatrix * vec4(inNorm.xyz, 0.0)).xyz;
+	outViewNorm = (uboPerFrame.viewMatrix * uboPerObject.worldMatrix * localNorm2).xyz;
 	gl_Position = uboPerFrame.projectionMatrix * vec4(outViewPos, 1.0);
 }
 )"

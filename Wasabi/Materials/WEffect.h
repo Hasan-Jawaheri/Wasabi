@@ -501,9 +501,11 @@ class WEffect : public WBase, public WFileAsset {
 	 */
 	virtual std::string GetTypeName() const;
 
+protected:
+	virtual ~WEffect();
+
 public:
 	WEffect(class Wasabi* const app, unsigned int ID = 0);
-	~WEffect();
 
 	/**
 	 * Binds a shader to this effect.

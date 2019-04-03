@@ -83,7 +83,10 @@ class FBXLoader : public Wasabi {
 	void SaveMesh(MESHDATA m, LPCSTR filename) {
 		printf("Writing mesh to file %s...\n", filename);
 		WGeometry* g = new WGeometry(this);
-		g->CreateFromData(m.vb.data(), m.vb.size(), m.ib.data(), m.ib.size(), true, false, !m.bTangents);
+		W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_DYNAMIC;
+		if (!m.bTangents)
+			flags |= W_GEOMETRY_CREATE_CALCULATE_TANGENTS;
+		g->CreateFromData(m.vb.data(), m.vb.size(), m.ib.data(), m.ib.size(), flags);
 		if (m.ab.size())
 			g->CreateAnimationData(m.ab.data());
 		WFile file(this);

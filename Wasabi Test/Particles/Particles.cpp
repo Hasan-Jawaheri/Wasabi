@@ -10,9 +10,8 @@ void ParticlesDemo::Load() {
 	m_particles[0]->SetName("Fire Particles");
 	m_particles[0]->Create(m_app->ParticlesManager->GetDefaultEffect(W_DEFAULT_PARTICLES_ALPHA));
 
-	WImage* texture = new WImage(m_app);
+	WImage* texture = m_app->ImageManager->CreateImage("Media/particle2.png");
 	texture->SetName("Fire Texture");
-	texture->Load("Media/particle2.png");
 	m_particles[0]->SetTexture(texture);
 	W_SAFE_REMOVEREF(texture);
 
@@ -23,9 +22,8 @@ void ParticlesDemo::Load() {
 	((WDefaultParticleBehavior*)m_particles[1]->GetBehavior())->m_emissionPosition = WVector3(0, 1, 0);
 	((WDefaultParticleBehavior*)m_particles[1]->GetBehavior())->m_emissionFrequency = 5;
 
-	texture = new WImage(m_app);
+	texture = m_app->ImageManager->CreateImage("Media/particle3.png");
 	texture->SetName("Smoke Texture");
-	texture->Load("Media/particle3.png");
 	m_particles[1]->SetTexture(texture);
 	W_SAFE_REMOVEREF(texture);
 
@@ -39,9 +37,8 @@ void ParticlesDemo::Load() {
 	((WDefaultParticleBehavior*)m_particles[2]->GetBehavior())->m_particleSpawnVelocity = WVector3(0, 1.5, 0);
 	((WDefaultParticleBehavior*)m_particles[2]->GetBehavior())->m_emissionRandomness = WVector3(2, 1, 2);
 
-	texture = new WImage(m_app);
+	texture = m_app->ImageManager->CreateImage("Media/particle3.png");
 	texture->SetName("Smoke Texture");
-	texture->Load("Media/particle3.png");
 	m_particles[2]->SetTexture(texture);
 	W_SAFE_REMOVEREF(texture);
 }

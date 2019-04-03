@@ -67,7 +67,7 @@ WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint
 				previousImg->AddReference();
 				m_colorOutputs.push_back(previousImg);
 			} else {
-				m_colorOutputs.push_back(new WImage(m_app));
+				m_colorOutputs.push_back(nullptr); // will be created in Resize
 			}
 		}
 
@@ -81,7 +81,7 @@ WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint
 				previousImg->AddReference();
 				m_depthOutput = previousImg;
 			} else {
-				m_depthOutput = new WImage(m_app);
+				m_depthOutput = nullptr; // will be created in Resize
 			}
 		}
 	} else if (m_stageDescription.target == RENDER_STAGE_TARGET_BACK_BUFFER) {
@@ -107,18 +107,30 @@ WError WRenderStage::Resize(uint width, uint height) {
 		OUTPUT_IMAGE desc;
 		for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
 			desc = m_stageDescription.colorOutputs[i];
-			WImage* output = m_colorOutputs[i];
-			if (output) {
-				WError status = output->CreateFromPixelsArray(nullptr, width, height, desc.format, true);
-				if (!status)
-					return status;
+			if (!desc.isFromPreviousStage) {
+				WImage* output = m_colorOutputs[i];
+				if (output) {
+					WError status = output->CreateFromPixelsArray(nullptr, width, height, desc.format, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);
+					if (!status)
+						return status;
+				} else {
+					output = m_app->ImageManager->CreateImage(nullptr, width, height, desc.format, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);
+					if (!output)
+						return WError(W_OUTOFMEMORY);
+				}
 			}
 		}
 		desc = m_stageDescription.depthOutput;
-		if (m_depthOutput) {
-			WError status = m_depthOutput->CreateFromPixelsArray(nullptr, width, height, desc.format, true);
-			if (!status)
-				return status;
+		if (desc.name != "" && !desc.isFromPreviousStage) {
+			if (m_depthOutput) {
+				WError status = m_depthOutput->CreateFromPixelsArray(nullptr, width, height, desc.format, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);
+				if (!status)
+					return status;
+			} else {
+				m_depthOutput = m_app->ImageManager->CreateImage(nullptr, width, height, desc.format, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);
+				if (!m_depthOutput)
+					return WError(W_OUTOFMEMORY);
+			}
 		}
 
 		WError status = m_renderTarget->Create(width, height, m_colorOutputs, m_depthOutput);

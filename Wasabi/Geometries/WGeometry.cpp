@@ -14,20 +14,19 @@ const W_VERTEX_DESCRIPTION g_defaultVertexDescriptions[] = {
 	})
 };
 
-static void ConvertVertices(void* vbFrom, void* vbTo, unsigned int num_verts,
-							W_VERTEX_DESCRIPTION vtx_from, W_VERTEX_DESCRIPTION vtx_to) {
+static void ConvertVertices(void* vbFrom, void* vbTo, unsigned int numVerts, W_VERTEX_DESCRIPTION vtxFrom, W_VERTEX_DESCRIPTION vtxTo) {
 
-	size_t vtx_size = vtx_to.GetSize();
-	size_t from_vtx_size = vtx_from.GetSize();
-	for (int i = 0; i < num_verts; i++) {
-		char* fromvtx = (char*)vbFrom + from_vtx_size * i;
-		char* myvtx = (char*)vbTo + vtx_size * i;
-		for (int j = 0; j < vtx_to.attributes.size(); j++) {
-			std::string name = vtx_to.attributes[j].name;
-			int off_in_from = vtx_from.GetOffset(name);
-			int index_in_from = vtx_from.GetIndex(name);
-			if (off_in_from >= 0 && vtx_to.attributes[j].num_components == vtx_from.attributes[index_in_from].num_components)
-				memcpy(myvtx + vtx_to.GetOffset(name), fromvtx + off_in_from, vtx_to.attributes[j].num_components * 4);
+	size_t vtxSize = vtxTo.GetSize();
+	size_t fromVtxSize = vtxFrom.GetSize();
+	for (int i = 0; i < numVerts; i++) {
+		char* fromvtx = (char*)vbFrom + fromVtxSize * i;
+		char* myvtx = (char*)vbTo + vtxSize * i;
+		for (int j = 0; j < vtxTo.attributes.size(); j++) {
+			std::string name = vtxTo.attributes[j].name;
+			int off_in_from = vtxFrom.GetOffset(name);
+			int index_in_from = vtxFrom.GetIndex(name);
+			if (off_in_from >= 0 && vtxTo.attributes[j].numComponents == vtxFrom.attributes[index_in_from].numComponents)
+				memcpy(myvtx + vtxTo.GetOffset(name), fromvtx + off_in_from, vtxTo.attributes[j].numComponents * 4);
 		}
 	}
 }
@@ -36,34 +35,34 @@ size_t W_VERTEX_DESCRIPTION::GetSize() const {
 	if (_size == -1) {
 		_size = 0;
 		for (int i = 0; i < attributes.size(); i++)
-			_size += 4 * attributes[i].num_components;
+			_size += 4 * attributes[i].numComponents;
 	}
 	return _size;
 }
 
-size_t W_VERTEX_DESCRIPTION::GetOffset(unsigned int attrib_index) const {
+size_t W_VERTEX_DESCRIPTION::GetOffset(unsigned int attribIndex) const {
 	size_t s = 0;
 	for (int i = 0; i < attributes.size(); i++) {
-		if (i == attrib_index)
+		if (i == attribIndex)
 			return s;
-		s += 4 * attributes[i].num_components;
+		s += 4 * attributes[i].numComponents;
 	}
 	return -1;
 }
 
-size_t W_VERTEX_DESCRIPTION::GetOffset(std::string attrib_name) const {
+size_t W_VERTEX_DESCRIPTION::GetOffset(std::string attribName) const {
 	size_t s = 0;
 	for (int i = 0; i < attributes.size(); i++) {
-		if (attributes[i].name == attrib_name)
+		if (attributes[i].name == attribName)
 			return s;
-		s += 4 * attributes[i].num_components;
+		s += 4 * attributes[i].numComponents;
 	}
 	return -1;
 }
 
-unsigned int W_VERTEX_DESCRIPTION::GetIndex(std::string attrib_name) const {
+unsigned int W_VERTEX_DESCRIPTION::GetIndex(std::string attribName) const {
 	for (int i = 0; i < attributes.size(); i++) {
-		if (attributes[i].name == attrib_name)
+		if (attributes[i].name == attribName)
 			return i;
 	}
 	return -1;
@@ -88,6 +87,12 @@ WGeometryManager::WGeometryManager(class Wasabi* const app) : WManager<WGeometry
 WGeometryManager::~WGeometryManager() {
 }
 
+void WGeometryManager::UpdateDynamicGeometries(uint bufferIndex) const {
+	for (auto it = m_dynamicGeometries.begin(); it != m_dynamicGeometries.end(); it++) {
+		it->first->_PerformPendingMaps(bufferIndex);
+	}
+}
+
 WGeometry::WGeometry(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_mappedVertexBufferForWrite = nullptr;
 	app->GeometryManager->AddEntity(this);
@@ -107,25 +112,38 @@ bool WGeometry::Valid() const {
 	return m_vertices.Valid();
 }
 
-W_VERTEX_DESCRIPTION WGeometry::GetVertexDescription(unsigned int layout_index) const {
-	if (layout_index >= sizeof(g_defaultVertexDescriptions)/sizeof(W_VERTEX_DESCRIPTION))
-		layout_index = 0;
-	return g_defaultVertexDescriptions[layout_index];
+W_VERTEX_DESCRIPTION WGeometry::GetVertexDescription(unsigned int layoutIndex) const {
+	if (layoutIndex >= sizeof(g_defaultVertexDescriptions)/sizeof(W_VERTEX_DESCRIPTION))
+		layoutIndex = 0;
+	return g_defaultVertexDescriptions[layoutIndex];
 }
 
-size_t WGeometry::GetVertexDescriptionSize(unsigned int layout_index) const {
-	if (layout_index >= sizeof(g_defaultVertexDescriptions) / sizeof(W_VERTEX_DESCRIPTION))
-		layout_index = 0;
-	return g_defaultVertexDescriptions[layout_index].GetSize();
+size_t WGeometry::GetVertexDescriptionSize(unsigned int layoutIndex) const {
+	if (layoutIndex >= sizeof(g_defaultVertexDescriptions) / sizeof(W_VERTEX_DESCRIPTION))
+		layoutIndex = 0;
+	return g_defaultVertexDescriptions[layoutIndex].GetSize();
 }
 
 void WGeometry::_DestroyResources() {
+	for (auto it = m_pendingBufferedMaps.begin(); it != m_pendingBufferedMaps.end(); it++) {
+		WBufferedBuffer* buffer = it->first;
+		for (auto bufIt = it->second.begin(); bufIt != it->second.end(); bufIt++) {
+			if (*bufIt != nullptr) {
+				W_SAFE_FREE(*bufIt);
+				break;
+			}
+		}
+		it->second.clear();
+	}
+	m_pendingBufferedMaps.clear();
+	m_app->GeometryManager->m_dynamicGeometries.erase(this);
+
 	m_vertices.Destroy(m_app);
 	m_indices.Destroy(m_app);
 	m_animationbuf.Destroy(m_app);
 }
 
-void WGeometry::_CalcMinMax(void* vb, unsigned int num_verts) {
+void WGeometry::_CalcMinMax(void* vb, unsigned int numVerts) {
 	m_minPt = WVector3(FLT_MAX, FLT_MAX, FLT_MAX);
 	m_maxPt = WVector3(FLT_MIN, FLT_MIN, FLT_MIN);
 
@@ -135,7 +153,7 @@ void WGeometry::_CalcMinMax(void* vb, unsigned int num_verts) {
 	if (offset == -1)
 		return; // no position attribute
 
-	for (int i = 0; i < num_verts; i++) {
+	for (int i = 0; i < numVerts; i++) {
 		WVector3 v;
 		memcpy(&v, (char*)vb + vsize * i + offset, sizeof(WVector3));
 		m_minPt.x = fmin(m_minPt.x, v.x);
@@ -147,19 +165,19 @@ void WGeometry::_CalcMinMax(void* vb, unsigned int num_verts) {
 	}
 }
 
-void WGeometry::_CalcNormals(void* vb, unsigned int num_verts, void* ib, unsigned int num_indices) {
-	if (num_indices % 3 != 0)
+void WGeometry::_CalcNormals(void* vb, unsigned int numVerts, void* ib, unsigned int numIndices) {
+	if (numIndices % 3 != 0)
 		return; // must be a triangle list
 
 	int offset = GetVertexDescription(0).GetOffset("position");
-	int normal_offset = GetVertexDescription(0).GetOffset("normal");
+	int normalOffset = GetVertexDescription(0).GetOffset("normal");
 	int vsize = GetVertexDescription(0).GetSize();
 
-	if (offset == -1 || normal_offset == -1)
+	if (offset == -1 || normalOffset == -1)
 		return; // no position/normal attributes
 
-	int num_tris = num_indices / 3;
-	for (int i = 0; i < num_tris; i++) {
+	int numTris = numIndices / 3;
+	for (int i = 0; i < numTris; i++) {
 		uint ind[3];
 		memcpy(ind, (char*)ib + (i*3) * sizeof(uint), 3 * sizeof(uint));
 		WVector3 p[3];
@@ -167,13 +185,13 @@ void WGeometry::_CalcNormals(void* vb, unsigned int num_verts, void* ib, unsigne
 		memcpy(&p[1], (char*)vb + vsize * (ind[1]) + offset, sizeof(WVector3));
 		memcpy(&p[2], (char*)vb + vsize * (ind[2]) + offset, sizeof(WVector3));
 		WVector3 norm = WVec3Normalize(WVec3Cross(p[1] - p[0], p[2] - p[0]));
-		memcpy((char*)vb + vsize * (ind[0]) + normal_offset, &norm, sizeof(WVector3));
-		memcpy((char*)vb + vsize * (ind[1]) + normal_offset, &norm, sizeof(WVector3));
-		memcpy((char*)vb + vsize * (ind[2]) + normal_offset, &norm, sizeof(WVector3));
+		memcpy((char*)vb + vsize * (ind[0]) + normalOffset, &norm, sizeof(WVector3));
+		memcpy((char*)vb + vsize * (ind[1]) + normalOffset, &norm, sizeof(WVector3));
+		memcpy((char*)vb + vsize * (ind[2]) + normalOffset, &norm, sizeof(WVector3));
 	}
 }
 
-void WGeometry::_CalcTangents(void* vb, unsigned int num_verts) {
+void WGeometry::_CalcTangents(void* vb, unsigned int numVerts) {
 	int norm_offset = GetVertexDescription(0).GetOffset("normal");
 	int tang_offset = GetVertexDescription(0).GetOffset("tangent");
 	int vsize = GetVertexDescription(0).GetSize();
@@ -181,7 +199,7 @@ void WGeometry::_CalcTangents(void* vb, unsigned int num_verts) {
 	if (norm_offset == -1 || tang_offset == -1)
 		return; // no position attribute
 
-	for (unsigned int i = 0; i < num_verts; i++) {
+	for (unsigned int i = 0; i < numVerts; i++) {
 		WVector3 norm;
 		memcpy(&norm, (char*)vb + vsize * i + norm_offset, sizeof(WVector3));
 
@@ -201,8 +219,7 @@ void WGeometry::_CalcTangents(void* vb, unsigned int num_verts) {
 	}
 }
 
-WError WGeometry::CreateFromData(void* vb, unsigned int numVerts, void* ib, unsigned int numIndices,
-									bool bDynamic, bool bCalcNormals, bool bCalcTangents) {
+WError WGeometry::CreateFromData(void* vb, unsigned int numVerts, void* ib, unsigned int numIndices, W_GEOMETRY_CREATE_FLAGS flags) {
 	if (numVerts <= 0 || !vb || (numIndices > 0 && !ib))
 		return WError(W_INVALIDPARAM);
 
@@ -211,22 +228,38 @@ WError WGeometry::CreateFromData(void* vb, unsigned int numVerts, void* ib, unsi
 
 	_DestroyResources();
 
-	if (bCalcNormals && vb && ib && GetVertexDescription(0).GetIndex("normal") >= 0)
+	if ((flags & W_GEOMETRY_CREATE_CALCULATE_NORMALS) && vb && ib && GetVertexDescription(0).GetIndex("normal") >= 0)
 		_CalcNormals(vb, numVerts, ib, numIndices);
-	if (bCalcTangents && vb && GetVertexDescription(0).GetIndex("tangent") >= 0)
+	if ((flags & W_GEOMETRY_CREATE_CALCULATE_TANGENTS) && vb && GetVertexDescription(0).GetIndex("tangent") >= 0)
 		_CalcTangents(vb, numVerts);
 
 
-	uint numBuffers = bDynamic ? (uint)m_app->engineParams["bufferingCount"] : 1;
-	W_MEMORY_STORAGE memory = bDynamic ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL_HOST_COPY;
-	VkResult result = m_vertices.Create(m_app, numBuffers, vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, vb, memory);
+	uint numBuffersVB = (flags & W_GEOMETRY_CREATE_VB_DYNAMIC) ? (uint)m_app->engineParams["bufferingCount"] : 1;
+	uint numBuffersIB = (flags & W_GEOMETRY_CREATE_IB_DYNAMIC) ? (uint)m_app->engineParams["bufferingCount"] : 1;
+
+	W_MEMORY_STORAGE memory = (flags & W_GEOMETRY_CREATE_VB_DYNAMIC) ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL_HOST_COPY;
+	VkResult result = m_vertices.Create(m_app, numBuffersVB, vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, vb, memory);
 	if (result == VK_SUCCESS && indexBufferSize > 0) {
-		result = m_indices.Create(m_app, numBuffers, indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, ib, memory);
+		memory = (flags & W_GEOMETRY_CREATE_AB_DYNAMIC) ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL_HOST_COPY;
+		result = m_indices.Create(m_app, numBuffersIB, indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, ib, memory);
 	}
 
 	if (result != VK_SUCCESS) {
 		_DestroyResources();
 		return WError(W_OUTOFMEMORY);
+	}
+
+	if ((flags & W_GEOMETRY_CREATE_IB_DYNAMIC && !(flags & W_GEOMETRY_CREATE_IB_REWRITE_EVERY_FRAME)) ||
+		(flags & W_GEOMETRY_CREATE_VB_DYNAMIC && !(flags & W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME))) {
+		m_app->GeometryManager->m_dynamicGeometries.insert(std::make_pair(this, true));
+		if (flags & W_GEOMETRY_CREATE_VB_DYNAMIC && !(flags & W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME)) {
+			m_pendingBufferedMaps.insert(std::make_pair(&m_vertices, std::vector<void*>(numBuffersVB)));
+			memset(m_pendingBufferedMaps[&m_vertices].data(), 0, sizeof(void*) * numBuffersVB);
+		}
+		if (flags & W_GEOMETRY_CREATE_IB_DYNAMIC && !(flags & W_GEOMETRY_CREATE_IB_REWRITE_EVERY_FRAME)) {
+			m_pendingBufferedMaps.insert(std::make_pair(&m_indices, std::vector<void*>(numBuffersIB)));
+			memset(m_pendingBufferedMaps[&m_indices].data(), 0, sizeof(void*) * numBuffersIB);
+		}
 	}
 
 	m_numVertices = numVerts;
@@ -236,29 +269,39 @@ WError WGeometry::CreateFromData(void* vb, unsigned int numVerts, void* ib, unsi
 	return WError(W_SUCCEEDED);
 }
 
-WError WGeometry::CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint>& indices, bool bDynamic) {
-	return CreateFromData(default_vertices.data(), default_vertices.size(), indices.data(), indices.size(), bDynamic);
+WError WGeometry::CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint>& indices, W_GEOMETRY_CREATE_FLAGS flags) {
+	return CreateFromData(default_vertices.data(), default_vertices.size(), indices.data(), indices.size(), flags);
 }
 
-WError WGeometry::CreateAnimationData(void* ab) {
+WError WGeometry::CreateAnimationData(void* ab, W_GEOMETRY_CREATE_FLAGS flags) {
 	if (!Valid() || GetVertexBufferCount() < 2)
 		return WError(W_NOTVALID);
 	if (!ab)
 		return WError(W_INVALIDPARAM);
 
 	int animBufferSize = m_numVertices * GetVertexDescription(1).GetSize();
-	VkResult result = m_vertices.Create(m_app, 1, animBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, ab);
+	uint numBuffers = (flags & W_GEOMETRY_CREATE_AB_DYNAMIC) ? (uint)m_app->engineParams["bufferingCount"] : 1;
+	W_MEMORY_STORAGE memory = (flags & W_GEOMETRY_CREATE_AB_DYNAMIC) ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL_HOST_COPY;
+	VkResult result = m_animationbuf.Create(m_app, numBuffers, animBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, ab, memory);
 	if (result != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
+
+	if (flags & W_GEOMETRY_CREATE_AB_DYNAMIC && !(flags & W_GEOMETRY_CREATE_AB_REWRITE_EVERY_FRAME)) {
+		auto it = m_app->GeometryManager->m_dynamicGeometries.find(this);
+		if (it == m_app->GeometryManager->m_dynamicGeometries.end())
+			m_app->GeometryManager->m_dynamicGeometries.insert(std::make_pair(this, true));
+		m_pendingBufferedMaps.insert(std::make_pair(&m_animationbuf, std::vector<void*>(numBuffers)));
+		memset(m_pendingBufferedMaps[&m_animationbuf].data(), 0, sizeof(void*) * numBuffers);
+	}
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WGeometry::CreateCube(float fSize, bool bDynamic) {
-	return CreateBox(WVector3(fSize, fSize, fSize), bDynamic);
+WError WGeometry::CreateCube(float size, W_GEOMETRY_CREATE_FLAGS flags) {
+	return CreateBox(WVector3(size, size, size), flags);
 }
 
-WError WGeometry::CreateBox(WVector3 dimensions, bool bDynamic) {
+WError WGeometry::CreateBox(WVector3 dimensions, W_GEOMETRY_CREATE_FLAGS flags) {
 	vector<WDefaultVertex> vertices(24);
 
 	//fill the vertex buffer data
@@ -313,15 +356,15 @@ WError WGeometry::CreateBox(WVector3 dimensions, bool bDynamic) {
 	indices[30] = 20; indices[31] = 21; indices[32] = 22;
 	indices[33] = 20; indices[34] = 22; indices[35] = 23;
 
-	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, flags);
 }
 
-WError WGeometry::CreatePlain(float fSize, int xsegs, int zsegs, bool bDynamic) {
-	unsigned int num_indices = (((xsegs + 1)*(zsegs + 1)) * 2) * 3;
-	unsigned int num_vertices = (xsegs + 2)*(zsegs + 2);
+WError WGeometry::CreatePlain(float size, int xsegs, int zsegs, W_GEOMETRY_CREATE_FLAGS flags) {
+	unsigned int numIndices = (((xsegs + 1)*(zsegs + 1)) * 2) * 3;
+	unsigned int numVertices = (xsegs + 2)*(zsegs + 2);
 
 	//allocate the plain vertices
-	vector<WDefaultVertex> vertices(num_vertices);
+	vector<WDefaultVertex> vertices(numVertices);
 
 	int vpc = zsegs + 2, vpr = xsegs + 2;
 	float uI = 1.0f / (float)(vpc - 1);
@@ -337,7 +380,7 @@ WError WGeometry::CreatePlain(float fSize, int xsegs, int zsegs, bool bDynamic) 
 				WDefaultVertex((float)x / (vpr - 1), 0.0f, (float)z / (vpc - 1), 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, _u, _v);
 			vertices[curVert].pos.x -= 0.5f;
 			vertices[curVert].pos.z -= 0.5f;
-			vertices[curVert].pos *= fSize;
+			vertices[curVert].pos *= size;
 			_u += uI; //u starts from 0 increasing to 1
 			curVert++;
 		}
@@ -347,12 +390,12 @@ WError WGeometry::CreatePlain(float fSize, int xsegs, int zsegs, bool bDynamic) 
 
 
 	//allocate the index buffer
-	vector<uint> indices(num_indices);
+	vector<uint> indices(numIndices);
 
 	//fill the indices data
 	int numt = 0;
 	int offset = 0;
-	for (int t = 0; t < (num_indices / 3) / 2; t++) {
+	for (int t = 0; t < (numIndices / 3) / 2; t++) {
 		indices[t * 6 + 2] = 1 + offset;
 		indices[t * 6 + 1] = 0 + offset;
 		indices[t * 6 + 0] = vpr + offset;
@@ -370,20 +413,20 @@ WError WGeometry::CreatePlain(float fSize, int xsegs, int zsegs, bool bDynamic) 
 		}
 	}
 
-	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, flags);
 }
 
-WError WGeometry::CreateSphere(float Radius, unsigned int VRes, unsigned int URes, bool bDynamic) {
+WError WGeometry::CreateSphere(float Radius, unsigned int VRes, unsigned int URes, W_GEOMETRY_CREATE_FLAGS flags) {
 	if (VRes < 3 || URes < 2)
 		return WError(W_INVALIDPARAM);
 	const uint NumVertexRings = VRes - 2;
-	unsigned int num_vertices = NumVertexRings * URes + 2;
+	unsigned int numVertices = NumVertexRings * URes + 2;
 	const uint NumTriangleRings = VRes - 1;
 	const uint NumTriangles = (NumTriangleRings + 1) * URes * 2;
-	unsigned int num_indices = NumTriangles * 3;
+	unsigned int numIndices = NumTriangles * 3;
 
 	// Calculate all of the vertex positions
-	vector<WDefaultVertex> vertices (num_vertices);
+	vector<WDefaultVertex> vertices (numVertices);
 	int currVert = 0;
 
 	// First vertex will be at the top pole
@@ -410,7 +453,7 @@ WError WGeometry::CreateSphere(float Radius, unsigned int VRes, unsigned int URe
 	vertices[currVert++] = WDefaultVertex(0.0f, -Radius, 0, -1, 0, 0, 0, -1, 0, 0, 1);
 
 	// Now we'll add the triangles
-	vector<uint> indices(num_indices);
+	vector<uint> indices(numIndices);
 	uint curIndex = 0;
 
 	// Top ring first
@@ -446,7 +489,7 @@ WError WGeometry::CreateSphere(float Radius, unsigned int VRes, unsigned int URe
 
 	// Now the bottom ring
 	const uint top = 1 + ((NumVertexRings - 1) * URes);
-	const uint bottom = num_vertices - 1;
+	const uint bottom = numVertices - 1;
 	for (uint u = 0; u < URes; ++u) {
 		const uint currentU = u;
 		const uint nextU = (u + 1) % URes;
@@ -458,20 +501,20 @@ WError WGeometry::CreateSphere(float Radius, unsigned int VRes, unsigned int URe
 		indices[curIndex++] = nextTop;
 	}
 
-	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, flags);
 }
 
-WError WGeometry::CreateCone(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic) {
+WError WGeometry::CreateCone(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, W_GEOMETRY_CREATE_FLAGS flags) {
 	hsegs += 2;
 	if (csegs < 3 || hsegs < 2)
 		return WError(W_INVALIDPARAM);
 	//3 indices * number of triangles (top and bottom triangles + side triangles)
-	unsigned int num_indices = 3 * (csegs + (hsegs - 1)*csegs * 2);
+	unsigned int numIndices = 3 * (csegs + (hsegs - 1)*csegs * 2);
 	//bottom with the circle vertices plus [csegs] vertices for every [hsegs] + one extra seg for uvs
-	unsigned int num_vertices = 1 + csegs + hsegs * (csegs + 1);
+	unsigned int numVertices = 1 + csegs + hsegs * (csegs + 1);
 
 	//allocate vertices
-	vector<WDefaultVertex> vertices (num_vertices);
+	vector<WDefaultVertex> vertices (numVertices);
 
 	uint pos = 0; //current vertex index
 	float deltaAngle = (W_PI*2.0f) / csegs;
@@ -504,7 +547,7 @@ WError WGeometry::CreateCone(float fRadius, float fHeight, unsigned int hsegs, u
 	vertices[pos++] = WDefaultVertex(0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f);
 
 	//scale and shift vertices
-	for (uint i = 0; i < num_vertices; i++) {
+	for (uint i = 0; i < numVertices; i++) {
 		vertices[i].pos.y -= 0.5f;
 		vertices[i].pos.x *= fRadius;
 		vertices[i].pos.y *= fHeight;
@@ -512,7 +555,7 @@ WError WGeometry::CreateCone(float fRadius, float fHeight, unsigned int hsegs, u
 	}
 
 	//allocate uints for the indices
-	vector<uint> indices(num_indices);
+	vector<uint> indices(numIndices);
 	pos = 0;
 
 	//middle triangles
@@ -534,27 +577,27 @@ WError WGeometry::CreateCone(float fRadius, float fHeight, unsigned int hsegs, u
 
 	//bottom triangles
 	for (uint i = 0; i < csegs; i++) {
-		indices[pos++] = num_vertices - 1;
-		indices[pos++] = num_vertices - 1 - csegs + i + 1;
-		indices[pos++] = num_vertices - 1 - csegs + i;
-		if (indices[pos - 2] == num_vertices - 1)
-			indices[pos - 2] = num_vertices - 1 - csegs;
+		indices[pos++] = numVertices - 1;
+		indices[pos++] = numVertices - 1 - csegs + i + 1;
+		indices[pos++] = numVertices - 1 - csegs + i;
+		if (indices[pos - 2] == numVertices - 1)
+			indices[pos - 2] = numVertices - 1 - csegs;
 	}
 
-	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, flags);
 }
 
-WError WGeometry::CreateCylinder(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, bool bDynamic) {
+WError WGeometry::CreateCylinder(float fRadius, float fHeight, unsigned int hsegs, unsigned int csegs, W_GEOMETRY_CREATE_FLAGS flags) {
 	hsegs -= 2;
 	if (csegs < 3 || hsegs < 2)
 		return WError(W_INVALIDPARAM);
 	//3 indices * number of triangles (top and bottom triangles + side triangles)
-	unsigned int num_indices = 3 * (csegs * 2 + (hsegs - 1)*csegs * 2);
+	unsigned int numIndices = 3 * (csegs * 2 + (hsegs - 1)*csegs * 2);
 	//top and bottom with their circles vertices plus [csegs] vertices for every [hsegs] + one extra seg for uvs
-	unsigned int num_vertices = 2 + csegs * 2 + hsegs * (csegs + 1);
+	unsigned int numVertices = 2 + csegs * 2 + hsegs * (csegs + 1);
 
 	//allocate vertices
-	vector<WDefaultVertex> vertices (num_vertices);
+	vector<WDefaultVertex> vertices (numVertices);
 
 	uint pos = 0; //current vertex index
 	float deltaAngle = (W_PI*2.0f) / csegs;
@@ -595,7 +638,7 @@ WError WGeometry::CreateCylinder(float fRadius, float fHeight, unsigned int hseg
 	vertices[pos++] = WDefaultVertex(0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f);
 
 	//scale and shift vertices
-	for (uint i = 0; i < num_vertices; i++) {
+	for (uint i = 0; i < numVertices; i++) {
 		vertices[i].pos.y -= 0.5f;
 		vertices[i].pos.x *= fRadius;
 		vertices[i].pos.y *= fHeight;
@@ -603,7 +646,7 @@ WError WGeometry::CreateCylinder(float fRadius, float fHeight, unsigned int hseg
 	}
 
 	//allocate uints for the indices
-	vector<uint> indices(num_indices);
+	vector<uint> indices(numIndices);
 	pos = 0;
 
 	//top triangles
@@ -634,28 +677,28 @@ WError WGeometry::CreateCylinder(float fRadius, float fHeight, unsigned int hseg
 
 	//bottom triangles
 	for (uint i = 0; i < csegs; i++) {
-		indices[pos++] = num_vertices - 1;
-		indices[pos++] = num_vertices - 1 - csegs + i + 1;
-		indices[pos++] = num_vertices - 1 - csegs + i;
-		if (indices[pos - 2] == num_vertices - 1)
-			indices[pos - 2] = num_vertices - 1 - csegs;
+		indices[pos++] = numVertices - 1;
+		indices[pos++] = numVertices - 1 - csegs + i + 1;
+		indices[pos++] = numVertices - 1 - csegs + i;
+		if (indices[pos - 2] == numVertices - 1)
+			indices[pos - 2] = numVertices - 1 - csegs;
 	}
 
-	return CreateFromDefaultVerticesData(vertices, indices, bDynamic);
+	return CreateFromDefaultVerticesData(vertices, indices, flags);
 }
 
-WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
+WError WGeometry::CopyFrom(WGeometry* const from, W_GEOMETRY_CREATE_FLAGS flags) {
 	if (!from->Valid())
 		return WError(W_INVALIDPARAM);
 
-	unsigned int num_verts = from->GetNumVertices();
-	unsigned int num_indices = from->GetNumIndices();
+	unsigned int numVerts = from->GetNumVertices();
+	unsigned int numIndices = from->GetNumIndices();
 	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(0);
 	W_VERTEX_DESCRIPTION from_desc = from->GetVertexDescription(0);
 	void *vb, *fromvb, *fromib;
 
 	if (!my_desc.isEqualTo(from_desc)) {
-		vb = W_SAFE_ALLOC(num_verts *my_desc.GetSize());
+		vb = W_SAFE_ALLOC(numVerts *my_desc.GetSize());
 		if (!vb)
 			return WError(W_OUTOFMEMORY);
 	}
@@ -675,16 +718,15 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 	if (!vb)
 		vb = fromvb;
 	else
-		ConvertVertices(fromvb, vb, num_verts, from_desc, my_desc);
+		ConvertVertices(fromvb, vb, numVerts, from_desc, my_desc);
 
-	bool bCalcTangents = false, bCalcNormals = false;
 	if (my_desc.GetOffset("normal") >= 0 && from_desc.GetOffset("normal") == -1)
-		bCalcNormals = true;
+		flags |= W_GEOMETRY_CREATE_CALCULATE_NORMALS;
 	if (my_desc.GetOffset("tangent") >= 0 && from_desc.GetOffset("tangent") == -1)
-		bCalcTangents = true;
+		flags |= W_GEOMETRY_CREATE_CALCULATE_TANGENTS;
 
 	from->UnmapVertexBuffer();
-	ret = CreateFromData(vb, num_verts, fromib, num_indices, bDynamic, bCalcNormals, bCalcTangents);
+	ret = CreateFromData(vb, numVerts, fromib, numIndices, flags);
 	from->UnmapIndexBuffer();
 	if (!my_desc.isEqualTo(from_desc))
 		W_SAFE_FREE(vb);
@@ -693,7 +735,7 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 		void* fromab;
 		ret = from->MapAnimationBuffer(&fromab, W_MAP_READ);
 		if (ret) {
-			ret = CreateAnimationData(fromab);
+			ret = CreateAnimationData(fromab, flags);
 			from->UnmapAnimationBuffer();
 		}
 	}
@@ -701,7 +743,7 @@ WError WGeometry::CopyFrom(WGeometry* const from, bool bDynamic) {
 	return ret;
 }
 
-WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
+WError WGeometry::LoadFromHXM(std::string filename, W_GEOMETRY_CREATE_FLAGS flags) {
 	W_VERTEX_DESCRIPTION hx_vtx_desc = W_VERTEX_DESCRIPTION({
 		W_ATTRIBUTE_POSITION,
 		W_ATTRIBUTE_TANGENT,
@@ -782,7 +824,7 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 		W_SAFE_DELETE_ARRAY(v);
 	}
 
-	WError ret = CreateFromData(newverts, numV, ind, numI, bDynamic);
+	WError ret = CreateFromData(newverts, numV, ind, numI, flags);
 
 	//de-allocate the temporary buffers
 	W_SAFE_FREE(newverts);
@@ -798,13 +840,72 @@ WError WGeometry::LoadFromHXM(std::string filename, bool bDynamic) {
 	return ret;
 }
 
+void WGeometry::_UpdatePendingMap(WBufferedBuffer* buffer, void* mappedData, uint bufferIndex, W_MAP_FLAGS mapFlags) {
+	auto it = m_pendingBufferedMaps.find(buffer);
+	if (it != m_pendingBufferedMaps.end()) {
+		if (mapFlags & W_MAP_READ && it->second[bufferIndex]) {
+			// the user intends to read and there is a pending write to this image, perform the write
+			memcpy(mappedData, it->second[bufferIndex], buffer->GetMemorySize());
+		}
+
+		// delete all old buffered mapping
+		bool bDeleted = false;
+		for (auto dataIt = it->second.begin(); dataIt != it->second.end(); dataIt++) {
+			if (*dataIt != nullptr && !bDeleted) {
+				W_SAFE_FREE(*dataIt);
+				bDeleted = true;
+			} else if (bDeleted)
+				*dataIt = nullptr;
+		}
+		it->second[bufferIndex] = mappedData;
+	}
+}
+
+void WGeometry::_UpdatePendingUnmap(WBufferedBuffer* buffer, uint bufferIndex) {
+	auto it = m_pendingBufferedMaps.find(buffer);
+	if (it != m_pendingBufferedMaps.end()) {
+		void* bufferedMaps = W_SAFE_ALLOC(buffer->GetMemorySize());
+		memcpy(bufferedMaps, it->second[bufferIndex], buffer->GetMemorySize());
+		for (uint i = 0; i < it->second.size(); i++) {
+			if (i == bufferIndex)
+				it->second[i] = nullptr;
+			else
+				it->second[i] = bufferedMaps;
+		}
+	}
+}
+
+void WGeometry::_PerformPendingMaps(uint bufferIndex) {
+	for (auto buf = m_pendingBufferedMaps.begin(); buf != m_pendingBufferedMaps.end(); buf++) {
+		WBufferedBuffer* buffer = buf->first;
+		if (buf->second.size() > 0 && buf->second[bufferIndex]) {
+			void* data = buf->second[bufferIndex];
+			void* pMappedData;
+			if (buffer->Map(m_app, bufferIndex, &pMappedData, W_MAP_WRITE) == VK_SUCCESS) {
+				memcpy(pMappedData, data, buffer->GetMemorySize());
+				buffer->Unmap(m_app, bufferIndex);
+				buf->second[bufferIndex] = nullptr;
+				uint numRemainingPointers = 0;
+				for (auto bufIt = buf->second.begin(); bufIt != buf->second.end(); bufIt++)
+					numRemainingPointers += (*bufIt == nullptr) ? 0 : 1;
+				if (numRemainingPointers == 0)
+					W_SAFE_FREE(data); // last buffer to erase -> free the memory
+			}
+		}
+	}
+}
+
 WError WGeometry::MapVertexBuffer(void** const vb, W_MAP_FLAGS mapFlags) {
 	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
 	VkResult result = m_vertices.Map(m_app, bufferIndex, vb, mapFlags);
 	if (result != VK_SUCCESS)
 		return WError(W_NOTVALID);
+
 	if (mapFlags & W_MAP_WRITE)
 		m_mappedVertexBufferForWrite = *vb;
+
+	_UpdatePendingMap(&m_vertices, *vb, bufferIndex, mapFlags);
+
 	return WError(W_SUCCEEDED);
 }
 
@@ -813,6 +914,9 @@ WError WGeometry::MapIndexBuffer(uint** const ib, W_MAP_FLAGS mapFlags) {
 	VkResult result = m_indices.Map(m_app, bufferIndex, (void**)ib, mapFlags);
 	if (result != VK_SUCCESS)
 		return WError(W_NOTVALID);
+
+	_UpdatePendingMap(&m_indices, *ib, bufferIndex, mapFlags);
+
 	return WError(W_SUCCEEDED);
 }
 
@@ -821,6 +925,9 @@ WError WGeometry::MapAnimationBuffer(void** const ab, W_MAP_FLAGS mapFlags) {
 	VkResult result = m_animationbuf.Map(m_app, bufferIndex, ab, mapFlags);
 	if (result != VK_SUCCESS)
 		return WError(W_NOTVALID);
+
+	_UpdatePendingMap(&m_animationbuf, *ab, bufferIndex, mapFlags);
+
 	return WError(W_SUCCEEDED);
 }
 
@@ -831,16 +938,19 @@ void WGeometry::UnmapVertexBuffer() {
 	}
 
 	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	_UpdatePendingUnmap(&m_vertices, bufferIndex);
 	m_vertices.Unmap(m_app, bufferIndex);
 }
 
 void WGeometry::UnmapIndexBuffer() {
 	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	_UpdatePendingUnmap(&m_indices, bufferIndex);
 	m_indices.Unmap(m_app, bufferIndex);
 }
 
 void WGeometry::UnmapAnimationBuffer() {
 	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	_UpdatePendingUnmap(&m_animationbuf, bufferIndex);
 	m_animationbuf.Unmap(m_app, bufferIndex);
 }
 
@@ -849,11 +959,11 @@ WError WGeometry::Scale(float mulFactor) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription(0).GetSize();
+	size_t vtxSize = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
 	if (offset == -1)
 		return W_ERROR(W_NOTVALID);
-	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data, W_MAP_WRITE | W_MAP_READ);
@@ -862,9 +972,9 @@ WError WGeometry::Scale(float mulFactor) {
 
 	for (int i = 0; i < m_numVertices; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, size);
+		memcpy(&v, (char*)data + vtxSize * i + offset, size);
 		v *= mulFactor;
-		memcpy((char*)data + vtx_size * i + offset, &v, size);
+		memcpy((char*)data + vtxSize * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -876,11 +986,11 @@ WError WGeometry::ScaleX(float mulFactor) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription(0).GetSize();
+	size_t vtxSize = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
 	if (offset == -1)
 		return W_ERROR(W_NOTVALID);
-	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data, W_MAP_WRITE | W_MAP_READ);
@@ -889,9 +999,9 @@ WError WGeometry::ScaleX(float mulFactor) {
 
 	for (int i = 0; i < m_numVertices; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, size);
+		memcpy(&v, (char*)data + vtxSize * i + offset, size);
 		v.x *= mulFactor;
-		memcpy((char*)data + vtx_size * i + offset, &v, size);
+		memcpy((char*)data + vtxSize * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -903,11 +1013,11 @@ WError WGeometry::ScaleY(float mulFactor) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription(0).GetSize();
+	size_t vtxSize = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
 	if (offset == -1)
 		return W_ERROR(W_NOTVALID);
-	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data, W_MAP_WRITE | W_MAP_READ);
@@ -916,9 +1026,9 @@ WError WGeometry::ScaleY(float mulFactor) {
 
 	for (int i = 0; i < m_numVertices; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, size);
+		memcpy(&v, (char*)data + vtxSize * i + offset, size);
 		v.y *= mulFactor;
-		memcpy((char*)data + vtx_size * i + offset, &v, size);
+		memcpy((char*)data + vtxSize * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -930,11 +1040,11 @@ WError WGeometry::ScaleZ(float mulFactor) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription(0).GetSize();
+	size_t vtxSize = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
 	if (offset == -1)
 		return W_ERROR(W_NOTVALID);
-	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data, W_MAP_WRITE | W_MAP_READ);
@@ -943,9 +1053,9 @@ WError WGeometry::ScaleZ(float mulFactor) {
 
 	for (int i = 0; i < m_numVertices; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, size);
+		memcpy(&v, (char*)data + vtxSize * i + offset, size);
 		v.z *= mulFactor;
-		memcpy((char*)data + vtx_size * i + offset, &v, size);
+		memcpy((char*)data + vtxSize * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -961,11 +1071,11 @@ WError WGeometry::ApplyOffset(WVector3 _offset) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription(0).GetSize();
+	size_t vtxSize = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
 	if (offset == -1)
 		return W_ERROR(W_NOTVALID);
-	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data, W_MAP_WRITE | W_MAP_READ);
@@ -974,9 +1084,9 @@ WError WGeometry::ApplyOffset(WVector3 _offset) {
 
 	for (int i = 0; i < m_numVertices; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, size);
+		memcpy(&v, (char*)data + vtxSize * i + offset, size);
 		v += _offset;
-		memcpy((char*)data + vtx_size * i + offset, &v, size);
+		memcpy((char*)data + vtxSize * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -988,11 +1098,11 @@ WError WGeometry::ApplyTransformation(WMatrix mtx) {
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
-	size_t vtx_size = GetVertexDescription(0).GetSize();
+	size_t vtxSize = GetVertexDescription(0).GetSize();
 	int offset = GetVertexDescription(0).GetOffset("position");
 	if (offset == -1)
 		return W_ERROR(W_NOTVALID);
-	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components * 4;
+	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
 	void* data;
 	WError err = MapVertexBuffer(&data, W_MAP_WRITE | W_MAP_READ);
@@ -1001,9 +1111,9 @@ WError WGeometry::ApplyTransformation(WMatrix mtx) {
 
 	for (int i = 0; i < m_numVertices; i++) {
 		WVector3 v;
-		memcpy(&v, (char*)data + vtx_size * i + offset, size);
+		memcpy(&v, (char*)data + vtxSize * i + offset, size);
 		v = WVec3TransformCoord(v, mtx);
-		memcpy((char*)data + vtx_size * i + offset, &v, size);
+		memcpy((char*)data + vtxSize * i + offset, &v, size);
 	}
 
 	UnmapVertexBuffer();
@@ -1021,16 +1131,16 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 	*/
 
 	unsigned int pos_offset = GetVertexDescription(0).GetOffset("position");
-	unsigned int vtx_size = GetVertexDescription(0).GetSize();
+	unsigned int vtxSize = GetVertexDescription(0).GetSize();
 	unsigned int uv_offset = GetVertexDescription(0).GetOffset("uv");
 	unsigned int uv_size = -1;
 
 	if (pos_offset == -1)
 		return false;
-	if (GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].num_components < 3)
+	if (GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents < 3)
 		return false;
 	if (uv_offset != -1)
-		uv_size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("uv")].num_components * 4;
+		uv_size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("uv")].numComponents * 4;
 	if (uv_size < 8) // if we don't have at least 2 components, ignore UVs
 		uv_offset = -1;
 
@@ -1059,13 +1169,13 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 		WVector2 uv0 (0, 0);
 		WVector2 uv1 (1, 0);
 		WVector2 uv2 (0, 1);
-		memcpy(&v0, &((char*)vb)[ib[i * 3 + 0] * vtx_size + pos_offset], sizeof(WVector3));
-		memcpy(&v1, &((char*)vb)[ib[i * 3 + 1] * vtx_size + pos_offset], sizeof(WVector3));
-		memcpy(&v2, &((char*)vb)[ib[i * 3 + 2] * vtx_size + pos_offset], sizeof(WVector3));
+		memcpy(&v0, &((char*)vb)[ib[i * 3 + 0] * vtxSize + pos_offset], sizeof(WVector3));
+		memcpy(&v1, &((char*)vb)[ib[i * 3 + 1] * vtxSize + pos_offset], sizeof(WVector3));
+		memcpy(&v2, &((char*)vb)[ib[i * 3 + 2] * vtxSize + pos_offset], sizeof(WVector3));
 		if (uv_offset != -1) {
-			memcpy(&uv0, &((char*)vb)[ib[i * 3 + 0] * vtx_size + uv_offset], sizeof(WVector2));
-			memcpy(&uv1, &((char*)vb)[ib[i * 3 + 1] * vtx_size + uv_offset], sizeof(WVector2));
-			memcpy(&uv2, &((char*)vb)[ib[i * 3 + 2] * vtx_size + uv_offset], sizeof(WVector2));
+			memcpy(&uv0, &((char*)vb)[ib[i * 3 + 0] * vtxSize + uv_offset], sizeof(WVector2));
+			memcpy(&uv1, &((char*)vb)[ib[i * 3 + 1] * vtxSize + uv_offset], sizeof(WVector2));
+			memcpy(&uv2, &((char*)vb)[ib[i * 3 + 2] * vtxSize + uv_offset], sizeof(WVector2));
 		}
 
 		WVector3 e1, e2, h, s, q;
@@ -1134,7 +1244,7 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 	return true;
 }
 
-WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_indices, unsigned int num_instances, bool bind_animation) {
+WError WGeometry::Draw(WRenderTarget* rt, unsigned int numIndices, unsigned int numInstances, bool bind_animation) {
 	VkCommandBuffer renderCmdBuffer = rt->GetCommnadBuffer();
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
@@ -1150,16 +1260,16 @@ WError WGeometry::Draw(WRenderTarget* rt, unsigned int num_indices, unsigned int
 	vkCmdBindVertexBuffers(renderCmdBuffer, 0, bind_animation ? 2 : 1, bindings, offsets);
 
 	if (m_indices.Valid()) {
-		if (num_indices == -1 || num_indices > m_numIndices)
-			num_indices = m_numIndices;
+		if (numIndices == -1 || numIndices > m_numIndices)
+			numIndices = m_numIndices;
 		// Bind triangle indices & draw the indexed triangle
 		vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.GetBuffer(m_app, bufferIndex), 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(renderCmdBuffer, num_indices, num_instances, 0, 0, 0);
+		vkCmdDrawIndexed(renderCmdBuffer, numIndices, numInstances, 0, 0, 0);
 	} else {
-		if (num_indices == -1 || num_indices > m_numVertices)
-			num_indices = m_numVertices;
+		if (numIndices == -1 || numIndices > m_numVertices)
+			numIndices = m_numVertices;
 		// render the vertices without indices
-		vkCmdDraw(renderCmdBuffer, num_indices, num_instances, 0, 0);
+		vkCmdDraw(renderCmdBuffer, numIndices, numInstances, 0, 0);
 	}
 
 
@@ -1210,14 +1320,14 @@ WError WGeometry::SaveToStream(WFile* file, std::ostream& outputStream) {
 		}
 	}
 
-	unsigned int num_vbs = m_animationbuf.Valid() ? 2 : 1;
-	outputStream.write((char*)&num_vbs, sizeof(unsigned int));
-	for (int d = 0; d < num_vbs; d++) {
+	unsigned int numVbs = m_animationbuf.Valid() ? 2 : 1;
+	outputStream.write((char*)&numVbs, sizeof(unsigned int));
+	for (int d = 0; d < numVbs; d++) {
 		W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(d);
-		unsigned int num_attributes = my_desc.attributes.size();
-		outputStream.write((char*)&num_attributes, sizeof(unsigned int));
-		for (int i = 0; i < num_attributes; i++) {
-			outputStream.write((char*)&my_desc.attributes[i].num_components, sizeof(unsigned char));
+		unsigned int numAttributes = my_desc.attributes.size();
+		outputStream.write((char*)&numAttributes, sizeof(unsigned int));
+		for (int i = 0; i < numAttributes; i++) {
+			outputStream.write((char*)&my_desc.attributes[i].numComponents, sizeof(unsigned char));
 			unsigned int namesize = my_desc.attributes[i].name.length();
 			outputStream.write((char*)&namesize, sizeof(unsigned int));
 			outputStream.write(my_desc.attributes[i].name.c_str(), namesize);
@@ -1228,7 +1338,7 @@ WError WGeometry::SaveToStream(WFile* file, std::ostream& outputStream) {
 	outputStream.write((char*)&m_numIndices, sizeof(unsigned int));
 	outputStream.write((char*)vb, m_vertices.GetMemorySize());
 	outputStream.write((char*)ib, m_indices.GetMemorySize());
-	if (ab && num_vbs > 1) {
+	if (ab && numVbs > 1) {
 		outputStream.write((char*)ab, m_animationbuf.GetMemorySize());
 	}
 
@@ -1241,22 +1351,22 @@ WError WGeometry::SaveToStream(WFile* file, std::ostream& outputStream) {
 }
 
 WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream) {
-	bool bDynamic = false;
+	W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_VB_CPU_READABLE | W_GEOMETRY_CREATE_IB_CPU_READABLE;
 	vector<W_VERTEX_DESCRIPTION> from_descs;
 	char temp[256];
-	unsigned int num_vbs;
-	inputStream.read((char*)&num_vbs, sizeof(unsigned int));
-	if (num_vbs == 0)
+	unsigned int numVbs;
+	inputStream.read((char*)&numVbs, sizeof(unsigned int));
+	if (numVbs == 0)
 		return WError(W_INVALIDFILEFORMAT);
 
-	from_descs.resize(num_vbs);
-	for (int d = 0; d < num_vbs; d++) {
+	from_descs.resize(numVbs);
+	for (int d = 0; d < numVbs; d++) {
 		W_VERTEX_DESCRIPTION desc;
-		unsigned int num_attributes;
-		inputStream.read((char*)&num_attributes, sizeof(unsigned int));
-		desc.attributes.resize(num_attributes);
-		for (int i = 0; i < num_attributes; i++) {
-			inputStream.read((char*)&desc.attributes[i].num_components, sizeof(unsigned char));
+		unsigned int numAttributes;
+		inputStream.read((char*)&numAttributes, sizeof(unsigned int));
+		desc.attributes.resize(numAttributes);
+		for (int i = 0; i < numAttributes; i++) {
+			inputStream.read((char*)&desc.attributes[i].numComponents, sizeof(unsigned char));
 			unsigned int namesize = desc.attributes[i].name.length();
 			if (namesize > 255)
 				namesize = 255;
@@ -1307,17 +1417,17 @@ WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream) {
 		if (my_desc.GetOffset("tangent") >= 0 && from_descs[0].GetOffset("tangent") == -1)
 			bCalcTangents = true;
 
-		ret = CreateFromData(convertedVB, numV, ib, numI, bDynamic, bCalcNormals, bCalcTangents);
+		ret = CreateFromData(convertedVB, numV, ib, numI, flags);
 
 		W_SAFE_FREE(convertedVB);
 	}
 	W_SAFE_FREE(ib);
 
-	if (num_vbs > 1 && ret && GetVertexBufferCount() > 1 && from_descs[1].GetSize() == GetVertexDescription(1).GetSize()) {
+	if (numVbs > 1 && ret && GetVertexBufferCount() > 1 && from_descs[1].GetSize() == GetVertexDescription(1).GetSize()) {
 		void *ab;
 		ab = W_SAFE_ALLOC(numV * from_descs[1].GetSize());
 		inputStream.read((char*)ab, numV * from_descs[1].GetSize());
-		ret = CreateAnimationData(ab);
+		ret = CreateAnimationData(ab, flags);
 		W_SAFE_FREE(ab);
 	}
 

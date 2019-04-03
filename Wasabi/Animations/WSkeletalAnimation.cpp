@@ -261,12 +261,14 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 			WMatrix mtx = f->boneV[i]->GetInvBindingPose() * f->boneV[i]->GetRelativeMatrix();
 			memcpy(&((char*)texData)[i * sizeof(WMatrix)], &mtx, sizeof(WMatrix) - 4 * sizeof(float));
 		}
-		m_boneTex = new WImage(m_app);
 		int oldMips = (int)m_app->engineParams["numGeneratedMips"];
 		m_app->engineParams["numGeneratedMips"] = (void*)1;
-		err = m_boneTex->CreateFromPixelsArray(texData, texWidth, texWidth, VK_FORMAT_R32G32B32A32_SFLOAT, false, true);
+		m_boneTex = m_app->ImageManager->CreateImage(texData, texWidth, texWidth, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
 		m_app->engineParams["numGeneratedMips"] = (void*)oldMips;
 		W_SAFE_DELETE_ARRAY(texData);
+
+		if (!m_boneTex)
+			err = WError(W_OUTOFMEMORY);
 	}
 
 	return err;
@@ -602,11 +604,13 @@ WError WSkeleton::UseAnimationFrames(const WAnimation* const anim) {
 		WAnimation::m_frames.push_back(fromS->WAnimation::m_frames[i]);
 		m_totalTime += fromS->WAnimation::m_frames[i]->fTime;
 	}
-	m_boneTex = new WImage(m_app);
 	int oldMips = (int)m_app->engineParams["numGeneratedMips"];
-	WError err = m_boneTex->CopyFrom(fromS->m_boneTex);
+	m_boneTex = m_app->ImageManager->CreateImage(fromS->m_boneTex, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
 	m_app->engineParams["numGeneratedMips"] = (void*)oldMips;
-	return err;
+	if (!m_boneTex)
+		return WError(W_OUTOFMEMORY);
+
+	return WError(W_SUCCEEDED);
 }
 
 bool WSkeleton::Valid() const {

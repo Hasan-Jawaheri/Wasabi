@@ -26,11 +26,11 @@ public:
 		return m_desc.GetSize();
 	}
 
-	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint>& indices, bool bDynamic) {
+	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint>& indices, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE) {
 		vector<WVector3> custom_verts(default_vertices.size());
 		for (unsigned int i = 0; i < default_vertices.size(); i++)
 			custom_verts[i] = default_vertices[i].pos;
-		return CreateFromData(custom_verts.data(), custom_verts.size(), indices.data(), indices.size(), bDynamic);
+		return CreateFromData(custom_verts.data(), custom_verts.size(), indices.data(), indices.size(), flags);
 	}
 };
 

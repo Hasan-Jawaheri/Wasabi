@@ -109,9 +109,8 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	m_constantsMaterial->SetTexture("depthTexture", m_app->Renderer->GetRenderTargetImage("GBufferDepth"));
 	WImage* backfaceDepthImg = m_app->Renderer->GetRenderTargetImage("GBufferBackfaceDepth");
 	if (!backfaceDepthImg) {
-		backfaceDepthImg = new WImage(m_app);
 		WColor pixels[1] = { WColor(0.0f, 0.0f, 0.0f, 0.0f) };
-		backfaceDepthImg->CreateFromPixelsArray(pixels, 1, 1, VK_FORMAT_R32G32B32_SFLOAT, true);
+		backfaceDepthImg = m_app->ImageManager->CreateImage(pixels, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);
 		m_constantsMaterial->SetTexture("backfaceDepthTexture", backfaceDepthImg);
 		backfaceDepthImg->RemoveReference();
 	} else

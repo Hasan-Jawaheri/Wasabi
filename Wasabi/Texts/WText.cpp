@@ -212,14 +212,13 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 		return WError(W_ERRORUNK);
 	}
 
-	f.img = new WImage(m_app);
-	WError err = f.img->CreateFromPixelsArray(temp_bitmap, bmp_size, bmp_size, VK_FORMAT_R8_UNORM);
+	f.img = m_app->ImageManager->CreateImage(temp_bitmap, bmp_size, bmp_size, VK_FORMAT_R8_UNORM);
 	delete[] temp_bitmap;
 
-	if (!err) {
+	if (!f.img) {
 		delete[] (stbtt_bakedchar*)f.cdata;
 		f.img->RemoveReference();
-		return err;
+		return WError(W_OUTOFMEMORY);
 	}
 
 	f.textMaterial = m_textEffect->CreateMaterial();
@@ -230,7 +229,7 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 		return WError(W_OUTOFMEMORY);
 	}
 
-	err = f.textMaterial->SetTexture(0, f.img);
+	WError err = f.textMaterial->SetTexture(0, f.img);
 	if (!err) {
 		delete[](stbtt_bakedchar*)f.cdata;
 		f.img->RemoveReference();
@@ -255,7 +254,7 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 	}
 
 	f.textGeometry = new TextGeometry(m_app);
-	err = f.textGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
+	err = f.textGeometry->CreateFromData(vb, num_verts, ib, num_indices, W_GEOMETRY_CREATE_VB_DYNAMIC | W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME);
 	delete[] vb;
 	delete[] ib;
 

@@ -26,14 +26,14 @@
  * Represents a single vertex attribute.
  */
 struct W_VERTEX_ATTRIBUTE {
-	W_VERTEX_ATTRIBUTE() : num_components(0) {}
+	W_VERTEX_ATTRIBUTE() : numComponents(0) {}
 	W_VERTEX_ATTRIBUTE(std::string n, unsigned char s)
-		: name(n), num_components(s) {}
+		: name(n), numComponents(s) {}
 
 	/** Attribute name */
 	std::string name;
 	/** Number of components of the attribute */
-	unsigned char num_components;
+	unsigned char numComponents;
 };
 
 /**
@@ -127,6 +127,46 @@ struct WDefaultVertex_Animation {
 	float weights[4];
 };
 
+enum W_GEOMETRY_CREATE_FLAGS {
+	W_GEOMETRY_CREATE_VB_CPU_READABLE = 1,
+	W_GEOMETRY_CREATE_VB_DYNAMIC = 2,
+	W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME = 4,
+	W_GEOMETRY_CREATE_IB_CPU_READABLE = 8,
+	W_GEOMETRY_CREATE_IB_DYNAMIC = 16,
+	W_GEOMETRY_CREATE_IB_REWRITE_EVERY_FRAME = 32,
+	W_GEOMETRY_CREATE_AB_CPU_READABLE = 64,
+	W_GEOMETRY_CREATE_AB_DYNAMIC = 128,
+	W_GEOMETRY_CREATE_AB_REWRITE_EVERY_FRAME = 256,
+
+	W_GEOMETRY_CREATE_STATIC = 0,
+	W_GEOMETRY_CREATE_CPU_READABLE = 1 | 8 | 64,
+	W_GEOMETRY_CREATE_DYNAMIC = 2 | 16 | 128,
+	W_GEOMETRY_CREATE_REWRITE_EVERY_FRAME = 4 | 32 | 256,
+
+	W_GEOMETRY_CREATE_CALCULATE_NORMALS = 512,
+	W_GEOMETRY_CREATE_CALCULATE_TANGENTS = 1024,
+};
+
+inline W_GEOMETRY_CREATE_FLAGS operator | (W_GEOMETRY_CREATE_FLAGS lhs, W_GEOMETRY_CREATE_FLAGS rhs) {
+	using T = std::underlying_type_t <W_GEOMETRY_CREATE_FLAGS>;
+	return static_cast<W_GEOMETRY_CREATE_FLAGS>(static_cast<T>(lhs) | static_cast<T>(rhs));
+}
+
+inline W_GEOMETRY_CREATE_FLAGS operator & (W_GEOMETRY_CREATE_FLAGS lhs, W_GEOMETRY_CREATE_FLAGS rhs) {
+	using T = std::underlying_type_t <W_GEOMETRY_CREATE_FLAGS>;
+	return static_cast<W_GEOMETRY_CREATE_FLAGS>(static_cast<T>(lhs) & static_cast<T>(rhs));
+}
+
+inline W_GEOMETRY_CREATE_FLAGS& operator |= (W_GEOMETRY_CREATE_FLAGS& lhs, W_GEOMETRY_CREATE_FLAGS rhs) {
+	lhs = lhs | rhs;
+	return lhs;
+}
+
+inline W_GEOMETRY_CREATE_FLAGS& operator &= (W_GEOMETRY_CREATE_FLAGS& lhs, W_GEOMETRY_CREATE_FLAGS rhs) {
+	lhs = lhs & rhs;
+	return lhs;
+}
+
 /**
  * @ingroup engineclass
  *
@@ -143,15 +183,20 @@ struct WDefaultVertex_Animation {
  * available) for animation data.
  */
 class WGeometry : public WBase, public WFileAsset {
+	friend class WGeometryManager;
+
 	/**
 	 * Returns "Geometry" string.
 	 * @return Returns "Geometry" string
 	 */
 	virtual std::string GetTypeName() const;
 
+protected:
+	virtual ~WGeometry();
+
 public:
+
 	WGeometry(Wasabi* const app, unsigned int ID = 0);
-	~WGeometry();
 
 	/**
 	 * This function should return the number of vertex descriptions that
@@ -177,20 +222,20 @@ public:
 	 * - layout 1: (animation buffer)
 	 *   - W_ATTRIBUTE_BONE_INDEX
 	 *   - W_ATTRIBUTE_BONE_WEIGHT
-	 * @param  layout_index Index of the vertex buffer
+	 * @param  layoutIndex  Index of the vertex buffer
 	 * @return              The description of a vertex in the <a>layout_index
 	 *                      </a>'th vertex buffer
 	 */
 	virtual W_VERTEX_DESCRIPTION GetVertexDescription(
-		unsigned int layout_index = 0) const;
+		unsigned int layoutIndex = 0) const;
 
 	/**
 	* Retrieves the size of the vertex description at the given index.
 	*
-	* @param  layout_index Index of the vertex buffer
+	* @param  layoutIndex  Index of the vertex buffer
 	* @return              The size of the vertex description at the given index
 	*/
-	virtual size_t GetVertexDescriptionSize(unsigned int layout_index = 0) const;
+	virtual size_t GetVertexDescriptionSize(unsigned int layoutIndex = 0) const;
 
 	/**
 	 * Creates a geometry from buffers in memory. The buffers must be formatted
@@ -217,8 +262,7 @@ public:
 	 *                  0.0f, 0.0f, -1.0f, 1.0f, 0.0f)
 	 * };
 	 * uint indices[] = {0, 1, 2};
-	 * WGeomery* geometry = new WGeometry(this);
-	 * geometry->CreateFromData(vertices, 3, indices, 3);
+	 * WGeomery* geometry = GeometryManager->CreateFromData(vertices, 3, indices, 3);
 	 * @endcode
 	 * 
 	 * @param  vb            A pointer to the memory containing the vertex data,
@@ -229,30 +273,17 @@ public:
 	 *                       which must be a valid contiguous memory of size
 	 *                       <a>num_indices*sizeof(uint)</a>
 	 * @param  numIndices    Number of indices in ab
-	 * @param  bDynamic      true if the geometry will require frequent
-	 *                       modifications, false otherwise
-	 * @param  bCalcNormals  Setting this to true will cause this function to
-	 *                       automatically calculate normals (if there is an
-	 *                       attribute named "normal" in
-	 *                       GetVertexDescription(0)) for the geometry
-	 *                       (hard-normals)
-	 * @param  bCalcTangents Setting this to true will cause this function to
-	 *                       automatically calculate tangents (if there is an
-	 *                       attribute named "tangent" in
-	 *                       GetVertexDescription(0)) for the geometry
+	 * @param  flags         Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return               Error code, see WError.h
 	 */
-	WError CreateFromData(void* vb, unsigned int numVerts,
-						  void* ib, unsigned int numIndices, bool bDynamic = false,
-						  bool bCalcNormals = false, bool bCalcTangents = false);
+	WError CreateFromData(void* vb, unsigned int numVerts, void* ib, unsigned int numIndices, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Called by CreateBox, CreateSphere, etc... to convert the given default vertices
 	 * (of type WDefaultVertex) to the custom type for this geometry. This can be
 	 * overrided to utilize the Create* functions while using a custom vertex format
 	 */
-	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices,
-												 vector<uint>& indices, bool bDynamic);
+	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint>& indices, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Creates a cube geometry.
@@ -264,12 +295,11 @@ public:
 	 * functions, all scaling functions, all offset functions and Intersect().
 	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
-	 * @param  fSize    Dimension of the cube
-	 * @param  bDynamic true if the geometry will require frequent
-	 *                  modifications, false otherwise
+	 * @param  size    Dimension of the cube
+	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateCube(float fSize, bool bDynamic = false);
+	WError CreateCube(float size, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Creates a box geometry.
@@ -282,11 +312,10 @@ public:
 	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
 	 * @param  dimensions Dimensions of the box
-	 * @param  bDynamic   true if the geometry will require frequent
-	 *                    modifications, false otherwise
+	 * @param  flags      Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return            Error code, see WError.h
 	 */
-	WError CreateBox(WVector3 dimensions, bool bDynamic = false);
+	WError CreateBox(WVector3 dimensions, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Creates a plain geometry that is segmented. The plain will be split into
@@ -299,14 +328,13 @@ public:
 	 * functions, all scaling functions, all offset functions and Intersect().
 	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
-	 * @param  fSize    Size (dimension) of the plain
+	 * @param  size    Size (dimension) of the plain
 	 * @param  xsegs    Number of segments on the X axis, minimum is 0
 	 * @param  zsegs    Number of segments on the Z axis, minimum is 0
-	 * @param  bDynamic true if the geometry will require frequent
-	 *                  modifications, false otherwise
+	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError CreatePlain(float fSize, int xsegs, int zsegs, bool bDynamic = false);
+	WError CreatePlain(float size, int xsegs, int zsegs, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Creates a sphere geometry, with VRes vertical segments and URes horizontal
@@ -319,17 +347,15 @@ public:
 	 * functions, all scaling functions, all offset functions and Intersect().
 	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
-	 * @param  Radius   Radius of the sphere
-	 * @param  VRes     Vertical resolution, or number of vertical splits,
+	 * @param  radius   Radius of the sphere
+	 * @param  vres     Vertical resolution, or number of vertical splits,
 	 *                  minimum is 3
-	 * @param  URes     Horizontal resolution, or number of horizontal splits,
+	 * @param  ures     Horizontal resolution, or number of horizontal splits,
 	 *                  minimum is 2
-	 * @param  bDynamic true if the geometry will require frequent
-	 *                  modifications, false otherwise
+	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateSphere(float Radius, unsigned int VRes = 12, unsigned int URes = 12,
-						bool bDynamic = false);
+	WError CreateSphere(float radius, unsigned int vres = 12, unsigned int ures = 12, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Creates a cone geometry, with csegs segments at the bottom circle and
@@ -342,16 +368,14 @@ public:
 	 * functions, all scaling functions, all offset functions and Intersect().
 	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
-	 * @param  fRadius  Radius of the bottom circle
-	 * @param  fHeight  Height of the cone
+	 * @param  radius   Radius of the bottom circle
+	 * @param  height   Height of the cone
 	 * @param  hsegs    Number of segments along the height, minimum is 0
 	 * @param  csegs    Number of segments at the bottom circle, minimum is 3
-	 * @param  bDynamic true if the geometry will require frequent
-	 *                  modifications, false otherwise
+	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateCone(float fRadius, float fHeight, unsigned int hsegs,
-					  unsigned int csegs, bool bDynamic = false);
+	WError CreateCone(float radius, float height, unsigned int hsegs, unsigned int csegs, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Creates a cylinder geometry, with csegs segments at the bottom and top
@@ -364,17 +388,15 @@ public:
 	 * functions, all scaling functions, all offset functions and Intersect().
 	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
-	 * @param  fRadius  Radius of the cylinder
-	 * @param  fHeight  Height of the cylinder
+	 * @param  radius   Radius of the cylinder
+	 * @param  height   Height of the cylinder
 	 * @param  hsegs    Number of segments along the height, minimum is 0
 	 * @param  csegs    Number of segments at the bottom and top circles,
 	 *                  minimum is 3
-	 * @param  bDynamic true if the geometry will require frequent
-	 *                  modifications, false otherwise
+	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateCylinder(float fRadius, float fHeight, unsigned int hsegs,
-						  unsigned int csegs, bool bDynamic = false);
+	WError CreateCylinder(float radius, float height, unsigned int hsegs, unsigned int csegs, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Copy another (non-immutable) geometry.
@@ -387,11 +409,10 @@ public:
 	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
 	 * @param  from     Geometry to copy
-	 * @param  bDynamic true if the geometry will require frequent
-	 *                  modifications, false otherwise
+	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError CopyFrom(WGeometry* const from, bool bDynamic = false);
+	WError CopyFrom(WGeometry* const from, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_VB_CPU_READABLE | W_GEOMETRY_CREATE_IB_CPU_READABLE);
 
 	/**
 	 * Creates animation data vertex buffer. The geometry must have
@@ -403,9 +424,10 @@ public:
 	 * @param  animBuf A pointer to the memory to create the animation buffer
 	 *                 from, which must be a valid contiguous memory of size
 	 *                 <a>GetNumVertices()*GetVertexDescription(1).GetSize()</a>
+	 * @param  flags   Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return         Error code, see WError.h
 	 */
-	WError CreateAnimationData(void* animBuf);
+	WError CreateAnimationData(void* animBuf, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_STATIC);
 
 	/**
 	 * Load a geometry from an HXM file. The geometry in the HXM file may be of
@@ -415,11 +437,10 @@ public:
 	 * geometry's description, the function will attempt to fill them in
 	 * automatically.
 	 * @param  filename Name of the file to load
-	 * @param  bDynamic true if the geometry will require frequent
-	 *                  modifications, false otherwise
+	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError LoadFromHXM(std::string filename, bool bDynamic = false);
+	WError LoadFromHXM(std::string filename, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Map the vertex buffer of this geometry. This will fail if there is no
@@ -579,9 +600,7 @@ public:
 	 *                       index of the triangle that was intersected, if any
 	 * @return               true if there was an intersection, false otherwise
 	 */
-	bool Intersect(WVector3 p1, WVector3 p2,
-				   WVector3* pt = nullptr, WVector2* uv = nullptr,
-				   unsigned int* triangleIndex = nullptr);
+	bool Intersect(WVector3 p1, WVector3 p2, WVector3* pt = nullptr, WVector2* uv = nullptr, unsigned int* triangleIndex = nullptr);
 
 	/**
 	 * Draw the geometry to the render target. This function will bind the
@@ -590,17 +609,16 @@ public:
 	 * target must have its Begin() function called before this function is
 	 * called.
 	 * @param  rt             Render target to draw to
-	 * @param  num_indices    Number of indices to draw, -1 for all. If the
+	 * @param  numIndices     Number of indices to draw, -1 for all. If the
 	 *                        geometry has no indices, this is the number of
 	 *                        vertices to draw, -1 for all
-	 * @param  num_instances  Number of instances to draw
-	 * @param  bind_animation true to bind the animation buffer (if not
+	 * @param  numInstances   Number of instances to draw
+	 * @param  bindAnimation  true to bind the animation buffer (if not
 	 *                        available, the geometry buffer will be bound
 	 *                        twice), false otherwise
 	 * @return                [description]
 	 */
-	WError Draw(class WRenderTarget* rt, unsigned int num_indices = -1,
-				unsigned int num_instances = 1, bool bind_animation = true);
+	WError Draw(class WRenderTarget* rt, unsigned int numIndices = -1, unsigned int numInstances = 1, bool bindAnimation = true);
 
 	/**
 	 * Retrieves the point that represents the minimum boundary of the geometry.
@@ -653,8 +671,10 @@ private:
 	uint m_numVertices;
 	/** Number of indices */
 	uint m_numIndices;
-	/** Currently mapped vertex buffer (only valid if mapped for writing) */
+	/** Currently mapped vertex buffer (only valid if mapped for writing), used to recalculate min/max points */
 	void* m_mappedVertexBufferForWrite;
+	/** An array of buffered maps to perform, one per buffered buffer */
+	std::map<WBufferedBuffer*, std::vector<void*>> m_pendingBufferedMaps;
 
 	/** Maximum boundary */
 	WVector3 m_maxPt;
@@ -669,26 +689,40 @@ private:
 	/**
 	 * Calculates m_minPt.
 	 * @param vb       Vertex buffer to calculate from
-	 * @param num_vert Number of vertices in vb
+	 * @param numVerts Number of vertices in vb
 	 */
-	void _CalcMinMax(void* vb, unsigned int num_vert);
+	void _CalcMinMax(void* vb, unsigned int numVerts);
 
 	/**
 	 * Calculates the vertex normals in vb and stores them in vb (if possible).
 	 * @param vb          Vertex buffer to calculate normals for
-	 * @param num_verts   Number of vertices in vb
+	 * @param numVerts    Number of vertices in vb
 	 * @param ib          Index buffer for vb
-	 * @param num_indices Number of indices in ib
+	 * @param numIndices  Number of indices in ib
 	 */
-	void _CalcNormals(void* vb, unsigned int num_verts, void* ib,
-					  unsigned int num_indices);
+	void _CalcNormals(void* vb, unsigned int numVerts, void* ib, unsigned int numIndices);
 
 	/**
 	 * Calculates the vertex tangents in vb and stores them in vb (if possible).
 	 * @param vb        Vertex buffer to calculate tangents for
-	 * @param num_verts Number of vertices in vb
+	 * @param numVerts  Number of vertices in vb
 	 */
-	void _CalcTangents(void* vb, unsigned int num_verts);
+	void _CalcTangents(void* vb, unsigned int numVerts);
+
+	/**
+	 * Performs all pending maps for the given buffer index
+	 */
+	void _PerformPendingMaps(uint bufferIndex);
+
+	/**
+	 * Performs an update necessary to a buffered buffer at a given index after it gets mapped
+	 */
+	void _UpdatePendingMap(WBufferedBuffer* buffer, void* mappedData, uint bufferIndex, W_MAP_FLAGS mapFlags);
+
+	/**
+	 * Performs an update necessary to a buffered buffer at a given index before it gets unmapped
+	 */
+	void _UpdatePendingUnmap(WBufferedBuffer* buffer, uint bufferIndex);
 };
 
 /**
@@ -696,6 +730,11 @@ private:
  * Manager class for WGeometry.
  */
 class WGeometryManager : public WManager<WGeometry> {
+	friend class WGeometry;
+
+	/** A container of the dynamic geometries that need to be (possibly) updated
+		per-frame for buffered mapping/unmapping */
+	std::unordered_map<WGeometry*, bool> m_dynamicGeometries;
 
 	/**
 	 * Returns "Geometry" string.
@@ -706,5 +745,11 @@ class WGeometryManager : public WManager<WGeometry> {
 public:
 	WGeometryManager(class Wasabi* const app);
 	~WGeometryManager();
+
+	/**
+	 * Makes sure all Map call results are propagated to the buffered geometries at
+	 * the given buffer index.
+	 */
+	void UpdateDynamicGeometries(uint bufferIndex) const;
 };
 

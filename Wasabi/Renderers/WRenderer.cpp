@@ -1,6 +1,8 @@
 #include "WRenderer.h"
 #include "WRenderStage.h"
 #include "../Images/WRenderTarget.h"
+#include "../Images/WImage.h"
+#include "../Geometries/WGeometry.h"
 #include "../WindowAndInput/WWindowAndInputComponent.h"
 
 WRenderer::WRenderer(Wasabi* const app) : m_app(app) {
@@ -100,6 +102,9 @@ void WRenderer::_Render() {
 	}
 	if (err != VK_SUCCESS)
 		return; // fence is not ready yet or can't be reset
+
+	m_app->ImageManager->UpdateDynamicImages(m_perBufferResources.curIndex);
+	m_app->GeometryManager->UpdateDynamicGeometries(m_perBufferResources.curIndex);
 
 	err = vkResetCommandBuffer(m_perBufferResources.primaryCommandBuffers[m_perBufferResources.curIndex], 0);
 	if (err)

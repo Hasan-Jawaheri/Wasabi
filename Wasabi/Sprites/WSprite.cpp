@@ -148,7 +148,7 @@ WGeometry* WSpriteManager::CreateSpriteGeometry() const {
 	vb[3].uv = WVector2(1, 1);
 
 	SpriteGeometry* geometry = new SpriteGeometry(m_app);
-	WError err = geometry->CreateFromData(vb, num_verts, nullptr, 0, true);
+	WError err = geometry->CreateFromData(vb, num_verts, nullptr, 0, W_GEOMETRY_CREATE_VB_DYNAMIC);
 	if (!err) {
 		geometry->RemoveReference();
 		return nullptr;
@@ -328,10 +328,11 @@ void WSprite::Render(WRenderTarget* rt) {
 				vb[i].pos = WVector2(pos.x, pos.y);
 				vb[i].pos = vb[i].pos * 2.0f / screenDimensions - WVector2(1, 1);
 			}
+
+			geometry->UnmapVertexBuffer();
+
 			m_geometryChanged = false;
 		}
-
-		geometry->UnmapVertexBuffer();
 	}
 
 	geometry->Draw(rt);

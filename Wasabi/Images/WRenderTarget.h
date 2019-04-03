@@ -37,8 +37,9 @@ class WRenderTarget : public WBase {
 	 */
 	virtual std::string GetTypeName() const;
 
+protected:
+	virtual ~WRenderTarget();
 	WRenderTarget(Wasabi* const app, unsigned int ID = 0);
-	~WRenderTarget();
 
 public:
 

@@ -325,14 +325,11 @@ WError WObject::InitInstancing(unsigned int maxInstances) {
 		texWidth *= 2;
 
 	float* texData = new float[texWidth * texWidth * 4];
-	m_instanceTexture = new WImage(m_app);
-	WError ret = m_instanceTexture->CreateFromPixelsArray(texData, texWidth, texWidth, VK_FORMAT_R32G32B32A32_SFLOAT, false, true);
+	m_instanceTexture = m_app->ImageManager->CreateImage(texData, texWidth, texWidth, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
 	W_SAFE_DELETE_ARRAY(texData);
 
-	if (!ret) {
-		W_SAFE_REMOVEREF(m_instanceTexture);
-		return ret;
-	}
+	if (!m_instanceTexture)
+		return WError(W_OUTOFMEMORY);
 
 	m_instancesDirty = true;
 	m_maxInstances = maxInstances;

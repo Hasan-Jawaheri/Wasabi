@@ -33,8 +33,9 @@ class WMaterial : public WBase, public WFileAsset {
 	 */
 	virtual std::string GetTypeName() const;
 
+protected:
 	WMaterial(class Wasabi* const app, unsigned int ID = 0);
-	~WMaterial();
+	virtual ~WMaterial();
 
 	/**
 	 * Builds the material's resources to be used for a certain effect. The

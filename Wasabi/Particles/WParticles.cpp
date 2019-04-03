@@ -384,7 +384,7 @@ WError WParticles::Create(class WEffect* effect, unsigned int max_particles, WPa
 	//m_material->SetEffect(effect);
 
 	WParticlesVertex* vertices = new WParticlesVertex[max_particles];
-	WError err = m_geometry->CreateFromData(vertices, max_particles, nullptr, 0, true);
+	WError err = m_geometry->CreateFromData(vertices, max_particles, nullptr, 0, W_GEOMETRY_CREATE_VB_DYNAMIC | W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME);
 	delete[] vertices;
 
 	if (err != W_SUCCEEDED) {

@@ -1,19 +1,19 @@
 #include "Animation.hpp"
-#include <Renderers/ForwardRenderer/WForwardRenderStage.h>
 
 AnimationDemo::AnimationDemo(Wasabi* const app) : WTestState(app) {
+	character = nullptr;
 }
 
 void AnimationDemo::Load() {
 	WGeometry* geometry = new WGeometry(m_app);
 	geometry->LoadFromHXM("Media/dante.HXM");
 
-	WImage* texture = new WImage(m_app);
-	texture->Load("Media/dante.bmp");
+	WImage* texture = m_app->ImageManager->CreateImage("Media/dante.bmp");
 
 	character = m_app->ObjectManager->CreateObject();
 	character->SetGeometry(geometry);
-	character->GetMaterial()->SetVariableColor("color", WColor(1, 0, 0));
+	//character->GetMaterial()->SetVariableColor("color", WColor(1, 0, 0));
+	character->GetMaterial()->SetTexture("diffuseTexture", texture);
 
 	// don't need these anymore, character has the reference to them
 	geometry->RemoveReference();
@@ -39,5 +39,5 @@ void AnimationDemo::Update(float fDeltaTime) {
 }
 
 void AnimationDemo::Cleanup() {
-	character->RemoveReference();
+	W_SAFE_REMOVEREF(character);
 }

@@ -30,14 +30,12 @@ SpritesDemo::SpritesDemo(Wasabi* const app) : WTestState(app) {
 void SpritesDemo::Load() {
 	WImage* img;
 
-	img = new WImage(m_app);
-	img->Load("Media/dummy.bmp");
+	img = m_app->ImageManager->CreateImage("Media/dummy.bmp");
 	m_sprites[0] = m_app->SpriteManager->CreateSprite(img);
 	img->RemoveReference();
 	m_sprites[0]->SetPriority(1);
 
-	img = new WImage(m_app);
-	img->Load("Media/checker.bmp");
+	img = m_app->ImageManager->CreateImage("Media/checker.bmp");
 	m_sprites[1] = m_app->SpriteManager->CreateSprite(img);
 	m_sprites[1]->SetPosition(WVector2(100, 100));
 	m_sprites[1]->GetMaterial()->SetVariableFloat("alpha", 0.5f);
