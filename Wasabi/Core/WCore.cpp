@@ -156,6 +156,9 @@ Wasabi::~Wasabi() {
 }
 
 void Wasabi::_DestroyResources() {
+	if (m_vkDevice)
+		vkDeviceWaitIdle(m_vkDevice);
+
 	if (WindowAndInputComponent)
 		WindowAndInputComponent->Cleanup();
 	if (Renderer)

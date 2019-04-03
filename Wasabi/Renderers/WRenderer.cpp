@@ -236,6 +236,7 @@ WError WRenderer::SetRenderingStages(std::vector<WRenderStage*> stages) {
 	m_spritesRenderStageName = "";
 	m_textsRenderStageName = "";
 	m_pickingRenderStageName = "";
+	m_backbufferRenderStageName = "";
 
 	if (stages.size() > 0) {
 		// make sure the input has a sprites rendering stage, texts rendering stage and a picking stage
@@ -266,6 +267,8 @@ WError WRenderer::SetRenderingStages(std::vector<WRenderStage*> stages) {
 				m_textsRenderStageName = stages[i]->m_stageDescription.name;
 			if (stages[i]->m_stageDescription.flags & RENDER_STAGE_FLAG_PICKING_RENDER_STAGE)
 				m_pickingRenderStageName = stages[i]->m_stageDescription.name;
+			if (stages[i]->m_stageDescription.target == RENDER_STAGE_TARGET_BACK_BUFFER)
+				m_backbufferRenderStageName = stages[i]->m_stageDescription.name;
 
 			WError err = stages[i]->Initialize(m_renderStages, w, h);
 			if (!err) {

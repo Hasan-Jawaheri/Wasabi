@@ -22,11 +22,11 @@ void WMaterialsStore::AddEffect(WEffect* effect, unsigned int bindingSet) {
 void WMaterialsStore::RemoveEffect(WEffect* effect) {
 	auto it = m_materialMap.find(effect);
 	if (it != m_materialMap.end()) {
+		if (effect == m_defaultEffect)
+			m_defaultEffect = nullptr;
 		effect->RemoveReference();
 		it->second->RemoveReference();
 		m_materialMap.erase(effect);
-		if (effect == m_defaultEffect)
-			m_defaultEffect = nullptr;
 	}
 }
 
@@ -39,6 +39,8 @@ void WMaterialsStore::RemoveEffect(WMaterial* material) {
 		}
 	}
 	for (auto it = effectsToRemove.begin(); it != effectsToRemove.end(); it++) {
+		if (*it == m_defaultEffect)
+			m_defaultEffect = nullptr;
 		(*it)->RemoveReference();
 		m_materialMap.erase(*it);
 	}
@@ -50,6 +52,7 @@ void WMaterialsStore::ClearEffects() {
 		it->second->RemoveReference();
 	}
 	m_materialMap.clear();
+	m_defaultEffect = nullptr;
 }
 
 WEffect* WMaterialsStore::GetDefaultEffect() const {

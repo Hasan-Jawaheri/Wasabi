@@ -89,14 +89,14 @@ public:
 };
 
 class LinesRenderStage : public WRenderStage {
-	class WMaterial* m_linesMaterial;
+	class WEffect* m_linesFX;
 
 public:
 	LinesRenderStage(class Wasabi* const app) : WRenderStage(app) {
 		m_stageDescription.name = __func__;
 		m_stageDescription.target = RENDER_STAGE_TARGET_BACK_BUFFER;
 		m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
-		m_linesMaterial = nullptr;
+		m_linesFX = nullptr;
 	}
 
 	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
@@ -104,34 +104,43 @@ public:
 		if (!err)
 			return err;
 
-		WEffect* fx = new WEffect(m_app);
+		m_linesFX = new WEffect(m_app);
 		LinesVS* vs = new LinesVS(m_app);
 		vs->Load();
 		LinesPS* ps = new LinesPS(m_app);
 		ps->Load();
-		fx->BindShader(vs);
-		fx->BindShader(ps);
-		fx->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
-		fx->BuildPipeline(m_renderTarget);
-		m_linesMaterial = fx->CreateMaterial();
+		m_linesFX->BindShader(vs);
+		m_linesFX->BindShader(ps);
+		m_linesFX->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+		m_linesFX->BuildPipeline(m_renderTarget);
 		W_SAFE_REMOVEREF(ps);
 		W_SAFE_REMOVEREF(vs);
-		W_SAFE_REMOVEREF(fx);
 
 		return WError(W_SUCCEEDED);
 	}
 
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter) {
 		WCamera* cam = rt->GetCamera();
-		m_linesMaterial->SetVariableMatrix("proj", cam->GetProjectionMatrix());
-		m_linesMaterial->SetVariableMatrix("view", cam->GetViewMatrix());
-		m_linesMaterial->Bind(rt);
-		((BulletDebugger*)m_app)->m_linesDrawer->Render(rt, nullptr, false);
+
+		m_linesFX->Bind(rt);
+
+		uint numObjects = m_app->ObjectManager->GetEntitiesCount();
+		for (uint i = 0; i < numObjects; i++) {
+			WObject* obj = m_app->ObjectManager->GetEntityByIndex(i);
+			WMaterial* material = obj->GetMaterial(m_linesFX);
+			if (!material) {
+				obj->AddEffect(m_linesFX);
+				material = obj->GetMaterial(m_linesFX);
+			}
+			material->SetVariableMatrix("proj", cam->GetProjectionMatrix());
+			material->SetVariableMatrix("view", cam->GetViewMatrix());
+			obj->Render(rt, material, false);
+		}
 		return WError(W_SUCCEEDED);
 	}
 
 	virtual void Cleanup() {
-		W_SAFE_REMOVEREF(m_linesMaterial);
+		W_SAFE_REMOVEREF(m_linesFX);
 	}
 
 	virtual WError Resize(uint width, uint height) {
@@ -207,6 +216,12 @@ WError BulletDebugger::Setup() {
 	if (!err)
 		WindowAndInputComponent->ShowErrorMessage(err.AsString());
 	else {
+		Renderer->SetRenderingStages({
+			new LinesRenderStage(this),
+			new WSpritesRenderStage(this),
+			new WTextsRenderStage(this),
+		});
+
 		m_linesDrawer = ObjectManager->CreateObject();
 
 		WGeometry* geometry = new WLinesGeometry(this);
@@ -215,12 +230,6 @@ WError BulletDebugger::Setup() {
 		free(vb);
 		m_linesDrawer->SetGeometry(geometry);
 		W_SAFE_REMOVEREF(geometry);
-
-		Renderer->SetRenderingStages({
-			new LinesRenderStage(this),
-			new WSpritesRenderStage(this),
-			new WTextsRenderStage(this),
-		});
 	}
 	return err;
 }
