@@ -72,9 +72,12 @@ struct W_RIGID_BODY_CREATE_INFO {
   * This is an interface for implementing a rigid body.
   */
 class WRigidBody: public WBase, public WOrientation, public WFileAsset {
-public:
-	WRigidBody(class Wasabi* const app, unsigned int ID = 0) : WBase(app, ID) {}
+protected:
 	virtual ~WRigidBody() {}
+
+public:
+
+	WRigidBody(class Wasabi* const app, unsigned int ID = 0) : WBase(app, ID) {}
 
 	/**
 	 * Must be implemented to initialize the rigid body.

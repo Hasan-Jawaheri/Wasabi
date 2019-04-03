@@ -238,9 +238,12 @@ struct W_SKELETAL_SUB_ANIMATION : public W_SUB_ANIMATION {
  * WSkeletalAnimation.h.
  */
 class WSkeleton : public WAnimation {
+protected:
+	virtual ~WSkeleton();
+
 public:
+
 	WSkeleton(Wasabi* const app, unsigned int ID = 0);
-	~WSkeleton();
 
 	/**
 	 * Appends a keyframe to the frames of this animation.

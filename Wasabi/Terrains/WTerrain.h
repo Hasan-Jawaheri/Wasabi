@@ -22,9 +22,11 @@ class WTerrain : public WBase, public WOrientation {
 	 */
 	virtual std::string GetTypeName() const;
 
+protected:
+	virtual ~WTerrain();
+
 public:
 	WTerrain(class Wasabi* const app, unsigned int ID = 0);
-	~WTerrain();
 
 	/**
 	 * Initializes the terrain.

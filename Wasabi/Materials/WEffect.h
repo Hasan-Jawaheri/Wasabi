@@ -505,6 +505,7 @@ protected:
 	virtual ~WEffect();
 
 public:
+
 	WEffect(class Wasabi* const app, unsigned int ID = 0);
 
 	/**

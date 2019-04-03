@@ -44,6 +44,7 @@ class WSprite : public WBase, public WMaterialsStore {
 	 */
 	virtual std::string GetTypeName() const;
 
+protected:
 	WSprite(Wasabi* const app, unsigned int ID = 0);
 	~WSprite();
 

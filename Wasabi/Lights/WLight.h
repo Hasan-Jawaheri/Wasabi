@@ -44,10 +44,12 @@ class WLight : public WBase, public WOrientation, public WFileAsset {
 	 */
 	virtual std::string GetTypeName() const;
 
-public:
-	WLight(class Wasabi* const app, W_LIGHT_TYPE type, unsigned int ID = 0);
+protected:
+	virtual ~WLight();
 
-	~WLight();
+public:
+
+	WLight(class Wasabi* const app, W_LIGHT_TYPE type, unsigned int ID = 0);
 
 	/**
 	 * Sets the color of this light

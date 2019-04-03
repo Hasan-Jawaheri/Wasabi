@@ -63,9 +63,12 @@ protected:
 Sound class interface
 *********************************************************************/
 class WSound : public WBase, public WFileAsset {
+protected:
+	virtual ~WSound() {}
+
 public:
+
 	WSound(Wasabi* const app, unsigned int ID = 0) : WBase(app, ID) {}
-	~WSound() {}
 
 	virtual WError LoadWAV(std::string filename, uint buffer, bool bSaveData = false) = 0;
 	virtual void Play() = 0;

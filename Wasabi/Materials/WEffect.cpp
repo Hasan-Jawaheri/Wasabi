@@ -887,8 +887,6 @@ WError WEffect::SaveToStream(WFile* file, std::ostream& outputStream) {
 }
 
 WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream) {
-#if 0
-#endif
 	WRenderTarget* rt = m_app->Renderer->GetRenderTarget();
 	_DestroyPipeline();
 

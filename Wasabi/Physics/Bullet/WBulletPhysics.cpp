@@ -42,13 +42,11 @@ WError WBulletPhysics::Initialize(bool debug) {
 
 	SetGravity(0, -10, 0);
 
-#if 0
 	if (debug) {
 		m_debugger = new BulletDebugger(this, (uint)m_app->engineParams["maxBulletDebugLines"]);
 		m_dynamicsWorld->setDebugDrawer(m_debugger);
 		m_debugger->m_thread = std::thread(BulletDebugger::Thread, m_debugger);
 	}
-#endif
 
 	return WError(W_SUCCEEDED);
 }

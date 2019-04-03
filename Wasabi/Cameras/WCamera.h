@@ -37,9 +37,12 @@ class WCamera : public WBase, public WOrientation {
 	 */
 	virtual std::string GetTypeName() const;
 
+protected:
+	virtual ~WCamera();
+
 public:
+
 	WCamera(Wasabi* const app, unsigned int ID = 0);
-	~WCamera();
 
 	/**
 	 * This is a callback (inherited from WOrientation) to inform this object of

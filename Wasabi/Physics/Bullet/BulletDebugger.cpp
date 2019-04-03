@@ -1,14 +1,15 @@
-#if 0
-
 #include "BulletDebugger.h"
 #include "../../Cameras/WCamera.h"
 #include "../../WindowAndInput/WWindowAndInputComponent.h"
 #include "../../Texts/WText.h"
 #include "../../Renderers/ForwardRenderer/WForwardRenderer.h"
+#include "../../Renderers/Common/CommonRenderStages.h"
+#include "../../Renderers/Common/WSpritesRenderStage.h"
 #include "../../Objects/WObject.h"
 #include "../../Geometries/WGeometry.h"
 #include "../../Materials/WMaterial.h"
 #include "../../Materials/WEffect.h"
+#include "../../Images/WRenderTarget.h"
 
 struct LineVertex {
 	WVector3 pos;
@@ -26,9 +27,9 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
 		}) };
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gProjection"), // projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gView"), // view
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerFrame", {
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "proj"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
 			}),
 		};
 		LoadCodeGLSL("\
@@ -39,12 +40,12 @@ public:
 			layout(location = 1) in vec4 inCol;\n\
 			layout(location = 0) out vec4 outCol;\n\
 			layout(binding = 0) uniform UBO {\n\
-				mat4x4 gProjection;\n\
-				mat4x4 gView;\n\
-			} ubo;\n\
+				mat4x4 proj;\n\
+				mat4x4 view;\n\
+			} uboPerFrame;\n\
 			void main() {\n\
 				outCol = inCol;\n\
-				gl_Position = ubo.gProjection * ubo.gView * vec4(inPos.xyz, 1.0);\n\
+				gl_Position = uboPerFrame.proj * uboPerFrame.view * vec4(inPos.xyz, 1.0);\n\
 			}"
 		);
 	}
@@ -84,6 +85,57 @@ public:
 	}
 	virtual size_t GetVertexDescriptionSize(unsigned int layout_index = 0) const {
 		return sizeof(LineVertex);
+	}
+};
+
+class LinesRenderStage : public WRenderStage {
+	class WMaterial* m_linesMaterial;
+
+public:
+	LinesRenderStage(class Wasabi* const app) : WRenderStage(app) {
+		m_stageDescription.name = __func__;
+		m_stageDescription.target = RENDER_STAGE_TARGET_BACK_BUFFER;
+		m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
+		m_linesMaterial = nullptr;
+	}
+
+	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+		WError err = WRenderStage::Initialize(previousStages, width, height);
+		if (!err)
+			return err;
+
+		WEffect* fx = new WEffect(m_app);
+		LinesVS* vs = new LinesVS(m_app);
+		vs->Load();
+		LinesPS* ps = new LinesPS(m_app);
+		ps->Load();
+		fx->BindShader(vs);
+		fx->BindShader(ps);
+		fx->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+		fx->BuildPipeline(m_renderTarget);
+		m_linesMaterial = fx->CreateMaterial();
+		W_SAFE_REMOVEREF(ps);
+		W_SAFE_REMOVEREF(vs);
+		W_SAFE_REMOVEREF(fx);
+
+		return WError(W_SUCCEEDED);
+	}
+
+	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter) {
+		WCamera* cam = rt->GetCamera();
+		m_linesMaterial->SetVariableMatrix("proj", cam->GetProjectionMatrix());
+		m_linesMaterial->SetVariableMatrix("view", cam->GetViewMatrix());
+		m_linesMaterial->Bind(rt);
+		((BulletDebugger*)m_app)->m_linesDrawer->Render(rt, nullptr, false);
+		return WError(W_SUCCEEDED);
+	}
+
+	virtual void Cleanup() {
+		W_SAFE_REMOVEREF(m_linesMaterial);
+	}
+
+	virtual WError Resize(uint width, uint height) {
+		return WRenderStage::Resize(width, height);
 	}
 };
 
@@ -155,30 +207,20 @@ WError BulletDebugger::Setup() {
 	if (!err)
 		WindowAndInputComponent->ShowErrorMessage(err.AsString());
 	else {
-		m_linesDrawer = new WObject(this);
-		WEffect* fx = new WEffect(this);
-		LinesVS* vs = new LinesVS(this);
-		vs->Load();
-		LinesPS* ps = new LinesPS(this);
-		ps->Load();
-		fx->BindShader(vs);
-		fx->BindShader(ps);
-		fx->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
-		fx->BuildPipeline(Renderer->GetDefaultRenderTarget());
-		WMaterial* mat = new WMaterial(this);
-		mat->SetEffect(fx);
-		m_linesDrawer->SetMaterial(mat);
-		W_SAFE_REMOVEREF(ps);
-		W_SAFE_REMOVEREF(vs);
-		W_SAFE_REMOVEREF(fx);
-		W_SAFE_REMOVEREF(mat);
+		m_linesDrawer = ObjectManager->CreateObject();
 
 		WGeometry* geometry = new WLinesGeometry(this);
 		void* vb = calloc(m_maxLines * 2, geometry->GetVertexDescriptionSize());
-		geometry->CreateFromData(vb, m_maxLines * 2, nullptr, 0, true);
+		geometry->CreateFromData(vb, m_maxLines * 2, nullptr, 0, W_GEOMETRY_CREATE_VB_DYNAMIC | W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME);
 		free(vb);
 		m_linesDrawer->SetGeometry(geometry);
 		W_SAFE_REMOVEREF(geometry);
+
+		Renderer->SetRenderingStages({
+			new LinesRenderStage(this),
+			new WSpritesRenderStage(this),
+			new WTextsRenderStage(this),
+		});
 	}
 	return err;
 }
@@ -196,7 +238,7 @@ bool BulletDebugger::Loop(float fDeltaTime) {
 	m_linesLock.unlock();
 
 	LineVertex* vb;
-	m_linesDrawer->GetGeometry()->MapVertexBuffer((void**)&vb);
+	m_linesDrawer->GetGeometry()->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
 	for (unsigned int i = 0; i < m_maxLines*2; i += 2) {
 		unsigned int lineIndex = i / 2;
 		if (lineIndex < curLines.size()) {
@@ -211,6 +253,7 @@ bool BulletDebugger::Loop(float fDeltaTime) {
 }
 
 void BulletDebugger::Cleanup() {
+	W_SAFE_REMOVEREF(m_linesDrawer);
 }
 
 void BulletDebugger::drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
@@ -260,5 +303,3 @@ void BulletDebugger::Thread(void* debugger_ptr) {
 	BulletDebugger* debugger = (BulletDebugger*)debugger_ptr;
 	RunWasabi(debugger);
 }
-
-#endif

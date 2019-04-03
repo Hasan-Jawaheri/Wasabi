@@ -153,9 +153,12 @@ class WParticles : public WBase, public WOrientation {
 	 */
 	virtual std::string GetTypeName() const;
 
+protected:
+	virtual ~WParticles();
+
 public:
+
 	WParticles(class Wasabi* const app, unsigned int ID = 0);
-	~WParticles();
 
 	/**
 	 * Retrieves the behavior object for this particle system.

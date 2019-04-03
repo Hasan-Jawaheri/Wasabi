@@ -127,8 +127,9 @@ class WObject : public WBase, public WOrientation, public WFileAsset, public WMa
 	 */
 	virtual std::string GetTypeName() const;
 
+protected:
 	WObject(Wasabi* const app, unsigned int ID = 0);
-	~WObject();
+	virtual ~WObject();
 
 public:
 

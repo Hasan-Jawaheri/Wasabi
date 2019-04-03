@@ -75,9 +75,12 @@ class WAnimation : public WBase, public WFileAsset {
 	 */
 	std::string GetTypeName() const;
 
+protected:
+	virtual ~WAnimation();
+
 public:
+
 	WAnimation(class Wasabi* const app, unsigned int ID = 0);
-	~WAnimation();
 
 	/**
 	 * Steps the state of the playing (or looping) subanimations forward. This is

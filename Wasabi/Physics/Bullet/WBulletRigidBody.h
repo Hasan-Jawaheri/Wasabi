@@ -29,9 +29,12 @@ class WBulletRigidBody : public WRigidBody {
 	 */
 	virtual std::string GetTypeName() const;
 
-public:
-	WBulletRigidBody(class Wasabi* const app, unsigned int ID = 0);
+protected:
 	virtual ~WBulletRigidBody();
+
+public:
+
+	WBulletRigidBody(class Wasabi* const app, unsigned int ID = 0);
 
 	virtual WError Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveInfo = false);
 

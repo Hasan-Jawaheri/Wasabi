@@ -59,11 +59,14 @@ private:
 Sound class
 *********************************************************************/
 class WOpenALSound : public WSound {
-public:
-	WOpenALSound(class Wasabi* const app, uint ID = 0);
-	~WOpenALSound();
-
 	std::string GetTypeName() const;
+
+protected:
+	virtual ~WOpenALSound();
+
+public:
+	
+	WOpenALSound(class Wasabi* const app, uint ID = 0);
 
 	virtual bool Valid() const;
 	virtual WError LoadWAV(std::string Filename, uint buffer, bool bSaveData = false);
