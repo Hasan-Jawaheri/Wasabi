@@ -253,7 +253,7 @@ bool BulletDebugger::Loop(float fDeltaTime) {
 		} else
 			memset(&vb[i], 0, sizeof(LineVertex) * 2);
 	}
-	m_linesDrawer->GetGeometry()->UnmapVertexBuffer();
+	m_linesDrawer->GetGeometry()->UnmapVertexBuffer(false);
 
 	return true;
 }

@@ -941,9 +941,10 @@ WError WGeometry::MapAnimationBuffer(void** const ab, W_MAP_FLAGS mapFlags) {
 	return WError(W_SUCCEEDED);
 }
 
-void WGeometry::UnmapVertexBuffer() {
+void WGeometry::UnmapVertexBuffer(bool recalculateBoundingBox) {
 	if (m_mappedVertexBufferForWrite) {
-		_CalcMinMax(m_mappedVertexBufferForWrite, m_numVertices);
+		if (recalculateBoundingBox)
+			_CalcMinMax(m_mappedVertexBufferForWrite, m_numVertices);
 		m_mappedVertexBufferForWrite = nullptr;
 	}
 

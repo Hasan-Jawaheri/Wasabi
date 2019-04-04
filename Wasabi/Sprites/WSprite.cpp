@@ -329,7 +329,7 @@ void WSprite::Render(WRenderTarget* rt) {
 				vb[i].pos = vb[i].pos * 2.0f / screenDimensions - WVector2(1, 1);
 			}
 
-			geometry->UnmapVertexBuffer();
+			geometry->UnmapVertexBuffer(false);
 
 			m_geometryChanged = false;
 		}

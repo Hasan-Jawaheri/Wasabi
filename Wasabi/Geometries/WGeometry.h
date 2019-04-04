@@ -500,8 +500,10 @@ public:
 	 * Unmap vertices from a previous MapVertexBuffer() call. If
 	 * MapVertexBuffer() was called with bReadOnly == false, the this will apply
 	 * the changes to the geometry.
+	 * @param recalculateBoundingBox Whether or not to recalculate the geometry's
+	 *                               bounding box information
 	 */
-	void UnmapVertexBuffer();
+	void UnmapVertexBuffer(bool recalculateBoundingBox = true);
 
 	/**
 	 * Unmap indices from a previous MapIndexBuffer() call. If MapIndexBuffer()
