@@ -6,9 +6,9 @@ RenderTargetTextureDemo::RenderTargetTextureDemo(Wasabi* const app) : WTestState
 }
 
 void RenderTargetTextureDemo::Load() {
-	o = m_app->ObjectManager->CreateObject();
-	o2 = m_app->ObjectManager->CreateObject();
-	o3 = m_app->ObjectManager->CreateObject();
+	o = m_app->ObjectManager->CreateObject(1);
+	o2 = m_app->ObjectManager->CreateObject(2);
+	o3 = m_app->ObjectManager->CreateObject(3);
 
 	WGeometry* g = new WGeometry(m_app);
 	if (g->CreateSphere(1, 15, 15)) {
