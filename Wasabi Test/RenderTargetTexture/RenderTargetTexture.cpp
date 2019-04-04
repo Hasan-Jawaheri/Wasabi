@@ -1,15 +1,14 @@
-#if 0
-
 #include "RenderTargetTexture.hpp"
+#include <Renderers/ForwardRenderer/WForwardRenderStage.h>
 
 RenderTargetTextureDemo::RenderTargetTextureDemo(Wasabi* const app) : WTestState(app) {
 	rt = nullptr;
 }
 
 void RenderTargetTextureDemo::Load() {
-	o = new WObject(m_app);
-	o2 = new WObject(m_app, 2);
-	o3 = new WObject(m_app);
+	o = m_app->ObjectManager->CreateObject();
+	o2 = m_app->ObjectManager->CreateObject();
+	o3 = m_app->ObjectManager->CreateObject();
 
 	WGeometry* g = new WGeometry(m_app);
 	if (g->CreateSphere(1, 15, 15)) {
@@ -36,8 +35,8 @@ void RenderTargetTextureDemo::Load() {
 	m_app->TextComponent->CreateTextFont(2, "arial");
 
 	WImage* img = new WImage(m_app);
-	((WFRMaterial*)o2->GetMaterial())->Texture(img);
-	img->Load("Media/dummy.bmp", true);
+	o2->GetMaterial()->SetTexture("diffuseTexture", img);
+	img->Load("Media/dummy.bmp");
 	img->RemoveReference();
 
 	l = new WPointLight(m_app);
@@ -47,14 +46,12 @@ void RenderTargetTextureDemo::Load() {
 	l->SetIntensity(4.0f);
 
 	rtImg = new WImage(m_app);
-	char* pixels = new char[640 * 480 * 4 * 4];
-	rtImg->CreateFromPixelsArray(pixels, 640, 480, false, 4, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
-	delete[] pixels;
-	rt = new WRenderTarget(m_app);
+	rtImg->CreateFromPixelsArray(nullptr, 640, 480, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);
+	rt = m_app->RenderTargetManager->CreateImmediateRenderTarget();
 	rt->SetName("Falla RT");
 	rt->Create(640, 480, rtImg);
 	rt->SetClearColor(WColor(0.6f, 0, 0));
-	((WFRMaterial*)o->GetMaterial())->Texture(rtImg);
+	o->GetMaterial()->SetTexture("diffuseTexture", rtImg);
 }
 
 void RenderTargetTextureDemo::Update(float fDeltaTime) {
@@ -73,8 +70,9 @@ void RenderTargetTextureDemo::Update(float fDeltaTime) {
 
 	if (rt) {
 		m_app->ObjectManager->GetEntity("plain")->Hide();
-		m_app->Renderer->Render(rt, RENDER_FILTER_OBJECTS);
-		rt->Submit();
+		rt->Begin();
+		m_app->Renderer->GetRenderStage("WForwardRenderStage")->Render(m_app->Renderer, rt, RENDER_FILTER_OBJECTS);
+		rt->End();
 		m_app->ObjectManager->GetEntity("plain")->Show();
 	}
 
@@ -92,6 +90,3 @@ void RenderTargetTextureDemo::Cleanup() {
 	rt->RemoveReference();
 	rtImg->RemoveReference();
 }
-
-
-#endif

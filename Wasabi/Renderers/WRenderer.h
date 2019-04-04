@@ -132,6 +132,11 @@ public:
 	std::string GetTextsRenderStageName() const;
 
 	/**
+	 * @return The name of the particles render stage
+	 */
+	std::string GetParticlesRenderStageName() const;
+
+	/**
 	 * @return The name of the render stage to use its render target camera for picking
 	 */
 	std::string GetPickingRenderStageName() const;
@@ -204,6 +209,8 @@ protected:
 	std::string m_spritesRenderStageName;
 	/** Name of the currently set render stage for texts */
 	std::string m_textsRenderStageName;
+	/** Name of the currently set render stage for particles */
+	std::string m_particlesRenderStageName;
 	/** Name of the currently set render stage for picking objects */
 	std::string m_pickingRenderStageName;
 

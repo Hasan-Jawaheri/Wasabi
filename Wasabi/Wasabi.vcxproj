@@ -49,7 +49,8 @@
     <ClCompile Include="Physics\Bullet\WBulletRigidBody.cpp" />
     <ClCompile Include="Physics\Havok\WHavokPhysics.cpp" />
     <ClCompile Include="Physics\WRigidBody.cpp" />
-    <ClCompile Include="Renderers\Common\CommonRenderStages.cpp" />
+    <ClCompile Include="Renderers\Common\WTextRenderStage.cpp" />
+    <ClCompile Include="Renderers\Common\WParticlesRenderStage.cpp" />
     <ClCompile Include="Renderers\Common\WSpritesRenderStage.cpp" />
     <ClCompile Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.cpp" />
     <ClCompile Include="Renderers\DeferredRenderer\WDeferredRenderer.cpp" />
@@ -101,7 +102,8 @@
     <ClInclude Include="Physics\Havok\WHavokPhysics.h" />
     <ClInclude Include="Physics\WPhysicsComponent.h" />
     <ClInclude Include="Physics\WRigidBody.h" />
-    <ClInclude Include="Renderers\Common\CommonRenderStages.h" />
+    <ClInclude Include="Renderers\Common\WTextRenderStage.h" />
+    <ClInclude Include="Renderers\Common\WParticlesRenderStage.h" />
     <ClInclude Include="Renderers\Common\WSpritesRenderStage.h" />
     <ClInclude Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.h" />
     <ClInclude Include="Renderers\DeferredRenderer\WDeferredRenderer.h" />

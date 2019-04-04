@@ -3,7 +3,6 @@
 #include "../../WindowAndInput/WWindowAndInputComponent.h"
 #include "../../Texts/WText.h"
 #include "../../Renderers/ForwardRenderer/WForwardRenderer.h"
-#include "../../Renderers/Common/CommonRenderStages.h"
 #include "../../Renderers/Common/WSpritesRenderStage.h"
 #include "../../Objects/WObject.h"
 #include "../../Geometries/WGeometry.h"
@@ -218,8 +217,6 @@ WError BulletDebugger::Setup() {
 	else {
 		Renderer->SetRenderingStages({
 			new LinesRenderStage(this),
-			new WSpritesRenderStage(this),
-			new WTextsRenderStage(this),
 		});
 
 		m_linesDrawer = ObjectManager->CreateObject();

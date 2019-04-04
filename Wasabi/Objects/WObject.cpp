@@ -231,11 +231,7 @@ WObject::~WObject() {
 	W_SAFE_REMOVEREF(m_geometry);
 	W_SAFE_REMOVEREF(m_animation);
 
-	VkDevice device = m_app->GetVulkanDevice();
-	W_SAFE_REMOVEREF(m_instanceTexture);
-	for (int i = 0; i < m_instanceV.size(); i++)
-		delete m_instanceV[i];
-	m_instanceV.clear();
+	DestroyInstancingResources();
 
 	ClearEffects();
 
@@ -324,8 +320,9 @@ WError WObject::InitInstancing(unsigned int maxInstances) {
 	while (fExactWidth > texWidth)
 		texWidth *= 2;
 
+	// the instance buffer doesn't necessarily update every frame, so dont use W_IMAGE_CREATE_REWRITE_EVERY_FRAME
 	float* texData = new float[texWidth * texWidth * 4];
-	m_instanceTexture = m_app->ImageManager->CreateImage(texData, texWidth, texWidth, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
+	m_instanceTexture = m_app->ImageManager->CreateImage(texData, texWidth, texWidth, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);
 	W_SAFE_DELETE_ARRAY(texData);
 
 	if (!m_instanceTexture)

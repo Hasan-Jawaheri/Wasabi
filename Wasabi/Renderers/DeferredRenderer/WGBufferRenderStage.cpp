@@ -80,10 +80,10 @@ const bool WGBufferRenderStage::ObjectKey::operator< (const ObjectKey& that) con
 WGBufferRenderStage::WGBufferRenderStage(Wasabi* const app) : WRenderStage(app) {
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = RENDER_STAGE_TARGET_BUFFER;
-	m_stageDescription.depthOutput = WRenderStage::OUTPUT_IMAGE("GBufferDepth", VK_FORMAT_D16_UNORM, 1, 2, WColor(1.0f, 0.0f, 0.0f, 0.0f));
+	m_stageDescription.depthOutput = WRenderStage::OUTPUT_IMAGE("GBufferDepth", VK_FORMAT_D16_UNORM, WColor(1.0f, 0.0f, 0.0f, 0.0f));
 	m_stageDescription.colorOutputs = std::vector<WRenderStage::OUTPUT_IMAGE>({
-		WRenderStage::OUTPUT_IMAGE("GBufferDiffuse", VK_FORMAT_R8G8B8A8_UNORM, 4, 1, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
-		WRenderStage::OUTPUT_IMAGE("GBufferViewSpaceNormal", VK_FORMAT_R8G8B8A8_UNORM, 4, 1, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
+		WRenderStage::OUTPUT_IMAGE("GBufferDiffuse", VK_FORMAT_R8G8B8A8_UNORM, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
+		WRenderStage::OUTPUT_IMAGE("GBufferViewSpaceNormal", VK_FORMAT_R8G8B8A8_UNORM, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
 	});
 	m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
 
@@ -126,6 +126,36 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	return WError(W_SUCCEEDED);
 }
 
+void WGBufferRenderStage::OnObjectChange(class WObject* object, bool added) {
+	if (added) {
+		if (!object->GetDefaultEffect())
+			object->AddEffect(this->m_GBufferFX, 0);
+		ObjectKey key(object);
+		this->m_allObjects.insert(std::make_pair(key, object));
+	} else {
+		auto iter = this->m_allObjects.find(ObjectKey(object));
+		if (iter != this->m_allObjects.end())
+			this->m_allObjects.erase(iter);
+		else {
+			// the sprite seems to have changed and then removed before we cloud reindex it in the render loop
+			// need to find it manually now...
+			for (auto it = this->m_allObjects.begin(); it != this->m_allObjects.end(); it++) {
+				if (it->second == object) {
+					this->m_allObjects.erase(it);
+					break;
+				}
+			}
+		}
+	}
+}
+
+void WGBufferRenderStage::Cleanup() {
+	WRenderStage::Cleanup();
+	W_SAFE_REMOVEREF(m_GBufferFX);
+	W_SAFE_REMOVEREF(m_perFrameMaterial);
+	m_app->ObjectManager->RemoveChangeCallback(m_stageDescription.name);
+}
+
 WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
 	if (filter & RENDER_FILTER_OBJECTS) {
 		WCamera* cam = rt->GetCamera();
@@ -163,36 +193,6 @@ WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 	}
 
 	return WError(W_SUCCEEDED);
-}
-
-void WGBufferRenderStage::OnObjectChange(class WObject* object, bool added) {
-	if (added) {
-		if (!object->GetDefaultEffect())
-			object->AddEffect(this->m_GBufferFX, 0);
-		ObjectKey key(object);
-		this->m_allObjects.insert(std::make_pair(key, object));
-	} else {
-		auto iter = this->m_allObjects.find(ObjectKey(object));
-		if (iter != this->m_allObjects.end())
-			this->m_allObjects.erase(iter);
-		else {
-			// the sprite seems to have changed and then removed before we cloud reindex it in the render loop
-			// need to find it manually now...
-			for (auto it = this->m_allObjects.begin(); it != this->m_allObjects.end(); it++) {
-				if (it->second == object) {
-					this->m_allObjects.erase(it);
-					break;
-				}
-			}
-		}
-	}
-}
-
-void WGBufferRenderStage::Cleanup() {
-	WRenderStage::Cleanup();
-	W_SAFE_REMOVEREF(m_GBufferFX);
-	W_SAFE_REMOVEREF(m_perFrameMaterial);
-	m_app->ObjectManager->RemoveChangeCallback(m_stageDescription.name);
 }
 
 WError WGBufferRenderStage::Resize(uint width, uint height) {

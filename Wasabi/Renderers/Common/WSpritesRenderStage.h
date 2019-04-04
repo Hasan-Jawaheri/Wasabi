@@ -19,6 +19,8 @@ class WSpritesRenderStage : public WRenderStage {
 	/** Sorted container for all the sprites to be rendered by this stage */
 	std::map<SpriteKey, class WSprite*> m_allSprites;
 
+	void OnSpriteChange(class WSprite* s, bool added);
+
 public:
 	WSpritesRenderStage(class Wasabi* const app, bool backbuffer = false);
 

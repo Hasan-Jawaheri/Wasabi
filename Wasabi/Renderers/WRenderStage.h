@@ -12,7 +12,8 @@ enum W_RENDER_STAGE_FLAGS {
 	RENDER_STAGE_FLAG_NONE = 0,
 	RENDER_STAGE_FLAG_SPRITES_RENDER_STAGE = 1,
 	RENDER_STAGE_FLAG_TEXTS_RENDER_STAGE = 2,
-	RENDER_STAGE_FLAG_PICKING_RENDER_STAGE = 4,
+	RENDER_STAGE_FLAG_PARTICLES_RENDER_STAGE = 4,
+	RENDER_STAGE_FLAG_PICKING_RENDER_STAGE = 8,
 };
 
 class WRenderStage {
@@ -28,13 +29,11 @@ protected:
 		std::string name;
 		bool isFromPreviousStage;
 		VkFormat format;
-		uint numComponents;
-		size_t componentSize;
 		WColor clearColor;
 
 		OUTPUT_IMAGE();
 		OUTPUT_IMAGE(std::string name, WColor clear = WColor(-1000000.0f, -1.0f, -1.0f, -1.0f));
-		OUTPUT_IMAGE(std::string name, VkFormat format, uint numComponents, size_t componentSize, WColor clear = WColor(-1000000.0f, -1.0f, -1.0f, -1.0f));
+		OUTPUT_IMAGE(std::string name, VkFormat format, WColor clear = WColor(-1000000.0f, -1.0f, -1.0f, -1.0f));
 	};
 
 	struct STAGE_DESCRIPTION {

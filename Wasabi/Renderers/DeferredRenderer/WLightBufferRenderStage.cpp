@@ -169,7 +169,7 @@ WLightBufferRenderStage::WLightBufferRenderStage(Wasabi* const app) : WRenderSta
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = RENDER_STAGE_TARGET_BUFFER;
 	m_stageDescription.colorOutputs = std::vector<WRenderStage::OUTPUT_IMAGE>({
-		WRenderStage::OUTPUT_IMAGE("LightBuffer", VK_FORMAT_R8G8B8A8_UNORM, 4, 1, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
+		WRenderStage::OUTPUT_IMAGE("LightBuffer", VK_FORMAT_R8G8B8A8_UNORM, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
 	});
 }
 

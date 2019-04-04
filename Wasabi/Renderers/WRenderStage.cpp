@@ -13,12 +13,10 @@ WRenderStage::OUTPUT_IMAGE::OUTPUT_IMAGE(std::string n, WColor clear) {
 	clearColor = clear;
 }
 
-WRenderStage::OUTPUT_IMAGE::OUTPUT_IMAGE(std::string n, VkFormat f, uint c, size_t s, WColor clear) {
+WRenderStage::OUTPUT_IMAGE::OUTPUT_IMAGE(std::string n, VkFormat f, WColor clear) {
 	name = n;
 	isFromPreviousStage = false;
 	format = f;
-	numComponents = c;
-	componentSize = s;
 	clearColor = clear;
 }
 
@@ -114,8 +112,8 @@ WError WRenderStage::Resize(uint width, uint height) {
 					if (!status)
 						return status;
 				} else {
-					output = m_app->ImageManager->CreateImage(nullptr, width, height, desc.format, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);
-					if (!output)
+					m_colorOutputs[i] = m_app->ImageManager->CreateImage(nullptr, width, height, desc.format, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);
+					if (!m_colorOutputs[i])
 						return WError(W_OUTOFMEMORY);
 				}
 			}
@@ -152,11 +150,11 @@ WError WRenderStage::Resize(uint width, uint height) {
 	}
 
 	for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
-		if (abs(-1000000.0f - m_stageDescription.colorOutputs[i].clearColor.r) > W_EPSILON)
+		if (abs(-1000000.0f - m_stageDescription.colorOutputs[i].clearColor.r) > W_EPSILON && !m_stageDescription.colorOutputs[i].isFromPreviousStage)
 			m_renderTarget->SetClearColor(m_stageDescription.colorOutputs[i].clearColor, i);
 	}
-	if (abs(-1000000.0f - m_stageDescription.depthOutput.clearColor.r) > W_EPSILON)
-		m_renderTarget->SetClearColor(m_stageDescription.depthOutput.clearColor, m_stageDescription.colorOutputs.size());
+	if (abs(-1000000.0f - m_stageDescription.depthOutput.clearColor.r) > W_EPSILON && !m_stageDescription.depthOutput.isFromPreviousStage)
+		m_renderTarget->SetClearColor(m_stageDescription.depthOutput.clearColor, m_renderTarget->GetNumColorOutputs());
 
 	return WError(W_SUCCEEDED);
 }

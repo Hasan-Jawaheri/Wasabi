@@ -59,7 +59,7 @@ public:
 	class Wasabi* const m_app;
 
 	WManager(class Wasabi* const a) : m_app(a) { __bDbgDestructing = false; }
-	~WManager() {
+	virtual ~WManager() {
 		__bDbgDestructing = true;
 		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
 			for (unsigned int i = 0; i < m_entities[j].size(); i)

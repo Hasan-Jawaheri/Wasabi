@@ -153,6 +153,36 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	return WError(W_SUCCEEDED);
 }
 
+void WForwardRenderStage::OnObjectChange(class WObject* object, bool added) {
+	if (added) {
+		if (!object->GetDefaultEffect())
+			object->AddEffect(this->m_defaultFX, 0);
+		ObjectKey key(object);
+		this->m_allObjects.insert(std::make_pair(key, object));
+	} else {
+		auto iter = this->m_allObjects.find(ObjectKey(object));
+		if (iter != this->m_allObjects.end())
+			this->m_allObjects.erase(iter);
+		else {
+			// the sprite seems to have changed and then removed before we cloud reindex it in the render loop
+			// need to find it manually now...
+			for (auto it = this->m_allObjects.begin(); it != this->m_allObjects.end(); it++) {
+				if (it->second == object) {
+					this->m_allObjects.erase(it);
+					break;
+				}
+			}
+		}
+	}
+}
+
+void WForwardRenderStage::Cleanup() {
+	WRenderStage::Cleanup();
+	W_SAFE_REMOVEREF(m_defaultFX);
+	W_SAFE_REMOVEREF(m_perFrameMaterial);
+	m_app->ObjectManager->RemoveChangeCallback(m_stageDescription.name);
+}
+
 WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
 	if (filter & RENDER_FILTER_OBJECTS) {
 		WCamera* cam = rt->GetCamera();
@@ -210,36 +240,6 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 	}
 
 	return WError(W_SUCCEEDED);
-}
-
-void WForwardRenderStage::OnObjectChange(class WObject* object, bool added) {
-	if (added) {
-		if (!object->GetDefaultEffect())
-			object->AddEffect(this->m_defaultFX, 0);
-		ObjectKey key(object);
-		this->m_allObjects.insert(std::make_pair(key, object));
-	} else {
-		auto iter = this->m_allObjects.find(ObjectKey(object));
-		if (iter != this->m_allObjects.end())
-			this->m_allObjects.erase(iter);
-		else {
-			// the sprite seems to have changed and then removed before we cloud reindex it in the render loop
-			// need to find it manually now...
-			for (auto it = this->m_allObjects.begin(); it != this->m_allObjects.end(); it++) {
-				if (it->second == object) {
-					this->m_allObjects.erase(it);
-					break;
-				}
-			}
-		}
-	}
-}
-
-void WForwardRenderStage::Cleanup() {
-	WRenderStage::Cleanup();
-	W_SAFE_REMOVEREF(m_defaultFX);
-	W_SAFE_REMOVEREF(m_perFrameMaterial);
-	m_app->ObjectManager->RemoveChangeCallback(m_stageDescription.name);
 }
 
 WError WForwardRenderStage::Resize(uint width, uint height) {

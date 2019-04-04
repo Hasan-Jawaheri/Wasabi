@@ -34,9 +34,9 @@ public:
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerParticles", {
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "world"), // world
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "proj"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projectionMatrix"), // projection
 			}),
 		};
 	}
@@ -61,11 +61,7 @@ public:
 
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
-			W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerParticles", {
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "world"), // world
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "proj"), // projection
-			}),
+			ParticlesVS::GetBoundResources()[0],
 		};
 	}
 
@@ -85,7 +81,7 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "textureDiffuse"),
+			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "diffuseTexture"),
 		};
 		LoadCodeGLSL(
 			#include "Shaders/particles_ps.glsl"
@@ -174,19 +170,9 @@ WParticlesManager::WParticlesManager(class Wasabi* const app)
 }
 
 WParticlesManager::~WParticlesManager() {
-	for (auto it = m_particleEffects.begin(); it != m_particleEffects.end(); it++)
-		W_SAFE_REMOVEREF(it->second);
 	W_SAFE_REMOVEREF(m_vertexShader);
 	W_SAFE_REMOVEREF(m_geometryShader);
 	W_SAFE_REMOVEREF(m_fragmentShader);
-}
-
-void WParticlesManager::Render(WRenderTarget* rt) {
-	for (int i = 0; i < W_HASHTABLESIZE; i++) {
-		for (int j = 0; j < m_entities[i].size(); j++) {
-			m_entities[i][j]->Render(rt);
-		}
-	}
 }
 
 std::string WParticlesManager::GetTypeName() const {
@@ -194,7 +180,18 @@ std::string WParticlesManager::GetTypeName() const {
 }
 
 WError WParticlesManager::Load() {
-	unordered_map<W_DEFAULT_PARTICLE_EFFECT_TYPE, VkPipelineColorBlendAttachmentState> blend_states;
+	m_vertexShader = new ParticlesVS(m_app);
+	m_vertexShader->Load();
+	m_geometryShader = new ParticlesGS(m_app);
+	m_geometryShader->Load();
+	m_fragmentShader = new ParticlesPS(m_app);
+	m_fragmentShader->Load();
+
+	return WError(W_SUCCEEDED);
+}
+
+class WEffect* WParticlesManager::CreateParticlesEffect(W_DEFAULT_PARTICLE_EFFECT_TYPE type) const {
+	VkPipelineColorBlendAttachmentState blend_state = {};
 	VkPipelineRasterizationStateCreateInfo rasterization_state = {};
 	VkPipelineDepthStencilStateCreateInfo depth_stencil_state = {};
 
@@ -218,88 +215,70 @@ WError WParticlesManager::Load() {
 	rasterization_state.depthBiasEnable = VK_FALSE;
 	rasterization_state.lineWidth = 1.0f;
 
-	VkPipelineColorBlendAttachmentState blend_state = {};
 	blend_state.colorWriteMask = 0xff;
 	blend_state.blendEnable = VK_TRUE;
 	blend_state.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
-	blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-	blend_state.colorBlendOp = VK_BLEND_OP_ADD;
-	blend_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	blend_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	blend_state.alphaBlendOp = VK_BLEND_OP_ADD;
-	blend_states.insert(std::pair<W_DEFAULT_PARTICLE_EFFECT_TYPE, VkPipelineColorBlendAttachmentState>(
-		W_DEFAULT_PARTICLES_ADDITIVE, blend_state
-	));
-	
-	blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	blend_state.colorBlendOp = VK_BLEND_OP_ADD;
-	blend_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	blend_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	blend_state.alphaBlendOp = VK_BLEND_OP_ADD;
-	blend_states.insert(std::pair<W_DEFAULT_PARTICLE_EFFECT_TYPE, VkPipelineColorBlendAttachmentState>(
-		W_DEFAULT_PARTICLES_ALPHA, blend_state
-	));
-	
-	blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-	blend_state.colorBlendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
-	blend_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	blend_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	blend_state.alphaBlendOp = VK_BLEND_OP_ADD;
-	blend_states.insert(std::pair<W_DEFAULT_PARTICLE_EFFECT_TYPE, VkPipelineColorBlendAttachmentState>(
-		W_DEFAULT_PARTICLES_SUBTRACTIVE, blend_state
-	));
-
-	m_vertexShader = new ParticlesVS(m_app);
-	m_vertexShader->Load();
-	m_geometryShader = new ParticlesGS(m_app);
-	m_geometryShader->Load();
-	m_fragmentShader = new ParticlesPS(m_app);
-	m_fragmentShader->Load();
-
-	for (auto it = blend_states.begin(); it != blend_states.end(); it++) {
-		WEffect* fx = new WEffect(m_app);
-		m_particleEffects.insert(std::pair<W_DEFAULT_PARTICLE_EFFECT_TYPE, WEffect*>(it->first, fx));
-
-		WError werr = fx->BindShader(m_vertexShader);
-		if (!werr)
-			return werr;
-
-		werr = fx->BindShader(m_geometryShader);
-		if (!werr)
-			return werr;
-
-		werr = fx->BindShader(m_fragmentShader);
-		if (!werr)
-			return werr;
-
-		fx->SetBlendingState(it->second);
-		fx->SetDepthStencilState(depth_stencil_state);
-		fx->SetRasterizationState(rasterization_state);
-		fx->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
-
-		// ------------------------------------------------------------------------------------------------------------
-		// ------------------------------------------------------------------------------------------------------------
-		// ------------------------------------------------------------------------------------------------------------
-		// ------------------------------------------------------------------------------------------------------------
-		// ------------------------------------------------------------------------------------------------------------
-		//werr = fx->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
-		if (!werr)
-			return werr;
+	switch (type) {
+	case W_DEFAULT_PARTICLES_ADDITIVE:
+		blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+		blend_state.colorBlendOp = VK_BLEND_OP_ADD;
+		blend_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		blend_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		blend_state.alphaBlendOp = VK_BLEND_OP_ADD;
+		break;
+	case W_DEFAULT_PARTICLES_ALPHA:
+		blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		blend_state.colorBlendOp = VK_BLEND_OP_ADD;
+		blend_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		blend_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		blend_state.alphaBlendOp = VK_BLEND_OP_ADD;
+		break;
+	case W_DEFAULT_PARTICLES_SUBTRACTIVE:
+		blend_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		blend_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+		blend_state.colorBlendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
+		blend_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		blend_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		blend_state.alphaBlendOp = VK_BLEND_OP_ADD;
+		break;
 	}
 
-	return WError(W_SUCCEEDED);
+	WEffect* fx = new WEffect(m_app);
+
+	WError werr = fx->BindShader(m_vertexShader);
+	if (werr) {
+		werr = fx->BindShader(m_geometryShader);
+		if (werr) {
+			werr = fx->BindShader(m_fragmentShader);
+			if (werr) {
+				fx->SetBlendingState(blend_state);
+				fx->SetDepthStencilState(depth_stencil_state);
+				fx->SetRasterizationState(rasterization_state);
+				fx->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+				werr = fx->BuildPipeline(m_app->Renderer->GetRenderTarget(m_app->Renderer->GetParticlesRenderStageName()));
+			}
+		}
+	}
+
+	if (!werr)
+		W_SAFE_REMOVEREF(fx);
+
+	return fx;
 }
 
-class WEffect* WParticlesManager::GetDefaultEffect(W_DEFAULT_PARTICLE_EFFECT_TYPE type) const {
-	return m_particleEffects.find(type)->second;
+WParticles* WParticlesManager::CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE type, unsigned int maxParticles, WParticlesBehavior* behavior, unsigned int ID) const {
+	WParticles* particles = new WParticles(m_app, type, ID);
+	WError werr = particles->Create(maxParticles, behavior);
+	if (!werr)
+		W_SAFE_REMOVEREF(particles);
+	return particles;
 }
 
-
-WParticles::WParticles(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WParticles::WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE type, unsigned int ID) : WBase(app, ID) {
+	m_type = type;
 	m_hidden = false;
 	m_bAltered = true;
 	m_bFrustumCull = true;
@@ -308,13 +287,14 @@ WParticles::WParticles(class Wasabi* const app, unsigned int ID) : WBase(app, ID
 
 	m_behavior = nullptr;
 	m_geometry = nullptr;
-	m_material = nullptr;
 
 	app->ParticlesManager->AddEntity(this);
 }
 
 WParticles::~WParticles() {
 	_DestroyResources();
+
+	ClearEffects();
 
 	m_app->ParticlesManager->RemoveEntity(this);
 }
@@ -326,7 +306,6 @@ std::string WParticles::GetTypeName() const {
 void WParticles::_DestroyResources() {
 	W_SAFE_DELETE(m_behavior);
 	W_SAFE_REMOVEREF(m_geometry);
-	W_SAFE_REMOVEREF(m_material);
 }
 
 WParticlesBehavior* WParticles::GetBehavior() const {
@@ -334,7 +313,11 @@ WParticlesBehavior* WParticles::GetBehavior() const {
 }
 
 bool WParticles::Valid() const {
-	return m_behavior && m_geometry && m_material;
+	return m_behavior && m_geometry;
+}
+
+W_DEFAULT_PARTICLE_EFFECT_TYPE WParticles::GetType() const {
+	return m_type;
 }
 
 void WParticles::Show() {
@@ -366,70 +349,47 @@ bool WParticles::InCameraView(class WCamera* cam) {
 	return cam->CheckBoxInFrustum(pos, size);
 }
 
-WError WParticles::Create(class WEffect* effect, unsigned int max_particles, WParticlesBehavior* behavior) {
+WError WParticles::Create(unsigned int maxParticles, WParticlesBehavior* behavior) {
 	_DestroyResources();
-	if (max_particles == 0)
+	if (maxParticles == 0)
 		return WError(W_INVALIDPARAM);
 
 	m_geometry = new WParticlesGeometry(m_app);
-	// ------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------------------------------------
-	//m_material = new WMaterial(m_app);
-
-	// ------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------------------------------------
-	//m_material->SetEffect(effect);
-
-	WParticlesVertex* vertices = new WParticlesVertex[max_particles];
-	WError err = m_geometry->CreateFromData(vertices, max_particles, nullptr, 0, W_GEOMETRY_CREATE_VB_DYNAMIC | W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME);
-	delete[] vertices;
-
+	WError err = m_geometry->CreateFromData(nullptr, maxParticles, nullptr, 0, W_GEOMETRY_CREATE_VB_DYNAMIC | W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME);
 	if (err != W_SUCCEEDED) {
 		_DestroyResources();
 		return err;
 	}
 
-	m_behavior = behavior ? behavior : new WDefaultParticleBehavior(max_particles);
-	m_maxParticles = max_particles;
+	m_behavior = behavior ? behavior : new WDefaultParticleBehavior(maxParticles);
+	m_maxParticles = maxParticles;
 
 	return WError(W_SUCCEEDED);
 }
 
-void WParticles::Render(class WRenderTarget* const rt) {
-	if (Valid() && !m_hidden) {
-		WCamera* cam = rt->GetCamera();
-		WMatrix worldM = GetWorldMatrix();
-		if (m_bFrustumCull) {
-			if (!InCameraView(cam))
-				return;
-
-			m_material->SetVariableMatrix("world", GetWorldMatrix());
-			m_material->SetVariableMatrix("view", cam->GetViewMatrix());
-			m_material->SetVariableMatrix("proj", cam->GetProjectionMatrix());
-
-			// update the geometry
-			WParticlesVertex* vb;
-			m_geometry->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
-			float cur_time = m_app->Timer.GetElapsedTime();
-			unsigned int num_particles = m_behavior->UpdateAndCopyToVB(cur_time, vb, m_maxParticles);
-			m_geometry->UnmapVertexBuffer();
-
-			// ------------------------------------------------------------------------------------------------------------
-			// ------------------------------------------------------------------------------------------------------------
-			// ------------------------------------------------------------------------------------------------------------
-			// ------------------------------------------------------------------------------------------------------------
-			// ------------------------------------------------------------------------------------------------------------
-			// ------------------------------------------------------------------------------------------------------------m_material->Bind(rt);
-			m_geometry->Draw(rt, num_particles, 1, false);
-		}
-	}
+bool WParticles::WillRender(WRenderTarget* rt) {
+	if (Valid() && !m_hidden)
+		return !m_bFrustumCull || InCameraView(rt->GetCamera());
+	return false;
 }
 
-WError WParticles::SetTexture(class WImage* texture) {
-	return m_material->SetTexture(1, texture);
+void WParticles::Render(WRenderTarget* const rt, WMaterial* material) {
+	if (material) {
+		WCamera* cam = rt->GetCamera();
+		material->SetVariableMatrix("worldMatrix", GetWorldMatrix());
+		material->SetVariableMatrix("viewMatrix", cam->GetViewMatrix());
+		material->SetVariableMatrix("projectionMatrix", cam->GetProjectionMatrix());
+		material->Bind(rt);
+	}
+
+	// update the geometry
+	WParticlesVertex* vb;
+	m_geometry->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
+	float cur_time = m_app->Timer.GetElapsedTime();
+	unsigned int num_particles = m_behavior->UpdateAndCopyToVB(cur_time, vb, m_maxParticles);
+	m_geometry->UnmapVertexBuffer();
+
+	m_geometry->Draw(rt, num_particles, 1, false);
 }
 
 WMatrix WParticles::GetWorldMatrix() {

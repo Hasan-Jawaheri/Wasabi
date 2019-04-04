@@ -2,7 +2,8 @@
 #include "../WRenderer.h"
 #include "WForwardRenderStage.h"
 #include "../Common/WSpritesRenderStage.h"
-#include "../Common/CommonRenderStages.h"
+#include "../Common/WParticlesRenderStage.h"
+#include "../Common/WTextRenderStage.h"
 
 WForwardRenderer::WForwardRenderer(Wasabi* const app) : WRenderer(app) {
 	m_sampler = VK_NULL_HANDLE;
@@ -41,6 +42,7 @@ WError WForwardRenderer::Initiailize() {
 WError WForwardRenderer::LoadDependantResources() {
 	return SetRenderingStages({
 		new WForwardRenderStage(m_app),
+		new WParticlesRenderStage(m_app),
 		new WSpritesRenderStage(m_app),
 		new WTextsRenderStage(m_app),
 	});

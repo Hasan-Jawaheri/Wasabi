@@ -85,6 +85,13 @@ WGeometryManager::WGeometryManager(class Wasabi* const app) : WManager<WGeometry
 }
 
 WGeometryManager::~WGeometryManager() {
+	// we need to perform this here because some destructed geometries will need access to m_dynamicGeometries
+	// which will be destructed by the time WManager::~WManager() destroys the geometries this way
+	for (unsigned int j = 0; j < W_HASHTABLESIZE; j++) {
+		for (unsigned int i = 0; i < m_entities[j].size(); i)
+			m_entities[j][i]->RemoveReference();
+		m_entities[j].clear();
+	}
 }
 
 void WGeometryManager::UpdateDynamicGeometries(uint bufferIndex) const {
@@ -136,7 +143,9 @@ void WGeometry::_DestroyResources() {
 		it->second.clear();
 	}
 	m_pendingBufferedMaps.clear();
-	m_app->GeometryManager->m_dynamicGeometries.erase(this);
+	auto it = m_app->GeometryManager->m_dynamicGeometries.find(this);
+	if (it != m_app->GeometryManager->m_dynamicGeometries.end())
+		m_app->GeometryManager->m_dynamicGeometries.erase(it);
 
 	m_vertices.Destroy(m_app);
 	m_indices.Destroy(m_app);
@@ -220,7 +229,7 @@ void WGeometry::_CalcTangents(void* vb, unsigned int numVerts) {
 }
 
 WError WGeometry::CreateFromData(void* vb, unsigned int numVerts, void* ib, unsigned int numIndices, W_GEOMETRY_CREATE_FLAGS flags) {
-	if (numVerts <= 0 || !vb || (numIndices > 0 && !ib))
+	if (numVerts <= 0 || (numIndices > 0 && !ib))
 		return WError(W_INVALIDPARAM);
 
 	size_t vertexBufferSize = numVerts * GetVertexDescription(0).GetSize();
@@ -264,7 +273,8 @@ WError WGeometry::CreateFromData(void* vb, unsigned int numVerts, void* ib, unsi
 
 	m_numVertices = numVerts;
 	m_numIndices = numIndices;
-	_CalcMinMax(vb, numVerts);
+	if (vb)
+		_CalcMinMax(vb, numVerts);
 
 	return WError(W_SUCCEEDED);
 }

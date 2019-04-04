@@ -4,7 +4,8 @@
 #include "WLightBufferRenderStage.h"
 #include "WSceneCompositionRenderStage.h"
 #include "../Common/WSpritesRenderStage.h"
-#include "../Common/CommonRenderStages.h"
+#include "../Common/WTextRenderStage.h"
+#include "../Common/WParticlesRenderStage.h"
 
 WDeferredRenderer::WDeferredRenderer(Wasabi* const app) : WRenderer(app) {
 	m_sampler = VK_NULL_HANDLE;
@@ -47,6 +48,7 @@ WError WDeferredRenderer::LoadDependantResources() {
 		new WGBufferRenderStage(m_app),
 		new WLightBufferRenderStage(m_app),
 		new WSceneCompositionRenderStage(m_app),
+		new WParticlesRenderStage(m_app),
 		new WSpritesRenderStage(m_app),
 		new WTextsRenderStage(m_app),
 	});

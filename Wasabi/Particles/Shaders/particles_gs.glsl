@@ -14,9 +14,9 @@ layout(location = 0) out vec2 outUV;
 layout(location = 1) out float outAlpha;
 
 layout(binding = 0) uniform UBOPerParticles {
-	mat4 world;
-	mat4 view;
-	mat4 proj;
+	mat4 worldMatrix;
+	mat4 viewMatrix;
+	mat4 projMatrix;
 } uboPerParticles;
 
 void main() {
@@ -29,23 +29,23 @@ void main() {
 	// pass-thru
 	outAlpha = gs_in[0].alpha;
 
-	gl_Position = uboPerParticles.view * vec4(inPosW.xyz + vec3(-sizeFlat,  0.0, sizeFlat), 1.0);
-	gl_Position = uboPerParticles.proj * vec4(gl_Position + vec4(-sizeBillboard, sizeBillboard, 0.0, 1.0));
+	gl_Position = uboPerParticles.viewMatrix * vec4(inPosW.xyz + vec3(-sizeFlat,  0.0, sizeFlat), 1.0);
+	gl_Position = uboPerParticles.projMatrix * vec4(gl_Position + vec4(-sizeBillboard, sizeBillboard, 0.0, 1.0));
 	outUV = vec2(0.0, 0.0);
     EmitVertex();
 
-	gl_Position = uboPerParticles.view * vec4(inPosW.xyz + vec3(-sizeFlat, 0.0, -sizeFlat), 1.0);
-	gl_Position = uboPerParticles.proj * vec4(gl_Position + vec4(-sizeBillboard, -sizeBillboard, 0.0, 1.0));
+	gl_Position = uboPerParticles.viewMatrix * vec4(inPosW.xyz + vec3(-sizeFlat, 0.0, -sizeFlat), 1.0);
+	gl_Position = uboPerParticles.projMatrix * vec4(gl_Position + vec4(-sizeBillboard, -sizeBillboard, 0.0, 1.0));
 	outUV = vec2(0.0, 1.0);
     EmitVertex();
 
-	gl_Position = uboPerParticles.view * vec4(inPosW.xyz + vec3( sizeFlat,  0.0, sizeFlat), 1.0);
-	gl_Position = uboPerParticles.proj * vec4(gl_Position + vec4( sizeBillboard,  sizeBillboard, 0.0, 1.0));
+	gl_Position = uboPerParticles.viewMatrix * vec4(inPosW.xyz + vec3( sizeFlat,  0.0, sizeFlat), 1.0);
+	gl_Position = uboPerParticles.projMatrix * vec4(gl_Position + vec4( sizeBillboard,  sizeBillboard, 0.0, 1.0));
 	outUV = vec2(1.0, 0.0);
     EmitVertex();
 
-	gl_Position = uboPerParticles.view * vec4(inPosW.xyz + vec3( sizeFlat, 0.0, -sizeFlat), 1.0);
-	gl_Position = uboPerParticles.proj * vec4(gl_Position + vec4( sizeBillboard, -sizeBillboard, 0.0, 1.0));
+	gl_Position = uboPerParticles.viewMatrix * vec4(inPosW.xyz + vec3( sizeFlat, 0.0, -sizeFlat), 1.0);
+	gl_Position = uboPerParticles.projMatrix * vec4(gl_Position + vec4( sizeBillboard, -sizeBillboard, 0.0, 1.0));
 	outUV = vec2(1.0, 1.0);
     EmitVertex();
 

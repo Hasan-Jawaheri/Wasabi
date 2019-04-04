@@ -207,9 +207,6 @@
     <ClCompile Include="Renderers\WRenderStage.cpp">
       <Filter>Renderers</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\Common\CommonRenderStages.cpp">
-      <Filter>Renderers\Common</Filter>
-    </ClCompile>
     <ClCompile Include="Renderers\DeferredRenderer\WGBufferRenderStage.cpp">
       <Filter>Renderers\DeferredRenderer</Filter>
     </ClCompile>
@@ -239,6 +236,12 @@
     </ClCompile>
     <ClCompile Include="Memory\WBufferedBuffer.cpp">
       <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Common\WParticlesRenderStage.cpp">
+      <Filter>Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Common\WTextRenderStage.cpp">
+      <Filter>Renderers\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -414,9 +417,6 @@
     <ClInclude Include="Renderers\WRenderStage.h">
       <Filter>Renderers</Filter>
     </ClInclude>
-    <ClInclude Include="Renderers\Common\CommonRenderStages.h">
-      <Filter>Renderers\Common</Filter>
-    </ClInclude>
     <ClInclude Include="Renderers\DeferredRenderer\WGBufferRenderStage.h">
       <Filter>Renderers\DeferredRenderer</Filter>
     </ClInclude>
@@ -449,6 +449,12 @@
     </ClInclude>
     <ClInclude Include="Memory\WBufferedBuffer.h">
       <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Common\WParticlesRenderStage.h">
+      <Filter>Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Common\WTextRenderStage.h">
+      <Filter>Renderers\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

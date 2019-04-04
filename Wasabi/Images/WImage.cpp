@@ -39,6 +39,14 @@ WImageManager::WImageManager(class Wasabi* const app) : WManager<WImage>(app) {
 
 WImageManager::~WImageManager() {
 	W_SAFE_REMOVEREF(m_checkerImage);
+
+	// we need to perform this here because some destructed images will need access to m_dynamicImages
+	// which will be destructed by the time WManager::~WManager() destroys the images this way
+	for (unsigned int j = 0; j < W_HASHTABLESIZE; j++) {
+		for (unsigned int i = 0; i < m_entities[j].size(); i)
+			m_entities[j][i]->RemoveReference();
+		m_entities[j].clear();
+	}
 }
 
 WError WImageManager::Load() {
@@ -134,7 +142,9 @@ void WImage::_DestroyResources() {
 		}
 	}
 	m_pendingBufferedMaps.clear();
-	m_app->ImageManager->m_dynamicImages.erase(this);
+	auto it = m_app->ImageManager->m_dynamicImages.find(this);
+	if (it != m_app->ImageManager->m_dynamicImages.end())
+		m_app->ImageManager->m_dynamicImages.erase(it);
 
 	m_bufferedImage.Destroy(m_app);
 }

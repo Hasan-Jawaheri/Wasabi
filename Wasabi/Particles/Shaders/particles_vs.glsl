@@ -11,13 +11,13 @@ layout(location = 0) out vec3 outSize;
 layout(location = 1) out float outAlpha;
 
 layout(binding = 0) uniform UBOPerParticles {
-	mat4 world;
-	mat4 view;
-	mat4 proj;
+	mat4 worldMatrix;
+	mat4 viewMatrix;
+	mat4 projMatrix;
 } uboPerParticles;
 
 void main() {
-	gl_Position = uboPerParticles.world * vec4(inPos.xyz, 1.0);
+	gl_Position = uboPerParticles.worldMatrix * vec4(inPos.xyz, 1.0);
 	outSize = inSize;
 	outAlpha = inAlpha;
 }
