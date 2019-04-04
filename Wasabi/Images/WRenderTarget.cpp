@@ -209,6 +209,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 		(*it)->AddReference();
 	}
 
+	m_clearValues.resize(colorImages.size() + (depth ? 1 : 0));
 	for (unsigned int i = 0; i < colorImages.size(); i++) {
 		SetClearColor(WColor(0.425f, 0.425f, 0.425f), i);
 	}
@@ -318,6 +319,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	m_width = width;
 	m_height = height;
 
+	m_clearValues.resize(2);
 	SetClearColor(WColor(0.425f, 0.425f, 0.425f, 0.0f), 0);
 	SetClearColor(WColor(1.0f, 0.0f, 0, 0.0f), 1);
 
@@ -411,13 +413,7 @@ WError WRenderTarget::Submit(VkSubmitInfo custom_info) {
 }
 
 void WRenderTarget::SetClearColor(WColor col, unsigned int index) {
-	if (index >= m_clearValues.size() && index < 100 /* some reasonable upper bound to protect against invalid input */) {
-		for (unsigned int i = m_clearValues.size(); i < index+1; i++) {
-			VkClearValue v = { 0 };
-			m_clearValues.push_back(v);
-		}
-	}
-	else if (index >= m_clearValues.size())
+	if (index >= m_clearValues.size())
 		return;
 
 	if (HasDepthOutput() && index == m_clearValues.size() - 1)

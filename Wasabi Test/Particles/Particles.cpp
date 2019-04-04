@@ -38,8 +38,6 @@ void ParticlesDemo::Load() {
 	texture->SetName("Smoke Texture");
 	m_particles[2]->GetMaterial()->SetTexture("diffuseTexture", texture);
 	W_SAFE_REMOVEREF(texture);
-
-	m_app->Renderer->GetRenderTarget()->SetClearColor(WColor(0.3, 0.3, 0.3));
 }
 
 void ParticlesDemo::Update(float fDeltaTime) {
