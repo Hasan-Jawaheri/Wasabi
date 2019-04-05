@@ -48,9 +48,10 @@ public:
 		auto iter = m_assetsMap.find(assetId);
 		bool addReference = iter != m_assetsMap.end() && iter->second->loadedAsset != nullptr;
 		WError err = LoadGenericAsset(assetId, &asset, [this]() { return new T(this->m_app); });
-		*loadedAsset = (T*)asset;
+		if (loadedAsset)
+			*loadedAsset = (T*)asset;
 		if (addReference)
-			(*loadedAsset)->AddReference();
+			((T*)asset)->AddReference();
 		return err;
 	}
 	WError LoadGenericAsset(uint assetId, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset);

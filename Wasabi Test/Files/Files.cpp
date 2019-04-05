@@ -1,5 +1,3 @@
-#if 0
-
 #include "Files.hpp"
 #include <Physics/Bullet/WBulletRigidBody.h>
 #include <iostream>
@@ -11,14 +9,12 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gProjection"), // projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gWorld"), // world
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gView"), // view
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0, "ubo", {
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projectionMatrix"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
 			}),
 		};
-		m_desc.animation_texture_index = 1;
-		m_desc.instancing_texture_index = 2;
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
@@ -39,13 +35,13 @@ public:
 			\n\
 			layout(binding = 0) uniform UBO {\n\
 				mat4 projectionMatrix;\n\
-				mat4 modelMatrix;\n\
+				mat4 worldMatrix;\n\
 				mat4 viewMatrix;\n\
 			} ubo;\n\
 			layout(location = 0) out vec2 outUV;\n\
 			void main() {\n\
 				outUV = inUV;\n\
-				gl_Position = ubo.projectionMatrix * ubo.viewMatrix * ubo.modelMatrix * vec4(inPos.xyz, 1.0);\n\
+				gl_Position = ubo.projectionMatrix * ubo.viewMatrix * ubo.worldMatrix * vec4(inPos.xyz, 1.0);\n\
 			}\n\
 		", bSaveData);
 	}
@@ -58,8 +54,8 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 3),
-			W_BOUND_RESOURCE(W_TYPE_UBO, 4, {
+			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 3, "diffuseTexture"),
+			W_BOUND_RESOURCE(W_TYPE_UBO, 4, "uboPS", {
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"),
 			}),
 		};
@@ -67,14 +63,14 @@ public:
 			#version 450\n\
 			#extension GL_ARB_separate_shader_objects : enable\n\
 			#extension GL_ARB_shading_language_420pack : enable\n\
-			layout(binding = 3) uniform sampler2D samplerColor;\n\
+			layout(binding = 3) uniform sampler2D diffuseTexture;\n\
 			layout(location = 0) in vec2 inUV;\n\
 			layout(location = 0) out vec4 outFragColor;\n\
 			layout(binding = 4) uniform UBO {\n\
 				vec4 color;\n\
 			} ubo;\n\
 			void main() {\n\
-				outFragColor = texture(samplerColor, inUV) + ubo.color;\n\
+				outFragColor = texture(diffuseTexture, inUV) + ubo.color;\n\
 			}\n\
 		", bSaveData);
 	}
@@ -84,11 +80,11 @@ FilesDemo::FilesDemo(Wasabi* const app) : WTestState(app) {
 }
 
 void FilesDemo::Load() {
-	WImage* img = new WImage(m_app);
-	img->Load("Media/dummy.bmp", true);
+	/*WImage* img = new WImage(m_app);
+	img->Load("Media/dummy.bmp", W_IMAGE_CREATE_DYNAMIC);
 
 	WGeometry* geometry = new WGeometry(m_app);
-	geometry->CreateCube(1, true);
+	geometry->CreateCube(1, W_GEOMETRY_CREATE_DYNAMIC);
 
 	WPointLight* light = new WPointLight(m_app);
 	light->SetPosition(2, 2, 2);
@@ -102,15 +98,14 @@ void FilesDemo::Load() {
 	WEffect* fx = new WEffect(m_app);
 	fx->BindShader(vs);
 	fx->BindShader(ps);
-	fx->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
-	WMaterial* mat = new WMaterial(m_app);
-	mat->SetEffect(fx);
-	mat->SetVariableColor("color", WColor(0, 0, 1));
-	mat->SetTexture(3, img);
+	fx->BuildPipeline(m_app->Renderer->GetRenderTarget());
 
-	WObject* obj = new WObject(m_app);
+	WObject* obj = m_app->ObjectManager->CreateObject();
 	obj->SetGeometry(geometry);
-	obj->SetMaterial(mat);
+	obj->ClearEffects();
+	obj->AddEffect(fx);
+	obj->GetMaterial()->SetVariableColor("color", WColor(0, 0, 1));
+	obj->GetMaterial()->SetTexture(3, img);
 
 	WRigidBody* rb = m_app->PhysicsComponent->CreateRigidBody();
 	rb->Create(W_RIGID_BODY_CREATE_INFO::ForGeometry(geometry, 1.0f, nullptr, WVector3(0, 5, 0)), true);
@@ -127,31 +122,29 @@ void FilesDemo::Load() {
 	file.SaveAsset(img, &imgId);
 	file.SaveAsset(geometry, &geoId);
 	file.SaveAsset(fx, &fxId);
-	file.SaveAsset(mat, &matId);
+	file.SaveAsset(obj->GetMaterial(), &matId);
 	file.SaveAsset(obj, &objId);
 	file.SaveAsset(rb, &rbId);
 	W_SAFE_REMOVEREF(img);
 	W_SAFE_REMOVEREF(geometry);
 	W_SAFE_REMOVEREF(fx);
-	W_SAFE_REMOVEREF(mat);
 	W_SAFE_REMOVEREF(obj);
 	W_SAFE_REMOVEREF(rb);
 
 	file.LoadAsset<WImage>(imgId, &img);
 	file.LoadAsset<WGeometry>(geoId, &geometry);
 	file.LoadAsset<WEffect>(fxId, &fx);
-	file.LoadAsset<WMaterial>(matId, &mat);
+	file.LoadAsset<WMaterial>(matId, nullptr);
 	file.LoadAsset<WObject>(objId, &obj);
 	file.LoadAsset<WBulletRigidBody>(rbId, (WBulletRigidBody**)&rb);
 
 	file.Close();
 
-	WSprite* spr = new WSprite(m_app);
-	spr->SetImage(img);
+	WSprite* spr = m_app->SpriteManager->CreateSprite(img);
 
 	rb->BindObject(obj, obj);
 
-	m_app->PhysicsComponent->Start();
+	m_app->PhysicsComponent->Start();*/
 }
 
 void FilesDemo::Update(float fDeltaTime) {
@@ -159,4 +152,3 @@ void FilesDemo::Update(float fDeltaTime) {
 
 void FilesDemo::Cleanup() {
 }
-#endif
