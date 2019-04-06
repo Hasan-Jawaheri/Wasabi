@@ -296,6 +296,9 @@ private:
 	/** true if the swap chain has been initialized yet, false otherwise */
 	bool m_swapChainInitialized;
 
+	/** Handle to the debugging callback created in debug mode */
+	VkDebugReportCallbackEXT m_debugCallback;
+
 	/**
 	 * Destroys all resources of the engine.
 	 */

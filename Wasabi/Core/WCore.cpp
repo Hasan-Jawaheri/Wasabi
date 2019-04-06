@@ -193,9 +193,19 @@ void Wasabi::_DestroyResources() {
 
 	if (m_vkDevice)
 		vkDestroyDevice(m_vkDevice, nullptr);
+	m_vkDevice = VK_NULL_HANDLE;
+
+#if (defined(DEBUG) || defined(_DEBUG))
+	if (m_vkInstance) {
+		PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT =
+			reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>
+			(vkGetInstanceProcAddr(m_vkInstance, "vkDestroyDebugReportCallbackEXT"));
+		vkDestroyDebugReportCallbackEXT(m_vkInstance, m_debugCallback, nullptr);
+	}
+#endif
+
 	if (m_vkInstance)
 		vkDestroyInstance(m_vkInstance, nullptr);
-	m_vkDevice = VK_NULL_HANDLE;
 	m_vkInstance = VK_NULL_HANDLE;
 }
 
@@ -226,7 +236,7 @@ VkInstance Wasabi::CreateVKInstance() {
 	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
 #if (defined(DEBUG) || defined(_DEBUG))
-	//enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+	enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
 	enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
 
@@ -253,12 +263,6 @@ VkInstance Wasabi::CreateVKInstance() {
 	PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT =
 		reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>
 		(vkGetInstanceProcAddr(inst, "vkCreateDebugReportCallbackEXT"));
-	PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT =
-		reinterpret_cast<PFN_vkDebugReportMessageEXT>
-		(vkGetInstanceProcAddr(inst, "vkDebugReportMessageEXT"));
-	PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT =
-		reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>
-		(vkGetInstanceProcAddr(inst, "vkDestroyDebugReportCallbackEXT"));
 
 	/* Setup callback creation information */
 	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo;
@@ -271,8 +275,7 @@ VkInstance Wasabi::CreateVKInstance() {
 	callbackCreateInfo.pUserData = this;
 
 	/* Register the callback */
-	VkDebugReportCallbackEXT callback;
-	VkResult result = vkCreateDebugReportCallbackEXT(inst, &callbackCreateInfo, nullptr, &callback);
+	VkResult result = vkCreateDebugReportCallbackEXT(inst, &callbackCreateInfo, nullptr, &m_debugCallback);
 #endif
 
 	return inst;
