@@ -5,6 +5,8 @@
 
 WRenderStage::OUTPUT_IMAGE::OUTPUT_IMAGE() {
 	name = "";
+	isFromPreviousStage = true;
+	clearColor = WColor(-1000000.0f, -1.0f, -1.0f, -1.0f);
 }
 
 WRenderStage::OUTPUT_IMAGE::OUTPUT_IMAGE(std::string n, WColor clear) {
@@ -20,11 +22,10 @@ WRenderStage::OUTPUT_IMAGE::OUTPUT_IMAGE(std::string n, VkFormat f, WColor clear
 	clearColor = clear;
 }
 
-WRenderStage::WRenderStage(class Wasabi* const app) {
+WRenderStage::WRenderStage(class Wasabi* const app) : m_stageDescription({}) {
 	m_app = app;
 	m_renderTarget = nullptr;
 	m_depthOutput = nullptr;
-	m_stageDescription = {};
 }
 
 WRenderTarget* WRenderStage::GetRenderTarget() const {

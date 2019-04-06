@@ -214,24 +214,38 @@ WShader::~WShader() {
 void WShader::LoadCodeSPIRV(const char* const code, int len, bool bSaveData) {
 	if (m_module)
 		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
-	m_module = vkTools::loadShaderFromCode(code, len, m_app->GetVulkanDevice(), (VkShaderStageFlagBits)m_desc.type);
-	if (m_module && bSaveData) {
-		m_code = (char*)W_SAFE_ALLOC(len);
-		m_codeLen = len;
-		m_isSPIRV = true;
-		memcpy(m_code, code, m_codeLen);
+
+	int roundedLen = (len + 3) & ((uint)-1 << 2);
+	m_code = (char*)W_SAFE_ALLOC(roundedLen);
+	memcpy(m_code, code, roundedLen);
+	if (len < roundedLen)
+		memset(m_code + len, 0, roundedLen - len);
+	m_codeLen = roundedLen;
+	m_isSPIRV = true;
+
+	m_module = vkTools::loadShaderFromCode(m_code, m_codeLen, m_app->GetVulkanDevice(), (VkShaderStageFlagBits)m_desc.type);
+	if (!bSaveData || !m_module) {
+		W_SAFE_FREE(m_code);
+		m_codeLen = 0;
 	}
 }
 
 void WShader::LoadCodeGLSL(std::string code, bool bSaveData) {
 	if (m_module)
 		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
-	m_module = vkTools::loadShaderGLSLFromCode(code.c_str(), code.length(), m_app->GetVulkanDevice(), (VkShaderStageFlagBits)m_desc.type);
-	if (m_module && bSaveData) {
-		m_code = (char*)W_SAFE_ALLOC(code.length());
-		m_codeLen = code.length();
-		m_isSPIRV = false;
-		memcpy(m_code, code.c_str(), m_codeLen);
+
+	int roundedLen = ((code.size() + 3) & ((uint)-1 << 2));
+	m_code = (char*)W_SAFE_ALLOC(roundedLen);
+	memcpy(m_code, code.c_str(), roundedLen);
+	if (code.size() < roundedLen)
+		memset(m_code + code.size(), '\n', roundedLen - code.size());
+	m_codeLen = roundedLen;
+	m_isSPIRV = false;
+
+	m_module = vkTools::loadShaderGLSLFromCode(m_code, m_codeLen, m_app->GetVulkanDevice(), (VkShaderStageFlagBits)m_desc.type);
+	if (!bSaveData || !m_module) {
+		W_SAFE_FREE(m_code);
+		m_codeLen = 0;
 	}
 }
 

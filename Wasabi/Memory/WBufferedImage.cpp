@@ -155,7 +155,7 @@ VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer
 			&bufferCopyRegion
 		);
 
-		// Change texture image layout to shader read after all mip levels have been copied
+		// Change image layout to shader read after all mip levels have been copied
 		vkTools::setImageLayout(
 			copyCmdBuffer,
 			image.img,

@@ -31,7 +31,7 @@
 #define W_SAFE_DELETE(x) { if ( x ) { delete x; x = NULL; } }
 #define W_SAFE_DELETE_ARRAY(x) { if ( x ) { delete[] x; x = NULL; } }
 #define W_SAFE_ALLOC(x) malloc(x)
-#define W_SAFE_FREE(x) { if ( x ) { free(x); } }
+#define W_SAFE_FREE(x) { if ( x ) { free(x); x = NULL; } }
 
 #ifndef _WIN32
 #define fopen_s(a,b,c) *a = fopen(b, c)
@@ -229,6 +229,12 @@ protected:
 	 *                 be used by the engine
 	 */
 	virtual int SelectGPU(std::vector<VkPhysicalDevice> devices);
+
+	/**
+	 * Can be overloaded by the application. This function should return the
+	 * Vulkan features required by the application.
+	 */
+	virtual VkPhysicalDeviceFeatures GetDeviceFeatures();
 
 	/**
 	 * This function can be overloaded by the application. This function is

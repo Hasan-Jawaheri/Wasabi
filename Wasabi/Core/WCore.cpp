@@ -339,12 +339,13 @@ WError Wasabi::StartEngine(int width, int height) {
 
 	std::vector<const char*> enabledExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
+	VkPhysicalDeviceFeatures features = GetDeviceFeatures();
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceCreateInfo.pNext = NULL;
 	deviceCreateInfo.queueCreateInfoCount = 1;
 	deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-	deviceCreateInfo.pEnabledFeatures = NULL;
+	deviceCreateInfo.pEnabledFeatures = &features;
 
 	if (enabledExtensions.size() > 0) {
 		deviceCreateInfo.enabledExtensionCount = (uint)enabledExtensions.size();
@@ -451,6 +452,12 @@ VulkanSwapChain* Wasabi::GetSwapChain() {
 
 int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {
 	return 0;
+}
+
+VkPhysicalDeviceFeatures Wasabi::GetDeviceFeatures() {
+	VkPhysicalDeviceFeatures features = {};
+	features.samplerAnisotropy = VK_TRUE;
+	return features;
 }
 
 WRenderer* Wasabi::CreateRenderer() {

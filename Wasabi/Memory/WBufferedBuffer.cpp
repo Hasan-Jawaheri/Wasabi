@@ -15,6 +15,8 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 	if (memory == W_MEMORY_DEVICE_LOCAL_HOST_COPY && !data)
 		return VK_ERROR_INITIALIZATION_FAILED;
 
+	m_bufferSize = size;
+
 	WVulkanBuffer stagingBuffer;
 	for (uint i = 0; i < numBuffers; i++) {
 		VkMemoryPropertyFlags bufferMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // device local means only GPU can access it, more efficient
@@ -125,8 +127,6 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 			Unmap(app, i);
 		}
 	}
-
-	m_bufferSize = size;
 
 	if (result != VK_SUCCESS) {
 		stagingBuffer.Destroy(app);

@@ -205,6 +205,7 @@ WError WRenderer::Resize(uint width, uint height) {
 
 			// submit command buffer and wait for the queue to finish executing it
 			err = vkQueueSubmit(m_queue, 1, &submitInfo, VK_NULL_HANDLE);
+			vkQueueWaitIdle(m_queue);
 		}
 	}
 	vkFreeCommandBuffers(m_device, m_app->MemoryManager->GetCommandPool(), 1, &cmdBuf);
