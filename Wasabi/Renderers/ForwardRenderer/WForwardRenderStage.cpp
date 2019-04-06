@@ -7,35 +7,15 @@
 #include "../../Materials/WMaterial.h"
 #include "../../Cameras/WCamera.h"
 
-static void _StringReplaceAll(std::string& source, const std::string& from, const std::string& to) {
-	std::string newString;
-	newString.reserve(source.length());  // avoids a few memory allocations
-
-	std::string::size_type lastPos = 0;
-	std::string::size_type findPos;
-
-	while (std::string::npos != (findPos = source.find(from, lastPos))) {
-		newString.append(source, lastPos, findPos - lastPos);
-		newString += to;
-		lastPos = findPos + from.length();
-	}
-
-	// Care for the rest after last occurrence
-	newString += source.substr(lastPos);
-
-	source.swap(newString);
-}
-
 WForwardRenderStageObjectVS::WForwardRenderStageObjectVS(Wasabi* const app) : WShader(app) {}
 
 void WForwardRenderStageObjectVS::Load(bool bSaveData) {
 	int maxLights = (int)m_app->engineParams["maxLights"];
 	m_desc = GetDesc(maxLights);
-	std::string code =
-		#include "Shaders/vertex_shader.glsl"
-	;
-	_StringReplaceAll(code, "~~~~maxLights~~~~", std::to_string(maxLights));
-	LoadCodeGLSL(code, bSaveData);
+	vector<byte> code = {
+		#include "Shaders/forward.vert.glsl.spv"
+	};
+	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 }
 
 W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
@@ -77,11 +57,10 @@ WForwardRenderStageObjectPS::WForwardRenderStageObjectPS(Wasabi* const app) : WS
 void WForwardRenderStageObjectPS::Load(bool bSaveData) {
 	int maxLights = (int)m_app->engineParams["maxLights"];
 	m_desc = GetDesc(maxLights);
-	std::string code =
-		#include "Shaders/pixel_shader.glsl"
-	;
-	_StringReplaceAll(code, "~~~~maxLights~~~~", std::to_string(maxLights));
-	LoadCodeGLSL(code, bSaveData);
+	vector<byte> code = {
+		#include "Shaders/forward.frag.glsl.spv"
+	};
+	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 }
 
 W_SHADER_DESC WForwardRenderStageObjectPS::GetDesc(int maxLights) {

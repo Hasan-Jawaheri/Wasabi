@@ -1,4 +1,3 @@
-R"(
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
@@ -17,6 +16,8 @@ layout(set = 0, binding = 0) uniform UBOPerLight {
 	float intensity;
 	vec3 position;
 	float range;
+	float minCosAngle;
+	float spotRadius;
 } uboPerLight;
 
 layout(set = 1, binding = 3) uniform UBOPerFrame {
@@ -47,6 +48,23 @@ vec4 PointLight(vec3 pos, vec3 norm) {
 	return vec4(uboPerLight.lightColor * nl, spec) * xVal;
 }
 
+vec4 Spotlight(vec3 pos, vec3 norm) {
+	vec4 color = PointLight(pos, norm);
+	if (color.a <= 0.0f)
+		return vec4(0, 0, 0, 0);
+	
+	// The vector from the surface to the light.
+	vec3 lightVec = normalize(uboPerLight.position - pos);
+
+	float cosAngle = dot(-lightVec, uboPerLight.lightDir);
+	if (cosAngle < uboPerLight.minCosAngle)
+		return vec4(0, 0, 0, 0);
+	color *= max((cosAngle - uboPerLight.minCosAngle) / (1.0f-uboPerLight.minCosAngle), 0);
+	
+	// Scale color by spotlight factor.
+	return color;
+}
+
 void main() {
 	vec2 uv = (inPos.xy/inPos.w + 1) / 2;
 	float z = texture(depthTexture, uv).r;
@@ -59,7 +77,6 @@ void main() {
 
 	//clip(normalT.x + normalT.y + normalT.z - 0.01); // reject pixel
 	vec3 pixelNormal = normalize((normalT.xyz * 2.0f) - 1.0f);
-	vec4 light = PointLight(pixelPosition, pixelNormal);
+	vec4 light = Spotlight(pixelPosition, pixelNormal);
 	outFragColor = light * uboPerLight.intensity; //scale by intensity
 }
-)"

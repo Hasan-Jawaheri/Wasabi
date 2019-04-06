@@ -1,4 +1,3 @@
-R"(
 #version 450
 
 #extension GL_ARB_separate_shader_objects : enable
@@ -25,7 +24,7 @@ layout(set = 1, binding = 1) uniform LUBO {
 	mat4 projectionMatrix;
 	vec3 camPosW;
 	int numLights;
-	Light lights[~~~~maxLights~~~~];
+	Light lights[16];
 } uboPerFrame;
 
 layout(set = 0, binding = 4) uniform sampler2D diffuseTexture;
@@ -99,4 +98,3 @@ void main() {
 	}
 	outFragColor.rgb = outFragColor.rgb * 0.2f + outFragColor.rgb * 0.8f * lighting; // ambient 20%
 }
-)"

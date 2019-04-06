@@ -42,23 +42,10 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
 		})};
-		LoadCodeGLSL(
-			"#version 450\n"
-			"#extension GL_ARB_separate_shader_objects : enable\n"
-			"#extension GL_ARB_shading_language_420pack : enable\n"
-			""
-			"layout(location = 0) in  vec2 inPos;\n"
-			"layout(location = 1) in  vec2 inUV;\n"
-			"layout(location = 2) in  vec4 inCol;\n"
-			"layout(location = 0) out vec2 outUV;\n"
-			"layout(location = 1) out vec4 outCol;\n"
-			""
-			"void main() {\n"
-			"	outUV = inUV;\n"
-			"	outCol = inCol;\n"
-			"	gl_Position = vec4(inPos.xy, 0.0, 1.0);\n"
-			"}\n"
-		, bSaveData);
+		vector<byte> code = {
+			#include "Shaders/text.vert.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 
@@ -71,21 +58,10 @@ public:
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 0, "textureFont"),
 		};
-		LoadCodeGLSL(
-			"#version 450\n"
-			"#extension GL_ARB_separate_shader_objects : enable\n"
-			"#extension GL_ARB_shading_language_420pack : enable\n"
-			""
-			"layout(binding = 0) uniform sampler2D textureFont;\n"
-			"layout(location = 0) in vec2 inUV;\n"
-			"layout(location = 1) in vec4 inCol;\n"
-			"layout(location = 0) out vec4 outFragColor;\n"
-			""
-			"void main() {\n"
-			"	float c = texture(textureFont, inUV).r;\n"
-			"	outFragColor = vec4(c) * inCol;\n"
-			"}\n"
-		, bSaveData);
+		vector<byte> code = {
+			#include "Shaders/text.frag.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 

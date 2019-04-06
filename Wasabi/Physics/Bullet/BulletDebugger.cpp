@@ -19,7 +19,7 @@ class LinesVS : public WShader {
 public:
 	LinesVS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
@@ -31,22 +31,10 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
 			}),
 		};
-		LoadCodeGLSL("\
-			#version 450\n\
-			#extension GL_ARB_separate_shader_objects : enable\n\
-			#extension GL_ARB_shading_language_420pack : enable\n\
-			layout(location = 0) in vec3 inPos;\n\
-			layout(location = 1) in vec4 inCol;\n\
-			layout(location = 0) out vec4 outCol;\n\
-			layout(binding = 0) uniform UBO {\n\
-				mat4x4 proj;\n\
-				mat4x4 view;\n\
-			} uboPerFrame;\n\
-			void main() {\n\
-				outCol = inCol;\n\
-				gl_Position = uboPerFrame.proj * uboPerFrame.view * vec4(inPos.xyz, 1.0);\n\
-			}"
-		);
+		vector<byte> code = {
+			#include "Shaders/lines.vert.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 
@@ -54,18 +42,12 @@ class LinesPS : public WShader {
 public:
 	LinesPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
-		LoadCodeGLSL("\
-			#version 450\n\
-			#extension GL_ARB_separate_shader_objects : enable\n\
-			#extension GL_ARB_shading_language_420pack : enable\n\
-			layout(location = 0) in vec4 inCol;\n\
-			layout(location = 0) out vec4 outFragColor;\n\
-			void main() {\n\
-				outFragColor = inCol;\n\
-			}"
-		);
+		vector<byte> code = {
+			#include "Shaders/lines.frag.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 

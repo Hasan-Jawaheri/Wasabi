@@ -1,4 +1,3 @@
-R"(
 #version 450
 
 #extension GL_ARB_separate_shader_objects : enable
@@ -11,7 +10,14 @@ layout(location = 3) in vec2 inUV;
 layout(location = 4) in uvec4 boneIndex;
 layout(location = 5) in vec4 boneWeight;
 
-layout(set = 0, binding = 0) uniform UBOPerObject {
+struct Light {
+	vec4 color;
+	vec4 dir;
+	vec4 pos;
+	int type;
+};
+
+layout(set = 0, binding = 0) uniform UBO {
 	mat4 worldMatrix;
 	int animationTextureWidth;
 	int instanceTextureWidth;
@@ -20,17 +26,20 @@ layout(set = 0, binding = 0) uniform UBOPerObject {
 	vec4 color;
 } uboPerObject;
 
-layout(set = 1, binding = 1) uniform UBOPerFrame {
+layout(set = 1, binding = 1) uniform LUBO {
 	mat4 viewMatrix;
 	mat4 projectionMatrix;
+	vec3 camPosW;
+	int numLights;
+	Light lights[16];
 } uboPerFrame;
 
 layout(set = 0, binding = 2) uniform sampler2D animationTexture;
 layout(set = 0, binding = 3) uniform sampler2D instancingTexture;
 
 layout(location = 0) out vec2 outUV;
-layout(location = 1) out vec3 outViewPos;
-layout(location = 2) out vec3 outViewNorm;
+layout(location = 1) out vec3 outWorldPos;
+layout(location = 2) out vec3 outWorldNorm;
 
 mat4x4 LoadInstanceMatrix() {
 	if (uboPerObject.isInstanced == 1) {
@@ -80,16 +89,20 @@ mat4x4 LoadBoneMatrix(uint boneID)
 
 void main() {
 	outUV = inUV;
-	mat4x4 animMtx = mat4x4(1.0) * (1-uboPerObject.isAnimated);
+	mat4x4 animMtx = mat4x4(1.0) * (1 - uboPerObject.isAnimated);
 	mat4x4 instMtx = LoadInstanceMatrix();
-	if (boneWeight.x * uboPerObject.isAnimated > 0.001f) {
-		animMtx += boneWeight.x * LoadBoneMatrix(boneIndex.x); 
-		if (boneWeight.y > 0.001f) {
-			animMtx += boneWeight.y * LoadBoneMatrix(boneIndex.y); 
-			if (boneWeight.z > 0.001f) {
-				animMtx += boneWeight.z * LoadBoneMatrix(boneIndex.z); 
-				if (boneWeight.w > 0.001f) {
-					animMtx += boneWeight.w * LoadBoneMatrix(boneIndex.w); 
+	if (boneWeight.x * uboPerObject.isAnimated > 0.001f)
+	{
+		animMtx += boneWeight.x * LoadBoneMatrix(boneIndex.x);
+		if (boneWeight.y > 0.001f)
+		{
+			animMtx += boneWeight.y * LoadBoneMatrix(boneIndex.y);
+			if (boneWeight.z > 0.001f)
+			{
+				animMtx += boneWeight.z * LoadBoneMatrix(boneIndex.z);
+				if (boneWeight.w > 0.001f)
+				{
+					animMtx += boneWeight.w * LoadBoneMatrix(boneIndex.w);
 				}
 			}
 		}
@@ -98,8 +111,7 @@ void main() {
 	vec4 localPos2 = instMtx * vec4(localPos1.xyz, 1.0);
 	vec4 localNorm1 = animMtx * vec4(inNorm.xyz, 0.0f);
 	vec4 localNorm2 = instMtx * vec4(localNorm1.xyz, 0.0f);
-	outViewPos = (uboPerFrame.viewMatrix * uboPerObject.worldMatrix * localPos2).xyz;
-	outViewNorm = (uboPerFrame.viewMatrix * uboPerObject.worldMatrix * localNorm2).xyz;
-	gl_Position = uboPerFrame.projectionMatrix * vec4(outViewPos, 1.0);
+	outWorldPos = (uboPerObject.worldMatrix * localPos2).xyz;
+	outWorldNorm = (uboPerObject.worldMatrix * localNorm2).xyz;
+	gl_Position = uboPerFrame.projectionMatrix * uboPerFrame.viewMatrix * vec4(outWorldPos, 1.0);
 }
-)"

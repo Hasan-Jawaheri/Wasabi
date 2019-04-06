@@ -18,9 +18,10 @@ public:
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 0, 0, "colorTexture"), // NOT NECESSARY!
 		};
-		LoadCodeGLSL(
-			#include "Shaders/pixel_shader_depth.glsl"
-		, bSaveData);
+		vector<byte> code = {
+			#include "Shaders/depth.frag.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 
@@ -49,9 +50,10 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 6, 1, "backfaceDepthTexture"),
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 7, 1, "randomTexture"),
 		};
-		LoadCodeGLSL(
-			#include "Shaders/scene_composition_ps.glsl"
-		, bSaveData);
+		vector<byte> code = {
+			#include "Shaders/scene_composition.frag.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 

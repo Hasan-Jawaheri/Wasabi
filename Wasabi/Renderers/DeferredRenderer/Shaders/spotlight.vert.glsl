@@ -1,4 +1,3 @@
-R"(
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
@@ -23,4 +22,3 @@ void main() {
 	gl_Position = uboPerLight.wvp * vec4(localPos, 1.0);
 	outPos = gl_Position;
 }
-)"

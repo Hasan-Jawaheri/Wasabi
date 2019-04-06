@@ -1,3 +1,4 @@
+*.glsl.spv
 Wasabi Test/WFile.WSBI
 FBX Loader/*.fbx
 FBX Loader/*.WSBI

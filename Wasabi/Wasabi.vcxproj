@@ -141,20 +141,26 @@
     <ClInclude Include="WindowAndInput\WWindowAndInputComponent.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Particles\Shaders\particles_gs.glsl" />
-    <None Include="Particles\Shaders\particles_ps.glsl" />
-    <None Include="Particles\Shaders\particles_vs.glsl" />
-    <None Include="Renderers\DeferredRenderer\Shaders\directional_light_ps.glsl" />
-    <None Include="Renderers\DeferredRenderer\Shaders\pixel_shader.glsl" />
-    <None Include="Renderers\DeferredRenderer\Shaders\pixel_shader_depth.glsl" />
-    <None Include="Renderers\DeferredRenderer\Shaders\point_light_ps.glsl" />
-    <None Include="Renderers\DeferredRenderer\Shaders\point_light_vs.glsl" />
-    <None Include="Renderers\DeferredRenderer\Shaders\scene_composition_ps.glsl" />
-    <None Include="Renderers\DeferredRenderer\Shaders\spot_light_ps.glsl" />
-    <None Include="Renderers\DeferredRenderer\Shaders\spot_light_vs.glsl" />
-    <None Include="Renderers\DeferredRenderer\Shaders\vertex_shader.glsl" />
-    <None Include="Renderers\ForwardRenderer\Shaders\pixel_shader.glsl" />
-    <None Include="Renderers\ForwardRenderer\Shaders\vertex_shader.glsl" />
+    <None Include="Particles\Shaders\particles.geom.glsl" />
+    <None Include="Particles\Shaders\particles.frag.glsl" />
+    <None Include="Particles\Shaders\particles.vert.glsl" />
+    <None Include="Physics\Bullet\Shaders\lines.frag.glsl" />
+    <None Include="Physics\Bullet\Shaders\lines.vert.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\dirlight.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\depth.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\pointlight.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\pointlight.vert.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\scene_composition.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\spotlight.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\spotlight.vert.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.vert.glsl" />
+    <None Include="Renderers\ForwardRenderer\Shaders\forward.frag.glsl" />
+    <None Include="Renderers\ForwardRenderer\Shaders\forward.vert.glsl" />
+    <None Include="Sprites\Shaders\sprite.frag.glsl" />
+    <None Include="Sprites\Shaders\sprite.vert.glsl" />
+    <None Include="Texts\Shaders\text.frag.glsl" />
+    <None Include="Texts\Shaders\text.vert.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}</ProjectGuid>
@@ -227,6 +233,12 @@
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Command>python compile-glsl-code.py</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Compiling built-in GLSL code</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -256,6 +268,10 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <PreBuildEvent>
+      <Command>python compile-glsl-code.py</Command>
+      <Message>Compiling built-in GLSL code</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

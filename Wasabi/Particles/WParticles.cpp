@@ -48,10 +48,11 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // size
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT), // alpha
-		}) };
-		LoadCodeGLSL(
-			#include "Shaders/particles_vs.glsl"
-		, bSaveData);
+		})};
+		vector<byte> code = {
+			#include "Shaders/particles.vert.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 
@@ -68,9 +69,10 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_GEOMETRY_SHADER;
 		m_desc.bound_resources = GetBoundResources();
-		LoadCodeGLSL(
-			#include "Shaders/particles_gs.glsl"
-		, bSaveData);
+		vector<byte> code = {
+			#include "Shaders/particles.geom.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 
@@ -83,9 +85,10 @@ public:
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "diffuseTexture"),
 		};
-		LoadCodeGLSL(
-			#include "Shaders/particles_ps.glsl"
-		, bSaveData);
+		vector<byte> code = {
+			#include "Shaders/particles.frag.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 

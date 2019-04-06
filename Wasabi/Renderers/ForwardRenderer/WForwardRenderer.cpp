@@ -7,7 +7,7 @@
 
 WForwardRenderer::WForwardRenderer(Wasabi* const app) : WRenderer(app) {
 	m_sampler = VK_NULL_HANDLE;
-	m_app->engineParams.insert(std::pair<std::string, void*>("maxLights", (void*)8));
+	m_app->engineParams.insert(std::pair<std::string, void*>("maxLights", (void*)16));
 }
 
 WError WForwardRenderer::Initiailize() {

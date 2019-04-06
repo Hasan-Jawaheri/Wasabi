@@ -1,4 +1,3 @@
-R"(
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
@@ -20,4 +19,3 @@ void main() {
 	gl_Position = uboPerLight.wvp * vec4(inPos.xyz * uboPerLight.range * 1.05f, 1.0); // scale a bit more to make the sphere big enough so edges don't make a seam
 	outPos = gl_Position;
 }
-)"

@@ -10,9 +10,10 @@ WGBufferVS::WGBufferVS(Wasabi* const app) : WShader(app) {}
 
 void WGBufferVS::Load(bool bSaveData) {
 	m_desc = WGBufferVS::GetDesc();
-	LoadCodeGLSL(
-		#include "Shaders/vertex_shader.glsl"
-	, bSaveData);
+	vector<byte> code = {
+		#include "Shaders/gbuffer.vert.glsl.spv"
+	};
+	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 }
 
 W_SHADER_DESC WGBufferVS::GetDesc() {
@@ -50,9 +51,10 @@ WGBufferPS::WGBufferPS(Wasabi* const app) : WShader(app) {}
 
 void WGBufferPS::Load(bool bSaveData) {
 	m_desc = WGBufferPS::GetDesc();
-	LoadCodeGLSL(
-		#include "Shaders/pixel_shader.glsl"
-	, bSaveData);
+	vector<byte> code = {
+		#include "Shaders/gbuffer.frag.glsl.spv"
+	};
+	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 }
 
 W_SHADER_DESC WGBufferPS::GetDesc() {

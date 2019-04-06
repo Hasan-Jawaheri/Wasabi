@@ -100,6 +100,15 @@
     <Filter Include="Memory">
       <UniqueIdentifier>{897e1cb9-582b-47db-ac50-8c18c13659bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics\Bullet\Shaders">
+      <UniqueIdentifier>{e47c31a5-6651-473b-8bde-c78521914137}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sprites\Shaders">
+      <UniqueIdentifier>{8cb2de24-cf24-4adf-9998-ed27cc84ca31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Texts\Shaders">
+      <UniqueIdentifier>{70b2a32b-c593-44ea-a820-5224a14f26c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -458,47 +467,65 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Particles\Shaders\particles_ps.glsl">
+    <None Include="Particles\Shaders\particles.geom.glsl">
       <Filter>Particles\Shaders</Filter>
     </None>
-    <None Include="Particles\Shaders\particles_vs.glsl">
+    <None Include="Particles\Shaders\particles.frag.glsl">
       <Filter>Particles\Shaders</Filter>
     </None>
-    <None Include="Particles\Shaders\particles_gs.glsl">
+    <None Include="Particles\Shaders\particles.vert.glsl">
       <Filter>Particles\Shaders</Filter>
     </None>
-    <None Include="Renderers\ForwardRenderer\Shaders\pixel_shader.glsl">
+    <None Include="Physics\Bullet\Shaders\lines.frag.glsl">
+      <Filter>Physics\Bullet\Shaders</Filter>
+    </None>
+    <None Include="Physics\Bullet\Shaders\lines.vert.glsl">
+      <Filter>Physics\Bullet\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.vert.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\depth.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\dirlight.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\pointlight.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\pointlight.vert.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\spotlight.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\spotlight.vert.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\scene_composition.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\ForwardRenderer\Shaders\forward.frag.glsl">
       <Filter>Renderers\ForwardRenderer\Shaders</Filter>
     </None>
-    <None Include="Renderers\ForwardRenderer\Shaders\vertex_shader.glsl">
+    <None Include="Renderers\ForwardRenderer\Shaders\forward.vert.glsl">
       <Filter>Renderers\ForwardRenderer\Shaders</Filter>
     </None>
-    <None Include="Renderers\DeferredRenderer\Shaders\directional_light_ps.glsl">
-      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    <None Include="Sprites\Shaders\sprite.frag.glsl">
+      <Filter>Sprites\Shaders</Filter>
     </None>
-    <None Include="Renderers\DeferredRenderer\Shaders\pixel_shader.glsl">
-      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    <None Include="Sprites\Shaders\sprite.vert.glsl">
+      <Filter>Sprites\Shaders</Filter>
     </None>
-    <None Include="Renderers\DeferredRenderer\Shaders\point_light_ps.glsl">
-      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    <None Include="Texts\Shaders\text.frag.glsl">
+      <Filter>Texts\Shaders</Filter>
     </None>
-    <None Include="Renderers\DeferredRenderer\Shaders\point_light_vs.glsl">
-      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
-    </None>
-    <None Include="Renderers\DeferredRenderer\Shaders\scene_composition_ps.glsl">
-      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
-    </None>
-    <None Include="Renderers\DeferredRenderer\Shaders\spot_light_ps.glsl">
-      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
-    </None>
-    <None Include="Renderers\DeferredRenderer\Shaders\spot_light_vs.glsl">
-      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
-    </None>
-    <None Include="Renderers\DeferredRenderer\Shaders\vertex_shader.glsl">
-      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
-    </None>
-    <None Include="Renderers\DeferredRenderer\Shaders\pixel_shader_depth.glsl">
-      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    <None Include="Texts\Shaders\text.vert.glsl">
+      <Filter>Texts\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>
