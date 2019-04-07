@@ -54,20 +54,9 @@ bool WRenderTarget::Valid() const {
 }
 
 void WRenderTarget::_DestroyResources() {
-	VkDevice device = m_app->GetVulkanDevice();
-
-	if (m_renderPass)
-		vkDestroyRenderPass(device, m_renderPass, nullptr);
-	if (m_pipelineCache)
-		vkDestroyPipelineCache(device, m_pipelineCache, nullptr);
-
-	if (m_renderCmdBuffer)
-		vkFreeCommandBuffers(device, m_app->MemoryManager->GetCommandPool(), 1, &m_renderCmdBuffer);
-
-	m_renderCmdBuffer = VK_NULL_HANDLE;
-	m_renderPass = VK_NULL_HANDLE;
-	m_pipelineCache = VK_NULL_HANDLE;
-
+	m_app->MemoryManager->ReleaseRenderPass(m_renderPass, m_app->GetCurrentBufferingIndex());
+	m_app->MemoryManager->ReleasePipelineCache(m_pipelineCache, m_app->GetCurrentBufferingIndex());
+	m_app->MemoryManager->ReleaseCommandBuffer(m_renderCmdBuffer, m_app->GetCurrentBufferingIndex());
 	m_bufferedFrameBuffer.Destroy(m_app);
 
 	if (m_depthTarget)
@@ -348,7 +337,7 @@ WError WRenderTarget::Begin() {
 	renderPassBeginInfo.pClearValues = m_clearValues.data();
 
 	// Set target frame buffer
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	renderPassBeginInfo.framebuffer = m_bufferedFrameBuffer.GetFrameBuffer(bufferIndex);
 
 	vkCmdBeginRenderPass(GetCommnadBuffer(), &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);

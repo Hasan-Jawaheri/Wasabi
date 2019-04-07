@@ -100,8 +100,8 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 			// Put barrier inside setup command buffer
 			vkCmdPipelineBarrier(
 				copyCmdBuffer,
-				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
 				0,
 				0, nullptr,
 				1, &bufferMemoryBarrier,

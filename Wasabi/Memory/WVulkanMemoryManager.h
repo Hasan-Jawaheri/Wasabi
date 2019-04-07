@@ -138,7 +138,38 @@ public:
 	 */
 	VkCommandBuffer GetCopyCommandBuffer() const;
 
+	void ReleaseAllResources(uint setBufferingCount = -1);
+	void ReleaseFrameResources(uint bufferIndex);
+
+	void ReleaseRenderPass(VkRenderPass& renderPass, uint bufferIndex);
+	void ReleaseShaderModule(VkShaderModule& shaderModule, uint bufferIndex);
+	void ReleaseDescriptorSet(VkDescriptorSet& descriptorSet, VkDescriptorPool& descriptorPool, uint bufferIndex);
+	void ReleaseDescriptorSetLayout(VkDescriptorSetLayout& descriptorSetLayout, uint bufferIndex);
+	void ReleasePipeline(VkPipeline& pipeline, uint bufferIndex);
+	void ReleasePipelineCache(VkPipelineCache& pipelineCache, uint bufferIndex);
+	void ReleasePipelineLayout(VkPipelineLayout& pipelineLayout, uint bufferIndex);
+	void ReleaseDescriptorPool(VkDescriptorPool& descriptorPool, uint bufferIndex);
+	void ReleaseFramebuffer(VkFramebuffer& framebuffer, uint bufferIndex);
+	void ReleaseBuffer(VkBuffer& buffer, uint bufferIndex);
+	void ReleaseImage(VkImage& image, uint bufferIndex);
+	void ReleaseImageView(VkImageView& imageView, uint bufferIndex);
+	void ReleaseDeviceMemory(VkDeviceMemory& deviceMemory, uint bufferIndex);
+	void ReleaseSampler(VkSampler& sampler, uint bufferIndex);
+	void ReleaseCommandBuffer(VkCommandBuffer& commandBuffer, uint bufferIndex);
+	void ReleaseSemaphore(VkSemaphore& semaphore, uint bufferIndex);
+	void ReleaseFence(VkFence& fence, uint bufferIndex);
+
 private:
+	/** A resource pending to be freed */
+	struct RESOURCE_TO_FREE {
+		/** type of the resource */
+		int type;
+		/** The resource */
+		void* resource;
+		/** Auxilliary information needed to free the resource */
+		void* aux;
+	};
+
 	/** The used Vulkan physical device */
 	VkPhysicalDevice m_physicalDevice;
 	/** The used Vulkan virtual device */
@@ -155,5 +186,13 @@ private:
 	VkCommandPool m_cmdPool;
 	/** A dummy command buffer for general use */
 	VkCommandBuffer m_copyCommandBuffer;
+	/** An array whose size is double the buffering count. The first half is for resources to be freed on the next i'th frame
+	    while the second half is for resources to be freed on the frame after. Each element of the array is an array of
+		RESOURCE_TO_FREE.
+	 */
+	std::vector<std::vector<RESOURCE_TO_FREE>> m_resourcesToBeFreed;
+
+	/** Releases a resource from m_resourcesToBeFreed */
+	void _ReleaseResource(int type, void* resource, void* aux);
 };
 

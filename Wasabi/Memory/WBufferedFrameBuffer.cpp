@@ -75,9 +75,8 @@ VkResult WBufferedFrameBuffer::Create(Wasabi* app, uint numBuffers, uint width, 
 }
 
 void WBufferedFrameBuffer::Destroy(Wasabi* app) {
-	VkDevice device = app->GetVulkanDevice();
 	for (auto it = m_frameBuffers.begin(); it != m_frameBuffers.end(); it++)
-		vkDestroyFramebuffer(device, *it, nullptr);
+		app->MemoryManager->ReleaseFramebuffer(*it, app->GetCurrentBufferingIndex());
 	m_frameBuffers.clear();
 
 	m_swapchainDepthBuffer.Destroy(app);

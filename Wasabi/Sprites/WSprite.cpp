@@ -182,6 +182,7 @@ WEffect* WSpriteManager::CreateSpriteEffect(
 		rs.polygonMode = VK_POLYGON_MODE_FILL; // Solid polygon mode
 		rs.cullMode = VK_CULL_MODE_NONE; // Backface culling
 		rs.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		rs.lineWidth = 1.0f;
 	}
 	spriteFX->SetRasterizationState(rs);
 

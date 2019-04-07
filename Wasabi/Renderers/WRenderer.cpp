@@ -6,11 +6,13 @@
 #include "../WindowAndInput/WWindowAndInputComponent.h"
 
 WRenderer::WRenderer(Wasabi* const app) : m_app(app) {
+	m_queue = VK_NULL_HANDLE;
 }
 
 void WRenderer::_Cleanup() {
+	if (m_queue)
+		vkQueueWaitIdle(m_queue);
 	m_perBufferResources.Destroy(m_app);
-
 	SetRenderingStages(std::vector<WRenderStage*>({}));
 
 	Cleanup();
@@ -59,18 +61,17 @@ VkResult WRenderer::PerBufferResources::Create(Wasabi* app, uint numBuffers) {
 
 void WRenderer::PerBufferResources::Destroy(Wasabi* app) {
 	VkDevice device = app->GetVulkanDevice();
-	for (auto it = primaryCommandBuffers.begin(); it != primaryCommandBuffers.end(); it++) {
-		VkCommandBuffer buffer = *it;
-		vkFreeCommandBuffers(device, app->MemoryManager->GetCommandPool(), 1, &buffer);
-	}
+	for (auto it = primaryCommandBuffers.begin(); it != primaryCommandBuffers.end(); it++)
+		app->MemoryManager->ReleaseCommandBuffer(*it, app->GetCurrentBufferingIndex());
+	primaryCommandBuffers.clear();
 	for (auto it = presentComplete.begin(); it != presentComplete.end(); it++)
-		vkDestroySemaphore(device, *it, nullptr);
+		app->MemoryManager->ReleaseSemaphore(*it, app->GetCurrentBufferingIndex());
 	presentComplete.clear();
 	for (auto it = renderComplete.begin(); it != renderComplete.end(); it++)
-		vkDestroySemaphore(device, *it, nullptr);
+		app->MemoryManager->ReleaseSemaphore(*it, app->GetCurrentBufferingIndex());
 	renderComplete.clear();
 	for (auto it = memoryFences.begin(); it != memoryFences.end(); it++)
-		vkDestroyFence(device, *it, nullptr);
+		app->MemoryManager->ReleaseFence(*it, app->GetCurrentBufferingIndex());
 	memoryFences.clear();
 }
 
@@ -102,6 +103,9 @@ void WRenderer::_Render() {
 	}
 	if (err != VK_SUCCESS)
 		return; // fence is not ready yet or can't be reset
+
+	// allow the memory manager to free any resources pending on this frame, now that the fence is signalled
+	m_app->MemoryManager->ReleaseFrameResources(m_perBufferResources.curIndex);
 
 	m_app->ImageManager->UpdateDynamicImages(m_perBufferResources.curIndex);
 	m_app->GeometryManager->UpdateDynamicGeometries(m_perBufferResources.curIndex);
@@ -208,7 +212,8 @@ WError WRenderer::Resize(uint width, uint height) {
 			vkQueueWaitIdle(m_queue);
 		}
 	}
-	vkFreeCommandBuffers(m_device, m_app->MemoryManager->GetCommandPool(), 1, &cmdBuf);
+	m_app->MemoryManager->ReleaseAllResources(m_swapChain->imageCount); // reset the buffering count and release all resources
+	m_app->MemoryManager->ReleaseCommandBuffer(cmdBuf, 0);
 	if (err)
 		return WError(W_ERRORUNK);
 
@@ -242,7 +247,7 @@ WError WRenderer::SetRenderingStages(std::vector<WRenderStage*> stages) {
 
 	if (stages.size() > 0) {
 		// make sure the input has a sprites rendering stage, texts rendering stage and a picking stage
-		uint allFlags;
+		uint allFlags = 0;
 		for (auto it = stages.begin(); it != stages.end(); it++)
 			allFlags |= (*it)->m_stageDescription.flags;
 

@@ -203,17 +203,14 @@ WShader::WShader(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 }
 
 WShader::~WShader() {
-	if (m_module)
-		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
-	m_module = VK_NULL_HANDLE;
+	m_app->MemoryManager->ReleaseShaderModule(m_module, m_app->GetCurrentBufferingIndex());
 	W_SAFE_FREE(m_code);
 
 	m_app->ShaderManager->RemoveEntity(this);
 }
 
 void WShader::LoadCodeSPIRV(const char* const code, int len, bool bSaveData) {
-	if (m_module)
-		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
+	m_app->MemoryManager->ReleaseShaderModule(m_module, m_app->GetCurrentBufferingIndex());
 
 	int roundedLen = (len + 3) & ((uint)-1 << 2);
 	m_code = (char*)W_SAFE_ALLOC(roundedLen);
@@ -231,8 +228,7 @@ void WShader::LoadCodeSPIRV(const char* const code, int len, bool bSaveData) {
 }
 
 void WShader::LoadCodeGLSL(std::string code, bool bSaveData) {
-	if (m_module)
-		vkDestroyShaderModule(m_app->GetVulkanDevice(), m_module, nullptr);
+	m_app->MemoryManager->ReleaseShaderModule(m_module, m_app->GetCurrentBufferingIndex());
 
 	int roundedLen = ((code.size() + 3) & ((uint)-1 << 2));
 	m_code = (char*)W_SAFE_ALLOC(roundedLen);
@@ -552,18 +548,13 @@ void WEffect::SetPrimitiveTopology(VkPrimitiveTopology topology) {
 }
 
 void WEffect::_DestroyPipeline() {
-	VkDevice device = m_app->GetVulkanDevice();
-
-	if (m_pipelineLayout)
-		vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
+	m_app->MemoryManager->ReleasePipelineLayout(m_pipelineLayout, m_app->GetCurrentBufferingIndex());
 	for (auto it = m_descriptorSetLayouts.begin(); it != m_descriptorSetLayouts.end(); it++)
-		vkDestroyDescriptorSetLayout(device, it->second, nullptr);
+		m_app->MemoryManager->ReleaseDescriptorSetLayout(it->second, m_app->GetCurrentBufferingIndex());
 	m_descriptorSetLayouts.clear();
-	for (int i = 0; i < m_pipelines.size(); i++)
-		vkDestroyPipeline(device, m_pipelines[i], nullptr);
+	for (auto it = m_pipelines.begin(); it != m_pipelines.end(); it++)
+		m_app->MemoryManager->ReleasePipeline(*it, m_app->GetCurrentBufferingIndex());
 	m_pipelines.clear();
-	
-	m_pipelineLayout = VK_NULL_HANDLE;
 }
 
 void WEffect::SetBlendingState(VkPipelineColorBlendAttachmentState state) {

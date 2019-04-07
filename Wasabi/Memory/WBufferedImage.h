@@ -22,6 +22,7 @@ public:
 
 private:
 	VkImageAspectFlags m_aspect;
+	VkImageUsageFlags m_usage;
 	size_t m_bufferSize;
 	uint m_width;
 	uint m_height;

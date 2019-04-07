@@ -34,8 +34,6 @@ bool WMaterial::Valid() const {
 }
 
 void WMaterial::_DestroyResources() {
-	VkDevice device = m_app->GetVulkanDevice();
-
 	for (int i = 0; i < m_uniformBuffers.size(); i++) {
 		m_uniformBuffers[i].buffer.Destroy(m_app);
 		W_SAFE_FREE(m_uniformBuffers[i].data);
@@ -48,11 +46,8 @@ void WMaterial::_DestroyResources() {
 	}
 	m_sampler_info.clear();
 
-	if (m_descriptorPool)
-		vkDestroyDescriptorPool(device, m_descriptorPool, nullptr);
-
-	m_descriptorSet = VK_NULL_HANDLE;
-	m_descriptorPool = VK_NULL_HANDLE;
+	m_app->MemoryManager->ReleaseDescriptorSet(m_descriptorSet, m_descriptorPool, m_app->GetCurrentBufferingIndex());
+	m_app->MemoryManager->ReleaseDescriptorPool(m_descriptorPool, m_app->GetCurrentBufferingIndex());
 
 	W_SAFE_REMOVEREF(m_effect);
 }
@@ -206,7 +201,7 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 		return WError(W_NORENDERTARGET);
 
 	int numUpdateDescriptors = 0;
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 
 	// update UBOs that changed
 	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
@@ -298,7 +293,7 @@ WError WMaterial::SetVariableColor(const char* varName, WColor col) {
 
 WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 	VkDevice device = m_app->GetVulkanDevice();
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	bool isFound = false;
 	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
 		W_BOUND_RESOURCE* info = ubo->ubo_info;

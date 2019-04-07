@@ -14,12 +14,15 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 	Destroy(app);
 
 	VkResult result = VK_SUCCESS;
+	VkMemoryPropertyFlags imageMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // device local means only GPU can access it, more efficient
+	imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 	m_aspect = format == VK_FORMAT_D16_UNORM || format == VK_FORMAT_X8_D24_UNORM_PACK32 ||
 		format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_S8_UINT ||
-		format == VK_FORMAT_D16_UNORM_S8_UINT || format == VK_FORMAT_D16_UNORM_S8_UINT ||
-		format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT_S8_UINT
-		? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		format == VK_FORMAT_D16_UNORM_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT ||
+		format == VK_FORMAT_D32_SFLOAT_S8_UINT
+		? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) : VK_IMAGE_ASPECT_COLOR_BIT;
+	m_usage = imageUsage;
 	m_width = width;
 	m_height = height;
 	std::pair<int, int> pixelSize = g_formatSizes[format];
@@ -27,9 +30,6 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 
 	WVulkanBuffer stagingBuffer;
 	for (uint i = 0; i < numBuffers; i++) {
-		VkMemoryPropertyFlags imageMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // device local means only GPU can access it, more efficient
-		imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
 		//
 		// Create the image as a destination of a copy, from the staging buffer to this image
 		// unless no staging buffer was created, then we don't need to perform any transfer.
@@ -45,7 +45,7 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 		imageCreateInfo.extent = { width, height, 1 };
-		imageCreateInfo.usage = imageUsage;
+		imageCreateInfo.usage = m_usage;
 
 		VkImageViewCreateInfo imageViewCreateInfo = {};
 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -120,17 +120,14 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 
 VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer, WVulkanImage& image, VkImageLayout initialLayout) {
 	VkImageLayout targetLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-	// Setup buffer copy regions for each mip level
-	VkBufferImageCopy bufferCopyRegion = {};
-	bufferCopyRegion.imageSubresource.aspectMask = m_aspect;
-	bufferCopyRegion.imageSubresource.mipLevel = 0;
-	bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
-	bufferCopyRegion.imageSubresource.layerCount = 1;
-	bufferCopyRegion.imageExtent.width = m_width;
-	bufferCopyRegion.imageExtent.height = m_height;
-	bufferCopyRegion.imageExtent.depth = 1;
-	bufferCopyRegion.bufferOffset = 0;
+	if (!(m_usage & VK_IMAGE_USAGE_SAMPLED_BIT)) {
+		if (m_usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+			targetLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		else if (m_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			targetLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		else
+			targetLayout = VK_IMAGE_LAYOUT_GENERAL;
+	}
 
 	VkResult result = app->MemoryManager->BeginCopyCommandBuffer();
 	if (result == VK_SUCCESS) {
@@ -144,6 +141,20 @@ VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer
 			m_aspect,
 			initialLayout,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+		// Setup buffer copy regions for each mip level
+		VkBufferImageCopy bufferCopyRegion = {};
+		bufferCopyRegion.imageSubresource.aspectMask = m_aspect;
+		bufferCopyRegion.imageSubresource.mipLevel = 0;
+		bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
+		bufferCopyRegion.imageSubresource.layerCount = 1;
+		bufferCopyRegion.imageExtent.width = m_width;
+		bufferCopyRegion.imageExtent.height = m_height;
+		bufferCopyRegion.imageExtent.depth = 1;
+		bufferCopyRegion.bufferOffset = 0;
+
+		if (m_aspect & VK_IMAGE_ASPECT_DEPTH_BIT && m_aspect & VK_IMAGE_ASPECT_STENCIL_BIT)
+			bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
 		// Copy mip levels from staging buffer
 		vkCmdCopyBufferToImage(

@@ -183,6 +183,9 @@ public:
 	 */
 	virtual WError Resize(unsigned int width, unsigned int height);
 
+	/** This simply returns Renderer::GetCurrentBufferingIndex() */
+	uint GetCurrentBufferingIndex();
+
 	/**
 	 * Retrieves the Vulkan instance.
 	 * @return The Vulkan instance

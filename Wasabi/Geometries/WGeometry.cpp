@@ -906,7 +906,7 @@ void WGeometry::_PerformPendingMaps(uint bufferIndex) {
 }
 
 WError WGeometry::MapVertexBuffer(void** const vb, W_MAP_FLAGS mapFlags) {
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	VkResult result = m_vertices.Map(m_app, bufferIndex, vb, mapFlags);
 	if (result != VK_SUCCESS)
 		return WError(W_NOTVALID);
@@ -920,7 +920,7 @@ WError WGeometry::MapVertexBuffer(void** const vb, W_MAP_FLAGS mapFlags) {
 }
 
 WError WGeometry::MapIndexBuffer(uint** const ib, W_MAP_FLAGS mapFlags) {
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	VkResult result = m_indices.Map(m_app, bufferIndex, (void**)ib, mapFlags);
 	if (result != VK_SUCCESS)
 		return WError(W_NOTVALID);
@@ -931,7 +931,7 @@ WError WGeometry::MapIndexBuffer(uint** const ib, W_MAP_FLAGS mapFlags) {
 }
 
 WError WGeometry::MapAnimationBuffer(void** const ab, W_MAP_FLAGS mapFlags) {
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	VkResult result = m_animationbuf.Map(m_app, bufferIndex, ab, mapFlags);
 	if (result != VK_SUCCESS)
 		return WError(W_NOTVALID);
@@ -948,19 +948,19 @@ void WGeometry::UnmapVertexBuffer(bool recalculateBoundingBox) {
 		m_mappedVertexBufferForWrite = nullptr;
 	}
 
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	_UpdatePendingUnmap(&m_vertices, bufferIndex);
 	m_vertices.Unmap(m_app, bufferIndex);
 }
 
 void WGeometry::UnmapIndexBuffer() {
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	_UpdatePendingUnmap(&m_indices, bufferIndex);
 	m_indices.Unmap(m_app, bufferIndex);
 }
 
 void WGeometry::UnmapAnimationBuffer() {
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	_UpdatePendingUnmap(&m_animationbuf, bufferIndex);
 	m_animationbuf.Unmap(m_app, bufferIndex);
 }
@@ -1262,7 +1262,7 @@ WError WGeometry::Draw(WRenderTarget* rt, unsigned int numIndices, unsigned int 
 
 	// Bind triangle vertices
 	VkDeviceSize offsets[] = { 0, 0 };
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	VkBuffer bindings[] = { m_vertices.GetBuffer(m_app, bufferIndex), VK_NULL_HANDLE };
 	if (m_animationbuf.Valid())
 		bindings[1] = m_animationbuf.GetBuffer(m_app, bufferIndex);

@@ -281,7 +281,7 @@ void WImage::_UpdatePendingUnmap(uint bufferIndex) {
 }
 
 WError WImage::MapPixels(void** const pixels, W_MAP_FLAGS flags) {
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	VkResult result = m_bufferedImage.Map(m_app, bufferIndex, pixels, flags);
 	if (result != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
@@ -292,13 +292,13 @@ WError WImage::MapPixels(void** const pixels, W_MAP_FLAGS flags) {
 }
 
 void WImage::UnmapPixels() {
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	_UpdatePendingUnmap(bufferIndex);
 	m_bufferedImage.Unmap(m_app, bufferIndex);
 }
 
 VkImageView WImage::GetView() const {
-	uint bufferIndex = m_app->Renderer->GetCurrentBufferingIndex();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	return m_bufferedImage.GetView(m_app, bufferIndex);
 }
 

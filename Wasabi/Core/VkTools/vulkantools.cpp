@@ -177,6 +177,7 @@ namespace vkTools
 		if (oldImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 		{
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			srcStageFlags = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
 		}
 
 		// Target layouts (new)
@@ -210,6 +211,7 @@ namespace vkTools
 		if (newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 		{
 			imageMemoryBarrier.dstAccessMask = imageMemoryBarrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			destStageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		}
 
 		// New layout is shader read (sampler, input attachment)

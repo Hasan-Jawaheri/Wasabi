@@ -53,9 +53,7 @@ WError WForwardRenderer::Resize(uint width, uint height) {
 }
 
 void WForwardRenderer::Cleanup() {
-	if (m_sampler)
-		vkDestroySampler(m_device, m_sampler, nullptr);
-	m_sampler = VK_NULL_HANDLE;
+	m_app->MemoryManager->ReleaseSampler(m_sampler, m_app->GetCurrentBufferingIndex());
 }
 
 VkSampler WForwardRenderer::GetTextureSampler(W_TEXTURE_SAMPLER_TYPE type) const {

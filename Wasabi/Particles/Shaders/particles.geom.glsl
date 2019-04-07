@@ -4,8 +4,8 @@
 
 layout(points) in;
 layout(location = 0) in vs_out {
-	vec3 size;
-	float alpha;
+	layout(location = 0) vec3 size;
+	layout(location = 1) float alpha;
 } gs_in[];
 
 layout(triangle_strip, max_vertices = 4) out;

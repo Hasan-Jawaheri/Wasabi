@@ -236,7 +236,7 @@ VkInstance Wasabi::CreateVKInstance() {
 	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
 #if (defined(DEBUG) || defined(_DEBUG))
-	enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+	//enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
 	enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
 
@@ -457,9 +457,14 @@ int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {
 	return 0;
 }
 
+uint Wasabi::GetCurrentBufferingIndex() {
+	return Renderer ? Renderer->GetCurrentBufferingIndex() : 0;
+}
+
 VkPhysicalDeviceFeatures Wasabi::GetDeviceFeatures() {
 	VkPhysicalDeviceFeatures features = {};
 	features.samplerAnisotropy = VK_TRUE;
+	features.geometryShader = VK_TRUE;
 	return features;
 }
 
