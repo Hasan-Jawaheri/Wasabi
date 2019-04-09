@@ -203,13 +203,13 @@ private:
 	class WEffect* m_effect;
 	/** The Vulkan descriptor pool used for the descriptor set */
 	VkDescriptorPool m_descriptorPool;
-	/** The Vulkan descriptor set object */
-	VkDescriptorSet m_descriptorSet;
+	/** The Vulkan descriptor set objects, one per buffered frame */
+	std::vector<VkDescriptorSet> m_descriptorSets;
 	/** The set index of m_descriptorSet */
 	uint m_setIndex;
 	/** An array to hold write descriptor sets (filled/initialized on every
 	    Bind() call) */
-	std::vector<std::vector<VkWriteDescriptorSet>> m_writeDescriptorSets;
+	std::vector<VkWriteDescriptorSet> m_writeDescriptorSets;
 
 	struct UNIFORM_BUFFER_INFO {
 		/** Uniform buffer resource */
@@ -230,7 +230,7 @@ private:
 
 	struct SAMPLER_INFO {
 		/** Descriptor information for the texture */
-		VkDescriptorImageInfo descriptor;
+		std::vector<VkDescriptorImageInfo> descriptors;
 		/** Image backing the resource */
 		class WImage* img;
 		/** Pointer to the texture description in the effect */

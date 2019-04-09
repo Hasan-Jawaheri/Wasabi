@@ -12,7 +12,6 @@ WMaterialManager::WMaterialManager(class Wasabi* const app) : WManager<WMaterial
 }
 
 WMaterial::WMaterial(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
-	m_descriptorSet = VK_NULL_HANDLE;
 	m_descriptorPool = VK_NULL_HANDLE;
 	m_effect = nullptr;
 
@@ -30,7 +29,7 @@ std::string WMaterial::GetTypeName() const {
 }
 
 bool WMaterial::Valid() const {
-	return m_descriptorSet != VK_NULL_HANDLE;
+	return m_descriptorSets.size() > 0;
 }
 
 void WMaterial::_DestroyResources() {
@@ -46,7 +45,8 @@ void WMaterial::_DestroyResources() {
 	}
 	m_sampler_info.clear();
 
-	m_app->MemoryManager->ReleaseDescriptorSet(m_descriptorSet, m_descriptorPool, m_app->GetCurrentBufferingIndex());
+	for (auto it = m_descriptorSets.begin(); it != m_descriptorSets.end(); it++)
+		m_app->MemoryManager->ReleaseDescriptorSet(*it, m_descriptorPool, m_app->GetCurrentBufferingIndex());
 	m_app->MemoryManager->ReleaseDescriptorPool(m_descriptorPool, m_app->GetCurrentBufferingIndex());
 
 	W_SAFE_REMOVEREF(m_effect);
@@ -117,17 +117,18 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 				SAMPLER_INFO sampler = {};
 				sampler.img = m_app->ImageManager->GetDefaultImage();
 				sampler.img->AddReference();
-				sampler.descriptor.sampler = m_app->Renderer->GetTextureSampler();
-				sampler.descriptor.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-				sampler.descriptor.imageView = VK_NULL_HANDLE; // // will be assigned in the Bind() function
+				sampler.descriptors.resize(numBuffers);
+				for (auto descriptor = sampler.descriptors.begin(); descriptor != sampler.descriptors.end(); descriptor++) {
+					descriptor->sampler = m_app->Renderer->GetTextureSampler();
+					descriptor->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+					descriptor->imageView = VK_NULL_HANDLE; // // will be assigned in the Bind() function
+				}
 				sampler.sampler_info = &shader->m_desc.bound_resources[j];
 				m_sampler_info.push_back(sampler);
 			}
 		}
 	}
-	m_writeDescriptorSets.resize(numBuffers);
-	for (auto it = m_writeDescriptorSets.begin(); it != m_writeDescriptorSets.end(); it++)
-		it->resize(m_sampler_info.size() + m_uniformBuffers.size());
+	m_writeDescriptorSets.resize((m_sampler_info.size() + m_uniformBuffers.size()) * numBuffers);
 
 	//
 	// Create descriptor pool
@@ -137,13 +138,13 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 	if (m_uniformBuffers.size() > 0) {
 		VkDescriptorPoolSize s;
 		s.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		s.descriptorCount = m_uniformBuffers.size();
+		s.descriptorCount = m_uniformBuffers.size() * numBuffers;
 		typeCounts.push_back(s);
 	}
 	if (m_sampler_info.size() > 0) {
 		VkDescriptorPoolSize s;
 		s.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		s.descriptorCount = m_sampler_info.size();
+		s.descriptorCount = m_sampler_info.size() * numBuffers;
 		typeCounts.push_back(s);
 	}
 
@@ -157,7 +158,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 		descriptorPoolInfo.pPoolSizes = typeCounts.data();
 		// Set the max. number of sets that can be requested
 		// Requesting descriptors beyond maxSets will result in an error
-		descriptorPoolInfo.maxSets = descriptorPoolInfo.poolSizeCount;
+		descriptorPoolInfo.maxSets = numBuffers;
 
 		VkResult vkRes = vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_descriptorPool);
 		if (vkRes) {
@@ -169,14 +170,17 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 		// Create descriptor set
 		//
 
-		VkDescriptorSetLayout layout = effect->GetDescriptorSetLayout(bindingSet);
+		m_descriptorSets.resize(descriptorPoolInfo.maxSets);
+		std::vector<VkDescriptorSetLayout> layouts(m_descriptorSets.size());
+		for (uint i = 0; i < layouts.size(); i++)
+			layouts[i] = effect->GetDescriptorSetLayout(bindingSet);
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = m_descriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &layout;
+		allocInfo.descriptorSetCount = m_descriptorSets.size();
+		allocInfo.pSetLayouts = layouts.data();
 
-		vkRes = vkAllocateDescriptorSets(device, &allocInfo, &m_descriptorSet);
+		vkRes = vkAllocateDescriptorSets(device, &allocInfo, m_descriptorSets.data());
 		if (vkRes) {
 			_DestroyResources();
 			return WError(W_OUTOFMEMORY);
@@ -215,45 +219,46 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 
 		VkWriteDescriptorSet writeDescriptorSet = {};
 		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSet.dstSet = m_descriptorSet;
+		writeDescriptorSet.dstSet = m_descriptorSets[bufferIndex];
 		writeDescriptorSet.descriptorCount = 1;
 		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		writeDescriptorSet.pBufferInfo = &ubo->descriptorBufferInfos[bufferIndex];
 		writeDescriptorSet.dstBinding = ubo->ubo_info->binding_index;
 
-		m_writeDescriptorSets[bufferIndex][numUpdateDescriptors++] = writeDescriptorSet;
+		m_writeDescriptorSets[numUpdateDescriptors++] = writeDescriptorSet;
 	}
 
 	// update textures that changed
 	for (auto sampler = m_sampler_info.begin(); sampler != m_sampler_info.end(); sampler++) {
 		W_BOUND_RESOURCE* info = sampler->sampler_info;
 		if (sampler->img && sampler->img->Valid()) {
-			if (sampler->descriptor.imageView != sampler->img->GetView()) {
-				sampler->descriptor.imageView = sampler->img->GetView();
-				sampler->descriptor.imageLayout = sampler->img->GetViewLayout();
+			if (sampler->descriptors[bufferIndex].imageView != sampler->img->GetView()) {
+				sampler->descriptors[bufferIndex].imageView = sampler->img->GetView();
+				sampler->descriptors[bufferIndex].imageLayout = sampler->img->GetViewLayout();
 
 				VkWriteDescriptorSet writeDescriptorSet = {};
 				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				writeDescriptorSet.dstSet = m_descriptorSet;
+				writeDescriptorSet.dstSet = m_descriptorSets[bufferIndex];
 				writeDescriptorSet.descriptorCount = 1;
 				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				writeDescriptorSet.pImageInfo = &sampler->descriptor;
+				writeDescriptorSet.pImageInfo = &sampler->descriptors[bufferIndex];
 				writeDescriptorSet.dstBinding = info->binding_index;
 
-				m_writeDescriptorSets[bufferIndex][numUpdateDescriptors++] = writeDescriptorSet;
+				m_writeDescriptorSets[numUpdateDescriptors++] = writeDescriptorSet;
 			}
 		}
 	}
 	if (numUpdateDescriptors > 0)
-		vkUpdateDescriptorSets(device, numUpdateDescriptors, m_writeDescriptorSets[bufferIndex].data(), 0, NULL);
+		vkUpdateDescriptorSets(device, numUpdateDescriptors, m_writeDescriptorSets.data(), 0, NULL);
 
-	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_effect->GetPipelineLayout(), m_setIndex, 1, &m_descriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_effect->GetPipelineLayout(), m_setIndex, 1, &m_descriptorSets[bufferIndex], 0, nullptr);
 
 	return WError(W_SUCCEEDED);
 }
 
 VkDescriptorSet WMaterial::GetDescriptorSet() const {
-	return m_descriptorSet;
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	return m_descriptorSets[bufferIndex];
 }
 
 WError WMaterial::SetVariableFloat(const char* varName, float fVal) {
