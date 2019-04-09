@@ -3,10 +3,9 @@
 #extension GL_ARB_shading_language_420pack : enable
 
 layout(points) in;
-layout(location = 0) in vs_out {
-	layout(location = 0) vec3 size;
-	layout(location = 1) float alpha;
-} gs_in[];
+
+layout(location = 0) in vec3 inSize[];
+layout(location = 1) in float inAlpha[];
 
 layout(triangle_strip, max_vertices = 4) out;
 layout(location = 0) out vec2 outUV;
@@ -22,11 +21,11 @@ void main() {
     // gl_in.length() == 1
 
 	vec3 inPosW = gl_in[0].gl_Position.xyz;
-	float sizeFlat = gs_in[0].size.x;
-	float sizeBillboard = gs_in[0].size.y;
+	float sizeFlat = inSize[0].x;
+	float sizeBillboard = inSize[0].y;
 
 	// pass-thru
-	outAlpha = gs_in[0].alpha;
+	outAlpha = inAlpha[0];
 
 	gl_Position = uboPerParticles.viewMatrix * vec4(inPosW.xyz + vec3(-sizeFlat,  0.0, sizeFlat), 1.0);
 	gl_Position = uboPerParticles.projMatrix * vec4(gl_Position + vec4(-sizeBillboard, sizeBillboard, 0.0, 1.0));

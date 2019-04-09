@@ -64,6 +64,7 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 		if (result != VK_SUCCESS)
 			break;
 		m_images.push_back(image);
+		m_layouts.push_back(imageCreateInfo.initialLayout);
 
 		//
 		// Create a host-visible staging buffer that contains the raw image data.
@@ -95,7 +96,7 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 		// If the image is dynamic, then this staging buffer will persist for
 		// as long as the image does. Otherwise, we will need to delete it.
 		//
-		result = CopyStagingToImage(app, stagingBuffer, image, imageCreateInfo.initialLayout);
+		result = CopyStagingToImage(app, stagingBuffer, image, m_layouts[m_layouts.size()-1]);
 		if (result != VK_SUCCESS)
 			break;
 
@@ -118,7 +119,7 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 	return result;
 }
 
-VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer, WVulkanImage& image, VkImageLayout initialLayout) {
+VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer, WVulkanImage& image, VkImageLayout& initialLayout) {
 	VkImageLayout targetLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	if (!(m_usage & VK_IMAGE_USAGE_SAMPLED_BIT)) {
 		if (m_usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
@@ -139,7 +140,7 @@ VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer
 			copyCmdBuffer,
 			image.img,
 			m_aspect,
-			initialLayout,
+			initialLayout == VK_IMAGE_LAYOUT_PREINITIALIZED ? initialLayout : VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 		// Setup buffer copy regions for each mip level
@@ -175,6 +176,8 @@ VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer
 			targetLayout);
 
 		result = app->MemoryManager->EndCopyCommandBuffer(true);
+
+		initialLayout = targetLayout;
 	}
 
 	return result;
@@ -221,7 +224,7 @@ void WBufferedImage2D::Unmap(Wasabi* app, uint bufferIndex) {
 		} else if (m_stagingBuffers.size() > 0) {
 			VkDevice device = app->GetVulkanDevice();
 			vkUnmapMemory(device, m_stagingBuffers[bufferIndex].mem);
-			CopyStagingToImage(app, m_stagingBuffers[bufferIndex], m_images[bufferIndex]);
+			CopyStagingToImage(app, m_stagingBuffers[bufferIndex], m_images[bufferIndex], m_layouts[bufferIndex]);
 		} else {
 			VkDevice device = app->GetVulkanDevice();
 			vkUnmapMemory(device, m_images[bufferIndex].mem);
@@ -234,6 +237,11 @@ void WBufferedImage2D::Unmap(Wasabi* app, uint bufferIndex) {
 VkImageView WBufferedImage2D::GetView(Wasabi* app, uint bufferIndex) const {
 	bufferIndex = bufferIndex % m_images.size();
 	return m_images[bufferIndex].view;
+}
+
+VkImageLayout WBufferedImage2D::GetLayout(uint bufferIndex) const {
+	bufferIndex = bufferIndex % m_images.size();
+	return m_layouts[bufferIndex];
 }
 
 bool WBufferedImage2D::Valid() const {

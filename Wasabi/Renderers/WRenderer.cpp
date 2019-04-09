@@ -119,6 +119,33 @@ void WRenderer::_Render() {
 	if (err)
 		return;
 
+	VkImageSubresourceRange subresourceRange = {};
+	subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subresourceRange.baseArrayLayer = 0;
+	subresourceRange.baseMipLevel = 0;
+	subresourceRange.layerCount = 1;
+	subresourceRange.levelCount = 1;
+	VkImageMemoryBarrier presentImageBarrier = {};
+	presentImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	presentImageBarrier.image = m_swapChain->buffers[m_perBufferResources.curIndex].image;
+	presentImageBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	presentImageBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	presentImageBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	presentImageBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	presentImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	presentImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	presentImageBarrier.subresourceRange = subresourceRange;
+
+	vkCmdPipelineBarrier(
+		m_perBufferResources.primaryCommandBuffers[m_perBufferResources.curIndex],
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &presentImageBarrier
+	);
+
 	WRenderTarget* currentRT = nullptr;
 	for (auto it = m_renderStages.begin(); it != m_renderStages.end(); it++) {
 		WRenderStage* stage = *it;
@@ -135,6 +162,19 @@ void WRenderer::_Render() {
 			return;
 	}
 	currentRT->End();
+
+	presentImageBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	presentImageBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	vkCmdPipelineBarrier(
+		m_perBufferResources.primaryCommandBuffers[m_perBufferResources.curIndex],
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &presentImageBarrier
+	);
 
 	err = vkEndCommandBuffer(m_perBufferResources.primaryCommandBuffers[m_perBufferResources.curIndex]);
 	if (err)

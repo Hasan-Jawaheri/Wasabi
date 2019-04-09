@@ -106,7 +106,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(
 	const char*                 pLayerPrefix,
 	const char*                 pMessage,
 	void*                       pUserData) {
-	((Wasabi*)pUserData)->WindowAndInputComponent->ShowErrorMessage(std::string(pMessage));
+	((Wasabi*)pUserData)->WindowAndInputComponent->ShowErrorMessage(std::string(pMessage), !(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT));
 	return VK_FALSE;
 }
 
@@ -167,7 +167,6 @@ void Wasabi::_DestroyResources() {
 		PhysicsComponent->Cleanup();
 
 	W_SAFE_DELETE(SoundComponent);
-	W_SAFE_DELETE(WindowAndInputComponent);
 	W_SAFE_DELETE(TextComponent);
 	W_SAFE_DELETE(PhysicsComponent);
 	W_SAFE_DELETE(Renderer);
@@ -186,6 +185,8 @@ void Wasabi::_DestroyResources() {
 	W_SAFE_DELETE(ImageManager);
 	W_SAFE_DELETE(LightManager);
 	W_SAFE_DELETE(MemoryManager);
+
+	W_SAFE_DELETE(WindowAndInputComponent);
 
 	if (m_swapChainInitialized)
 		m_swapChain.cleanup();
@@ -236,7 +237,7 @@ VkInstance Wasabi::CreateVKInstance() {
 	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
 #if (defined(DEBUG) || defined(_DEBUG))
-	//enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+	enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
 	enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
 

@@ -230,6 +230,7 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 		if (sampler->img && sampler->img->Valid()) {
 			if (sampler->descriptor.imageView != sampler->img->GetView()) {
 				sampler->descriptor.imageView = sampler->img->GetView();
+				sampler->descriptor.imageLayout = sampler->img->GetViewLayout();
 
 				VkWriteDescriptorSet writeDescriptorSet = {};
 				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

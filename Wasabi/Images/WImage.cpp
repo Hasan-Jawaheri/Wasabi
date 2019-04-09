@@ -154,10 +154,11 @@ WError WImage::CreateFromPixelsArray(void* pixels, uint width, uint height, VkFo
 
 	bool isDepth = format == VK_FORMAT_D16_UNORM || format == VK_FORMAT_X8_D24_UNORM_PACK32 ||
 		format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_S8_UINT ||
-		format == VK_FORMAT_D16_UNORM_S8_UINT || format == VK_FORMAT_D16_UNORM_S8_UINT ||
+		format == VK_FORMAT_D16_UNORM_S8_UINT ||
 		format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT_S8_UINT;
 	VkImageUsageFlags usageFlags = 0;
 	if (flags & W_IMAGE_CREATE_TEXTURE) usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+	if (flags & W_IMAGE_CREATE_DYNAMIC) usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	if (flags & W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT) usageFlags |= (isDepth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 	W_MEMORY_STORAGE memory = flags & W_IMAGE_CREATE_DYNAMIC ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL;
 	uint numBuffers = (flags & (W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT)) ? (uint)m_app->engineParams["bufferingCount"] : 1;
@@ -175,6 +176,26 @@ WError WImage::CreateFromPixelsArray(void* pixels, uint width, uint height, VkFo
 	return WError(W_SUCCEEDED);
 }
 
+template<typename T>
+T* convertPixels(uchar* data, uint w, uint h, uchar n, uchar new_num_components, T zero, T one, T(*convert)(uchar)) {
+	T* pixels = new T[w * h * new_num_components];
+	for (uint y = 0; y < h; y++) {
+		for (uint x = 0; x < w; x++) {
+			for (uint c = 0; c < new_num_components; c++) {
+				T value;
+				if (c < n)
+					value = convert(data[(y * w + x) * n + c]);// / (float)(unsigned char)(-1);
+				else if (c < 3)
+					value = zero;
+				else
+					value = one;
+				pixels[(y * w + x) * new_num_components + c] = value;
+			}
+		}
+	}
+	return pixels;
+}
+
 WError WImage::Load(std::string filename, W_IMAGE_CREATE_FLAGS flags) {
 	// check if file exists
 	FILE* fp;
@@ -185,30 +206,18 @@ WError WImage::Load(std::string filename, W_IMAGE_CREATE_FLAGS flags) {
 		return WError(W_FILENOTFOUND);
 
 	int n = 4, w, h;
-	unsigned char *data;
+	uchar* data;
 	if (stbi_info(filename.c_str(), &w, &h, &n) == 0)
 		return WError(W_INVALIDFILEFORMAT);
-	data = stbi_load(filename.c_str(), &w, &h, &n, 0);
+	data = (uchar*)stbi_load(filename.c_str(), &w, &h, &n, 0);
 	if (!data)
 		return WError(W_INVALIDFILEFORMAT);
 
 	// convert from 8-bit char components to 32-bit float components
-	float* pixels = new float[w*h*n];
-	for (int i = 0; i < w*h*n; i++) {
-		float f = (float)data[i] / (float)(unsigned char)(-1);
-		pixels[i] = f;
-	}
+	uchar* pixels = convertPixels<uchar>(data, w, h, n, 4, 0, -1, [](uchar val) { return val; });
+	// float* pixels = convertPixels<float>(data, w, h, n, 4, 0.0f, 1.0f, [](uchar val) { return (float)val / (float)(uchar)(-1); }); <--- for VK_FORMAT_R32G32B32A32_SFLOAT
 	free(data);
-
-	VkFormat format;
-	switch (n) {
-	case 1: format = VK_FORMAT_R32_SFLOAT; break;
-	case 2: format = VK_FORMAT_R32G32_SFLOAT; break;
-	case 3: format = VK_FORMAT_R32G32B32_SFLOAT; break;
-	case 4: format = VK_FORMAT_R32G32B32A32_SFLOAT; break;
-	}
-
-	WError err = CreateFromPixelsArray(pixels, w, h, format, flags);
+	WError err = CreateFromPixelsArray(pixels, w, h, VK_FORMAT_R8G8B8A8_UNORM, flags);
 	delete[] pixels;
 
 	return err;
@@ -303,7 +312,8 @@ VkImageView WImage::GetView() const {
 }
 
 VkImageLayout WImage::GetViewLayout() const {
-	return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	return m_bufferedImage.GetLayout(bufferIndex);
 }
 
 VkFormat WImage::GetFormat() const {

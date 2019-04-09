@@ -14,6 +14,7 @@ public:
 	void Unmap(class Wasabi* app, uint bufferIndex);
 
 	VkImageView GetView(class Wasabi* app, uint bufferIndex) const;
+	VkImageLayout GetLayout(uint bufferIndex) const;
 
 	bool Valid() const;
 	size_t GetMemorySize() const;
@@ -31,6 +32,7 @@ private:
 	void* m_readOnlyMemory;
 	std::vector<WVulkanImage> m_images;
 	std::vector<WVulkanBuffer> m_stagingBuffers;
+	std::vector<VkImageLayout> m_layouts;
 
-	VkResult CopyStagingToImage(class Wasabi* app, WVulkanBuffer& buffer, WVulkanImage& image, VkImageLayout initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	VkResult CopyStagingToImage(class Wasabi* app, WVulkanBuffer& buffer, WVulkanImage& image, VkImageLayout& initialLayout);
 };
