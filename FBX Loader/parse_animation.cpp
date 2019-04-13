@@ -389,6 +389,7 @@ void PrintAnimatedBones(RAWBONE* bone)
 ANIMDATA ParseAnimation(FbxScene* pScene, FbxNode* node)
 {
 	ANIMDATA ret;
+	ret.name = node->GetName();
 	if (pScene->GetSrcObjectCount<FbxAnimStack>())
 	{
 		FbxAnimStack* lAnimStack = pScene->GetSrcObject<FbxAnimStack>(0);

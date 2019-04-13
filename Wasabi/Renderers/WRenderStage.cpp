@@ -52,6 +52,7 @@ WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint
 			return WError(W_NOTVALID);
 
 		m_renderTarget = m_app->RenderTargetManager->CreateRenderTarget();
+		m_renderTarget->SetName("RenderTarget-" + m_stageDescription.name);
 
 		for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
 			if (m_stageDescription.colorOutputs[i].name == "")

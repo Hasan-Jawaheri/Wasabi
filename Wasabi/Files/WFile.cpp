@@ -11,7 +11,7 @@
 
 const short FILE_MAGIC = 0x3DE0;
 
-WFileAsset::WFileAsset() {
+WFileAsset::WFileAsset(Wasabi* app, unsigned int ID) : WBase(app, ID) {
 	m_file = nullptr;
 }
 
@@ -20,8 +20,14 @@ WFileAsset::~WFileAsset() {
 		m_file->ReleaseAsset(this);
 }
 
-void WFileAsset::_MarkFileEnd(WFile* file, std::streampos pos) {
-	file->MarkFileEnd(pos);
+WFileManager::WFileManager(class Wasabi* const app) {
+}
+
+WFileManager::~WFileManager() {
+}
+
+void WFileManager::AddDefaultAsset(std::string name, WFileAsset* asset) {
+	m_defaultAssets.insert(std::make_pair(name, asset));
 }
 
 WFile::WFile(Wasabi* const app) : m_app(app) {
@@ -48,7 +54,6 @@ WError WFile::Open(std::string filename) {
 	m_file.seekg(0, ios::end);
 	std::streamsize maxFileSize = m_file.tellg();
 	m_file.seekg(0);
-	m_maxId = 0;
 
 	// Read the headers
 	WError err = WError(W_SUCCEEDED);
@@ -70,46 +75,67 @@ void WFile::Close() {
 	}
 	m_assetsMap.clear();
 	m_loadedAssetsMap.clear();
+	for (auto iter : m_headers)
+		for (uint i = 0; i < iter.assets.size(); i++)
+			delete iter.assets[i];
+	m_headers.clear();
+	m_fileSize = 0;
 }
 
-WError WFile::SaveAsset(WFileAsset* asset, uint* assetId) {
+WError WFile::SaveAsset(WFileAsset* asset) {
+	std::string name = asset->GetName();
+	std::string type = asset->GetTypeName();
+
 	if (!m_file.is_open())
 		return WError(W_FILENOTFOUND);
+
+	auto defaultIter = m_app->FileManager->m_defaultAssets.find(name);
+	if (defaultIter != m_app->FileManager->m_defaultAssets.end())
+		return WError(W_SUCCEEDED);
 
 	auto iter = m_loadedAssetsMap.find(asset);
 	if (iter != m_loadedAssetsMap.end()) {
-		if (assetId != nullptr)
-			*assetId = iter->second->id;
+		auto nameIter = m_assetsMap.find(iter->second->name);
+		if (nameIter == m_assetsMap.end())
+			return WError(W_ERRORUNK);
+		if (nameIter->second->loadedAsset != asset)
+			return WError(W_NAMECONFLICT);
 		return WError(W_SUCCEEDED);
 	}
 
+	std::streampos originalStart = m_file.tellp();
+	m_fileSize = max(m_fileSize, originalStart);
 	m_file.seekp(m_fileSize); // write it at the end
 	std::streampos start = m_file.tellp();
-	WError err = asset->SaveToStream(this, m_file);
+	WError status = asset->SaveToStream(this, m_file);
 	std::streampos writtenSize = m_file.tellp() - start;
 
-	if (!err)
-		return err;
+	if (status) {
+		WriteAssetToHeader(FILE_ASSET(start, writtenSize, name, type));
 
-	uint newAssetId = m_maxId + 1;
-	WriteAssetToHeader(WFile::FILE_ASSET(start, writtenSize, newAssetId));
+		FILE_ASSET* assetData = m_assetsMap.find(name)->second;
+		asset->m_file = this;
+		assetData->loadedAsset = asset;
+		m_loadedAssetsMap.insert(std::pair<WFileAsset*, FILE_ASSET*>(asset, assetData));
+	}
 
-	WFile::FILE_ASSET* assetData = m_assetsMap.find(newAssetId)->second;
-	asset->m_file = this;
-	assetData->loadedAsset = asset;
-	m_loadedAssetsMap.insert(std::pair<WFileAsset*, FILE_ASSET*>(asset, assetData));
+	m_file.seekp(originalStart);
 
-	if (assetId != nullptr)
-		*assetId = newAssetId;
-
-	return err;
+	return status;
 }
 
-WError WFile::LoadGenericAsset(uint assetId, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset) {
+WError WFile::LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*>& args) {
 	if (!m_file.is_open())
 		return WError(W_FILENOTFOUND);
 
-	auto iter = m_assetsMap.find(assetId);
+	auto defaultIter = m_app->FileManager->m_defaultAssets.find(name);
+	if (defaultIter != m_app->FileManager->m_defaultAssets.end()) {
+		*assetOut = defaultIter->second;
+		defaultIter->second->AddReference();
+		return WError(W_SUCCEEDED);
+	}
+
+	auto iter = m_assetsMap.find(name);
 	if (iter == m_assetsMap.end())
 		return WError(W_INVALIDPARAM); // no such asset exists
 
@@ -121,7 +147,7 @@ WError WFile::LoadGenericAsset(uint assetId, WFileAsset** assetOut, std::functio
 	} else {
 		*assetOut = createAsset();
 		m_file.seekg(assetData->start);
-		err = (*assetOut)->LoadFromStream(this, m_file);
+		err = (*assetOut)->LoadFromStream(this, m_file, args);
 		if (err) {
 			(*assetOut)->m_file = this;
 			assetData->loadedAsset = (*assetOut);
@@ -132,8 +158,28 @@ WError WFile::LoadGenericAsset(uint assetId, WFileAsset** assetOut, std::functio
 	return err;
 }
 
-void WFile::MarkFileEnd(std::streampos pos) {
-	m_fileSize = max(m_fileSize, pos);
+uint WFile::GetAssetsCount() const {
+	uint count = 0;
+	for (auto it : m_headers) {
+		count += it.assets.size();
+	}
+	return count;
+}
+
+std::pair<std::string, std::string> WFile::GetAssetInfo(uint index) {
+	for (auto it : m_headers) {
+		if (index < it.assets.size())
+			return std::make_pair(std::string(it.assets[index]->name), std::string(it.assets[index]->type));
+		index -= it.assets.size();
+	}
+	return std::make_pair(std::string(), std::string());
+}
+
+std::pair<std::string, std::string> WFile::GetAssetInfo(std::string name) {
+	auto it = m_assetsMap.find(name);
+	if (it != m_assetsMap.end())
+		return std::make_pair(std::string(it->second->name), std::string(it->second->type));
+	return std::make_pair(std::string(), std::string());
 }
 
 void WFile::ReleaseAsset(WFileAsset* asset) {
@@ -166,19 +212,20 @@ WError WFile::LoadHeaders(std::streamsize maxFileSize) {
 		m_fileSize = max(m_fileSize, header.dataStart + header.dataSize);
 
 		std::streamoff curDataOffset = header.dataStart;
-		FILE_ASSET curAsset(0, 0, 0);
+		FILE_ASSET curAsset(0, 0, "", "");
 		while (curDataOffset < header.dataStart + header.dataSize) {
 			if (maxFileSize < curDataOffset + FILE_ASSET::GetSize())
 				return WError(W_INVALIDFILEFORMAT);
 
 			m_file.read((char*)&curAsset, FILE_ASSET::GetSize());
 			curDataOffset += FILE_ASSET::GetSize();
+			if (curAsset.size < 0)
+				return WError(W_INVALIDFILEFORMAT);
 			if (curAsset.size == 0)
 				break;
 			header.assets.push_back(new FILE_ASSET(curAsset));
-			m_assetsMap.insert(std::pair<uint, FILE_ASSET*>(curAsset.id, header.assets[header.assets.size() - 1]));
+			m_assetsMap.insert(std::pair<std::string, FILE_ASSET*>(curAsset.name, header.assets[header.assets.size() - 1]));
 			m_fileSize = max(m_fileSize, curAsset.start + curAsset.size);
-			m_maxId = max(m_maxId, curAsset.id);
 		}
 
 		m_headers.push_back(header);
@@ -210,15 +257,14 @@ void WFile::CreateNewHeader() {
 	m_headers.push_back(header);
 }
 
-void WFile::WriteAssetToHeader(WFile::FILE_ASSET asset) {
+void WFile::WriteAssetToHeader(FILE_ASSET asset) {
 	FILE_HEADER* curHeader = &m_headers[m_headers.size() - 1];
 	m_file.seekp(curHeader->dataStart + curHeader->assets.size() * FILE_ASSET::GetSize());
 	m_file.write((char*)&asset, FILE_ASSET::GetSize());
 	curHeader->assets.push_back(new FILE_ASSET(asset));
-	m_assetsMap.insert(std::pair<uint, FILE_ASSET*>(asset.id, curHeader->assets[curHeader->assets.size()-1]));
+	m_assetsMap.insert(std::make_pair(asset.name, curHeader->assets[curHeader->assets.size()-1]));
 
 	m_fileSize = max(m_fileSize, asset.start + asset.size);
-	m_maxId = max(m_maxId + 1, asset.id);
 
 	if (curHeader->assets.size() * FILE_ASSET::GetSize() >= curHeader->dataSize) {
 		CreateNewHeader();

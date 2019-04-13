@@ -167,7 +167,8 @@ typedef struct W_BOUND_RESOURCE {
 		uint index,
 		std::string name,
 		std::vector<W_SHADER_VARIABLE_INFO> v =
-			std::vector<W_SHADER_VARIABLE_INFO>()
+			std::vector<W_SHADER_VARIABLE_INFO>(),
+		uint textureArraySize = 1
 	);
 	W_BOUND_RESOURCE(
 		W_SHADER_BOUND_RESOURCE_TYPE t,
@@ -175,7 +176,8 @@ typedef struct W_BOUND_RESOURCE {
 		uint set,
 		std::string name,
 		std::vector<W_SHADER_VARIABLE_INFO> v =
-			std::vector<W_SHADER_VARIABLE_INFO>()
+			std::vector<W_SHADER_VARIABLE_INFO>(),
+		uint textureArraySize = 1
 	);
 
 	/** Type of this resource */
@@ -190,7 +192,7 @@ typedef struct W_BOUND_RESOURCE {
 		textures */
 	std::vector<W_SHADER_VARIABLE_INFO> variables;
 	/** Cached size of the variables, after automatically padding variables
-	    to be 16-byte-aligned */
+	    to be 16-byte-aligned. In case of a texture, this is the array size */
 	size_t _size;
 	/** Aligned offsets of variables elements in the UBO */
 	std::vector<size_t> _offsets;
@@ -380,15 +382,9 @@ typedef struct W_SHADER_DESC {
  * ps->RemoveReference();
  * @endcode
  */
-class WShader : public WBase, public WFileAsset {
+class WShader : public WFileAsset {
 	friend class WEffect;
 	friend class WMaterial;
-
-	/**
-	 * Returns "Shader" string.
-	 * @return Returns "Shader" string
-	 */
-	virtual std::string GetTypeName() const;
 
 	char* m_code;
 	int m_codeLen;
@@ -430,6 +426,13 @@ protected:
 	void LoadCodeGLSLFromFile(std::string filename, bool bSaveData = false);
 
 public:
+	/**
+	 * Returns "Shader" string.
+	 * @return Returns "Shader" string
+	 */
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
+
 	WShader(class Wasabi* const app, unsigned int ID = 0);
 	~WShader();
 
@@ -450,8 +453,9 @@ public:
 	 */
 	virtual bool Valid() const;
 
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+	static std::vector<void*> LoadArgs(bool bSaveData = false);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 };
 
 /**
@@ -492,19 +496,19 @@ public:
  * ps->RemoveReference();
  * @endcode
  */
-class WEffect : public WBase, public WFileAsset {
+class WEffect : public WFileAsset {
 	friend class WMaterial;
-
-	/**
-	 * Returns "Effect" string.
-	 * @return Returns "Effect" string
-	 */
-	virtual std::string GetTypeName() const;
 
 protected:
 	virtual ~WEffect();
 
 public:
+	/**
+	 * Returns "Effect" string.
+	 * @return Returns "Effect" string
+	 */
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
 	WEffect(class Wasabi* const app, unsigned int ID = 0);
 
@@ -629,8 +633,9 @@ public:
 	 */
 	virtual bool Valid() const;
 
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+	static std::vector<void*> LoadArgs(class WRenderTarget* rt, bool bSaveData = false);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	/** List of pipelines created for this effect */

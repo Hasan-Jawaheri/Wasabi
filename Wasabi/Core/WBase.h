@@ -107,6 +107,4 @@ private:
 	std::string m_name;
 	/** The manager of the object */
 	void* m_mgr;
-	/** Debug value, used to track changes */
-	int m_iDbgChanges;
 };

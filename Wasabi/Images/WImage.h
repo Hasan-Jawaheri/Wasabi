@@ -44,21 +44,21 @@ inline W_IMAGE_CREATE_FLAGS& operator &= (W_IMAGE_CREATE_FLAGS& lhs, W_IMAGE_CRE
  * @ingroup engineclass
  * This class represents an image, or texture, used by Wasabi.
  */
-class WImage : public WBase, public WFileAsset {
+class WImage : public WFileAsset {
 	friend class WRenderTarget;
 	friend class WImageManager;
 	friend class WFileAsset;
-
-	/**
-	 * Returns "Image" string.
-	 * @return Returns "Image" string
-	 */
-	virtual std::string GetTypeName() const;
 
 protected:
 	virtual ~WImage();
 
 public:
+	/**
+	 * Returns "Image" string.
+	 * @return Returns "Image" string
+	 */
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
 	WImage(class Wasabi* const app, unsigned int ID = 0);
 
@@ -190,6 +190,13 @@ public:
 	VkImageLayout GetViewLayout() const;
 
 	/**
+	 * Transitions the layout of the currently buffered image to the specified layout
+	 * @param cmdBuf     Command buffer to perform the transition in
+	 * @param newLayout  New Vulkan layout for the underlying image
+	 */
+	void TransitionLayoutTo(VkCommandBuffer cmdBuf, VkImageLayout newLayout);
+
+	/**
 	 * Retrieves the Vulkan format used for this image.
 	 * @return The format of the image
 	 */
@@ -220,8 +227,9 @@ public:
 	 */
 	unsigned int GetPixelSize() const;
 
+	static std::vector<void*> LoadArgs(W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE);
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	/** Buffered image resource */

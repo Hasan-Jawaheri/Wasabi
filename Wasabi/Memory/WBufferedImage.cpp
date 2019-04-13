@@ -244,6 +244,17 @@ VkImageLayout WBufferedImage2D::GetLayout(uint bufferIndex) const {
 	return m_layouts[bufferIndex];
 }
 
+void WBufferedImage2D::TransitionLayoutTo(VkCommandBuffer cmdBuf, VkImageLayout newLayout, uint bufferIndex) {
+	bufferIndex = bufferIndex % m_images.size();
+	vkTools::setImageLayout(
+		cmdBuf,
+		m_images[bufferIndex].img,
+		m_aspect,
+		m_layouts[bufferIndex],
+		newLayout);
+	m_layouts[bufferIndex] = newLayout;
+}
+
 bool WBufferedImage2D::Valid() const {
 	return m_bufferSize > 0;
 }

@@ -75,6 +75,8 @@ WError WImageManager::Load() {
 		W_SAFE_REMOVEREF(m_checkerImage);
 		return werr;
 	}
+	m_checkerImage->SetName("DefaultCheckersImage");
+	m_app->FileManager->AddDefaultAsset(m_checkerImage->GetName(), m_checkerImage);
 
 	return WError(W_SUCCEEDED);
 }
@@ -117,7 +119,7 @@ void WImageManager::UpdateDynamicImages(uint bufferIndex) const {
 	}
 }
 
-WImage::WImage(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WImage::WImage(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID) {
 	m_app->ImageManager->AddEntity(this);
 }
 WImage::~WImage() {
@@ -126,8 +128,12 @@ WImage::~WImage() {
 	m_app->ImageManager->RemoveEntity(this);
 }
 
-std::string WImage::GetTypeName() const {
+std::string WImage::_GetTypeName() {
 	return "Image";
+}
+
+std::string WImage::GetTypeName() const {
+	return _GetTypeName();
 }
 
 bool WImage::Valid() const {
@@ -311,6 +317,11 @@ VkImageView WImage::GetView() const {
 	return m_bufferedImage.GetView(m_app, bufferIndex);
 }
 
+void WImage::TransitionLayoutTo(VkCommandBuffer cmdBuf, VkImageLayout newLayout) {
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	return m_bufferedImage.TransitionLayoutTo(cmdBuf, newLayout, bufferIndex);
+}
+
 VkImageLayout WImage::GetViewLayout() const {
 	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	return m_bufferedImage.GetLayout(bufferIndex);
@@ -354,8 +365,17 @@ WError WImage::SaveToStream(WFile* file, std::ostream& outputStream) {
 	return err;
 }
 
-WError WImage::LoadFromStream(WFile* file, std::istream& inputStream) {
-	W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE;
+std::vector<void*> WImage::LoadArgs(W_IMAGE_CREATE_FLAGS flags) {
+	return std::vector<void*>({
+		(void*)flags,
+	});
+}
+
+WError WImage::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+	if (args.size() != 1)
+		return WError(W_INVALIDPARAM);
+	W_IMAGE_CREATE_FLAGS flags = (W_IMAGE_CREATE_FLAGS)(int)(args[0]);
+
 	uint width, height;
 	VkFormat format;
 

@@ -42,8 +42,12 @@ WBulletRigidBody::~WBulletRigidBody() {
 	m_app->PhysicsComponent->RigidBodyManager->RemoveEntity(this);
 }
 
-std::string WBulletRigidBody::GetTypeName() const {
+std::string WBulletRigidBody::_GetTypeName() {
 	return "RigidBody";
+}
+
+std::string WBulletRigidBody::GetTypeName() const {
+	return _GetTypeName();
 }
 
 void WBulletRigidBody::_DestroyResources() {
@@ -335,31 +339,33 @@ WError WBulletRigidBody::SaveToStream(class WFile* file, std::ostream& outputStr
 		return WError(W_NOTVALID);
 
 	outputStream.write((char*)m_savedCreateInfo, sizeof(W_RIGID_BODY_CREATE_INFO));
-	uint tmpId = 0;
-	std::streamoff geometryIdPos = outputStream.tellp();
-	outputStream.write((char*)&tmpId, sizeof(tmpId));
+	char geometryName[W_MAX_ASSET_NAME_SIZE];
+	strcpy(geometryName, m_savedCreateInfo->geometry->GetName().c_str());
+	outputStream.write(geometryName, W_MAX_ASSET_NAME_SIZE);
 
-	_MarkFileEnd(file, outputStream.tellp());
-
-	WError err = file->SaveAsset(m_savedCreateInfo->geometry, &tmpId);
-	if (err) {
-		outputStream.seekp(geometryIdPos);
-		outputStream.write((char*)&tmpId, sizeof(tmpId));
-	}
-
+	WError err = file->SaveAsset(m_savedCreateInfo->geometry);
 	return err;
 }
 
-WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputStream) {
-	bool bSaveInfo = false;
+std::vector<void*> WBulletRigidBody::LoadArgs(bool bSaveInfo) {
+	return std::vector<void*>({
+		(void*)bSaveInfo,
+	});
+}
+
+WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+	if (args.size() != 1)
+		return WError(W_INVALIDPARAM);
+	bool bSaveInfo = (bool)args[0];
+
 	_DestroyResources();
 
 	W_RIGID_BODY_CREATE_INFO info;
 	inputStream.read((char*)&info, sizeof(W_RIGID_BODY_CREATE_INFO));
 	info.orientation = nullptr;
-	uint geometryId;
-	inputStream.read((char*)&geometryId, sizeof(geometryId));
-	WError err = file->LoadAsset(geometryId, &info.geometry);
+	char geometryName[W_MAX_ASSET_NAME_SIZE];
+	inputStream.read(geometryName, W_MAX_ASSET_NAME_SIZE);
+	WError err = file->LoadAsset<WGeometry>(geometryName, &info.geometry, WGeometry::LoadArgs());
 	if (err) {
 		Create(info, bSaveInfo);
 		info.geometry->RemoveReference();

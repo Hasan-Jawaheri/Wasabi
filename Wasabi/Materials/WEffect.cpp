@@ -133,27 +133,33 @@ W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 	W_SHADER_BOUND_RESOURCE_TYPE t,
 	uint index,
 	std::string _name,
-	std::vector<W_SHADER_VARIABLE_INFO> v
-) : W_BOUND_RESOURCE(t, index, 0, _name, v) {}
+	std::vector<W_SHADER_VARIABLE_INFO> v,
+	uint textureArraySize
+) : W_BOUND_RESOURCE(t, index, 0, _name, v, textureArraySize) {}
 
 W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 	W_SHADER_BOUND_RESOURCE_TYPE t,
 	uint index,
 	uint set,
 	std::string _name,
-	std::vector<W_SHADER_VARIABLE_INFO> v
+	std::vector<W_SHADER_VARIABLE_INFO> v,
+	uint textureArraySize
 ) : variables(v), type(t), binding_index(index), binding_set(set), name(_name) {
-	size_t curOffset = 0;
-	_offsets.resize(variables.size());
-	for (int i = 0; i < variables.size(); i++) {
-		int varSize = variables[i].GetSize();
-		int varAlignment = variables[i].GetAlignment();
-		if (curOffset % varAlignment > 0)
-			curOffset += varAlignment - (curOffset % varAlignment); // apply alignment
-		_offsets[i] = curOffset;
-		curOffset += varSize;
+	if (t == W_TYPE_UBO) {
+		size_t curOffset = 0;
+		_offsets.resize(variables.size());
+		for (int i = 0; i < variables.size(); i++) {
+			int varSize = variables[i].GetSize();
+			int varAlignment = variables[i].GetAlignment();
+			if (curOffset % varAlignment > 0)
+				curOffset += varAlignment - (curOffset % varAlignment); // apply alignment
+			_offsets[i] = curOffset;
+			curOffset += varSize;
+		}
+		_size = curOffset;
+	} else if (t == W_TYPE_TEXTURE) {
+		_size = textureArraySize;
 	}
-	_size = curOffset;
 }
 
 size_t W_BOUND_RESOURCE::GetSize() const {
@@ -190,11 +196,15 @@ std::string WShaderManager::GetTypeName(void) const {
 WShaderManager::WShaderManager(class Wasabi* const app) : WManager<WShader>(app) {
 }
 
-std::string WShader::GetTypeName() const {
+std::string WShader::_GetTypeName() {
 	return "Shader";
 }
 
-WShader::WShader(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+std::string WShader::GetTypeName() const {
+	return _GetTypeName();
+}
+
+WShader::WShader(class Wasabi* const app, unsigned int ID) : WFileAsset(app, ID) {
 	m_module = VK_NULL_HANDLE;
 	m_code = nullptr;
 	m_codeLen = 0;
@@ -336,8 +346,16 @@ WError WShader::SaveToStream(class WFile* file, std::ostream& outputStream) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream) {
-	bool bSaveData = false;
+std::vector<void*> WShader::LoadArgs(bool bSaveData) {
+	return std::vector<void*>({
+		(void*)bSaveData,
+	});
+}
+
+WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+	if (args.size() != 1)
+		return WError(W_INVALIDPARAM);
+	bool bSaveData = (bool)args[0];
 
 	inputStream.read((char*)&m_isSPIRV, sizeof(m_isSPIRV));
 	inputStream.read((char*)&m_codeLen, sizeof(m_codeLen));
@@ -437,7 +455,7 @@ std::string WEffectManager::GetTypeName(void) const {
 WEffectManager::WEffectManager(class Wasabi* const app) : WManager<WEffect>(app) {
 }
 
-WEffect::WEffect(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_depthStencilState({}) {
+WEffect::WEffect(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID), m_depthStencilState({}) {
 	m_vertexShaderIndex = -1;
 
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -486,8 +504,12 @@ WEffect::~WEffect() {
 	m_app->EffectManager->RemoveEntity(this);
 }
 
-std::string WEffect::GetTypeName() const {
+std::string WEffect::_GetTypeName() {
 	return "Effect";
+}
+
+std::string WEffect::GetTypeName() const {
+	return _GetTypeName();
 }
 
 bool WEffect::_ValidShaders() const {
@@ -617,7 +639,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 				} else if (boundResource->type == W_TYPE_TEXTURE) {
 					layoutBinding.binding = boundResource->binding_index;
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					layoutBinding.descriptorCount = 1;
+					layoutBinding.descriptorCount = boundResource->GetSize();
 				}
 				auto iter = layoutBindingsMap.find(boundResource->binding_set);
 				if (iter == layoutBindingsMap.end()) {
@@ -872,27 +894,37 @@ WError WEffect::SaveToStream(WFile* file, std::ostream& outputStream) {
 	tmp = m_blendStates.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	outputStream.write((char*)m_blendStates.data(), m_blendStates.size() * sizeof(VkPipelineColorBlendAttachmentState));
+
 	tmp = m_shaders.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
-	std::streampos shaderIdsBegin = outputStream.tellp();
+	char tmpName[W_MAX_ASSET_NAME_SIZE];
 	for (uint i = 0; i < m_shaders.size(); i++) {
-		tmp = 0;
-		outputStream.write((char*)&tmp, sizeof(tmp));
+		strcpy(tmpName, m_shaders[i]->GetName().c_str());
+		outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
 	}
-	_MarkFileEnd(file, outputStream.tellp());
+
 	for (uint i = 0; i < m_shaders.size(); i++) {
-		WError err = file->SaveAsset(m_shaders[i], &tmp);
+		WError err = file->SaveAsset(m_shaders[i]);
 		if (!err)
 			return err;
-		outputStream.seekp(shaderIdsBegin + std::streamoff(i * sizeof(uint)));
-		outputStream.write((char*)&tmp, sizeof(tmp));
 	}
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream) {
-	WRenderTarget* rt = m_app->Renderer->GetRenderTarget();
+std::vector<void*> WEffect::LoadArgs(WRenderTarget* rt, bool bSaveData) {
+	return std::vector<void*>({
+		(void*)rt,
+		(void*)bSaveData,
+	});
+}
+
+WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+	if (args.size() != 2)
+		return WError(W_INVALIDPARAM);
+	WRenderTarget* rt = (WRenderTarget*)args[0];
+	bool bSaveData = (bool)args[1];
+
 	_DestroyPipeline();
 
 	uint tmp;
@@ -902,16 +934,20 @@ WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream) {
 	inputStream.read((char*)&tmp, sizeof(tmp));
 	m_blendStates.resize(tmp);
 	inputStream.read((char*)m_blendStates.data(), m_blendStates.size() * sizeof(VkPipelineColorBlendAttachmentState));
+
 	inputStream.read((char*)&tmp, sizeof(tmp));
 
-	vector<uint> dependencyIds(tmp);
-	for (uint i = 0; i < tmp; i++)
-		inputStream.read((char*)&dependencyIds[i], sizeof(uint));
+	std::vector<std::string> dependencyNames(tmp);
+	for (uint i = 0; i < tmp; i++) {
+		char tmpName[W_MAX_ASSET_NAME_SIZE];
+		inputStream.read(tmpName, W_MAX_ASSET_NAME_SIZE);
+		dependencyNames[i] = std::string(tmpName);
+	}
 
 	WError err;
-	for (uint i = 0; i < dependencyIds.size(); i++) {
+	for (uint i = 0; i < dependencyNames.size(); i++) {
 		WShader* shader;
-		err = file->LoadAsset<WShader>(dependencyIds[i], &shader);
+		err = file->LoadAsset<WShader>(dependencyNames[i], &shader, WShader::LoadArgs(bSaveData));
 		if (!err)
 			break;
 		err = BindShader(shader);

@@ -118,20 +118,21 @@ private:
  * object's desired position, orientation and scale. A WObject also provides
  * an easy way to apply animations and instancing on rendered geometry.
  */
-class WObject : public WBase, public WOrientation, public WFileAsset, public WMaterialsStore {
+class WObject : public WOrientation, public WFileAsset, public WMaterialsStore {
 	friend class WObjectManager;
 
+protected:
+	virtual ~WObject();
+
+public:
 	/**
 	 * Returns "Object" string.
 	 * @return Returns "Object" string
 	 */
 	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
-protected:
 	WObject(Wasabi* const app, unsigned int ID = 0);
-	virtual ~WObject();
-
-public:
 
 	/**
 	 * Checks whether a call to Render() will cause any rendering (draw call) to
@@ -330,8 +331,9 @@ public:
 	/**
 	 * Animations can only be saved if they are an instance of WSkeleton
 	 */
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+	static std::vector<void*> LoadArgs();
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	/** Attached geometry */

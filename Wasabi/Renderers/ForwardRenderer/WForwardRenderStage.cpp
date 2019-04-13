@@ -45,6 +45,7 @@ W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
+		W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 1), // texture index
 	}), W_INPUT_LAYOUT({
 		W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone indices
 		W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weights
@@ -69,7 +70,7 @@ W_SHADER_DESC WForwardRenderStageObjectPS::GetDesc(int maxLights) {
 	desc.bound_resources = {
 		WForwardRenderStageObjectVS::GetDesc(maxLights).bound_resources[0],
 		WForwardRenderStageObjectVS::GetDesc(maxLights).bound_resources[1],
-		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture"),
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture", {}, 8),
 	};
 	return desc;
 }
@@ -93,6 +94,7 @@ WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) 
 
 	m_lights.resize((int)m_app->engineParams["maxLights"]);
 
+	m_currentMatId = 0;
 	m_defaultFX = nullptr;
 	m_perFrameMaterial = nullptr;
 }
@@ -103,12 +105,18 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 		return err;
 
 	WForwardRenderStageObjectVS* vs = new WForwardRenderStageObjectVS(m_app);
+	vs->SetName("DefaultForwardVS");
+	m_app->FileManager->AddDefaultAsset(vs->GetName(), vs);
 	vs->Load();
 
 	WForwardRenderStageObjectPS* ps = new WForwardRenderStageObjectPS(m_app);
+	ps->SetName("DefaultForwardPS");
+	m_app->FileManager->AddDefaultAsset(ps->GetName(), ps);
 	ps->Load();
 
 	m_defaultFX = new WEffect(m_app);
+	m_defaultFX->SetName("DefaultForwardEffect");
+	m_app->FileManager->AddDefaultAsset(m_defaultFX->GetName(), m_defaultFX);
 	err = m_defaultFX->BindShader(vs);
 	if (err) {
 		err = m_defaultFX->BindShader(ps);
@@ -124,6 +132,8 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	m_perFrameMaterial = m_defaultFX->CreateMaterial(1);
 	if (!m_perFrameMaterial)
 		return WError(W_ERRORUNK);
+	m_perFrameMaterial->SetName("PerFrameForwardMaterial");
+	m_app->FileManager->AddDefaultAsset(m_perFrameMaterial->GetName(), m_perFrameMaterial);
 
 	for (unsigned int i = 0; i < m_app->ObjectManager->GetEntitiesCount(); i++)
 		OnObjectChange(m_app->ObjectManager->GetEntityByIndex(i), true);
@@ -134,8 +144,10 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 void WForwardRenderStage::OnObjectChange(class WObject* object, bool added) {
 	if (added) {
-		if (!object->GetDefaultEffect())
+		if (!object->GetDefaultEffect()) {
 			object->AddEffect(this->m_defaultFX, 0);
+			object->GetMaterial(this->m_defaultFX)->SetName("ForwardRendererMaterial" + std::to_string(this->m_currentMatId++));
+		}
 		ObjectKey key(object);
 		this->m_allObjects.insert(std::make_pair(key, object));
 	} else {

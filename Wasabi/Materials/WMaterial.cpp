@@ -11,7 +11,7 @@ std::string WMaterialManager::GetTypeName() const {
 WMaterialManager::WMaterialManager(class Wasabi* const app) : WManager<WMaterial>(app) {
 }
 
-WMaterial::WMaterial(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WMaterial::WMaterial(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID) {
 	m_descriptorPool = VK_NULL_HANDLE;
 	m_effect = nullptr;
 
@@ -24,8 +24,12 @@ WMaterial::~WMaterial() {
 	m_app->MaterialManager->RemoveEntity(this);
 }
 
-std::string WMaterial::GetTypeName() const {
+std::string WMaterial::_GetTypeName() {
 	return "Material";
+}
+
+std::string WMaterial::GetTypeName() const {
+	return _GetTypeName();
 }
 
 bool WMaterial::Valid() const {
@@ -40,8 +44,10 @@ void WMaterial::_DestroyResources() {
 	m_uniformBuffers.clear();
 
 	for (int i = 0; i < m_sampler_info.size(); i++) {
-		if (m_sampler_info[i].img)
-			m_sampler_info[i].img->RemoveReference();
+		for (uint j = 0; j < m_sampler_info[i].images.size(); j++) {
+			if (m_sampler_info[i].images[j])
+				W_SAFE_REMOVEREF(m_sampler_info[i].images[j]);
+		}
 	}
 	m_sampler_info.clear();
 
@@ -67,6 +73,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 	// Create the uniform buffers
 	//
 	uint numBuffers = (uint)m_app->engineParams["bufferingCount"];
+	uint writeDescriptorsSize = 0;
 	for (int i = 0; i < effect->m_shaders.size(); i++) {
 		WShader* shader = effect->m_shaders[i];
 		for (int j = 0; j < shader->m_desc.bound_resources.size(); j++) {
@@ -103,6 +110,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 				}
 
 				m_uniformBuffers.push_back(ubo);
+				writeDescriptorsSize += ubo.descriptorBufferInfos.size();
 			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_TEXTURE) {
 				bool already_added = false;
 				for (int k = 0; k < m_sampler_info.size(); k++) {
@@ -114,21 +122,31 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 				if (already_added)
 					continue;
 
+				uint textureArraySize = shader->m_desc.bound_resources[j].GetSize();
 				SAMPLER_INFO sampler = {};
-				sampler.img = m_app->ImageManager->GetDefaultImage();
-				sampler.img->AddReference();
+
+				sampler.images.resize(textureArraySize);
+				for (uint k = 0; k < textureArraySize; k++) {
+					sampler.images[k] = m_app->ImageManager->GetDefaultImage();
+					sampler.images[k]->AddReference();
+				}
+
 				sampler.descriptors.resize(numBuffers);
-				for (auto descriptor = sampler.descriptors.begin(); descriptor != sampler.descriptors.end(); descriptor++) {
-					descriptor->sampler = m_app->Renderer->GetTextureSampler();
-					descriptor->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-					descriptor->imageView = VK_NULL_HANDLE; // // will be assigned in the Bind() function
+				for (auto descriptors = sampler.descriptors.begin(); descriptors != sampler.descriptors.end(); descriptors++) {
+					descriptors->resize(textureArraySize);
+					for (auto descriptor = descriptors->begin(); descriptor != descriptors->end(); descriptor++) {
+						descriptor->sampler = m_app->Renderer->GetTextureSampler();
+						descriptor->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+						descriptor->imageView = VK_NULL_HANDLE; // // will be assigned in the Bind() function
+					}
 				}
 				sampler.sampler_info = &shader->m_desc.bound_resources[j];
 				m_sampler_info.push_back(sampler);
+				writeDescriptorsSize += sampler.descriptors.size() * sampler.descriptors[0].size();
 			}
 		}
 	}
-	m_writeDescriptorSets.resize((m_sampler_info.size() + m_uniformBuffers.size()) * numBuffers);
+	m_writeDescriptorSets.resize(writeDescriptorsSize);
 
 	//
 	// Create descriptor pool
@@ -144,7 +162,9 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 	if (m_sampler_info.size() > 0) {
 		VkDescriptorPoolSize s;
 		s.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		s.descriptorCount = m_sampler_info.size() * numBuffers;
+		s.descriptorCount = 0;
+		for (uint i = 0; i < m_sampler_info.size(); i++)
+			s.descriptorCount += m_sampler_info[i].images.size() * numBuffers;
 		typeCounts.push_back(s);
 	}
 
@@ -231,21 +251,26 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 	// update textures that changed
 	for (auto sampler = m_sampler_info.begin(); sampler != m_sampler_info.end(); sampler++) {
 		W_BOUND_RESOURCE* info = sampler->sampler_info;
-		if (sampler->img && sampler->img->Valid()) {
-			if (sampler->descriptors[bufferIndex].imageView != sampler->img->GetView()) {
-				sampler->descriptors[bufferIndex].imageView = sampler->img->GetView();
-				sampler->descriptors[bufferIndex].imageLayout = sampler->img->GetViewLayout();
-
-				VkWriteDescriptorSet writeDescriptorSet = {};
-				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				writeDescriptorSet.dstSet = m_descriptorSets[bufferIndex];
-				writeDescriptorSet.descriptorCount = 1;
-				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				writeDescriptorSet.pImageInfo = &sampler->descriptors[bufferIndex];
-				writeDescriptorSet.dstBinding = info->binding_index;
-
-				m_writeDescriptorSets[numUpdateDescriptors++] = writeDescriptorSet;
+		bool bChanged = false;
+		for (uint textureArrayIndex = 0; textureArrayIndex < sampler->images.size(); textureArrayIndex++) {
+			if (sampler->images[textureArrayIndex] && sampler->images[textureArrayIndex]->Valid()) {
+				if (sampler->descriptors[bufferIndex][textureArrayIndex].imageView != sampler->images[textureArrayIndex]->GetView()) {
+					sampler->descriptors[bufferIndex][textureArrayIndex].imageView = sampler->images[textureArrayIndex]->GetView();
+					sampler->descriptors[bufferIndex][textureArrayIndex].imageLayout = sampler->images[textureArrayIndex]->GetViewLayout();
+					bChanged = true;
+				}
 			}
+		}
+		if (bChanged) {
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = m_descriptorSets[bufferIndex];
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDescriptorSet.descriptorCount = sampler->descriptors[bufferIndex].size();
+			writeDescriptorSet.pImageInfo = sampler->descriptors[bufferIndex].data();
+			writeDescriptorSet.dstBinding = info->binding_index;
+
+			m_writeDescriptorSets[numUpdateDescriptors++] = writeDescriptorSet;
 		}
 	}
 	if (numUpdateDescriptors > 0)
@@ -259,6 +284,10 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 VkDescriptorSet WMaterial::GetDescriptorSet() const {
 	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	return m_descriptorSets[bufferIndex];
+}
+
+WEffect* WMaterial::GetEffect() const {
+	return m_effect;
 }
 
 WError WMaterial::SetVariableFloat(const char* varName, float fVal) {
@@ -319,45 +348,50 @@ WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
 }
 
-WError WMaterial::SetTexture(int binding_index, WImage* img) {
+WError WMaterial::SetTexture(int binding_index, WImage* img, uint arrayIndex) {
 	VkDevice device = m_app->GetVulkanDevice();
 	bool isFound = false;
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
 		if (info->binding_index == binding_index) {
-			if (m_sampler_info[i].img)
-				W_SAFE_REMOVEREF(m_sampler_info[i].img);
-			if (img) {
-				m_sampler_info[i].img = img;
-				img->AddReference();
-			} else {
-				m_sampler_info[i].img = m_app->ImageManager->GetDefaultImage();
-				m_app->ImageManager->GetDefaultImage()->AddReference();
+			if (arrayIndex < m_sampler_info[i].images.size()) {
+				if (m_sampler_info[i].images[arrayIndex]) {
+					W_SAFE_REMOVEREF(m_sampler_info[i].images[arrayIndex]);
+				}
+				if (img) {
+					m_sampler_info[i].images[arrayIndex] = img;
+					img->AddReference();
+				} else {
+					m_sampler_info[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
+					m_app->ImageManager->GetDefaultImage()->AddReference();
+				}
+				isFound = true;
 			}
-
-			isFound = true;
 		}
 	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
 }
 
-WError WMaterial::SetTexture(std::string name, WImage* img) {
+WError WMaterial::SetTexture(std::string name, WImage* img, uint arrayIndex) {
 	VkDevice device = m_app->GetVulkanDevice();
 	bool isFound = false;
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
 		if (info->name == name) {
-			if (m_sampler_info[i].img)
-				W_SAFE_REMOVEREF(m_sampler_info[i].img);
-			if (img) {
-				m_sampler_info[i].img = img;
-				img->AddReference();
-			} else {
-				m_sampler_info[i].img = m_app->ImageManager->GetDefaultImage();
-				m_app->ImageManager->GetDefaultImage()->AddReference();
+			if (arrayIndex < m_sampler_info[i].images.size()) {
+				if (m_sampler_info[i].images[arrayIndex]) {
+					W_SAFE_REMOVEREF(m_sampler_info[i].images[arrayIndex]);
+				}
+				if (img) {
+					m_sampler_info[i].images[arrayIndex] = img;
+					img->AddReference();
+				}
+				else {
+					m_sampler_info[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
+					m_app->ImageManager->GetDefaultImage()->AddReference();
+				}
+				isFound = true;
 			}
-
-			isFound = true;
 		}
 	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
@@ -374,53 +408,59 @@ WError WMaterial::SaveToStream(WFile* file, std::ostream& outputStream) {
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	for (uint i = 0; i < m_uniformBuffers.size(); i++) {
 		UNIFORM_BUFFER_INFO* UBO = &m_uniformBuffers[i];
-		tmp = UBO->ubo_info->GetSize();
-		outputStream.write((char*)&tmp, sizeof(tmp));
-		outputStream.write((char*)UBO->data, tmp);
+		VkDeviceSize size = UBO->ubo_info->GetSize();
+		outputStream.write((char*)& size, sizeof(size));
+		outputStream.write((char*)UBO->data, size);
 	}
 
 	// write the texture data
+	char tmpName[W_MAX_ASSET_NAME_SIZE];
 	tmp = m_sampler_info.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	std::streampos texturesOffset = outputStream.tellp();
 	for (uint i = 0; i < m_sampler_info.size(); i++) {
 		SAMPLER_INFO* SI = &m_sampler_info[i];
-		tmp = 0;
+		outputStream.write((char*)& SI->sampler_info->binding_index, sizeof(SI->sampler_info->binding_index));
+		tmp = SI->images.size();
 		outputStream.write((char*)&tmp, sizeof(tmp));
-		outputStream.write((char*)&SI->sampler_info->binding_index, sizeof(SI->sampler_info->binding_index));
+		for (uint j = 0; j < SI->images.size(); j++) {
+			strcpy(tmpName, SI->images[j]->GetName().c_str());
+			outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
+		}
 	}
 	outputStream.write((char*)&m_setIndex, sizeof(m_setIndex));
-	outputStream.write((char*)&tmp, sizeof(tmp)); // effect id
-	_MarkFileEnd(file, outputStream.tellp());
+
+	strcpy(tmpName, m_effect->GetName().c_str());
+	outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
 
 	// save dependencies
 	for (uint i = 0; i < m_sampler_info.size(); i++) {
 		SAMPLER_INFO* SI = &m_sampler_info[i];
-		if (SI->img) {
-			WError err = file->SaveAsset(SI->img, &tmp);
+		for (uint j = 0; j < SI->images.size(); j++) {
+			WError err = file->SaveAsset(SI->images[j]);
 			if (!err)
 				return err;
-			outputStream.seekp(texturesOffset + std::streamoff(i * (2 * sizeof(uint))));
-			outputStream.write((char*)&tmp, sizeof(tmp));
 		}
 	}
-	WError err = file->SaveAsset(m_effect, &tmp);
+	WError err = file->SaveAsset(m_effect);
 	if (!err)
 		return err;
-	outputStream.seekp(texturesOffset + std::streamoff(m_sampler_info.size() * (2 * sizeof(uint))));
-	outputStream.write((char*)&tmp, sizeof(tmp));
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream) {
+std::vector<void*> WMaterial::LoadArgs() {
+	return std::vector<void*>({});
+}
+
+WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
 	_DestroyResources();
 
 	VkDevice device = m_app->GetVulkanDevice();
 
 	// read the UBO data
 	uint numUBOs;
-	vector<std::pair<VkDeviceSize, void*>> uboData;
+	std::vector<std::pair<VkDeviceSize, void*>> uboData;
 	inputStream.read((char*)&numUBOs, sizeof(numUBOs));
 	for (uint i = 0; i < numUBOs; i++) {
 		VkDeviceSize size;
@@ -431,31 +471,41 @@ WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream) {
 
 	// read the texture data
 	uint numTextures;
-	vector<std::pair<uint, uint>> textureData;
+	std::vector<std::pair<uint, std::vector<std::string>>> textureData;
 	inputStream.read((char*)&numTextures, sizeof(numTextures));
 	for (uint i = 0; i < numTextures; i++) {
-		uint tid, index;
-		inputStream.read((char*)&tid, sizeof(tid));
+		uint arraySize, index;
 		inputStream.read((char*)&index, sizeof(index));
-		textureData.push_back(std::pair<uint, uint>(tid, index));
+		inputStream.read((char*)&arraySize, sizeof(arraySize));
+		std::vector<std::string> names(arraySize);
+		for (uint j = 0; j < arraySize; j++) {
+			char tmpName[W_MAX_ASSET_NAME_SIZE];
+			inputStream.read(tmpName, W_MAX_ASSET_NAME_SIZE);
+			names[j] = std::string(tmpName);
+		}
+		textureData.push_back(std::make_pair(index, names));
 	}
 	inputStream.read((char*)&m_setIndex, sizeof(m_setIndex));
-	uint fxId;
-	inputStream.read((char*)&fxId, sizeof(fxId));
+	char effectName[W_MAX_ASSET_NAME_SIZE];
+	inputStream.read(effectName, W_MAX_ASSET_NAME_SIZE);
 
 	// load dependencies
 	WEffect* fx;
-	WError err = file->LoadAsset<WEffect>(fxId, &fx);
+	WError err = file->LoadAsset<WEffect>(effectName, &fx, WEffect::LoadArgs(m_app->Renderer->GetRenderTarget()));
 	if (err) {
 		err = CreateForEffect(fx, m_setIndex);
 		fx->RemoveReference();
 		if (err) {
 			for (uint i = 0; i < textureData.size() && err; i++) {
-				WImage* tex;
-				err = file->LoadAsset<WImage>(textureData[i].first, &tex);
-				if (err) {
-					err = SetTexture(textureData[i].second, tex);
-					tex->RemoveReference();
+				uint bindingIndex = textureData[i].first;
+				std::vector<std::string>& textureNames = textureData[i].second;
+				for (uint j = 0; j < textureNames.size(); j++) {
+					WImage* tex;
+					err = file->LoadAsset<WImage>(textureNames[j], &tex, WImage::LoadArgs());
+					if (err) {
+						err = SetTexture(bindingIndex, tex, j);
+						tex->RemoveReference();
+					}
 				}
 			}
 		}

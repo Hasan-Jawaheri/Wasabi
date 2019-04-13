@@ -11,6 +11,7 @@ void WMaterialsStore::AddEffect(WEffect* effect, unsigned int bindingSet) {
 	effect->AddReference();
 	RemoveEffect(effect);
 	WMaterial* material = effect->CreateMaterial(bindingSet);
+	material->SetName(effect->GetName() + "-" + material->GetName());
 	if (material) {
 		m_materialMap.insert(std::pair<WEffect*, WMaterial*>(effect, material));
 		if (!m_defaultEffect)

@@ -211,7 +211,7 @@ void WInstance::OnStateChange(STATE_CHANGE_TYPE type) {
 	m_bAltered = true;
 }
 
-WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_instanceV(0) {
+WObject::WObject(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID), m_instanceV(0) {
 	m_geometry = nullptr;
 	m_animation = nullptr;
 
@@ -238,8 +238,12 @@ WObject::~WObject() {
 	m_app->ObjectManager->RemoveEntity(this);
 }
 
-std::string WObject::GetTypeName() const {
+std::string WObject::_GetTypeName() {
 	return "Object";
+}
+
+std::string WObject::GetTypeName() const {
+	return _GetTypeName();
 }
 
 bool WObject::Valid() const {
@@ -493,28 +497,43 @@ WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
 		outputStream.write((char*)&rot, sizeof(rot));
 	}
 
-	uint tmpId = 0;
-	std::streamoff dependenciesStart = outputStream.tellp();
-	WFileAsset* dependencies[3] = { m_geometry, m_animation };
-	for (uint i = 0; i < sizeof(dependencies) / sizeof(WFileAsset*); i++)
-		outputStream.write((char*)&tmpId, sizeof(tmpId));
+	uint numMaterials = m_materialMap.size();
+	outputStream.write((char*)&numMaterials, sizeof(uint));
 
-	_MarkFileEnd(file, outputStream.tellp());
+	char tmpName[W_MAX_ASSET_NAME_SIZE];
+	std::vector<WFileAsset*> dependencies({ m_geometry, m_animation });
+	if (m_defaultEffect)
+		dependencies.push_back(GetMaterial());
+	for (auto it = m_materialMap.begin(); it != m_materialMap.end(); it++) {
+		if (it->first != m_defaultEffect)
+			dependencies.push_back(it->second);
+	}
 
-	for (uint i = 0; i < sizeof(dependencies) / sizeof(WFileAsset*); i++) {
+	for (uint i = 0; i < dependencies.size(); i++) {
+		if (dependencies[i])
+			strcpy(tmpName, dependencies[i]->GetName().c_str());
+		else
+			strcpy(tmpName, "");
+		outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
+	}
+
+
+	for (uint i = 0; i < dependencies.size(); i++) {
 		if (dependencies[i]) {
-			WError err = file->SaveAsset(dependencies[i], &tmpId);
+			WError err = file->SaveAsset(dependencies[i]);
 			if (!err)
 				return err;
-			outputStream.seekp(dependenciesStart + std::streamoff(i * sizeof(uint)));
-			outputStream.write((char*)&tmpId, sizeof(tmpId));
 		}
 	}
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WObject::LoadFromStream(WFile* file, std::istream& inputStream) {
+std::vector<void*> WObject::LoadArgs() {
+	return std::vector<void*>();
+}
+
+WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
 	DestroyInstancingResources();
 
 	inputStream.read((char*)&m_hidden, sizeof(m_hidden));
@@ -545,25 +564,46 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream) {
 		}
 	}
 
+	uint numMaterials;
+	inputStream.read((char*)&numMaterials, sizeof(uint));
+
 	WError status(W_SUCCEEDED);
-	uint dependencyId;
+	std::vector<std::string> dependencies;
+	for (uint i = 0; i < numMaterials + 2; i++) {
+		char dependencyName[W_MAX_ASSET_NAME_SIZE];
+		inputStream.read(dependencyName, W_MAX_ASSET_NAME_SIZE);
+		dependencies.push_back(std::string(dependencyName));
+	}
+
 	WGeometry* geometry = nullptr;
 	WSkeleton* animation = nullptr;
 
-	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
-	if (dependencyId != 0 && status)
-		status = file->LoadAsset<WGeometry>(dependencyId, &geometry);
+	if (dependencies[0] != "" && status)
+		status = file->LoadAsset<WGeometry>(dependencies[0], &geometry, WGeometry::LoadArgs());
 	if (status)
 		status = SetGeometry(geometry);
+	W_SAFE_REMOVEREF(geometry);
 
-	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
-	if (dependencyId != 0 && status)
-		status = file->LoadAsset<WSkeleton>(dependencyId, &animation);
+	if (dependencies[1] != "" && status)
+		status = file->LoadAsset<WSkeleton>(dependencies[1], &animation, WSkeleton::LoadArgs());
 	if (status)
 		SetAnimation(animation);
-
-	W_SAFE_REMOVEREF(geometry);
 	W_SAFE_REMOVEREF(animation);
+
+	if (status) {
+		ClearEffects();
+		for (uint i = 2; i < dependencies.size() && status; i++) {
+			WMaterial* mat;
+			status = file->LoadAsset<WMaterial>(dependencies[i], &mat, WMaterial::LoadArgs());
+			if (status) {
+				mat->GetEffect()->AddReference();
+				m_materialMap.insert(std::make_pair(mat->GetEffect(), mat));
+				if (!m_defaultEffect)
+					m_defaultEffect = mat->GetEffect();
+			}
+		}
+	}
+
 	if (!status)
 		DestroyInstancingResources();
 

@@ -156,6 +156,7 @@ namespace vkTools
 		if (oldImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 		{
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			srcStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		}
 
 		// Old layout is depth/stencil attachment
@@ -163,6 +164,7 @@ namespace vkTools
 		if (oldImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 		{
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			srcStageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		}
 
 		// Old layout is transfer source
@@ -203,14 +205,14 @@ namespace vkTools
 		if (newImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 		{
 			imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			destStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		}
 
 		// New layout is depth attachment
 		// Make sure any writes to depth/stencil buffer have been finished
 		if (newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 		{
-			imageMemoryBarrier.dstAccessMask = imageMemoryBarrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 			destStageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		}
 
@@ -218,9 +220,7 @@ namespace vkTools
 		// Make sure any writes to the image have been finished
 		if (newImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 		{
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
 			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			srcStageFlags = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 			destStageFlags = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
 		}
 

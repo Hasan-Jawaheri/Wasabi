@@ -20,6 +20,7 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
+			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 1), // texture index
 		}), W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone indices
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weights
@@ -77,11 +78,14 @@ public:
 };
 
 FilesDemo::FilesDemo(Wasabi* const app) : WTestState(app) {
+	m_material = nullptr;
+	m_object = nullptr;
+	m_cam = nullptr;
 }
 
 void FilesDemo::Load() {
-	/*WImage* img = new WImage(m_app);
-	img->Load("Media/dummy.bmp", W_IMAGE_CREATE_DYNAMIC);
+	WImage* img = new WImage(m_app);
+	img->Load("Media/dummy.bmp", W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_TEXTURE);
 
 	WGeometry* geometry = new WGeometry(m_app);
 	geometry->CreateCube(1, W_GEOMETRY_CREATE_DYNAMIC);
@@ -100,54 +104,70 @@ void FilesDemo::Load() {
 	fx->BindShader(ps);
 	fx->BuildPipeline(m_app->Renderer->GetRenderTarget());
 
-	WObject* obj = m_app->ObjectManager->CreateObject();
-	obj->SetGeometry(geometry);
-	obj->ClearEffects();
-	obj->AddEffect(fx);
-	obj->GetMaterial()->SetVariableColor("color", WColor(0, 0, 1));
-	obj->GetMaterial()->SetTexture(3, img);
+	m_object = m_app->ObjectManager->CreateObject();
+	m_object->SetGeometry(geometry);
+	m_object->ClearEffects();
+	m_object->AddEffect(fx);
+	m_object->GetMaterial()->SetVariableColor("color", WColor(0, 0, 1));
+	m_object->GetMaterial()->SetTexture("diffuseTexture", img);
+	m_material = m_object->GetMaterial();
 
 	WRigidBody* rb = m_app->PhysicsComponent->CreateRigidBody();
 	rb->Create(W_RIGID_BODY_CREATE_INFO::ForGeometry(geometry, 1.0f, nullptr, WVector3(0, 5, 0)), true);
 
 	// empty out the file
 	std::fstream f;
-	f.open("WFile.WSBI", ios::out);
+	f.open("Media/WFile.WSBI", ios::out);
 	f.close();
 
 	WFile file(m_app);
-	file.Open("WFile.WSBI");
+	file.Open("Media/WFile.WSBI");
 
-	uint imgId, geoId, fxId, matId, objId, rbId;
-	file.SaveAsset(img, &imgId);
-	file.SaveAsset(geometry, &geoId);
-	file.SaveAsset(fx, &fxId);
-	file.SaveAsset(obj->GetMaterial(), &matId);
-	file.SaveAsset(obj, &objId);
-	file.SaveAsset(rb, &rbId);
+	std::string objName = m_object->GetName();
+	std::string rbName = rb->GetName();
+	std::string imgName = img->GetName();
+
+	file.SaveAsset(m_object);
+	file.SaveAsset(rb);
 	W_SAFE_REMOVEREF(img);
 	W_SAFE_REMOVEREF(geometry);
 	W_SAFE_REMOVEREF(fx);
-	W_SAFE_REMOVEREF(obj);
 	W_SAFE_REMOVEREF(rb);
 
-	file.LoadAsset<WImage>(imgId, &img);
-	file.LoadAsset<WGeometry>(geoId, &geometry);
-	file.LoadAsset<WEffect>(fxId, &fx);
-	file.LoadAsset<WMaterial>(matId, nullptr);
-	file.LoadAsset<WObject>(objId, &obj);
-	file.LoadAsset<WBulletRigidBody>(rbId, (WBulletRigidBody**)&rb);
+	file.Close();
+	file.Open("Media/WFile.WSBI");
+
+	file.LoadAsset<WObject>(objName, &m_object, WObject::LoadArgs());
+	file.LoadAsset<WBulletRigidBody>(rbName, (WBulletRigidBody**)&rb, WBulletRigidBody::LoadArgs());
+	file.LoadAsset<WImage>(imgName, &img, WImage::LoadArgs());
 
 	file.Close();
 
 	WSprite* spr = m_app->SpriteManager->CreateSprite(img);
 
-	rb->BindObject(obj, obj);
+	rb->BindObject(m_object, m_object);
 
-	m_app->PhysicsComponent->Start();*/
+	m_app->PhysicsComponent->Start();
+
+	m_cam = m_app->CameraManager->GetDefaultCamera();
+
+	WFile dataFile(m_app);
+	dataFile.Open("Media/data.WSBI");
+	uint numObjects = dataFile.GetAssetsCount();
+	for (uint i = 0; i < numObjects; i++) {
+		std::pair<std::string, std::string> info = dataFile.GetAssetInfo(i);
+		if (info.second == WObject::_GetTypeName()) {
+			WObject* obj;
+			dataFile.LoadAsset<WObject>(info.first, &obj, WObject::LoadArgs());
+		}
+	}
+	dataFile.Close();
 }
 
 void FilesDemo::Update(float fDeltaTime) {
+	m_material->SetVariableMatrix("projectionMatrix", m_cam->GetProjectionMatrix());
+	m_material->SetVariableMatrix("worldMatrix", m_object->GetWorldMatrix());
+	m_material->SetVariableMatrix("viewMatrix", m_cam->GetViewMatrix());
 }
 
 void FilesDemo::Cleanup() {

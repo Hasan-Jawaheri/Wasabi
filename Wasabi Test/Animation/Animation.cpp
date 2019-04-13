@@ -22,7 +22,7 @@ void AnimationDemo::Load() {
 	WSkeleton* animation;
 	WFile file(m_app);
 	file.Open("Media/dante.WSBI");
-	file.LoadAsset<WSkeleton>(2, &animation);
+	file.LoadAsset<WSkeleton>(file.GetAssetInfo(0).first, &animation, WSkeleton::LoadArgs());
 	file.Close();
 
 	character->SetAnimation(animation);

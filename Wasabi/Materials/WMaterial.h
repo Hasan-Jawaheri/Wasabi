@@ -25,17 +25,13 @@
  * have a descriptor set containing all bound resources of a WEffect, or only
  * a subset of them.
  */
-class WMaterial : public WBase, public WFileAsset {
+class WMaterial : public WFileAsset {
 	friend class WEffect;
-	/**
-	 * Returns "Material" string.
-	 * @return Returns "Material" string
-	 */
-	virtual std::string GetTypeName() const;
+	friend class WFile;
 
 protected:
-	WMaterial(class Wasabi* const app, unsigned int ID = 0);
 	virtual ~WMaterial();
+	WMaterial(class Wasabi* const app, unsigned int ID = 0);
 
 	/**
 	 * Builds the material's resources to be used for a certain effect. The
@@ -49,6 +45,13 @@ protected:
 
 public:
 	/**
+	 * Returns "Material" string.
+	 * @return Returns "Material" string
+	 */
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
+
+	/**
 	 * Binds the resources to the pipeline. In Vulkan terms, this binds the descriptor
 	 * set associated with this material.
 	 * @param  rt  Render target to bind to its command buffer
@@ -61,6 +64,11 @@ public:
 	 * @return Material's descriptor set
 	 */
 	VkDescriptorSet GetDescriptorSet() const;
+
+	/**
+	 * @return The effect of this material.
+	 */
+	class WEffect* GetEffect() const;
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -174,19 +182,21 @@ public:
 
 	/**
 	 * Sets a texture in the bound effect.
-	 * @param  binding_index The binding index of the texture
+	 * @param  bindingIndex  The binding index of the texture
 	 * @param  img           The image to set the texture to, can be nullptr
+	 * @param  arrayIndex    Index into the texture array (if its an array)
 	 * @return               Error code, see WError.h
 	 */
-	WError SetTexture(int binding_index, class WImage* img);
+	WError SetTexture(int bindingIndex, class WImage* img, uint arrayIndex = 0);
 
 	/**
 	 * Sets a texture in the bound effect.
-	 * @param  name  Name of the texture to bind to
-	 * @param  img   The image to set the texture to, can be nullptr
-	 * @return       Error code, see WError.h
+	 * @param  name        Name of the texture to bind to
+	 * @param  img         The image to set the texture to, can be nullptr
+	 * @param  arrayIndex  Index into the texture array (if its an array)
+	 * @return             Error code, see WError.h
 	 */
-	WError SetTexture(std::string name, class WImage* img);
+	WError SetTexture(std::string name, class WImage* img, uint arrayIndex = 0);
 
 	/**
 	 * Checks the validity of the material. A material is valid if it has a
@@ -195,8 +205,9 @@ public:
 	 */
 	virtual bool Valid() const;
 
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+	static std::vector<void*> LoadArgs();
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	/** Effect that this material is bound to */
@@ -229,10 +240,10 @@ private:
 	std::vector<UNIFORM_BUFFER_INFO> m_uniformBuffers;
 
 	struct SAMPLER_INFO {
-		/** Descriptor information for the texture */
-		std::vector<VkDescriptorImageInfo> descriptors;
-		/** Image backing the resource */
-		class WImage* img;
+		/** Descriptor information for the texture, one array per buffered buffer */
+		std::vector<std::vector<VkDescriptorImageInfo>> descriptors;
+		/** Array of image backing the texture array (size == 1 if its not an array) */
+		std::vector<class WImage*> images;
 		/** Pointer to the texture description in the effect */
 		struct W_BOUND_RESOURCE* sampler_info;
 	};

@@ -65,6 +65,8 @@ enum W_ERROR {
 	W_INVALIDREPEATEDBINDINGINDEX = 22,
 	/** File asset already loaded */
 	W_ALREADYLOADED = 23,
+	/** Name conflicts with another asset */
+	W_NAMECONFLICT = 24,
 };
 
 /**

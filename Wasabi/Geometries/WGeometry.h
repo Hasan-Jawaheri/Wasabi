@@ -17,6 +17,7 @@
 #define W_ATTRIBUTE_TANGENT		W_VERTEX_ATTRIBUTE("tangent", 3)
 #define W_ATTRIBUTE_NORMAL		W_VERTEX_ATTRIBUTE("normal", 3)
 #define W_ATTRIBUTE_UV			W_VERTEX_ATTRIBUTE("uv", 2)
+#define W_ATTRIBUTE_TEX_INDEX	W_VERTEX_ATTRIBUTE("texture_index", 1)
 #define W_ATTRIBUTE_BONE_INDEX	W_VERTEX_ATTRIBUTE("bone_index", 4)
 #define W_ATTRIBUTE_BONE_WEIGHT	W_VERTEX_ATTRIBUTE("bone_weight", 4)
 
@@ -99,8 +100,8 @@ struct WDefaultVertex {
 	WDefaultVertex( float x, float y, float z,
 					float tx, float ty, float tz,
 					float nx, float ny, float nz,
-					float u, float v)
-					: pos(x, y, z), norm(nx, ny, nz), tang(tx, ty, tz), texC(u, v) {
+					float u, float v, uint t = 0)
+					: pos(x, y, z), norm(nx, ny, nz), tang(tx, ty, tz), texC(u, v), textureIndex(t) {
 	};
 
 	/** Position attribute */
@@ -111,6 +112,8 @@ struct WDefaultVertex {
 	WVector3 norm;
 	/** Texture coordinate attribute (UV) */
 	WVector2 texC;
+	/** Index of the texture to be used for this vertex */
+	uint textureIndex;
 };
 
 /**
@@ -182,19 +185,19 @@ inline W_GEOMETRY_CREATE_FLAGS& operator &= (W_GEOMETRY_CREATE_FLAGS& lhs, W_GEO
  * first buffer to render (with indices) and uses the second buffer (if
  * available) for animation data.
  */
-class WGeometry : public WBase, public WFileAsset {
+class WGeometry : public WFileAsset {
 	friend class WGeometryManager;
-
-	/**
-	 * Returns "Geometry" string.
-	 * @return Returns "Geometry" string
-	 */
-	virtual std::string GetTypeName() const;
 
 protected:
 	virtual ~WGeometry();
 
 public:
+	/**
+	 * Returns "Geometry" string.
+	 * @return Returns "Geometry" string
+	 */
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
 	WGeometry(Wasabi* const app, unsigned int ID = 0);
 
@@ -659,8 +662,9 @@ public:
 	 */
 	virtual bool Valid() const;
 
+	static std::vector<void*> LoadArgs(W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	/** Vertex buffer */

@@ -5,6 +5,9 @@
 #include <Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class FilesDemo : public WTestState {
+	WMaterial* m_material;
+	WObject* m_object;
+	WCamera* m_cam;
 
 public:
 	FilesDemo(Wasabi* const app);

@@ -184,10 +184,16 @@ std::string WParticlesManager::GetTypeName() const {
 
 WError WParticlesManager::Load() {
 	m_vertexShader = new ParticlesVS(m_app);
+	m_vertexShader->SetName("DefaultParticlesVS");
+	m_app->FileManager->AddDefaultAsset(m_vertexShader->GetName(), m_vertexShader);
 	m_vertexShader->Load();
 	m_geometryShader = new ParticlesGS(m_app);
+	m_geometryShader->SetName("DefaultParticlesGS");
+	m_app->FileManager->AddDefaultAsset(m_geometryShader->GetName(), m_geometryShader);
 	m_geometryShader->Load();
 	m_fragmentShader = new ParticlesPS(m_app);
+	m_fragmentShader->SetName("DefaultParticlesPS");
+	m_app->FileManager->AddDefaultAsset(m_fragmentShader->GetName(), m_fragmentShader);
 	m_fragmentShader->Load();
 
 	return WError(W_SUCCEEDED);
@@ -302,8 +308,12 @@ WParticles::~WParticles() {
 	m_app->ParticlesManager->RemoveEntity(this);
 }
 
-std::string WParticles::GetTypeName() const {
+std::string WParticles::_GetTypeName() {
 	return "Particles";
+}
+
+std::string WParticles::GetTypeName() const {
+	return _GetTypeName();
 }
 
 void WParticles::_DestroyResources() {

@@ -48,7 +48,7 @@ void WSpritePS::Load(bool bSaveData) {
 		W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerSprite", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "alpha"),
 		}),
-		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "textureDiffuse"),
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "diffuseTexture"),
 	};
 	vector<byte> code = {
 		#include "Shaders/sprite.frag.glsl.spv"
@@ -74,14 +74,20 @@ WSpriteManager::~WSpriteManager() {
 
 WError WSpriteManager::Load() {
 	m_spriteFullscreenGeometry = CreateSpriteGeometry();
+	m_spriteFullscreenGeometry->SetName("SpriteFullscreenGeometry");
+	m_app->FileManager->AddDefaultAsset(m_spriteFullscreenGeometry->GetName(), m_spriteFullscreenGeometry);
 
 	if (!m_spriteFullscreenGeometry)
 		return WError(W_OUTOFMEMORY);
 
 	m_spriteVertexShader = new WSpriteVS(m_app);
+	m_spriteVertexShader->SetName("SpriteDefaultVS");
+	m_app->FileManager->AddDefaultAsset(m_spriteVertexShader->GetName(), m_spriteVertexShader);
 	m_spriteVertexShader->Load();
 
 	m_spritePixelShader = new WSpritePS(m_app);
+	m_spritePixelShader->SetName("SpriteDefaultPS");
+	m_app->FileManager->AddDefaultAsset(m_spritePixelShader->GetName(), m_spritePixelShader);
 	m_spritePixelShader->Load();
 
 	return WError(W_SUCCEEDED);
@@ -195,6 +201,9 @@ WEffect* WSpriteManager::CreateSpriteEffect(
 		return nullptr;
 	}
 
+	spriteFX->SetName("SpriteDefaultFX");
+	m_app->FileManager->AddDefaultAsset(spriteFX->GetName(), spriteFX);
+
 	return spriteFX;
 }
 
@@ -206,9 +215,12 @@ WShader* WSpriteManager::GetSpritePixelShader() const {
 	return m_spritePixelShader;
 }
 
+std::string WSprite::_GetTypeName() {
+	return "Sprite";
+}
 
 std::string WSprite::GetTypeName() const {
-	return "Sprite";
+	return _GetTypeName();
 }
 
 WSprite::WSprite(Wasabi* const app, unsigned int ID) : WBase(app, ID) {

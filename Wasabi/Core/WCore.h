@@ -50,6 +50,8 @@ public:
 	 * A map of various parameters used by the engine. Built-in parameters are:
 	 * * "appName": Pointer to the name of the application. Default is
 	 * 	  (void*)"Wasabi".
+	 * * "enableVulkanValidation": Whether or not to enable Vulkan SDK validation
+	 *    while in debug mode. Default is (void*)(false).
 	 * * "bufferingCount": Buffering count, usually double (2) or triple (3) is
 	 *                     used. Buffering defines the maximum number of frames
 	 *                     that can be all in-flight (rendering) at the same time.
@@ -82,6 +84,8 @@ public:
 	/** Pointer to the attached renderer */
 	class WRenderer* Renderer;
 
+	/** Pointer to the file manager */
+	class WFileManager* FileManager;
 	/** Pointer to the object manager */
 	class WObjectManager* ObjectManager;
 	/** Pointer to the geometry manager */

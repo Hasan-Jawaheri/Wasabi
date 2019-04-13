@@ -27,11 +27,12 @@ layout(set = 1, binding = 1) uniform LUBO {
 	Light lights[16];
 } uboPerFrame;
 
-layout(set = 0, binding = 4) uniform sampler2D diffuseTexture;
+layout(set = 0, binding = 4) uniform sampler2D diffuseTexture[8];
 
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inWorldPos;
 layout(location = 2) in vec3 inWorldNorm;
+layout(location = 3) flat in uint inTexIndex;
 
 layout(location = 0) out vec4 outFragColor;
 
@@ -76,7 +77,7 @@ vec3 SpotLight(in vec3 pos, in vec3 dir, in vec3 col, in float intensity, in flo
 }
 
 void main() {
-	outFragColor = texture(diffuseTexture, inUV) + uboPerObject.color;
+	outFragColor = texture(diffuseTexture[inTexIndex], inUV) + uboPerObject.color;
 	vec3 lighting = vec3(0,0,0);
 	for (int i = 0; i < uboPerFrame.numLights; i++) {
 		if (uboPerFrame.lights[i].type == 0)

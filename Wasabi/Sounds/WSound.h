@@ -62,13 +62,13 @@ protected:
 *********************************WSound******************************
 Sound class interface
 *********************************************************************/
-class WSound : public WBase, public WFileAsset {
+class WSound : public WFileAsset {
 protected:
 	virtual ~WSound() {}
 
 public:
 
-	WSound(Wasabi* const app, unsigned int ID = 0) : WBase(app, ID) {}
+	WSound(Wasabi* const app, unsigned int ID = 0) : WFileAsset(app, ID) {}
 
 	virtual WError LoadWAV(std::string filename, uint buffer, bool bSaveData = false) = 0;
 	virtual void Play() = 0;
@@ -95,7 +95,7 @@ public:
 	virtual void SetToOrientation(class WOrientation* oriDev) {}
 
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) = 0;
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream) = 0;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) = 0;
 };
 
 /**

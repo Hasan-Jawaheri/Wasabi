@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ InstancingDemo
+#define _DEMO_STATE_CLASSNAME_ FilesDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo

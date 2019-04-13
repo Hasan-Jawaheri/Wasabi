@@ -8,6 +8,7 @@ const W_VERTEX_DESCRIPTION g_defaultVertexDescriptions[] = {
 		W_ATTRIBUTE_TANGENT,
 		W_ATTRIBUTE_NORMAL,
 		W_ATTRIBUTE_UV,
+		W_ATTRIBUTE_TEX_INDEX,
 	}), W_VERTEX_DESCRIPTION({ // Animation buffer
 		W_ATTRIBUTE_BONE_INDEX,
 		W_ATTRIBUTE_BONE_WEIGHT,
@@ -15,9 +16,9 @@ const W_VERTEX_DESCRIPTION g_defaultVertexDescriptions[] = {
 };
 
 static void ConvertVertices(void* vbFrom, void* vbTo, unsigned int numVerts, W_VERTEX_DESCRIPTION vtxFrom, W_VERTEX_DESCRIPTION vtxTo) {
-
 	size_t vtxSize = vtxTo.GetSize();
 	size_t fromVtxSize = vtxFrom.GetSize();
+	memset(vbTo, 0, numVerts * vtxTo.GetSize());
 	for (int i = 0; i < numVerts; i++) {
 		char* fromvtx = (char*)vbFrom + fromVtxSize * i;
 		char* myvtx = (char*)vbTo + vtxSize * i;
@@ -100,7 +101,7 @@ void WGeometryManager::UpdateDynamicGeometries(uint bufferIndex) const {
 	}
 }
 
-WGeometry::WGeometry(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WGeometry::WGeometry(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID) {
 	m_mappedVertexBufferForWrite = nullptr;
 	app->GeometryManager->AddEntity(this);
 }
@@ -111,8 +112,12 @@ WGeometry::~WGeometry() {
 	m_app->GeometryManager->RemoveEntity(this);
 }
 
-std::string WGeometry::GetTypeName() const {
+std::string WGeometry::_GetTypeName() {
 	return "Geometry";
+}
+
+std::string WGeometry::GetTypeName() const {
+	return _GetTypeName();
 }
 
 bool WGeometry::Valid() const {
@@ -1361,8 +1366,17 @@ WError WGeometry::SaveToStream(WFile* file, std::ostream& outputStream) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream) {
-	W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_VB_CPU_READABLE | W_GEOMETRY_CREATE_IB_CPU_READABLE;
+std::vector<void*> WGeometry::LoadArgs(W_GEOMETRY_CREATE_FLAGS flags) {
+	return std::vector<void*>({
+		(void*)flags
+	});
+}
+
+WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+	if (args.size() != 1)
+		return WError(W_INVALIDPARAM);
+	W_GEOMETRY_CREATE_FLAGS flags = (W_GEOMETRY_CREATE_FLAGS)(int)(args[0]);
+
 	vector<W_VERTEX_DESCRIPTION> from_descs;
 	char temp[256];
 	unsigned int numVbs;

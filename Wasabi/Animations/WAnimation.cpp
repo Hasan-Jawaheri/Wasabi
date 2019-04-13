@@ -13,7 +13,7 @@ std::string WAnimationManager::GetTypeName() const {
 	return "Animation";
 }
 
-WAnimation::WAnimation(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WAnimation::WAnimation(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID) {
 	AddSubAnimation();
 
 	m_bFramesOwner = true;
@@ -34,8 +34,12 @@ WAnimation::~WAnimation() {
 	m_app->AnimationManager->RemoveEntity(this);
 }
 
-std::string WAnimation::GetTypeName() const {
+std::string WAnimation::_GetTypeName() {
 	return "Animation";
+}
+
+std::string WAnimation::GetTypeName() const {
+	return _GetTypeName();
 }
 
 void WAnimation::m_UpdateFirstFrame(unsigned int subAnimation) {

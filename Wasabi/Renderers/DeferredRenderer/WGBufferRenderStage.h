@@ -20,6 +20,7 @@ public:
 class WGBufferRenderStage : public WRenderStage {
 	class WEffect* m_GBufferFX;
 	class WMaterial* m_perFrameMaterial;
+	uint m_currentMatId;
 
 	struct ObjectKey {
 		class WEffect* fx;

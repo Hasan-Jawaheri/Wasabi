@@ -45,8 +45,12 @@ WRenderTarget::~WRenderTarget() {
 	m_app->RenderTargetManager->RemoveEntity(this);
 }
 
-std::string WRenderTarget::GetTypeName() const {
+std::string WRenderTarget::_GetTypeName() {
 	return "RenderTarget";
+}
+
+std::string WRenderTarget::GetTypeName() const {
+	return _GetTypeName();
 }
 
 bool WRenderTarget::Valid() const {
@@ -327,6 +331,13 @@ WError WRenderTarget::Begin() {
 			return WError(W_ERRORUNK);
 	}
 
+	for (auto imgTarget : m_targets) {
+		if (imgTarget->GetViewLayout() != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			imgTarget->TransitionLayoutTo(GetCommnadBuffer(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	}
+	if (m_depthTarget && m_depthTarget->GetViewLayout() != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+		m_depthTarget->TransitionLayoutTo(GetCommnadBuffer(), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
 	VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
 	renderPassBeginInfo.renderPass = m_renderPass;
 	renderPassBeginInfo.renderArea.offset.x = 0;
@@ -363,6 +374,12 @@ WError WRenderTarget::Begin() {
 
 WError WRenderTarget::End(bool bSubmit) {
 	vkCmdEndRenderPass(GetCommnadBuffer());
+
+	for (auto imgTarget : m_targets) {
+		imgTarget->TransitionLayoutTo(GetCommnadBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	}
+	if (m_depthTarget)
+		m_depthTarget->TransitionLayoutTo(GetCommnadBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	if (m_renderCmdBuffer != VK_NULL_HANDLE) {
 		VkResult err = vkEndCommandBuffer(m_renderCmdBuffer);

@@ -30,6 +30,7 @@ public:
 class WForwardRenderStage : public WRenderStage {
 	class WEffect* m_defaultFX;
 	class WMaterial* m_perFrameMaterial;
+	uint m_currentMatId;
 
 	struct ObjectKey {
 		class WEffect* fx;

@@ -20,7 +20,7 @@ void PhysicsDemo::Load() {
 	WGeometry* ground;
 	WFile F(m_app);
 	F.Open("Media/track01_.3ds.WSBI");
-	F.LoadAsset<WGeometry>(1, &ground);
+	F.LoadAsset<WGeometry>(F.GetAssetInfo(0).first, &ground, WGeometry::LoadArgs());
 	F.Close();
 
 	m_ground = m_app->ObjectManager->CreateObject();

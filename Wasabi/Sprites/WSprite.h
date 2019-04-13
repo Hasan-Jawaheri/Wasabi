@@ -38,17 +38,17 @@ public:
 class WSprite : public WBase, public WMaterialsStore {
 	friend class WSpriteManager;
 
-	/**
-	 * Returns "Sprite" string.
-	 * @return Returns "Sprite" string
-	 */
-	virtual std::string GetTypeName() const;
-
 protected:
 	WSprite(Wasabi* const app, unsigned int ID = 0);
 	~WSprite();
 
 public:
+	/**
+	 * Returns "Sprite" string.
+	 * @return Returns "Sprite" string
+	 */
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
 	/**
 	 * Checks whether a call to Render() will cause any rendering (draw call) to

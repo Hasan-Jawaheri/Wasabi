@@ -12,16 +12,17 @@ layout(set = 0, binding = 0) uniform UBOPerObject {
 	vec4 color;
 } uboPerObject;
 
-layout(set = 0, binding = 4) uniform sampler2D diffuseTexture;
+layout(set = 0, binding = 4) uniform sampler2D diffuseTexture[8];
 
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inViewPos;
 layout(location = 2) in vec3 inViewNorm;
+layout(location = 3) flat in uint inTexIndex;
 
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outNormals;
 
 void main() {
-	outColor = texture(diffuseTexture, inUV) + uboPerObject.color;
+	outColor = texture(diffuseTexture[inTexIndex], inUV) + uboPerObject.color;
 	outNormals = (vec4(inViewNorm, 1.0) + 1) / 2;
 }

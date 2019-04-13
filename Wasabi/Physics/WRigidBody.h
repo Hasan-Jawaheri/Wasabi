@@ -71,13 +71,13 @@ struct W_RIGID_BODY_CREATE_INFO {
   * @ingroup engineclass
   * This is an interface for implementing a rigid body.
   */
-class WRigidBody: public WBase, public WOrientation, public WFileAsset {
+class WRigidBody: public WOrientation, public WFileAsset {
 protected:
 	virtual ~WRigidBody() {}
 
 public:
 
-	WRigidBody(class Wasabi* const app, unsigned int ID = 0) : WBase(app, ID) {}
+	WRigidBody(class Wasabi* const app, unsigned int ID = 0) : WFileAsset(app, ID) {}
 
 	/**
 	 * Must be implemented to initialize the rigid body.
@@ -143,8 +143,8 @@ public:
 
 	virtual void OnStateChange(STATE_CHANGE_TYPE type) = 0;
 
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream) = 0;
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream) = 0;
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) = 0;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) = 0;
 };
 
 /**

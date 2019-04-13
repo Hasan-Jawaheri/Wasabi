@@ -40,6 +40,7 @@ W_SHADER_DESC WGBufferVS::GetDesc() {
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
+		W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 1), // texture index
 	}), W_INPUT_LAYOUT({
 		W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone index
 		W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weight
@@ -62,7 +63,7 @@ W_SHADER_DESC WGBufferPS::GetDesc() {
 	desc.type = W_FRAGMENT_SHADER;
 	desc.bound_resources = {
 		WGBufferVS::GetDesc().bound_resources[0],
-		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture"),
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture", {}, 8),
 	};
 	return desc;
 }
@@ -91,6 +92,7 @@ WGBufferRenderStage::WGBufferRenderStage(Wasabi* const app) : WRenderStage(app) 
 
 	m_GBufferFX = nullptr;
 	m_perFrameMaterial = nullptr;
+	m_currentMatId = 0;
 }
 
 WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
@@ -99,12 +101,18 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 		return err;
 
 	WGBufferVS* vs = new WGBufferVS(m_app);
+	vs->SetName("GBufferDefaultVS");
+	m_app->FileManager->AddDefaultAsset(vs->GetName(), vs);
 	vs->Load();
 
 	WGBufferPS* ps = new WGBufferPS(m_app);
+	ps->SetName("GBufferDefaultPS");
+	m_app->FileManager->AddDefaultAsset(ps->GetName(), ps);
 	ps->Load();
 
 	m_GBufferFX = new WEffect(m_app);
+	m_GBufferFX->SetName("GBufferDefaultEffect");
+	m_app->FileManager->AddDefaultAsset(m_GBufferFX->GetName(), m_GBufferFX);
 	err = m_GBufferFX->BindShader(vs);
 	if (err) {
 		err = m_GBufferFX->BindShader(ps);
@@ -120,6 +128,8 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	m_perFrameMaterial = m_GBufferFX->CreateMaterial(1);
 	if (!m_perFrameMaterial)
 		return WError(W_ERRORUNK);
+	m_perFrameMaterial->SetName("GBufferPerFrameMaterial");
+	m_app->FileManager->AddDefaultAsset(m_perFrameMaterial->GetName(), m_perFrameMaterial);
 
 	for (unsigned int i = 0; i < m_app->ObjectManager->GetEntitiesCount(); i++)
 		OnObjectChange(m_app->ObjectManager->GetEntityByIndex(i), true);
@@ -130,8 +140,10 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 void WGBufferRenderStage::OnObjectChange(class WObject* object, bool added) {
 	if (added) {
-		if (!object->GetDefaultEffect())
+		if (!object->GetDefaultEffect()) {
 			object->AddEffect(this->m_GBufferFX, 0);
+			object->GetMaterial(this->m_GBufferFX)->SetName("GBufferDefaultMaterial" + std::to_string(this->m_currentMatId));
+		}
 		ObjectKey key(object);
 		this->m_allObjects.insert(std::make_pair(key, object));
 	} else {

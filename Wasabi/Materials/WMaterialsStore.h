@@ -11,6 +11,7 @@
  * reference to every material it stores.
  */
 class WMaterialsStore {
+protected:
 	/** Collection of materials */
 	std::unordered_map<class WEffect*, class WMaterial*> m_materialMap;
 	class WEffect* m_defaultEffect;

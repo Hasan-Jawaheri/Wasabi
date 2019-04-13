@@ -31,17 +31,17 @@
 class WRenderTarget : public WBase {
 	friend class WRenderTargetManager;
 
-	/**
-	 * Returns "RenderTarget" string.
-	 * @return Returns "RenderTarget" string
-	 */
-	virtual std::string GetTypeName() const;
-
 protected:
 	virtual ~WRenderTarget();
 	WRenderTarget(Wasabi* const app, unsigned int ID = 0);
 
 public:
+	/**
+	 * Returns "RenderTarget" string.
+	 * @return Returns "RenderTarget" string
+	 */
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
 	/**
 	 * Create a render target with a single color attachment backed by a WImage.

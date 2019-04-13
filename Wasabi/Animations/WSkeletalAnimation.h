@@ -411,8 +411,9 @@ public:
 	 */
 	bool Valid() const;
 
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+	static std::vector<void*> LoadArgs();
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	/**

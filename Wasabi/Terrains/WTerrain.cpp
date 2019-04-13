@@ -44,8 +44,12 @@ WTerrain::~WTerrain() {
 	m_app->TerrainManager->RemoveEntity(this);
 }
 
-std::string WTerrain::GetTypeName() const {
+std::string WTerrain::_GetTypeName() {
 	return "Terrain";
+}
+
+std::string WTerrain::GetTypeName() const {
+	return _GetTypeName();
 }
 
 void WTerrain::_DestroyResources() {

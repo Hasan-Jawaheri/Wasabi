@@ -120,6 +120,7 @@ Wasabi::Wasabi() : Timer(W_TIMER_SECONDS, true) {
 		{ "geometryImmutable", (void*)(false) }, // bool
 		{ "numGeneratedMips", (void*)(1) }, // int
 		{ "bufferingCount", (void*)(2) }, // int
+		{ "enableVulkanValidation", (void*)(false) }, // bool
 	};
 	m_swapChainInitialized = false;
 	
@@ -130,6 +131,7 @@ Wasabi::Wasabi() : Timer(W_TIMER_SECONDS, true) {
 	PhysicsComponent = nullptr;
 	Renderer = nullptr;
 
+	FileManager = nullptr;
 	ObjectManager = nullptr;
 	GeometryManager = nullptr;
 	EffectManager = nullptr;
@@ -171,6 +173,7 @@ void Wasabi::_DestroyResources() {
 	W_SAFE_DELETE(PhysicsComponent);
 	W_SAFE_DELETE(Renderer);
 
+	W_SAFE_DELETE(FileManager);
 	W_SAFE_DELETE(TerrainManager);
 	W_SAFE_DELETE(ParticlesManager);
 	W_SAFE_DELETE(ObjectManager);
@@ -237,7 +240,8 @@ VkInstance Wasabi::CreateVKInstance() {
 	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
 #if (defined(DEBUG) || defined(_DEBUG))
-	enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+	if ((bool)engineParams["enableVulkanValidation"])
+		enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
 	enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
 
@@ -384,6 +388,7 @@ WError Wasabi::StartEngine(int width, int height) {
 		return WError(W_UNABLETOCREATESWAPCHAIN);
 	m_swapChainInitialized = true;
 
+	FileManager = new WFileManager(this);
 	ObjectManager = new WObjectManager(this);
 	GeometryManager = new WGeometryManager(this);
 	EffectManager = new WEffectManager(this);

@@ -152,17 +152,17 @@ public:
 class WParticles : public WBase, public WOrientation, public WMaterialsStore {
 	friend class WParticlesManager;
 
-	/**
-	 * Returns "Particles" string.
-	 * @return Returns "Particles" string
-	 */
-	virtual std::string GetTypeName() const;
-
 protected:
 	virtual ~WParticles();
 	WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE type, unsigned int ID = 0);
 
 public:
+	/**
+	 * Returns "Particles" string.
+	 * @return Returns "Particles" string
+	 */
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
 	/**
 	 * Initializes the particle system. This must be called for a WParticles

@@ -59,12 +59,12 @@ private:
 Sound class
 *********************************************************************/
 class WOpenALSound : public WSound {
-	std::string GetTypeName() const;
-
 protected:
 	virtual ~WOpenALSound();
 
 public:
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 	
 	WOpenALSound(class Wasabi* const app, uint ID = 0);
 
@@ -97,8 +97,9 @@ public:
 	virtual void SetDirection(class WOrientation* look);
 	virtual void SetToOrientation(class WOrientation* oriDev);
 
+	static std::vector<void*> LoadArgs();
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	bool m_valid;

@@ -7,8 +7,9 @@ layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inTang;
 layout(location = 2) in vec3 inNorm;
 layout(location = 3) in vec2 inUV;
-layout(location = 4) in uvec4 boneIndex;
-layout(location = 5) in vec4 boneWeight;
+layout(location = 4) in uint inTexIndex;
+layout(location = 5) in uvec4 boneIndex;
+layout(location = 6) in vec4 boneWeight;
 
 struct Light {
 	vec4 color;
@@ -40,6 +41,7 @@ layout(set = 0, binding = 3) uniform sampler2D instancingTexture;
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outWorldPos;
 layout(location = 2) out vec3 outWorldNorm;
+layout(location = 3) flat out uint outTexIndex;
 
 mat4x4 LoadInstanceMatrix() {
 	if (uboPerObject.isInstanced == 1) {
@@ -113,5 +115,6 @@ void main() {
 	vec4 localNorm2 = instMtx * vec4(localNorm1.xyz, 0.0f);
 	outWorldPos = (uboPerObject.worldMatrix * localPos2).xyz;
 	outWorldNorm = (uboPerObject.worldMatrix * localNorm2).xyz;
+	outTexIndex = inTexIndex;
 	gl_Position = uboPerFrame.projectionMatrix * uboPerFrame.viewMatrix * vec4(outWorldPos, 1.0);
 }

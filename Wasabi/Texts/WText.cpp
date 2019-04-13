@@ -89,6 +89,7 @@ WError WTextComponent::Initialize() {
 	ps->Load();
 	m_textEffect = new WEffect(m_app);
 	m_textEffect->SetName("textFX");
+	m_app->FileManager->AddDefaultAsset(m_textEffect->GetName(), m_textEffect);
 	WError ret = m_textEffect->BindShader(vs);
 	if (!ret) {
 		vs->RemoveReference();

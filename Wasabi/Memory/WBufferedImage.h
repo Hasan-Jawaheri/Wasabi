@@ -15,6 +15,7 @@ public:
 
 	VkImageView GetView(class Wasabi* app, uint bufferIndex) const;
 	VkImageLayout GetLayout(uint bufferIndex) const;
+	void TransitionLayoutTo(VkCommandBuffer cmdBuf, VkImageLayout newLayout, uint bufferIndex);
 
 	bool Valid() const;
 	size_t GetMemorySize() const;
