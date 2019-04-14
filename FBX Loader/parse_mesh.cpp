@@ -71,7 +71,7 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 			pMesh->GetPolygonVertexUV(i, j, uvSetName, uv, dummy);
 
 			if (layerElement && layerElement->GetMappingMode() == FbxLayerElementMaterial::eByPolygon) {
-				textureIndex = layerArray[lControlPointIndex];
+				textureIndex = layerArray[i];
 				auto it = materials.find(textureIndex);
 				if (it == materials.end()) {
 					FbxSurfaceMaterial* mat = pMesh->GetNode()->GetMaterial(textureIndex);
