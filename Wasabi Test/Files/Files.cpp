@@ -132,6 +132,7 @@ void FilesDemo::Load() {
 	W_SAFE_REMOVEREF(img);
 	W_SAFE_REMOVEREF(geometry);
 	W_SAFE_REMOVEREF(fx);
+	W_SAFE_REMOVEREF(m_object);
 	W_SAFE_REMOVEREF(rb);
 
 	file.Close();
@@ -150,18 +151,6 @@ void FilesDemo::Load() {
 	m_app->PhysicsComponent->Start();
 
 	m_cam = m_app->CameraManager->GetDefaultCamera();
-
-	WFile dataFile(m_app);
-	dataFile.Open("Media/data.WSBI");
-	uint numObjects = dataFile.GetAssetsCount();
-	for (uint i = 0; i < numObjects; i++) {
-		std::pair<std::string, std::string> info = dataFile.GetAssetInfo(i);
-		if (info.second == WObject::_GetTypeName()) {
-			WObject* obj;
-			dataFile.LoadAsset<WObject>(info.first, &obj, WObject::LoadArgs());
-		}
-	}
-	dataFile.Close();
 }
 
 void FilesDemo::Update(float fDeltaTime) {
