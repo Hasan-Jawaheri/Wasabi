@@ -220,6 +220,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\include;$(BULLET_PATH)\src;$(IncludePath)</IncludePath>
     <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
+    <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -272,6 +273,14 @@
       <Command>python compile-glsl-code.py</Command>
       <Message>Compiling built-in GLSL code</Message>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

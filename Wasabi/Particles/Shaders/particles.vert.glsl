@@ -4,10 +4,12 @@
 
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inSize;
-layout(location = 2) in float inAlpha;
+layout(location = 2) in vec4 inUVs;
+layout(location = 3) in vec4 inColor;
 
 layout(location = 0) out vec3 outSize;
-layout(location = 1) out float outAlpha;
+layout(location = 1) out vec4 outUVs;
+layout(location = 2) out vec4 outColor;
 
 layout(binding = 0) uniform UBOPerParticles {
 	mat4 worldMatrix;
@@ -18,5 +20,6 @@ layout(binding = 0) uniform UBOPerParticles {
 void main() {
 	gl_Position = uboPerParticles.worldMatrix * vec4(inPos.xyz, 1.0);
 	outSize = inSize;
-	outAlpha = inAlpha;
+	outUVs = inUVs;
+	outColor = inColor;
 }

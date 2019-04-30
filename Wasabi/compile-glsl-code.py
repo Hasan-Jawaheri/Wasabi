@@ -10,9 +10,10 @@ def formatCode(code):
 def compileShader(filename):
 	print("======================== Compiling %s ========================" % (filename))
 	try:
-		output_file = filename + ".spv"
+		tmp_output_file = filename + ".tmp.spv"
+		real_output_file = filename + ".spv"
 		entry_point = "main"
-		command = ["%s/Bin/glslangValidator" % (VULKAN_SDK), "-V", "--entry-point", entry_point, filename, "-o", output_file]
+		command = ["%s/Bin/glslangValidator" % (VULKAN_SDK), "-V", "--entry-point", entry_point, filename, "-o", tmp_output_file]
 		print (command)
 		p = Popen(command, stdout=PIPE, stderr=PIPE)
 		out = p.stdout.read().decode('utf-8').replace('\r', '')
@@ -22,10 +23,18 @@ def compileShader(filename):
 			print(out)
 			print(err)
 			return p.returncode
-		with open(output_file, "rb") as F:
+		with open(tmp_output_file, "rb") as F:
 			spirv_code = F.read()
-		with open(output_file, "wb") as F:
-			F.write(formatCode(spirv_code))
+		formatted_code = formatCode(spirv_code)
+		try:
+			with open(real_output_file, "rb") as F:
+				previously_compiled_spirv = F.read()
+		except:
+			previously_compiled_spirv = None
+
+		if formatted_code != previously_compiled_spirv:
+			with open(real_output_file, "wb") as F:
+				F.write(formatted_code)
 		return 0
 	except:
 		print(traceback.format_exc())

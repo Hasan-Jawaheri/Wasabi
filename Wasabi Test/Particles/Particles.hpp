@@ -5,6 +5,7 @@
 
 class ParticlesDemo : public WTestState {
 	vector<WParticles*> m_particles;
+	bool m_goingLeft;
 
 public:
 	ParticlesDemo(Wasabi* const app);

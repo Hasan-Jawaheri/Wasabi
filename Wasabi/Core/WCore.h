@@ -289,7 +289,7 @@ protected:
 	*/
 	virtual class WPhysicsComponent* CreatePhysicsComponent();
 
-private:
+protected:
 	/** The Vulkan instance */
 	VkInstance m_vkInstance;
 	/** The used Vulkan physical device */

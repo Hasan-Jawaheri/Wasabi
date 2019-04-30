@@ -7,10 +7,14 @@
 
 WParticlesRenderStage::ParticlesKey::ParticlesKey(WParticles* par) {
 	particles = par;
+	priority = par->GetPriority();
 	fx = par->GetDefaultEffect();
 }
 
 const bool WParticlesRenderStage::ParticlesKey::operator< (const ParticlesKey& that) const {
+	if (priority != that.priority)
+		return priority < that.priority;
+
 	return (void*)fx < (void*)that.fx ? true : fx == that.fx ? (particles < that.particles) : false;
 }
 
@@ -26,7 +30,7 @@ WError WParticlesRenderStage::Initialize(std::vector<WRenderStage*>& previousSta
 		return err;
 
 	int i = 0;
-	vector<W_DEFAULT_PARTICLE_EFFECT_TYPE> types({ W_DEFAULT_PARTICLES_ADDITIVE, W_DEFAULT_PARTICLES_ALPHA, W_DEFAULT_PARTICLES_SUBTRACTIVE });
+	vector<W_DEFAULT_PARTICLE_EFFECT_TYPE> types({ W_DEFAULT_PARTICLES_ALPHA, W_DEFAULT_PARTICLES_ADDITIVE, W_DEFAULT_PARTICLES_SUBTRACTIVE });
 	for (auto it = types.begin(); it != types.end(); it++) {
 		WEffect* fx = m_app->ParticlesManager->CreateParticlesEffect(*it);
 		if (!fx)
@@ -80,18 +84,26 @@ void WParticlesRenderStage::Cleanup() {
 WError WParticlesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
 	if (filter & RENDER_FILTER_PARTICLES) {
 		WEffect* boundFX = nullptr;
+		std::vector<ParticlesKey> reindexParticles;
 		for (auto it = m_allParticles.begin(); it != m_allParticles.end(); it++) {
 			WParticles* particles = it->second;
 			WEffect* effect = particles->GetDefaultEffect();
 			WMaterial* material = particles->GetMaterial(effect);
 			if (material && particles->WillRender(rt)) {
+				uint priority = particles->GetPriority();
 				if (boundFX != effect) {
 					effect->Bind(rt);
 					boundFX = effect;
 				}
+				if (priority != it->first.priority || effect != it->first.fx)
+					reindexParticles.push_back(it->first);
 
 				particles->Render(rt, material);
 			}
+		}
+		for (auto it = reindexParticles.begin(); it != reindexParticles.end(); it++) {
+			m_allParticles.erase(*it);
+			m_allParticles.insert(std::make_pair(ParticlesKey(it->particles), it->particles));
 		}
 	}
 

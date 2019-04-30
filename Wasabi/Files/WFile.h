@@ -42,7 +42,7 @@ public:
 	WError SaveAsset(class WFileAsset* asset);
 
 	template<typename T>
-	WError LoadAsset(std::string name, T** loadedAsset, std::vector<void*>& args) {
+	WError LoadAsset(std::string name, T** loadedAsset, std::vector<void*> args) {
 		WFileAsset* asset = nullptr;
 		auto iter = m_assetsMap.find(name);
 		bool addReference = iter != m_assetsMap.end() && iter->second->loadedAsset != nullptr;
@@ -57,7 +57,7 @@ public:
 		return err;
 	}
 
-	WError LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*>& args);
+	WError LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*> args);
 
 	uint GetAssetsCount() const;
 	/** Returns a pair <name, type> */
@@ -75,8 +75,8 @@ private:
 
 		FILE_ASSET(std::streamoff _start, std::streamsize _size, std::string _name, std::string _type)
 			: start(_start), size(_size), loadedAsset(nullptr) {
-			strcpy(name, _name.c_str());
-			strcpy(type, _type.c_str());
+			strcpy_s(name, W_MAX_ASSET_NAME_SIZE, _name.c_str());
+			strcpy_s(type, W_MAX_ASSET_TYPE_SIZE, _type.c_str());
 		}
 		static size_t GetSize() { return sizeof(FILE_ASSET) - sizeof(WFileAsset*); }
 	};

@@ -10,7 +10,8 @@ class WParticlesGeometry : public WGeometry {
 	const W_VERTEX_DESCRIPTION m_desc = W_VERTEX_DESCRIPTION({
 		W_ATTRIBUTE_POSITION,
 		W_VERTEX_ATTRIBUTE("particleSize", 3),
-		W_VERTEX_ATTRIBUTE("particleAlpha", 1),
+		W_VERTEX_ATTRIBUTE("particleUVs", 4),
+		W_VERTEX_ATTRIBUTE("particleColor", 4),
 	});
 
 public:
@@ -47,7 +48,8 @@ public:
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // size
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT), // alpha
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // UVs
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
 		})};
 		vector<byte> code = {
 			#include "Shaders/particles.vert.glsl.spv"
@@ -92,13 +94,6 @@ public:
 	}
 };
 
-void WParticlesBehavior::Emit(void* particle) {
-	if (m_numParticles < m_maxParticles) {
-		memcpy((char*)m_buffer + (m_numParticles*m_particleSize), particle, m_particleSize);
-		m_numParticles++;
-	}
-}
-
 WParticlesBehavior::WParticlesBehavior(unsigned int max_particles, unsigned int particle_size) {
 	m_maxParticles = max_particles;
 	m_particleSize = particle_size;
@@ -110,39 +105,56 @@ WParticlesBehavior::~WParticlesBehavior() {
 	delete[] m_buffer;
 }
 
+void WParticlesBehavior::Emit(void* particle) {
+	if (m_numParticles < m_maxParticles) {
+		memcpy((char*)m_buffer + (m_numParticles*m_particleSize), particle, m_particleSize);
+		m_numParticles++;
+	}
+}
+
 unsigned int WParticlesBehavior::UpdateAndCopyToVB(float cur_time, void* vb, unsigned int max_particles) {
 	UpdateSystem(cur_time);
 
-	unsigned int cur_offset_in_vb = 0;
 	for (unsigned int i = 0; i < m_numParticles; i++) {
-		void* cur_particle = (char*)m_buffer + (m_particleSize*i);
+		void* cur_particle = (char*)m_buffer + (m_particleSize * i);
 		if (!UpdateParticle(cur_time, cur_particle)) {
-			memcpy(cur_particle, (char*)m_buffer + (m_particleSize*(m_numParticles-1)), m_particleSize);
+			if (m_numParticles > 1)
+				memcpy(cur_particle, (char*)m_buffer + (m_particleSize * (m_numParticles - 1)), m_particleSize);
 			m_numParticles--;
 			i--;
-		} else {
-			memcpy((char*)vb + cur_offset_in_vb, cur_particle, sizeof(WParticlesVertex));
-			cur_offset_in_vb += sizeof(WParticlesVertex);
 		}
 	}
 
-	return cur_offset_in_vb / sizeof(WParticlesVertex);
+	// particles in vb have a different size than those in m_buffer
+	for (unsigned int i = 0; i < m_numParticles; i++)
+		memcpy((char*)vb + i * sizeof(WParticlesVertex), (char*)m_buffer + i * m_particleSize, sizeof(WParticlesVertex));
+
+	return m_numParticles;
 }
 
 WDefaultParticleBehavior::WDefaultParticleBehavior(unsigned int max_particles)
 	: WParticlesBehavior(max_particles, sizeof(WDefaultParticleBehavior::Particle)) {
-	m_lastEmit = 0;
-	m_emissionPosition = WVector3(0, 0, 0);
-	m_emissionRandomness = WVector3(1, 1, 1);
-	m_particleLife = 3;
-	m_particleSpawnVelocity = WVector3(0, 2, 0);
-	m_emissionFrequency = 20;
-	m_emissionSize = 1;
-	m_deathSize = 3;
+	m_lastEmit = 0.0f;
+	m_emissionPosition = WVector3(0.0f, 0.0f, 0.0f);
+	m_emissionRandomness = WVector3(1.0f, 1.0f, 1.0f);
+	m_particleLife = 1.5f;
+	m_particleSpawnVelocity = WVector3(0.0f, 4.0f, 0.0f);
+	m_moveOutwards = false;
+	m_emissionFrequency = 30.0f;
+	m_emissionSize = 0.3f;
+	m_deathSize = 1.5f;
 	m_type = BILLBOARD;
+	m_numTilesColumns = 1;
+	m_numTiles = 1;
+	m_colorGradient = {
+		std::make_pair(WColor(1.0f, 1.0f, 1.0f, 0.0f), 0.2f),
+		std::make_pair(WColor(1.0f, 1.0f, 1.0f, 1.0f), 0.8f),
+		std::make_pair(WColor(1.0f, 1.0f, 1.0f, 0.0f), 0.0f)
+	};
 }
 
 void WDefaultParticleBehavior::UpdateSystem(float cur_time) {
+	uint numTilesRows = (uint)(ceilf((float)m_numTiles / (float)m_numTilesColumns) + 0.01f);
 	int num_emitted = 0;
 	while (cur_time > m_lastEmit + 1.0f / m_emissionFrequency && num_emitted++ < 10) {
 		m_lastEmit += 1.0f / m_emissionFrequency;
@@ -150,6 +162,13 @@ void WDefaultParticleBehavior::UpdateSystem(float cur_time) {
 		p.initialPos = m_emissionPosition + m_emissionRandomness * WVector3(WUtil::frand_0_1() - 0.5f, WUtil::frand_0_1() - 0.5f, WUtil::frand_0_1() - 0.5f);
 		p.velocity = m_particleSpawnVelocity;
 		p.spawnTime = m_lastEmit;
+		if (m_moveOutwards)
+			p.velocity = WVec3Normalize(p.initialPos - m_emissionPosition) * WVec3Length(m_particleSpawnVelocity);
+
+		// calculate tiling
+		uint x = rand() % m_numTilesColumns;
+		uint y = rand() % numTilesRows;
+		p.vtx.UVs = WVector4((float)x / m_numTilesColumns, (float)y / m_numTilesColumns, (float)(x+1) / m_numTilesColumns, (float)(y + 1) / m_numTilesColumns);
 		Emit((void*)&p);
 	}
 }
@@ -157,12 +176,22 @@ void WDefaultParticleBehavior::UpdateSystem(float cur_time) {
 inline bool WDefaultParticleBehavior::UpdateParticle(float cur_time, void* particle) {
 	Particle* p = (Particle*)particle;
 	float lifePercentage = (cur_time - p->spawnTime) / m_particleLife;
-	float size = WUtil::flerp(m_emissionSize, m_deathSize, lifePercentage);
+	if (lifePercentage >= 1.0f)
+		return false;
 
+	float size = WUtil::flerp(m_emissionSize, m_deathSize, lifePercentage);
 	p->vtx.pos = p->initialPos + lifePercentage * m_particleLife * p->velocity;
 	p->vtx.size = m_type == BILLBOARD ? WVector3(0, size, 0) : WVector3(size, 0, 0);
-	p->vtx.alpha = fmin(fmax(0.8f - fabs(lifePercentage * 2.0f - 1.0f), 0.0f), 1.0f);
-	return lifePercentage <= 1.0f;
+
+	float curColorPos = 0.0f;
+	for (uint i = 0; i < m_colorGradient.size() - 1; i++) {
+		if (lifePercentage < curColorPos + m_colorGradient[i].second) {
+			p->vtx.color = WColorLerp(m_colorGradient[i].first, m_colorGradient[i + 1].first, (lifePercentage - curColorPos) / m_colorGradient[i].second);
+			break;
+		}
+		curColorPos += m_colorGradient[i].second;
+	}
+	return true;
 }
 
 WParticlesManager::WParticlesManager(class Wasabi* const app)
@@ -291,6 +320,7 @@ WParticles::WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE t
 	m_hidden = false;
 	m_bAltered = true;
 	m_bFrustumCull = true;
+	m_priority = 0;
 
 	m_WorldM = WMatrix();
 
@@ -397,12 +427,21 @@ void WParticles::Render(WRenderTarget* const rt, WMaterial* material) {
 
 	// update the geometry
 	WParticlesVertex* vb;
-	m_geometry->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
+	m_geometry->MapVertexBuffer((void**)& vb, W_MAP_WRITE);
 	float cur_time = m_app->Timer.GetElapsedTime();
 	unsigned int num_particles = m_behavior->UpdateAndCopyToVB(cur_time, vb, m_maxParticles);
 	m_geometry->UnmapVertexBuffer(false);
 
-	m_geometry->Draw(rt, num_particles, 1, false);
+	if (num_particles > 0)
+		m_geometry->Draw(rt, num_particles, 1, false);
+}
+
+void WParticles::SetPriority(unsigned int priority) {
+	m_priority = priority;
+}
+
+unsigned int WParticles::GetPriority() const {
+	return m_priority;
 }
 
 WMatrix WParticles::GetWorldMatrix() {

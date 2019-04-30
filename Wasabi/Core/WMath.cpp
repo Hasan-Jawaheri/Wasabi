@@ -359,3 +359,7 @@ const WPlane WNormalizePlane(const WPlane plane) {
 	WVector4 norm = WVec4Normalize(WVector4(plane.a, plane.b, plane.c, plane.d));
 	return WPlane(norm.x, norm.y, norm.z, norm.w);
 }
+
+const WColor WColorLerp(const WColor c1, const WColor c2, const float fLerpVal) {
+	return c1 + (c2 - c1) * fLerpVal;
+}

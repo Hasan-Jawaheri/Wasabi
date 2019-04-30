@@ -37,7 +37,8 @@ struct ANIMVERTEX {
 };
 
 struct MESHDATA {
-	const char* name;
+	std::string name;
+	WMatrix transform;
 	vector<VERTEX> vb;
 	vector<DWORD> ib;
 	vector<ANIMVERTEX> ab;
@@ -46,7 +47,7 @@ struct MESHDATA {
 };
 
 struct ANIMDATA {
-	const char* name;
+	std::string name;
 	vector<WBone*> frames;
 };
 

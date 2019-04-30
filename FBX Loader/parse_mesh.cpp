@@ -17,6 +17,12 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 		mx1.Get(2, 0), mx1.Get(2, 1), mx1.Get(2, 2), mx1.Get(2, 3),
 		mx1.Get(3, 0), mx1.Get(3, 1), mx1.Get(3, 2), mx1.Get(3, 3)
 	);
+	ret.transform = meshMtx * WMatrixInverse(WMatrix(
+		1, 0, 0, 0,
+		0, 0, 1, 0,
+		0, -1, 0, 0,
+		0, 0, 0, 1
+	));
 	/*meshMtx = WMatrix (	1, 0, 0, 0,
 								0, 0, -1, 0,
 								0, 1, 0, 0,

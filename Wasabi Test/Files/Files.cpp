@@ -110,10 +110,9 @@ void FilesDemo::Load() {
 	m_object->AddEffect(fx);
 	m_object->GetMaterial()->SetVariableColor("color", WColor(0, 0, 1));
 	m_object->GetMaterial()->SetTexture("diffuseTexture", img);
-	m_material = m_object->GetMaterial();
 
 	WRigidBody* rb = m_app->PhysicsComponent->CreateRigidBody();
-	rb->Create(W_RIGID_BODY_CREATE_INFO::ForGeometry(geometry, 1.0f, nullptr, WVector3(0, 5, 0)), true);
+	rb->Create(W_RIGID_BODY_CREATE_INFO::ForGeometry(geometry, 1.0f, nullptr, WVector3(0, 10, 0)), true);
 
 	// empty out the file
 	std::fstream f;
@@ -151,6 +150,7 @@ void FilesDemo::Load() {
 	m_app->PhysicsComponent->Start();
 
 	m_cam = m_app->CameraManager->GetDefaultCamera();
+	m_material = m_object->GetMaterial();
 }
 
 void FilesDemo::Update(float fDeltaTime) {

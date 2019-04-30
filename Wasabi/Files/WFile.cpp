@@ -124,7 +124,7 @@ WError WFile::SaveAsset(WFileAsset* asset) {
 	return status;
 }
 
-WError WFile::LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*>& args) {
+WError WFile::LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*> args) {
 	if (!m_file.is_open())
 		return WError(W_FILENOTFOUND);
 

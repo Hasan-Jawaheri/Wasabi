@@ -859,7 +859,7 @@ void WGeometry::_UpdatePendingMap(WBufferedBuffer* buffer, void* mappedData, uin
 	auto it = m_pendingBufferedMaps.find(buffer);
 	if (it != m_pendingBufferedMaps.end()) {
 		if (mapFlags & W_MAP_READ && it->second[bufferIndex]) {
-			// the user intends to read and there is a pending write to this image, perform the write
+			// the user intends to read and there is a pending write to this buffer, perform the write
 			memcpy(mappedData, it->second[bufferIndex], buffer->GetMemorySize());
 		}
 

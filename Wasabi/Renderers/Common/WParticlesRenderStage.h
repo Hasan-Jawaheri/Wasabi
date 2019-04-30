@@ -8,6 +8,7 @@ class WParticlesRenderStage : public WRenderStage {
 	unordered_map<W_DEFAULT_PARTICLE_EFFECT_TYPE, class WEffect*> m_particleEffects;
 
 	struct ParticlesKey {
+		uint priority;
 		class WEffect* fx;
 		class WParticles* particles;
 

@@ -326,7 +326,7 @@ WMatrix WBulletRigidBody::GetWorldMatrix() {
 }
 
 void WBulletRigidBody::OnStateChange(STATE_CHANGE_TYPE type) {
-	if (!m_isUpdating) {
+	if (!m_isUpdating && m_rigidBody) {
 		btTransform mtx = WBTConverMatrix(GetWorldMatrix());
 		m_rigidBody->setWorldTransform(mtx);
 		m_rigidBody->getMotionState()->setWorldTransform(mtx);

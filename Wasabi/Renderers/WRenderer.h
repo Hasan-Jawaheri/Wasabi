@@ -51,19 +51,19 @@ class WRenderer {
 	 * such as the semaphores and the swap chain.
 	 * @return Error code, see WError.h
 	 */
-	WError _Initialize();
+	virtual WError _Initialize();
 
 	/**
 	 * Begin rendering a frame. This should call the implementation-specific
 	 * Render(). This function is responsible for semaphore synchronization and
 	 * swap chain presentation.
 	 */
-	void _Render();
+	virtual void _Render();
 
 	/**
 	 * Frees the implementation-independent resources allocated by the renderer.
 	 */
-	void _Cleanup();
+	virtual void _Cleanup();
 
 public:
 	WRenderer(class Wasabi* const app);
