@@ -225,9 +225,6 @@
     <ClCompile Include="Renderers\Common\WSpritesRenderStage.cpp">
       <Filter>Renderers\Common</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\ForwardRenderer\WForwardRenderStage.cpp">
-      <Filter>Renderers\ForwardRenderer</Filter>
-    </ClCompile>
     <ClCompile Include="Materials\WMaterialsStore.cpp">
       <Filter>Materials</Filter>
     </ClCompile>
@@ -251,6 +248,12 @@
     </ClCompile>
     <ClCompile Include="Renderers\Common\WTextRenderStage.cpp">
       <Filter>Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Common\WForwardRenderStage.cpp">
+      <Filter>Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\ForwardRenderer\WForwardLightRenderStage.cpp">
+      <Filter>Renderers\ForwardRenderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -435,9 +438,6 @@
     <ClInclude Include="Renderers\Common\WSpritesRenderStage.h">
       <Filter>Renderers\Common</Filter>
     </ClInclude>
-    <ClInclude Include="Renderers\ForwardRenderer\WForwardRenderStage.h">
-      <Filter>Renderers\ForwardRenderer</Filter>
-    </ClInclude>
     <ClInclude Include="Materials\WMaterialsStore.h">
       <Filter>Materials</Filter>
     </ClInclude>
@@ -464,6 +464,12 @@
     </ClInclude>
     <ClInclude Include="Renderers\Common\WTextRenderStage.h">
       <Filter>Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Common\WForwardRenderStage.h">
+      <Filter>Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\ForwardRenderer\WForwardLightRenderStage.h">
+      <Filter>Renderers\ForwardRenderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

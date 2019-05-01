@@ -5,39 +5,17 @@
 #include "../../Materials/WMaterial.h"
 #include "../../Objects/WObject.h"
 
-struct LightStruct {
-	WVector4 color;
-	WVector4 dir;
-	WVector4 pos;
-	int type;
-	int pad[3];
-};
-
-class WForwardRenderStageObjectVS : public WShader {
-public:
-	WForwardRenderStageObjectVS(class Wasabi* const app);
-	virtual void Load(bool bSaveData = false);
-	static W_SHADER_DESC GetDesc(int maxLights);
-};
-
-class WForwardRenderStageObjectPS : public WShader {
-public:
-	WForwardRenderStageObjectPS(class Wasabi* const app);
-	virtual void Load(bool bSaveData = false);
-	static W_SHADER_DESC GetDesc(int maxLights);
-};
-
 /*
  * Implementation of a forward rendering stage. Forward rendering is the simplest
  * rendering technique in graphics. Forward rendering renders every object
  * (or terrain, particles, etc...) straight to the backbuffer in one pass.
  * Forward rendering is usually fast as it has a low overhead.
- * Creating this stage adds the following engine parameters:
- * * "maxLights": Maximum number of lights that can be rendered at once (Default is (void*)16)
+ * This is a base class and must be implemented. An implementation must initialize
+ * the WRenderStage description in the constructor.
  */
 class WForwardRenderStage : public WRenderStage {
-	class WEffect* m_defaultFX;
-	class WMaterial* m_perFrameMaterial;
+protected:
+	class WEffect* m_renderEffect;
 	uint m_currentMatId;
 
 	struct ObjectKey {
@@ -53,10 +31,10 @@ class WForwardRenderStage : public WRenderStage {
 
 	void OnObjectChange(class WObject* object, bool added);
 
-	std::vector<LightStruct> m_lights;
+	virtual class WEffect* LoadRenderEffect() = 0;
 
 public:
-	WForwardRenderStage(class Wasabi* const app);
+	WForwardRenderStage(class Wasabi* const app, bool backbuffer = false);
 
 	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height);
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter);
