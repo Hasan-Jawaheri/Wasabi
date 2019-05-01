@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../TestSuite.hpp"
-#include <Renderers/DeferredRenderer/WDeferredRenderer.h>
+#include <Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class ParticlesDemo : public WTestState {
 	vector<WParticles*> m_particles;
@@ -14,5 +14,5 @@ public:
 	virtual void Update(float fDeltaTime);
 	virtual void Cleanup();
 
-	virtual WError SetupRenderer() { return WInitializeDeferredRenderer(m_app); }
+	virtual WError SetupRenderer() { return WInitializeForwardRenderer(m_app); }
 };
