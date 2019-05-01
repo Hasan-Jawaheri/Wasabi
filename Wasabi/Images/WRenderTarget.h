@@ -21,26 +21,6 @@
 #include "../Core/WCore.h"
 
 /**
- * This class represents a depth stencil buffer without a backing WImage, used when a render
- * target is created for a swap chain buffer (by providing raw views, not WImage's, to Create())
- */
-class SwapChainRenderTargetDepthStencil {
-public:
-	SwapChainRenderTargetDepthStencil();
-	WError Create(class Wasabi* app, unsigned int width, unsigned int height, VkFormat format);
-	void Cleanup(VkDevice device);
-
-	struct {
-		/** Depth image buffer */
-		VkImage image;
-		/** Memory backing the depth image */
-		VkDeviceMemory mem;
-		/** Depth image view */
-		VkImageView view;
-	} m_depthStencil;
-};
-
-/**
  * @ingroup engineclass
  *
  * This class represents a render target, which can be used to render things
@@ -49,15 +29,19 @@ public:
  * then be used normally.
  */
 class WRenderTarget : public WBase {
+	friend class WRenderTargetManager;
+
+protected:
+	virtual ~WRenderTarget();
+	WRenderTarget(Wasabi* const app, unsigned int ID = 0);
+
+public:
 	/**
 	 * Returns "RenderTarget" string.
 	 * @return Returns "RenderTarget" string
 	 */
 	virtual std::string GetTypeName() const;
-
-public:
-	WRenderTarget(Wasabi* const app, unsigned int ID = 0);
-	~WRenderTarget();
+	static std::string _GetTypeName();
 
 	/**
 	 * Create a render target with a single color attachment backed by a WImage.
@@ -109,22 +93,14 @@ public:
 	 * @param  width       Width of the render target
 	 * @param  height      Height of the render target
 	 * @param  views       An array of VkImageViews to back the render target
-	 * @param  num_views   Number of views in views
+	 * @param  numViews    Number of views in views
 	 * @param  colorFormat Color format for the render target
 	 * @param  depthFormat Depth format for the render target
 	 * @return             Error code, see WError.h
 	 */
 	WError Create(unsigned int width, unsigned int height,
-				  VkImageView* views, unsigned int num_views,
+				  VkImageView* views, unsigned int numViews,
 				  VkFormat colorFormat, VkFormat depthFormat);
-
-	/**
-	 * For the next render between Begin() and End(), use the frame buffer at
-	 * index. A render target may have several frame buffers.
-	 * @param  index Index of the frame buffer
-	 * @return       Error code, see WError.h
-	 */
-	WError UseFrameBuffer(unsigned int index);
 
 	/**
 	 * Begin recording renders on this render target.
@@ -217,22 +193,18 @@ public:
 	virtual bool Valid() const;
 
 private:
-	/** List of frame buffers */
-	std::vector<VkFramebuffer> m_frameBuffers;
-	/** Format of the depth image */
-	VkFormat m_depthFormat;
-	/** Formats of the views in the attachments of the render target */
-	vector<VkFormat> m_colorFormats;
+	/** Buffered frame buffer for the render target */
+	WBufferedFrameBuffer m_bufferedFrameBuffer;
 	/** WImage backing the frame buffer depth attachment (if available) */
 	WImage* m_depthTarget;
 	/** WImage's backing the frame buffer attachments (if available) */
 	vector<class WImage*> m_targets;
-	/** Swapchain-specific depth-stencil info */
-	SwapChainRenderTargetDepthStencil* m_swapChainDepthStencil;
 	/** Render pass associated with this render target */
 	VkRenderPass m_renderPass;
 	/** A pipeline cache */
 	VkPipelineCache m_pipelineCache;
+	/** Whether or not this render target has an independent command buffer */
+	bool m_haveCommandBuffer;
 	/** The command buffer used for rendering on this render target */
 	VkCommandBuffer m_renderCmdBuffer;
 	/** Clear values to be used by Vulkan */
@@ -241,8 +213,6 @@ private:
 	unsigned int m_width;
 	/** Height of the render target */
 	unsigned int m_height;
-	/** Currently used frame buffer */
-	unsigned int m_currentFrameBuffer;
 	/** The camera of this render target */
 	class WCamera* m_camera;
 
@@ -268,5 +238,26 @@ class WRenderTargetManager : public WManager<WRenderTarget> {
 public:
 	WRenderTargetManager(class Wasabi* const app);
 	~WRenderTargetManager();
+
+	/**
+	 * Allocates and initializes a "regular" render target. Regular render
+	 * targets must only be rendered to (i.e. calling WRenderTarget::Begin()
+	 * and WRenderTarget::End()) within a WRenderStage.
+	 */
+	WRenderTarget* CreateRenderTarget(unsigned int ID = 0);
+
+	/**
+	 * Allocates and initializes an "immediate" render target. An immediate
+	 * render target is able to perform rendering to a texture at any point
+	 * in the program and not strictly in a render stage. Immediate render
+	 * targets are significantly slower than regular render taregts (refer
+	 * to WRenderTargetManager::CreateRenderTarget) so consider using a
+	 * regular render target whenever possible, and using an immediate render
+	 * target only when necessary.
+	 * Immediate render targets create their own command buffers and have to
+	 * block on GPU operations before WRenderTarget::Begin() and after
+	 * WRenderTarget::End().
+	 */
+	WRenderTarget* CreateImmediateRenderTarget(unsigned int ID = 0);
 };
 

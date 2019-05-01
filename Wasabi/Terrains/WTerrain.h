@@ -16,15 +16,18 @@
  * This represents a terrain object and is responsible for rendering it.
  */
 class WTerrain : public WBase, public WOrientation {
+protected:
+	virtual ~WTerrain();
+
+public:
 	/**
 	 * Returns "Terrain" string.
 	 * @return Returns "Terrain" string
 	 */
 	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
-public:
 	WTerrain(class Wasabi* const app, unsigned int ID = 0);
-	~WTerrain();
 
 	/**
 	 * Initializes the terrain.

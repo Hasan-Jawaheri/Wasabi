@@ -45,8 +45,12 @@ WCamera::~WCamera() {
 	m_app->CameraManager->RemoveEntity(this);
 }
 
-std::string WCamera::GetTypeName() const {
+std::string WCamera::_GetTypeName() {
 	return "Camera";
+}
+
+std::string WCamera::GetTypeName() const {
+	return _GetTypeName();
 }
 
 void WCamera::EnableAutoAspect() {

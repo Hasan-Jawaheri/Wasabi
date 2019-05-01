@@ -24,7 +24,7 @@ WLight* WLightManager::GetDefaultLight() const {
 	return m_defaultLight;
 }
 
-WLight::WLight(Wasabi* const app, W_LIGHT_TYPE type, unsigned int ID) : WBase(app, ID) {
+WLight::WLight(Wasabi* const app, W_LIGHT_TYPE type, unsigned int ID) : WFileAsset(app, ID) {
 	m_hidden = false;
 	m_type = type;
 	m_range = 50.0f;
@@ -38,8 +38,12 @@ WLight::~WLight() {
 	m_app->LightManager->RemoveEntity(this);
 }
 
-std::string WLight::GetTypeName() const {
+std::string WLight::_GetTypeName() {
 	return "Light";
+}
+
+std::string WLight::GetTypeName() const {
+	return _GetTypeName();
 }
 
 bool WLight::Valid() const {
@@ -141,7 +145,11 @@ WError WLight::SaveToStream(WFile* file, std::ostream& outputStream) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WLight::LoadFromStream(WFile* file, std::istream& inputStream) {
+std::vector<void*> WLight::LoadArgs() {
+	return std::vector<void*>();
+}
+
+WError WLight::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
 	WVector3 pos;
 	WQuaternion rot;
 	inputStream.read((char*)&m_type, sizeof(m_type));

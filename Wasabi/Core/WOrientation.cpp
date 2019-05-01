@@ -81,6 +81,16 @@ void WOrientation::SetULRVectors(WVector3 up, WVector3 look, WVector3 right) {
 	OnStateChange(CHANGE_ROTATION);
 }
 
+void WOrientation::SetToTransformation(WMatrix mtx) {
+	m_pos = WVector3(mtx(0, 3), mtx(1, 3), mtx(2, 3));
+	mtx = WMatrixInverse(mtx);
+	m_right = WVector3(mtx(0, 0), mtx(1, 0), mtx(2, 0));
+	m_up    = WVector3(mtx(0, 1), mtx(1, 1), mtx(2, 1));
+	m_look  = WVector3(mtx(0, 2), mtx(1, 2), mtx(2, 2));
+
+	OnStateChange(CHANGE_ROTATION | CHANGE_MOTION);
+}
+
 void WOrientation::Yaw(float angle) {
 	//convert angle to radians
 	angle = W_DEGTORAD(angle);
@@ -250,7 +260,7 @@ bool WOrientation::IsBound() const {
 }
 
 void WOrientation::OnStateChange(STATE_CHANGE_TYPE type) {
-	if (type == CHANGE_ROTATION) {
+	if (type & CHANGE_ROTATION) {
 		// Keep camera's axes orthogonal to eachother
 		m_look = WVec3Normalize(m_look);
 

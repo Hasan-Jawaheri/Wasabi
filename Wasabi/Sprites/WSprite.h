@@ -13,6 +13,20 @@
 #pragma once
 
 #include "../Core/WCore.h"
+#include "../Materials/WMaterialsStore.h"
+#include "../Materials/WEffect.h"
+
+class WSpriteVS : public WShader {
+public:
+	WSpriteVS(class Wasabi* const app);
+	virtual void Load(bool bSaveData = false);
+};
+
+class WSpritePS : public WShader {
+public:
+	WSpritePS(class Wasabi* const app);
+	virtual void Load(bool bSaveData = false);
+};
 
 /**
  * @ingroup engineclass
@@ -21,81 +35,34 @@
  * position, orientation, and other properties for an image to be drawn on
  * screen.
  */
-class WSprite : public WBase {
+class WSprite : public WBase, public WMaterialsStore {
+	friend class WSpriteManager;
+
+protected:
+	WSprite(Wasabi* const app, unsigned int ID = 0);
+	~WSprite();
+
+public:
 	/**
 	 * Returns "Sprite" string.
 	 * @return Returns "Sprite" string
 	 */
 	virtual std::string GetTypeName() const;
-
-	/** True if the last call to Load() failed */
-	bool m_lastLoadFailed;
-	/** true if the sprite is hidden (will no render), false otherwise */
-	bool m_hidden;
-	/** Texture of the sprite */
-	class WImage* m_img;
-	/** Screen-space position of the sprite */
-	WVector2 m_pos;
-	/** Size of the sprite, in pixels */
-	WVector2 m_size;
-	/** Rotation center of the sprite relative to top-left corner, in pixels */
-	WVector2 m_rotationCenter;
-	/** Angle of the sprite, in radians */
-	float m_angle;
-	/** Priority of the sprite, higher priority sprites render over lower ones */
-	unsigned int m_priority;
-	/** Alpha (transparency) of the sprite, 0 being fully transparent and 1 being
-	    fully opaque */
-	float m_alpha;
-	/** true if position/size/etc... changed and geometry needs to be rebuilt */
-	bool m_geometry_changed;
-
-	/** Rendering material */
-	class WMaterial* m_material;
-	/** Rendering geometry */
-	class WGeometry* m_geometry;
-
-public:
-	WSprite(Wasabi* const app, unsigned int ID = 0);
-	~WSprite();
+	static std::string _GetTypeName();
 
 	/**
-	 * Loads the sprite's resources (material and geometry). If material is
-	 * already set (via SetMaterial()) then it will not be changed.
-	 * @param bCreateMaterial  If set to true, the sprite will create a
-	 *					       material for itself. Otherwise none will
-	 *                         be created and the sprite will depend on user
-	 *                         to set one before rendering
-	 * @return Error code, see WError.h
+	 * Checks whether a call to Render() will cause any rendering (draw call) to
+	 * happen.
 	 */
-	WError Load(bool bCreateMaterial = true);
+	bool WillRender(class WRenderTarget* rt);
 
 	/**
-	 * Sets the texture of the sprite.
-	 * @param img Texture to use
+	 * Renders the sprite. The sprite will not render if its hidden or invalid
+	 * (see Valid()).
+	 * @param rt        Render target to render to
+	 * @param material  Material to use to render the sprite
 	 */
-	void SetImage(class WImage* img);
-
-	/**
-	 * Sets a custom material to be used for rendering the sprite. The material's
-	 * effect should use a vertex shader with the following input layout:
-	 * Layout:
-	 * - W_VERTEX_ATTRIBUTE("pos2", 2)
-	 * - W_ATTRIBUTE_UV
-	 * The default vertex shader can be used from
-	 * WSpriteManager::GetSpriteVertexShader().
-	 * The input geometry is 2 triangles with 4 vertices.
-	 *
-	 * @param mat Material to set
-	 */
-	void SetMaterial(class WMaterial* mat);
-
-	/**
-	 * Sets the position of the sprite in screen-space.
-	 * @param x X-coordinate in screen-space
-	 * @param y Y-coordinate in screen-space
-	 */
-	void SetPosition(float x, float y);
+	void Render(class WRenderTarget* rt);
 
 	/**
 	 * Sets the position of the sprite in screen-space.
@@ -112,16 +79,15 @@ public:
 
 	/**
 	 * Sets the size of the sprite.
-	 * @param sizeX Width of the sprite, in pixels
-	 * @param sizeY Height of the sprite, in pixels
-	 */
-	void SetSize(float sizeX, float sizeY);
-
-	/**
-	 * Sets the size of the sprite.
 	 * @param size Width and height of the sprite, in pixels
 	 */
 	void SetSize(WVector2 size);
+
+	/**
+	 * Sets the size of the sprite to the size of an image
+	 * @param image Image to use its size
+	 */
+	void SetSize(class WImage* image);
 
 	/**
 	 * Sets the angle (clockwise rotation) of the sprite.
@@ -161,23 +127,6 @@ public:
 	void SetPriority(unsigned int priority);
 
 	/**
-	 * Sets the alpha value for the sprite. Alpha represents the transparency of
-	 * the sprite, 0 being fully transparent and 1 being fully opaque.
-	 * @param fAlpha New alpha value for the sprite
-	 */
-	void SetAlpha(float fAlpha);
-
-	/**
-	 * Renders the sprite. The sprite will not render if its hidden or invalid
-	 * (see Valid()).
-	 * Material settings during render:
-	 * - Variable "alpha" will be set to the sprite's alpha
-	 * - Texture slot 1 will be set to the sprite's current texture
-	 * @param rt Render target to render to
-	 */
-	void Render(class WRenderTarget* rt);
-
-	/**
 	 * Show the sprite.
 	 */
 	void Show();
@@ -200,34 +149,10 @@ public:
 	float GetAngle() const;
 
 	/**
-	 * Retrieves the x-position of the sprite.
-	 * @return X-position of the sprite, in screen-space
-	 */
-	float GetPositionX() const;
-
-	/**
-	 * Retrieves the y-position of the sprite.
-	 * @return Y-position of the sprite, in screen-space
-	 */
-	float GetPositionY() const;
-
-	/**
 	 * Retrieves the position of the sprite.
 	 * @return XY-coordinates of the sprite, in screen-space
 	 */
 	WVector2 GetPosition() const;
-
-	/**
-	 * Retrieves the width of the sprite.
-	 * @return Width of the sprite, in pixels
-	 */
-	float GetSizeX() const;
-
-	/**
-	 * Retrieves the height of the sprite.
-	 * @return Height of the sprite, in pixels
-	 */
-	float GetSizeY() const;
 
 	/**
 	 * Retrieves the size of the sprite.
@@ -247,6 +172,25 @@ public:
 	 * @return true if the sprite is valid, false otherwise
 	 */
 	virtual bool Valid() const;
+
+private:
+	/** true if the sprite is hidden (will no render), false otherwise */
+	bool m_hidden;
+	/** Screen-space position of the sprite */
+	WVector2 m_pos;
+	/** Size of the sprite, in pixels */
+	WVector2 m_size;
+	/** Rotation center of the sprite relative to top-left corner, in pixels */
+	WVector2 m_rotationCenter;
+	/** Angle of the sprite, in radians */
+	float m_angle;
+	/** Priority of the sprite, higher priority sprites render over lower ones */
+	unsigned int m_priority;
+	/** true if position/size/etc... changed and geometry needs to be rebuilt */
+	bool m_geometryChanged;
+
+	/** Rendering geometry */
+	class WGeometry* m_geometry;
 };
 
 /**
@@ -262,15 +206,6 @@ class WSpriteManager : public WManager<WSprite> {
 	 */
 	virtual std::string GetTypeName() const;
 
-	/** Geometry used to render full-screen sprites */
-	class WGeometry* m_spriteFullscreenGeometry;
-	/** Vertex shader used by all sprites */
-	class WShader* m_spriteVertexShader;
-	/** Default pixel shader used by sprites */
-	class WShader* m_spritePixelShader;
-
-	class WGeometry* CreateSpriteGeometry() const;
-
 public:
 	WSpriteManager(class Wasabi* const app);
 	~WSpriteManager();
@@ -282,10 +217,21 @@ public:
 	WError Load();
 
 	/**
-	 * Renders the sprites to a render target.
-	 * @param rt Render target to render to
+	 * Called when the application window is resized.
+	 * @param width  New screen width
+	 * @param height New screen height
+	 * @return Error code, see WError.h
 	 */
-	void Render(class WRenderTarget* rt);
+	WError Resize(unsigned int width, unsigned int height);
+
+	/**
+	 * Allocates and initializes a new sprite. If an image is supplied, it
+	 * will be set to the default sprite's material texture "diffuseTexture".
+	 * @param img Image to set to the new sprite
+	 * @param ID  Id of the new image
+	 * @return    New sprite
+	 */
+	WSprite* CreateSprite(class WImage* img = nullptr, unsigned int ID = 0) const;
 
 	/**
 	 * Retrieves the default vertex shader that sprites use.
@@ -302,6 +248,8 @@ public:
 	/**
 	 * Creates a new WEffect using the default sprite vertex shader and a
 	 * supplied pixel shader and other states
+	 * @param rt  Render target intended for this effect. If this is null,
+	 *            the render target will be the backbuffer
 	 * @param ps  A pixel/fragment shader to use. If none is provided, the
 	 *            default pixel shader will be used
 	 * @param bs  Blend state to use. If none is provided, the default
@@ -313,9 +261,20 @@ public:
 	 * @return    Newly created effect, or nullptr on failure
 	 */
 	class WEffect* CreateSpriteEffect(
-		WShader* ps = nullptr,
+		class WRenderTarget* rt = nullptr,
+		class WShader* ps = nullptr,
 		VkPipelineColorBlendAttachmentState bs = {},
 		VkPipelineDepthStencilStateCreateInfo dss = {},
 		VkPipelineRasterizationStateCreateInfo rs = {}
 	) const;
+
+private:
+	/** Vertex shader used by all sprites */
+	class WShader* m_spriteVertexShader;
+	/** Default pixel shader used by sprites */
+	class WShader* m_spritePixelShader;
+	/** Geometry used to render full-screen sprites */
+	class WGeometry* m_spriteFullscreenGeometry;
+
+	class WGeometry* CreateSpriteGeometry() const;
 };

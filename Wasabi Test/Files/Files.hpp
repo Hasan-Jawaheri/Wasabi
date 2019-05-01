@@ -2,9 +2,12 @@
 
 #include "../TestSuite.hpp"
 #include <Physics/Bullet/WBulletPhysics.h>
-#include <Renderers/WForwardRenderer.h>
+#include <Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class FilesDemo : public WTestState {
+	WMaterial* m_material;
+	WObject* m_object;
+	WCamera* m_cam;
 
 public:
 	FilesDemo(Wasabi* const app);
@@ -13,7 +16,7 @@ public:
 	virtual void Update(float fDeltaTime);
 	virtual void Cleanup();
 
-	virtual WRenderer* CreateRenderer() { return new WForwardRenderer(m_app); }
+	virtual WError SetupRenderer() { return WInitializeForwardRenderer(m_app); }
 	virtual WPhysicsComponent* CreatePhysicsComponent() {
 		WBulletPhysics* physics = new WBulletPhysics(m_app);
 		WError werr = physics->Initialize();

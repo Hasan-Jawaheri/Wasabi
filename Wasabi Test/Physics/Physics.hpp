@@ -2,8 +2,7 @@
 
 #include "../TestSuite.hpp"
 #include <Physics/Bullet/WBulletPhysics.h>
-#include <Renderers/WForwardRenderer.h>
-#include <Renderers/WDeferredRenderer.h>
+#include <Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class PhysicsDemo : public WTestState {
 	WObject* m_ground;
@@ -18,6 +17,6 @@ public:
 	virtual void Update(float fDeltaTime);
 	virtual void Cleanup();
 
-	virtual WRenderer* CreateRenderer() { return new WDeferredRenderer(m_app); }
+	virtual WError SetupRenderer() { return WInitializeForwardRenderer(m_app); }
 	virtual WPhysicsComponent* CreatePhysicsComponent();
 };

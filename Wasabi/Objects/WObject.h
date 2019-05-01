@@ -13,6 +13,7 @@
 #pragma once
 
 #include "../Core/WCore.h"
+#include "../Materials/WMaterialsStore.h"
 
 /**
  * @ingroup engineclass
@@ -117,51 +118,60 @@ private:
  * object's desired position, orientation and scale. A WObject also provides
  * an easy way to apply animations and instancing on rendered geometry.
  */
-class WObject : public WBase, public WOrientation, public WFileAsset {
+class WObject : public WOrientation, public WFileAsset, public WMaterialsStore {
+	friend class WObjectManager;
+
+protected:
+	virtual ~WObject();
+
+public:
 	/**
 	 * Returns "Object" string.
 	 * @return Returns "Object" string
 	 */
 	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
-public:
 	WObject(Wasabi* const app, unsigned int ID = 0);
-	~WObject();
+
+	/**
+	 * Checks whether a call to Render() will cause any rendering (draw call) to
+	 * happen.
+	 */
+	bool WillRender(class WRenderTarget* rt);
 
 	/**
 	 * Renders this object. An object will only render to the render target if
 	 * its valid (see Valid()) and not hidden (see Hide()). If frustum culling
 	 * is enabled (see EnableFrustumCulling()), the object will only render if
 	 * it is within the viewing frustum of the render target's camera. Before an
-	 * object binds its attached material (WMaterial::Bind()), it will set the
+	 * object binds the provided material (WMaterial::Bind()), it will set the
 	 * following variables and resources in the material, if they exist:
-	 * * "gWorld" (WMatrix) will be set to the world matrix of this object.
-	 * * "gProjection" (WMatrix) will be set to the projection matrix of the
-	 * 		camera.
-	 * * "gView" (WMatrix) will be set to the view matrix of the camera.
-	 * * "gCamPos" (WVector3) will be set to the world position of the camera.
-	 * * "gAnimation" (int) will be set to 1 if animation data is provided,
+	 * * "worldMatrix" (WMatrix) will be set to the world matrix of this object.
+	 * * "isAnimated" (int) will be set to 1 if animation data is available,
 	 * 		0 otherwise.
-	 * * "gInstancing" (int) will be set to 1 if instancing data is provided,
+	 * * "isInstanced" (int) will be set to 1 if instancing data is available,
 	 * 		0 otherwise.
-	 * * "gAnimationTextureWidth" (int) will be set to the width of the
+	 * * "animationTextureWidth" (int) will be set to the width of the
 	 * 		animation texture. This will only be set if gAnimation was set to 1.
-	 * * "gInstanceTextureWidth" (int) will be set to the width of the
+	 * * "instanceTextureWidth" (int) will be set to the width of the
 	 * 		instancing texture. This will only be set if gInstancing was set to 1.
-	 * * WMaterial::SetAnimationTexture() will be called and assigned the
-	 * 	 animation texture from the attached animation. This will only occur if
-	 * 	 gAnimation was set to 1.
-	 * * WMaterial::SetInstancingTexture() will be called and assigned the
-	 * 	 instancing texture created by this object. This will only occur if
-	 * 	 gInstancing was set to 1.
+	 * * texture "animationTexture" will be assigned to the animation texture
+	 *      from the attached animation. This will only occur if isAnimated was
+	 *      set to 1.
+	 * * texture "instancingTexture" will be assigned to the instancing texture
+	 * 	    created by this object. This will only occur if isInstanced was set
+	 *      to 1.
 	 *
 	 * If the object's instancing is initiated (see InitInstancing()), and there
 	 * is at least one instance created (see CreateInstance()), the object will
 	 * be rendered using geometry instancing.
 	 * 
-	 * @param rt Render target to render to.
+	 * @param rt              Render target to render to.
+	 * @param material        Material to fill in with object data and bind
+	 * @param updateInstances Whether or not to update the instances data
 	 */
-	void Render(class WRenderTarget* rt);
+	void Render(class WRenderTarget* rt, class WMaterial* material, bool updateInstances = true);
 
 	/**
 	 * Sets the attached geometry.
@@ -169,13 +179,6 @@ public:
 	 * @return          Error code, see WError.h
 	 */
 	WError SetGeometry(class WGeometry* geometry);
-
-	/**
-	 * Sets the attached material.
-	 * @param  material Material to attach, or nullptr to remove the attachment
-	 * @return          Error code, see WError.h
-	 */
-	WError SetMaterial(class WMaterial* material);
 
 	/**
 	 * Sets the attached animation.
@@ -189,12 +192,6 @@ public:
 	 * @return Attached geometry, nullptr if none exists
 	 */
 	class WGeometry* GetGeometry() const;
-
-	/**
-	 * Retrieves the attached material.
-	 * @return Attached material, nullptr if none exists
-	 */
-	class WMaterial* GetMaterial() const;
 
 	/**
 	 * Retrieves the attached animation.
@@ -294,59 +291,15 @@ public:
 
 	/**
 	 * Sets the scale of this object.
-	 * @param x X scale multiplier
-	 * @param y Y scale multiplier
-	 * @param z Z scale multiplier
-	 */
-	void Scale(float x, float y, float z);
-
-	/**
-	 * Sets the scale of this object.
 	 * @param scale Scale factor components
 	 */
 	void Scale(WVector3 scale);
-
-	/**
-	 * Sets the X scale of this object.
-	 * @param scale Scale factor
-	 */
-	void ScaleX(float scale);
-
-	/**
-	 * Sets the Y scale of this object.
-	 * @param scale Scale factor
-	 */
-	void ScaleY(float scale);
-
-	/**
-	 * Sets the Z scale of this object.
-	 * @param scale Scale factor
-	 */
-	void ScaleZ(float scale);
 
 	/**
 	 * Retrieves the scale factors of this object.
 	 * @return 3D vector containing the scale factors
 	 */
 	WVector3 GetScale() const;
-
-	/**
-	 * Retrieves the X scale of this object.
-	 * @return Scale factor
-	 */
-	float GetScaleX() const;
-
-	/**
-	 * Retrieves the Y scale of this object.
-	 * @return Scale factor
-	 */
-	float GetScaleY() const;
-
-	/**
-	 * Retrieves the Z scale of this object.
-	 * @return Scale factor
-	 */
-	float GetScaleZ() const;
 
 	/**
 	 * Retrieves the world matrix computed so far. A call to UpdateLocals()
@@ -378,14 +331,13 @@ public:
 	/**
 	 * Animations can only be saved if they are an instance of WSkeleton
 	 */
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+	static std::vector<void*> LoadArgs();
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	/** Attached geometry */
 	class WGeometry* m_geometry;
-	/** Attached material */
-	class WMaterial* m_material;
 	/** Attached animation */
 	class WAnimation* m_animation;
 	/** true if the world matrix needs to be updated, false otherwise */
@@ -430,6 +382,19 @@ public:
 	WObjectManager(class Wasabi* const app);
 
 	/**
+	 * Loads the manager.
+	 * @return Error code, see WError.h
+	 */
+	WError Load();
+
+	/**
+	 * Allocates and initializes a new object.
+	 * @param ID  Id of the new object
+	 * @return    New object
+	 */
+	WObject* CreateObject(unsigned int ID = 0) const;
+
+	/**
 	 * Checks if an object is in the view in the default renderer's camera and
 	 * and part of that object is at the given (x,y) coordinates on the screen.
 	 * If multiple objects are under the (x,y) coordinate, the one with the
@@ -458,21 +423,8 @@ public:
 	 *                     was picked
 	 */
 	WObject* PickObject(int x, int y, bool bAnyHit,
-						unsigned int iObjStartID = 0,
-						unsigned int iObjEndID = 0,
-						WVector3* pt = nullptr, WVector2* uv = nullptr,
-						unsigned int* faceIndex = nullptr) const;
-
-	/**
-	 * Renders all objects registered by this manager (by calling their
-	 * WObject::Render() function).
-	 * @param rt Render target to render to
-	 */
-	void Render(class WRenderTarget* rt);
-
-	/**
-	 * Loads the manager.
-	 * @return Error code, see WError.h
-	 */
-	WError Load();
+		unsigned int iObjStartID = 0,
+		unsigned int iObjEndID = 0,
+		WVector3* pt = nullptr, WVector2* uv = nullptr,
+		unsigned int* faceIndex = nullptr) const;
 };

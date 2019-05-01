@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Wasabi.h>
-#include <Renderers/WDeferredRenderer.h>
+#include <Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class WasabiTester : public Wasabi {
 	class WTestState* m_state;
@@ -22,18 +22,22 @@ public:
 	WVector3 GetCameraPosition() const;
 	float GetYawAngle() const;
 
-	virtual WRenderer* CreateRenderer();
+	virtual WError SetupRenderer();
 	virtual WPhysicsComponent* CreatePhysicsComponent();
+	virtual WSoundComponent* CreateSoundComponent();
 };
 
 class WTestState : public WGameState {
 public:
 	WTestState(Wasabi* const app) : WGameState(app) {}
 
-	virtual WRenderer* CreateRenderer() {
-		return new WDeferredRenderer(m_app);
+	virtual WError SetupRenderer() {
+		return WInitializeForwardRenderer(m_app);
 	}
 	virtual WPhysicsComponent* CreatePhysicsComponent() {
+		return nullptr;
+	}
+	virtual WSoundComponent* CreateSoundComponent() {
 		return nullptr;
 	}
 };

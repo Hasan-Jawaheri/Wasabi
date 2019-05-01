@@ -3,13 +3,14 @@
 #include "Lights.hpp"
 
 LightsDemo::LightsDemo(Wasabi* const app) : WTestState(app) {
+	m_plain = nullptr;
 }
 
 void LightsDemo::Load() {
 	srand(2);
 
 	// Create the plain
-	m_plain = new WObject(m_app);
+	m_plain = m_app->ObjectManager->CreateObject();
 	WGeometry* plainGeometry = new WGeometry(m_app);
 	plainGeometry->CreatePlain(50.0f, 0, 0);
 	m_plain->SetGeometry(plainGeometry);
@@ -21,17 +22,17 @@ void LightsDemo::Load() {
 	for (int i = 0; i < 40; i++) {
 		float x = 30.0f * (float)(rand() % 10000) / 10000.0f - 15.0f;
 		float z = 30.0f * (float)(rand() % 10000) / 10000.0f - 15.0f;
-		WObject* box = new WObject(m_app);
+		WObject* box = m_app->ObjectManager->CreateObject();
 		box->SetGeometry(boxGeometry);
 		box->SetPosition(x, 1.0f, z);
 		m_boxes.push_back(box);
 	}
 	boxGeometry->RemoveReference();
 
-	// remove default light
-	m_app->LightManager->GetDefaultLight()->Hide();
+	// hide default light
+	// m_app->LightManager->GetDefaultLight()->Hide();
 
-	int maxLights = min((int)m_app->engineParams["maxLights"], 8);
+	int maxLights = min(m_app->engineParams.find("maxLights") != m_app->engineParams.end() ? (int)m_app->engineParams["maxLights"] : INT_MAX, 8);
 	WColor colors[] = {
 		WColor(1, 0, 0),
 		WColor(0, 1, 0),
@@ -70,12 +71,12 @@ void LightsDemo::Load() {
 void LightsDemo::Update(float fDeltaTime) {
 	for (auto it = m_boxes.begin(); it != m_boxes.end(); it++) {
 		WObject* box = *it;
-		box->Yaw(10.0f * fDeltaTime);
+		//box->Yaw(10.0f * fDeltaTime);
 	}
 }
 
 void LightsDemo::Cleanup() {
-	m_plain->RemoveReference();
+	W_SAFE_REMOVEREF(m_plain);
 
 	for (auto it = m_boxes.begin(); it != m_boxes.end(); it++)
 		(*it)->RemoveReference();

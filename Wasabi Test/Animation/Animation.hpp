@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../TestSuite.hpp"
-#include <Renderers/WForwardRenderer.h>
+#include <Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class AnimationDemo : public WTestState {
 	WObject* character;
@@ -13,5 +13,5 @@ public:
 	virtual void Update(float fDeltaTime);
 	virtual void Cleanup();
 
-	virtual WRenderer* CreateRenderer() { return new WForwardRenderer(m_app); }
+	virtual WError SetupRenderer() { return WInitializeForwardRenderer(m_app); }
 };

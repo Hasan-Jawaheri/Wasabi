@@ -13,37 +13,62 @@
 
 #include "../Core/WCore.h"
 
+enum W_IMAGE_CREATE_FLAGS {
+	W_IMAGE_CREATE_TEXTURE = 1,
+	W_IMAGE_CREATE_DYNAMIC = 2,
+	W_IMAGE_CREATE_REWRITE_EVERY_FRAME = 4,
+	W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT = 8,
+};
+
+inline W_IMAGE_CREATE_FLAGS operator | (W_IMAGE_CREATE_FLAGS lhs, W_IMAGE_CREATE_FLAGS rhs) {
+	using T = std::underlying_type_t <W_IMAGE_CREATE_FLAGS>;
+	return static_cast<W_IMAGE_CREATE_FLAGS>(static_cast<T>(lhs) | static_cast<T>(rhs));
+}
+
+inline W_IMAGE_CREATE_FLAGS operator & (W_IMAGE_CREATE_FLAGS lhs, W_IMAGE_CREATE_FLAGS rhs) {
+	using T = std::underlying_type_t <W_IMAGE_CREATE_FLAGS>;
+	return static_cast<W_IMAGE_CREATE_FLAGS>(static_cast<T>(lhs) & static_cast<T>(rhs));
+}
+
+inline W_IMAGE_CREATE_FLAGS& operator |= (W_IMAGE_CREATE_FLAGS& lhs, W_IMAGE_CREATE_FLAGS rhs) {
+	lhs = lhs | rhs;
+	return lhs;
+}
+
+inline W_IMAGE_CREATE_FLAGS& operator &= (W_IMAGE_CREATE_FLAGS& lhs, W_IMAGE_CREATE_FLAGS rhs) {
+	lhs = lhs & rhs;
+	return lhs;
+}
+
 /**
  * @ingroup engineclass
  * This class represents an image, or texture, used by Wasabi.
  */
-class WImage : public WBase, public WFileAsset {
+class WImage : public WFileAsset {
+	friend class WRenderTarget;
+	friend class WImageManager;
+	friend class WFileAsset;
+
+protected:
+	virtual ~WImage();
+
+public:
 	/**
 	 * Returns "Image" string.
 	 * @return Returns "Image" string
 	 */
 	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
-public:
 	WImage(class Wasabi* const app, unsigned int ID = 0);
-	~WImage();
 
 	/**
 	 * Creates the image from an array of pixels. The array of pixels need to be
 	 * in the same format specified, using the same component size and the same
 	 * number of components.
 	 *
-	 * If fmt is VK_FORMAT_UNDEFINED, then the format will be chosen as follows:
-	 * * num_components == 1: VK_FORMAT_R32_SFLOAT
-	 * * num_components == 2: VK_FORMAT_R32G32_SFLOAT
-	 * * num_components == 3: VK_FORMAT_R32G32B32_SFLOAT
-	 * * num_components == 4: VK_FORMAT_R32G32B32A32_SFLOAT
-	 * 
-	 * Meaning that each pixel in the pixels array will be expected to be
-	 * \a num_components consecutive floats.
-	 *
 	 * Examples:
-	 * A 64x64 image with a 4-component floating-point pixel.
+	 * A 64x64 image with a 4-component floating-point pixel (R32G32B32A32).
 	 * @code
 	 * WImage* img = new WImage(this);
 	 * float* pixels = new float[64*64*4]; // (64x64 image, 4 components each)
@@ -61,7 +86,7 @@ public:
 	 * 	 	 pixels[(y*64+x)*4 + 3] = 1.0f; // alpha component at (x, y)
 	 * 	 }
 	 * }
-	 * img->CreateFromPixelsArray(pixels, 64, 64);
+	 * img->CreateFromPixelsArray(pixels, 64, 64, VK_FORMAT_R32G32B32A32_SFLOAT);
 	 * delete[] pixels;
 	 * @endcode
 	 * Same as the above example, but using WColor for easier access and more
@@ -74,7 +99,7 @@ public:
 	 * 	 	 pixels[y*64+x] = WColor(0.1f, 0.4f, 1.0f, 1.0f);
 	 * 	 }
 	 * }
-	 * img->CreateFromPixelsArray(pixels, 64, 64);
+	 * img->CreateFromPixelsArray(pixels, 64, 64, VK_FORMAT_R32G32B32A32_SFLOAT);
 	 * delete[] pixels;
 	 * @endcode
 	 * Creating a 32x32, 2 component UNORM format image.
@@ -87,11 +112,10 @@ public:
 	 * 	 	 pixels[(y*64+x)*2 + 1] = 255;
 	 * 	 }
 	 * }
-	 * // 2 components, each one is 1 byte (sizeof (char)) and the format is
+	 * // 2 components, each one is 1 byte and the format is
 	 * // VK_FORMAT_R8G8_UNORM (so it is 0-255 in memory and 0.0-1.0 when passed
 	 * // to the GPU).
-	 * img->CreateFromPixelsArray(pixels, 32, 32, false, 2
-	 *                            VK_FORMAT_R8G8_UNORM, 1);
+	 * img->CreateFromPixelsArray(pixels, 32, 32, VK_FORMAT_R8G8_UNORM);
 	 * delete[] pixels;
 	 * @endcode
 	 * 
@@ -99,47 +123,33 @@ public:
 	 *                        the image will not have initial data.
 	 * @param  width          Width of the image
 	 * @param  height         Height of the image
-	 * @param  bDynamic       Should be set to true for images that will be
-	 *                        modified in the future (via MapPixels() and
-	 *                        UnmapPixels()). Setting this to true results in
-	 *                        using more memory
-	 * @param  num_components Number of components of each pixel in pixels (
-	 *                        valid values are 1, 2, 3 and 4)
-	 * @param  fmt            If set to VK_FORMAT_UNDEFINED, the image format
-	 *                        will be chosen automatically, otherwise fmt will
-	 *                        be used
-	 * @param  comp_size      The size of each component (in bytes) of a pixel
-	 *                        in the pixels array. This should only be used if
-	 *                        fmt is not VK_FORMAT_UNDEFINED, otherwise it should
-	 *                        be 4 (sizeof (float))
+	 * @param  format         Image format
+	 * @param  flags          Image creation flags, see W_IMAGE_CREATE_FLAGS
 	 * @return                Error code, see WError.h
 	 */
 	WError CreateFromPixelsArray(void*			pixels,
-								 unsigned int	width,
-								 unsigned int	height,
-								 bool			bDynamic = false,
-								 unsigned int	num_components = 4,
-								 VkFormat		fmt = VK_FORMAT_UNDEFINED,
-								 size_t			comp_size = sizeof(float));
+								 uint			width,
+								 uint			height,
+								 VkFormat		format,
+								 W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE);
 
 	/**
 	 * Loads an image from a file. The image format can be any of the formats
 	 * supported by the stb library (includes .png, .jpg, .tga, .bmp).
 	 * @param  filename Name of the file to load
-	 * @param  bDynamic Should be set to true for images that will be modified
-	 *                  in the future (via MapPixels() and UnmapPixels()).
-	 *                  Setting this to true results in using more memory
+	 * @param  flags    Image creation flags, see W_IMAGE_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError Load(std::string filename, bool bDynamic = false);
+	WError Load(std::string filename, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE);
 
 	/**
 	 * Copy another WImage. Only images created with bDynamic == true can be
 	 * copied.
-	 * @param  image Pointer to the image to copy from, which should be dynamic
-	 * @return       Error code, see WError.h
+	 * @param  image  Pointer to the (dynamic) image to copy from
+	 * @param  flags  Image creation flags, see W_IMAGE_CREATE_FLAGS
+	 * @return        Error code, see WError.h
 	 */
-	WError CopyFrom(WImage* const image);
+	WError CopyFrom(WImage* const image, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE);
 
 	/**
 	 * Maps the pixels of the image for reading or writing. Only images created
@@ -156,11 +166,10 @@ public:
 	 * 
 	 * @param  pixels    The address of a pointer to have it point to the mapped
 	 *                   memory of the pixels
-	 * @param  bReadOnly Set to true if you intend to only read from the pixels
-	 *                   array, false if you want to modify the pixels
+	 * @param  flags     Map flags (bitwise OR'd), specifying read/write intention
 	 * @return           Error code, see WError.h
 	 */
-	WError MapPixels(void** const pixels, bool bReadOnly = false);
+	WError MapPixels(void** const pixels, W_MAP_FLAGS flags);
 
 	/**
 	 * Unmaps pixels from a previous MapPixels() call. If MapPixels was called
@@ -181,6 +190,13 @@ public:
 	VkImageLayout GetViewLayout() const;
 
 	/**
+	 * Transitions the layout of the currently buffered image to the specified layout
+	 * @param cmdBuf     Command buffer to perform the transition in
+	 * @param newLayout  New Vulkan layout for the underlying image
+	 */
+	void TransitionLayoutTo(VkCommandBuffer cmdBuf, VkImageLayout newLayout);
+
+	/**
 	 * Retrieves the Vulkan format used for this image.
 	 * @return The format of the image
 	 */
@@ -199,16 +215,11 @@ public:
 	unsigned int GetHeight() const;
 
 	/**
-	 * Retrieves the number of components in each pixels of this image.
-	 * @return Number of components per pixel
+	 * Returns true if the image is valid. The image is valid if it has a usable
+	 * Vulkan image view.
+	 * @return true if the image is valid, false otherwise
 	 */
-	unsigned int GetNumComponents() const;
-
-	/**
-	 * Retrieves the size of each component in a pixel.
-	 * @return Size of a component, in bytes
-	 */
-	unsigned int GetComponentSize() const;
+	virtual bool Valid() const;
 
 	/**
 	 * Retrieves the size of a pixel in this image.
@@ -216,46 +227,37 @@ public:
 	 */
 	unsigned int GetPixelSize() const;
 
-	/**
-	 * Returns true if the image is valid. The image is valid if it has a usable
-	 * Vulkan image view.
-	 * @return true if the image is valid, false otherwise
-	 */
-	virtual bool Valid() const;
-
+	static std::vector<void*> LoadArgs(W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE);
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
-	/** A staging buffer used to create the image and map/unmap (if dynamic) */
-	VkBuffer m_stagingBuffer;
-	/** Memory backing the staging buffer */
-	VkDeviceMemory m_stagingMemory;
-	/** Vulkan image handle */
-	VkImage m_image;
-	/** Memory backing the Vulkan image */
-	VkDeviceMemory m_deviceMemory;
-	/** The Vulkan image view handle */
-	VkImageView m_view;
+	/** Buffered image resource */
+	WBufferedImage2D m_bufferedImage;
 	/** The Vulkan format */
 	VkFormat m_format;
-	/** true if the last MapPixels() was read-only */
-	bool m_readOnlyMap;
-	/** Width of the image, in pixels */
-	unsigned int m_width;
-	/** Height of the image, in pixels */
-	unsigned int m_height;
-	/** Size of the entire image memory buffer, in bytes, for mapping */
-	unsigned int m_mapSize;
-	/** Number of pixel components */
-	unsigned int m_numComponents;
-	/** Size of each pixel component, in bytes */
-	unsigned int m_componentSize;
+	/** An array of buffered maps to perform, one per buffered image */
+	std::vector<void*> m_pendingBufferedMaps;
 
 	/**
 	 * Cleanup all image resources (including all Vulkan-related resources)
 	 */
 	void _DestroyResources();
+
+	/**
+	 * Performs the pending map for the given buffer index
+	 */
+	void _PerformPendingMap(uint bufferIndex);
+
+	/**
+	 * Performs an update necessary to the buffered image at a given index after it gets mapped
+	 */
+	void _UpdatePendingMap(void* mappedData, uint bufferIndex, W_MAP_FLAGS mapFlags);
+
+	/**
+	 * Performs an update necessary to the buffered image at a given index before it gets unmapped
+	 */
+	void _UpdatePendingUnmap(uint bufferIndex);
 };
 
 /**
@@ -271,8 +273,12 @@ class WImageManager : public WManager<WImage> {
 	 */
 	virtual std::string GetTypeName() const;
 
+	/** A container of the dynamic images that need to be (possibly) updated
+	    per-frame for buffered mapping/unmapping */
+	std::unordered_map<WImage*, bool> m_dynamicImages;
+
 	/** This is the default image, which is a checker board */
-	WImage* m_checker_image;
+	WImage* m_checkerImage;
 
 public:
 	WImageManager(class Wasabi* const app);
@@ -285,8 +291,37 @@ public:
 	WError Load();
 
 	/**
+	 * Allocates an image.
+	 */
+	WImage* CreateImage(unsigned int ID = 0);
+
+	/**
+	 * Allocates and builds a new image from supplied pixels. See
+	 * WImage::CreateFromPixelsArray().
+	 */
+	WImage* CreateImage(void* pixels, uint width, uint height, VkFormat format, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE, unsigned int ID = 0);
+
+	/**
+	 * Allocates and builds a new image from a file. See
+	 * WImage::Load().
+	 */
+	WImage* CreateImage(std::string filename, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE, unsigned int ID = 0);
+
+	/**
+	 * Allocates and builds a new image that is a copy of another. See
+	 * WImage::CopyFrom().
+	 */
+	WImage* CreateImage(WImage* const image, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE, unsigned int ID = 0);
+
+	/**
 	 * Retrieves the default (checkers) image.
 	 * @return A pointer to the default image
 	 */
 	WImage* GetDefaultImage() const;
+
+	/**
+	 * Makes sure all Map call results are propagated to the buffered images at
+	 * the given buffer index.
+	 */
+	void UpdateDynamicImages(uint bufferIndex) const;
 };

@@ -3,6 +3,7 @@
 MESHDATA ParseMesh(FbxMesh* pMesh)
 {
 	MESHDATA ret;
+	ret.name = pMesh->GetNode()->GetName();
 
 	FbxGeometryElementTangent* leTangent = nullptr;
 	if (pMesh->GetElementTangentCount())
@@ -16,6 +17,12 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 		mx1.Get(2, 0), mx1.Get(2, 1), mx1.Get(2, 2), mx1.Get(2, 3),
 		mx1.Get(3, 0), mx1.Get(3, 1), mx1.Get(3, 2), mx1.Get(3, 3)
 	);
+	ret.transform = meshMtx * WMatrixInverse(WMatrix(
+		1, 0, 0, 0,
+		0, 0, 1, 0,
+		0, -1, 0, 0,
+		0, 0, 0, 1
+	));
 	/*meshMtx = WMatrix (	1, 0, 0, 0,
 								0, 0, -1, 0,
 								0, 1, 0, 0,
@@ -45,6 +52,14 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 		printf("Warning: mesh contains multiple uv sets (%s), only set '%s' will be used\n", allSets.c_str(), uvSetName);
 	}
 
+	int nLayers = pMesh->GetLayerCount();
+	FbxLayer* layer = pMesh->GetLayer(0);
+	FbxLayerElementMaterial* layerElement = layer->GetMaterials();
+	FbxLayerElementArrayTemplate<int> layerArray = FbxLayerElementArrayTemplate<int>(fbxsdk::eFbxInt);
+	if (layerElement)
+		layerArray = layerElement->GetIndexArray();
+	std::map<int, FbxSurfaceMaterial*> materials;
+
 	for (int i = 0; i < lPolygonCount; i++) {
 		int lPolygonSize = pMesh->GetPolygonSize(i);
 		if (lPolygonSize != 3) {
@@ -55,10 +70,20 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 			int lControlPointIndex = pMesh->GetPolygonVertex(i, j);
 			FbxVector4 pos, norm, tang;
 			FbxVector2 uv;
+			uint textureIndex = 0;
 			bool dummy;
 			pos = allControlPointPositions[lControlPointIndex];
 			pMesh->GetPolygonVertexNormal(i, j, norm);
 			pMesh->GetPolygonVertexUV(i, j, uvSetName, uv, dummy);
+
+			if (layerElement && layerElement->GetMappingMode() == FbxLayerElementMaterial::eByPolygon) {
+				textureIndex = layerArray[i];
+				auto it = materials.find(textureIndex);
+				if (it == materials.end()) {
+					FbxSurfaceMaterial* mat = pMesh->GetNode()->GetMaterial(textureIndex);
+					materials.insert(std::make_pair(textureIndex, mat));
+				}
+			}
 
 			/*if (leTangent) {
 				if (leTangent->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
@@ -101,6 +126,7 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 			v.tang.x = t.x;
 			v.tang.y = t.y;
 			v.tang.z = t.z;
+			v.texIndex = textureIndex;
 			ret.vb.push_back(v);
 			ret.ib.push_back(i*3+j);
 		}
@@ -108,8 +134,7 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 
 	int lSkinCount = pMesh->GetDeformerCount(FbxDeformer::eSkin);
 
-	if (lSkinCount)
-	{
+	if (lSkinCount) {
 		if (lSkinCount > 1)
 			printf("Warning: %d skins found, will only use the first\n", lSkinCount);
 
@@ -119,14 +144,12 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 		int lClusterCount = ((FbxSkin *)pMesh->GetDeformer(skinIndex, FbxDeformer::eSkin))->GetClusterCount();
 		int parentIndex = -1;
 		bool bNormalizeWeights = false;
-		for (int j = 0; j < lClusterCount; j++)
-		{
+		for (int j = 0; j < lClusterCount; j++) {
 			FbxCluster* lCluster = ((FbxSkin *)pMesh->GetDeformer(skinIndex, FbxDeformer::eSkin))->GetCluster(j);
 			if (lCluster->GetLink()->GetParent() == pMesh->GetScene()->GetRootNode())
 				parentIndex = j;
 		}
-		for (int j = 0; j != lClusterCount; j++)
-		{
+		for (int j = 0; j != lClusterCount; j++) {
 			FbxCluster* lCluster = ((FbxSkin *)pMesh->GetDeformer(skinIndex, FbxDeformer::eSkin))->GetCluster(j);
 
 			const char* lClusterModes[] = { "Normalize", "Additive", "Total1" };
@@ -197,6 +220,17 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 		DWORD t = ret.ib[i + 0];
 		ret.ib[i + 0] = ret.ib[i + 2];
 		ret.ib[i + 2] = t;
+	}
+
+	for (auto it : materials) {
+		FbxSurfaceMaterial* material = it.second;
+		FbxProperty prop = material->FindProperty(FbxSurfaceMaterial::sDiffuse);
+		int textureCount = prop.GetSrcObjectCount<FbxTexture>();
+		if (textureCount > 0) {
+			FbxFileTexture* texture = FbxCast<FbxFileTexture>(prop.GetSrcObject<FbxTexture>(0));
+			const char* filename = texture->GetFileName();
+			ret.textures.push_back(filename);
+		}
 	}
 
 	return ret;

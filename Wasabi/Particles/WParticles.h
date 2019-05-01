@@ -11,6 +11,7 @@
 #pragma once
 
 #include "../Core/WCore.h"
+#include "../Materials/WMaterialsStore.h"
 
 /** A vertex of a particle */
 struct WParticlesVertex {
@@ -18,18 +19,23 @@ struct WParticlesVertex {
 	WVector3 pos;
 	/** particle size */
 	WVector3 size;
-	/** particle alpha */
-	float alpha;
+	/** Tiling in the particle texture: 4-component vector where x,y are uv at top left,
+	    z,w are uv at bottom right */
+	WVector4 UVs;
+	/** particle color (multiplied by texture) */
+	WColor color;
 };
 
 /** Type of default particle effects supported by WParticlesManager */
 enum W_DEFAULT_PARTICLE_EFFECT_TYPE {
+	/** Default particles effect with a custom effect */
+	W_DEFAULT_PARTICLES_CUSTOM = 0,
 	/** Default particles effect with additive blending */
-	W_DEFAULT_PARTICLES_ADDITIVE = 0,
+	W_DEFAULT_PARTICLES_ADDITIVE = 1,
 	/** Default particles effect with alpha blending */
-	W_DEFAULT_PARTICLES_ALPHA = 1,
+	W_DEFAULT_PARTICLES_ALPHA = 2,
 	/** Default particles effect with subtractive blending */
-	W_DEFAULT_PARTICLES_SUBTRACTIVE = 2,
+	W_DEFAULT_PARTICLES_SUBTRACTIVE = 3,
 };
 
 /**
@@ -123,10 +129,14 @@ public:
 	/** Dimensions of a cube at m_emissionPosition where particles randomly spawn
 	    (default is (1, 1, 1)*/
 	WVector3 m_emissionRandomness;
-	/** Lifetime (in seconds) of each particle (default is 3) */
+	/** Lifetime (in seconds) of each particle (default is 1.5) */
 	float m_particleLife;
 	/** A direction/velocity vector for spawned particles default is (0, 2, 0) */
 	WVector3 m_particleSpawnVelocity;
+	/** If set to true, initial particle velocity will not be m_particleSpawnVelocity, but instead
+	    it will be calculated as the vector from m_emissionPosition to the spawn position (affected
+		by m_emissionRandomness) with the speed being the length of m_particleSpawnVelocity */
+	bool m_moveOutwards;
 	/** Number of particles to emit per second (default is 20) */
 	float m_emissionFrequency;
 	/** Size of a particle at emission (default is 1) */
@@ -134,7 +144,16 @@ public:
 	/** Size of a particle at death (default is 3) */
 	float m_deathSize;
 	/** Type of the particle (default is BILLBOARD) */
-	Type m_type;
+	WDefaultParticleBehavior::Type m_type;
+	/** Number of columns in the texture if it is tiled (otherwise 1, which is the default) */
+	uint m_numTilesColumns;
+	/** Total number of tiles in the texture (default is 1) */
+	uint m_numTiles;
+	/** An array of (color, time) where color is the color of the particle (multiplied by the texture)
+	    at a given time (starting from 0) and lasting for 'time'. The sum of the time element
+		in the vector elements should be equal to 1, where 1 is the time of the particle's death.
+		(default is {<(1,1,1,0), 0.2>, <(1,1,1,1), 0.8>, <(1,1,1,0), 0.0>} */
+	std::vector<std::pair<WColor, float>> m_colorGradient;
 
 	WDefaultParticleBehavior(unsigned int max_particles);
 	virtual void UpdateSystem(float cur_time);
@@ -146,16 +165,32 @@ public:
  * This represents a particles system and is responsible for animating and
  * rendering it.
  */
-class WParticles : public WBase, public WOrientation {
+class WParticles : public WBase, public WOrientation, public WMaterialsStore {
+	friend class WParticlesManager;
+
+protected:
+	virtual ~WParticles();
+	WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE type, unsigned int ID = 0);
+
+public:
 	/**
 	 * Returns "Particles" string.
 	 * @return Returns "Particles" string
 	 */
 	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
-public:
-	WParticles(class Wasabi* const app, unsigned int ID = 0);
-	~WParticles();
+	/**
+	 * Initializes the particle system. This must be called for a WParticles
+	 * object to be Valid().
+	 * @param maxParticles  Maximum number of particles that the system can
+	 *                      render simultaneously. Pass 0 to free resources
+	 *                      and uninitialize the system
+	 * @param behavior      Behavior object for this system, pass nullptr to
+	 *                      use WDefaultParticleBehavior
+	 * @return Error code, see WError.h
+	 */
+	WError Create(unsigned int maxParticles = 5000, WParticlesBehavior* behavior = nullptr);
 
 	/**
 	 * Retrieves the behavior object for this particle system.
@@ -164,32 +199,39 @@ public:
 	WParticlesBehavior* GetBehavior() const;
 
 	/**
-	 * Initializes the particle system. This must be called for a WParticles
-	 * object to be Valid().
-	 * @param effect         Effect to be used for this particle system, default
-	 *                       effects can be retrieved from
-	 *                       WParticlesManager::GetDefaultEffect()
-	 * @param max_particles  Maximum number of particles that the system can
-	 *                       render simultaneously. Pass 0 to free resources
-	 *                       and uninitialize the system
-	 * @param behavior       Behavior object for this system, pass nullptr to
-	 *                       use WDefaultParticleBehavior
-	 * @return Error code, see WError.h
+	 * Checks whether a call to Render() will cause any rendering (draw call) to
+	 * happen.
 	 */
-	WError Create(class WEffect* effect, unsigned int max_particles = 5000, WParticlesBehavior* behavior = nullptr);
+	bool WillRender(class WRenderTarget* rt);
 
 	/**
-	 * Renders the particle system to the given render target.
-	 * @params rt  Render target to render to
+	 * Renders the particle system to the given render target. If a material is
+	 * provided, the following variables will be set:
+	 * * "worldMatrix": World matrix of the particles
+	 * * "viewMatrix": View matrix of the camera of rt
+	 * * "projectionMatrix": Projection matrix of the camera of rt
+	 * @params rt      Render target to render to
+	 * @param material Material to set its variables and bind (if provided)
 	 */
-	void Render(class WRenderTarget* rt);
+	void Render(class WRenderTarget* rt, class WMaterial* material = nullptr);
 
 	/**
-	 * Sets the texture of each particle
-	 * @param texture  Texture image to use
-	 * @return Error code, see WError.h
+	 * Sets the priority of the particles. Particles with higher priority will render
+	 * on top of those with lower priority (i.e. renders after after).
+	 * @param priority New priority to set
 	 */
-	WError SetTexture(class WImage* texture);
+	void SetPriority(unsigned int priority);
+
+	/**
+	 * Retrieves the current priority of the sprite. See SetPriority().
+	 * @return The current priority of the sprite
+	 */
+	unsigned int GetPriority() const;
+
+	/**
+	 * @return the type of this particles system
+	 */
+	W_DEFAULT_PARTICLE_EFFECT_TYPE GetType() const;
 
 	/**
 	 * Shows the particle system so that it can be rendered.
@@ -247,6 +289,8 @@ public:
 	virtual void OnStateChange(STATE_CHANGE_TYPE type);
 
 private:
+	/** Type of tyhis particle system */
+	W_DEFAULT_PARTICLE_EFFECT_TYPE m_type;
 	/** true if the world matrix needs to be updated, false otherwise */
 	bool m_bAltered;
 	/** true if the particle system is hidden, false otherwise */
@@ -255,6 +299,8 @@ private:
 	bool m_bFrustumCull;
 	/** Maximum number of particles that can be rendered by this system */
 	unsigned int m_maxParticles;
+	/** Rendering priority */
+	unsigned int m_priority;
 	/** Local world matrix */
 	WMatrix m_WorldM;
 
@@ -262,8 +308,6 @@ private:
 	WParticlesBehavior* m_behavior;
 	/** Geometry of points used to render the particles */
 	class WGeometry* m_geometry;
-	/** Material used to render the geometry */
-	class WMaterial* m_material;
 
 	/**
 	 * Destroys all resources held by this particles system
@@ -295,21 +339,25 @@ public:
 	WError Load();
 
 	/**
-	 * Renders all particle systems registered by this manager (by calling
-	 * their WParticles::Render() function).
-	 * @param rt Render target to render to
+	 * Creates a WEffect that can be used to render particles
+	 * @return Newly allocated particle systems effect
 	 */
-	void Render(class WRenderTarget* rt);
+	class WEffect* CreateParticlesEffect(W_DEFAULT_PARTICLE_EFFECT_TYPE type) const;
 
 	/**
-	 * Retrieves the WEffect used by all particle systems.
-	 * @return Particle systems effect
+	 * Allocates and initializes a new particles system.
+	 * @param type         Type of the new particles system
+	 * @param maxParticles Maximum number of particles that the system can
+	 *                     render simultaneously. Pass 0 to free resources
+	 *                     and uninitialize the system
+	 * @param behavior     Behavior object for this system, pass nullptr to
+	 *                     use WDefaultParticleBehavior
+	 * @param ID           ID of the new particles system
+	 * @return Newly allocated particle system
 	 */
-	class WEffect* GetDefaultEffect(W_DEFAULT_PARTICLE_EFFECT_TYPE type) const;
+	WParticles* CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE type, unsigned int maxParticles = 5000, WParticlesBehavior* behavior = nullptr, unsigned int ID = 0) const;
 
 private:
-	/** Default effect used by different particle systems */
-	unordered_map<W_DEFAULT_PARTICLE_EFFECT_TYPE, class WEffect*> m_particleEffects;
 	/** Default vertex shader used by the default effect */
 	class WShader* m_vertexShader;
 	/** Default geometry shader used by the default effect */

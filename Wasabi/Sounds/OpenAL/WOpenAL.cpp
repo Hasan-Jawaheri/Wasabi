@@ -57,11 +57,11 @@ WSound* WOpenALSoundComponent::CreateSound(unsigned int ID) const {
 	return new WOpenALSound(m_app, ID);
 }
 
-ALCdevice* WOpenALSoundComponent::GetALSoundDevice(void) const {
+ALCdevice* WOpenALSoundComponent::GetALSoundDevice() const {
 	return m_oalDevice;
 }
 
-ALCcontext* WOpenALSoundComponent::GetALSoundDeviceContext(void) const {
+ALCcontext* WOpenALSoundComponent::GetALSoundDeviceContext() const {
 	return m_oalContext;
 }
 
@@ -161,7 +161,7 @@ WOpenALSound::WOpenALSound(Wasabi* const app, uint ID) : WSound(app, ID) {
 	m_app->SoundComponent->SoundManager->AddEntity(this);
 
 }
-WOpenALSound::~WOpenALSound(void) {
+WOpenALSound::~WOpenALSound() {
 	alDeleteBuffers(m_numBuffers, m_buffers);
 	alDeleteSources(1, &m_source);
 
@@ -177,8 +177,12 @@ WOpenALSound::~WOpenALSound(void) {
 	m_app->SoundComponent->SoundManager->RemoveEntity(this);
 }
 
-std::string WOpenALSound::GetTypeName(void) const {
+std::string WOpenALSound::_GetTypeName() {
 	return "Sound";
+}
+
+std::string WOpenALSound::GetTypeName() const {
+	return _GetTypeName();
 }
 
 WError WOpenALSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, ALenum format, uint frequency, bool bSaveData) {
@@ -308,27 +312,27 @@ WError WOpenALSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) 
 	return WError(W_SUCCEEDED);
 }
 
-void WOpenALSound::Play(void) {
+void WOpenALSound::Play() {
 	if (!m_bCheck()) return;
 
 	alSourcePlay(m_source);
 	alSourcei(m_source, AL_LOOPING, AL_FALSE); //looping off
 }
 
-void WOpenALSound::Loop(void) {
+void WOpenALSound::Loop() {
 	if (!m_bCheck()) return;
 
 	alSourcePlay(m_source);
 	alSourcei(m_source, AL_LOOPING, AL_TRUE);
 }
 
-void WOpenALSound::Pause(void) {
+void WOpenALSound::Pause() {
 	if (!m_bCheck()) return;
 
 	alSourcePause(m_source);
 }
 
-void WOpenALSound::Reset(void) {
+void WOpenALSound::Reset() {
 	if (!m_bCheck()) return;
 
 	alSourceRewind(m_source);
@@ -340,7 +344,7 @@ void WOpenALSound::SetTime(uint time) {
 	alSourcef(m_source, AL_SEC_OFFSET, time / 1000.0f);
 }
 
-bool WOpenALSound::Playing(void) const {
+bool WOpenALSound::Playing() const {
 	if (!m_bCheck()) return false;
 
 	ALint out = 0;
@@ -348,7 +352,7 @@ bool WOpenALSound::Playing(void) const {
 	return out == AL_PLAYING;
 }
 
-bool WOpenALSound::Looping(void) const {
+bool WOpenALSound::Looping() const {
 	if (!m_bCheck()) return false;
 
 	ALint out = 0;
@@ -396,7 +400,7 @@ ALuint WOpenALSound::GetALBuffer(uint buffer) const {
 	return m_buffers[buffer];
 }
 
-ALuint WOpenALSound::GetALSource(void) const {
+ALuint WOpenALSound::GetALSource() const {
 	if (!m_bCheck()) return 0;
 
 	return m_source;
@@ -451,7 +455,7 @@ void WOpenALSound::SetToOrientation(WOrientation* oriDev) {
 	alSource3f(m_source, AL_DIRECTION, oriDev->GetLVector()[0], oriDev->GetLVector()[1], oriDev->GetLVector()[2]);
 }
 
-bool WOpenALSound::Valid(void) const {
+bool WOpenALSound::Valid() const {
 	return m_valid;
 }
 
@@ -491,7 +495,11 @@ WError WOpenALSound::SaveToStream(WFile* file, std::ostream& outputStream) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream) {
+std::vector<void*> WOpenALSound::LoadArgs() {
+	return std::vector<void*>();
+}
+
+WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
 	bool bSaveData = false;
 	float temp[3];
 

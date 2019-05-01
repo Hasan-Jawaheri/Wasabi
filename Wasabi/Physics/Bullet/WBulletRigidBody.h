@@ -23,15 +23,18 @@
   * the Bullet physics simulation.
   */
 class WBulletRigidBody : public WRigidBody {
+protected:
+	virtual ~WBulletRigidBody();
+
+public:
 	/**
 	 * Returns "RigidBody" string.
 	 * @return Returns "RigidBody" string
 	 */
 	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
-public:
 	WBulletRigidBody(class Wasabi* const app, unsigned int ID = 0);
-	virtual ~WBulletRigidBody();
 
 	virtual WError Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveInfo = false);
 
@@ -70,8 +73,9 @@ public:
 
 	virtual void OnStateChange(STATE_CHANGE_TYPE type);
 
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+	static std::vector<void*> LoadArgs(bool bSaveInfo = false);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	/** Set to true while inside Update() */

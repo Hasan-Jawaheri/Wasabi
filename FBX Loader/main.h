@@ -27,6 +27,7 @@ struct VERTEX {
 	VEC3 tang;
 	VEC3 norm;
 	VEC2 uv;
+	uint texIndex;
 };
 
 struct ANIMVERTEX {
@@ -36,13 +37,17 @@ struct ANIMVERTEX {
 };
 
 struct MESHDATA {
+	std::string name;
+	WMatrix transform;
 	vector<VERTEX> vb;
 	vector<DWORD> ib;
 	vector<ANIMVERTEX> ab;
+	vector<const char*> textures;
 	bool bTangents;
 };
 
 struct ANIMDATA {
+	std::string name;
 	vector<WBone*> frames;
 };
 

@@ -68,16 +68,19 @@ struct W_SUB_ANIMATION {
  * attached to an object. This base class is responsible for maintaining
  * subanimations and managing their playing and looping.
  */
-class WAnimation : public WBase, public WFileAsset {
+class WAnimation : public WFileAsset {
+protected:
+	virtual ~WAnimation();
+
+public:
 	/**
 	 * Returns "Animation" string.
 	 * @return Returns "Animation" string
 	 */
-	std::string GetTypeName() const;
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
-public:
 	WAnimation(class Wasabi* const app, unsigned int ID = 0);
-	~WAnimation();
 
 	/**
 	 * Steps the state of the playing (or looping) subanimations forward. This is
@@ -223,8 +226,8 @@ public:
 	 */
 	virtual WError UseAnimationFrames(const WAnimation* const anim) = 0;
 
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream) = 0;
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream) = 0;
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) = 0;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) = 0;
 
 protected:
 	/**

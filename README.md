@@ -119,6 +119,10 @@ WIP
 
 WIP
 
+## Gallery
+
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/particles.png" /> 
+
 ## Contact
 
 Please let me know about any issues, dead links, suggestions or any comments. My email is hasan.aljawaheri [at] gmail [dot] com

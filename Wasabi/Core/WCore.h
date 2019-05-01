@@ -13,44 +13,16 @@
 
 #pragma once
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-#ifndef VK_USE_PLATFORM_WIN32_KHR
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#elif (defined __linux__)
-#ifndef VK_USE_PLATFORM_XCB_KHR
-#define VK_USE_PLATFORM_XCB_KHR
-#endif
-#endif
-#include "vulkan/vulkan.h"
-#pragma comment (lib, "vulkan-1.lib")
-#include "VkTools/vulkanswapchain.hpp"
-#include "VkTools/vulkantools.h"
-
-#include <math.h>
-#include <float.h>
-#include <climits>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <map>
-#include <array>
-#include <chrono>
-
-#include "WError.h"
+#include "WCommon.h"
 #include "WManager.h"
 #include "WBase.h"
-#include "../Files/WFile.h"
 #include "WOrientation.h"
-#include "WTimer.h"
-#include "WMath.h"
 #include "WUtilities.h"
-
-using std::ios;
-using std::basic_filebuf;
-using std::vector;
-using std::array;
+#include "../Files/WFile.h"
+#include "../Memory/WVulkanMemoryManager.h"
+#include "../Memory/WBufferedBuffer.h"
+#include "../Memory/WBufferedImage.h"
+#include "../Memory/WBufferedFrameBuffer.h"
 
 #define W_ENGINE_NAME "Wasabi"
 
@@ -59,38 +31,13 @@ using std::array;
 #define W_SAFE_DELETE(x) { if ( x ) { delete x; x = NULL; } }
 #define W_SAFE_DELETE_ARRAY(x) { if ( x ) { delete[] x; x = NULL; } }
 #define W_SAFE_ALLOC(x) malloc(x)
-#define W_SAFE_FREE(x) { if ( x ) { free(x); } }
+#define W_SAFE_FREE(x) { if ( x ) { free(x); x = NULL; } }
 
 #ifndef _WIN32
 #define fopen_s(a,b,c) *a = fopen(b, c)
 #define strcpy_s(a,b,c) strcpy(a,c)
 #define ZeroMemory(x,y) memset(x, 0, y)
 #endif
-
-/**
- * Wrapper for a Vulkan buffer an its backing memory.
- */
-struct W_BUFFER {
-	/** Vulkan buffer */
-	VkBuffer buf;
-	/** buf's backing memory */
-	VkDeviceMemory mem;
-
-	W_BUFFER() : buf(VK_NULL_HANDLE), mem(VK_NULL_HANDLE) {}
-
-	/**
-	 * Destroy the buffer and its backing memory
-	 * @param device The Vulkan device used to crate the buffer
-	 */
-	void Destroy(VkDevice device) {
-		if (buf)
-			vkDestroyBuffer(device, buf, nullptr);
-		if (mem)
-			vkFreeMemory(device, mem, nullptr);
-		buf = VK_NULL_HANDLE;
-		mem = VK_NULL_HANDLE;
-	}
-};
 
 /**
  * @ingroup engineclass
@@ -103,6 +50,12 @@ public:
 	 * A map of various parameters used by the engine. Built-in parameters are:
 	 * * "appName": Pointer to the name of the application. Default is
 	 * 	  (void*)"Wasabi".
+	 * * "enableVulkanValidation": Whether or not to enable Vulkan SDK validation
+	 *    while in debug mode. Default is (void*)(false).
+	 * * "bufferingCount": Buffering count, usually double (2) or triple (3) is
+	 *                     used. Buffering defines the maximum number of frames
+	 *                     that can be all in-flight (rendering) at the same time.
+	 *                     Default is 2.
 	 * * "fontBmpSize": The size of the font bitmap when a new font is created.
 	 * 		default is (void*)(512).
 	 * * "fontBmpCharHeight": The height of each character when a new font bitmap
@@ -118,6 +71,8 @@ public:
 	 * 		crated. Default is (void*)(1).
 	 */
 	std::map<std::string, void*> engineParams;
+	/** Pointer to the vulkan memory manager */
+	class WVulkanMemoryManager* MemoryManager;
 	/** Pointer to the attached sound component */
 	class WSoundComponent* SoundComponent;
 	/** Pointer to the attached window/input component */
@@ -129,6 +84,8 @@ public:
 	/** Pointer to the attached renderer */
 	class WRenderer* Renderer;
 
+	/** Pointer to the file manager */
+	class WFileManager* FileManager;
 	/** Pointer to the object manager */
 	class WObjectManager* ObjectManager;
 	/** Pointer to the geometry manager */
@@ -230,6 +187,9 @@ public:
 	 */
 	virtual WError Resize(unsigned int width, unsigned int height);
 
+	/** This simply returns Renderer::GetCurrentBufferingIndex() */
+	uint GetCurrentBufferingIndex();
+
 	/**
 	 * Retrieves the Vulkan instance.
 	 * @return The Vulkan instance
@@ -260,49 +220,11 @@ public:
 	 */
 	VulkanSwapChain* GetSwapChain();
 
-	/**
-	 * Retrieves an engine-initialized Vulkan command pool.
-	 * @return A Vulkan command pool
-	 */
-	VkCommandPool GetCommandPool() const;
-
-	/**
-	 * Retrieves the index of a Vulakn memory type that is compatible with the
-	 * requested memory type and properties
-	 * @param typeBits   A 32-bit value, in which each bit represents a usable
-	 *                   memory type
-	 * @param properties The requested memory properties to be found
-	 * @param typeIndex  Pointer to an index to be filled
-	 */
-	void GetMemoryType(uint typeBits, VkFlags properties,
-					   uint* typeIndex) const;
-
-	/**
-	 * Starts recording commands on the dummy command buffer, which can be
-	 * acquired using GetCommandBuffer().
-	 * @return A Vulkan result, VK_SUCCESS on success
-	 */
-	VkResult BeginCommandBuffer();
-
-	/**
-	 * Ends recording commands on the dummy command buffer and submits it to the
-	 * graphics queue.
-	 * @return A Vulkan result, VK_SUCCESS on success
-	 */
-	VkResult EndCommandBuffer();
-
-	/**
-	 * Retrieves the dummy command buffer that is used with BeginCommandBuffer()
-	 * and EndCommandBuffer().
-	 * @return The dummy command buffer
-	 */
-	VkCommandBuffer GetCommandBuffer() const;
-
 protected:
 	/**
 	 * Creates and initializes a VkInstance to use in the engine.
 	 */
-	virtual VkInstance Wasabi::CreateVKInstance();
+	virtual VkInstance CreateVKInstance();
 
 	/**
 	 * This function can be overloaded by the application. This function gives
@@ -316,12 +238,18 @@ protected:
 	virtual int SelectGPU(std::vector<VkPhysicalDevice> devices);
 
 	/**
+	 * Can be overloaded by the application. This function should return the
+	 * Vulkan features required by the application.
+	 */
+	virtual VkPhysicalDeviceFeatures GetDeviceFeatures();
+
+	/**
 	 * This function can be overloaded by the application. This function is
 	 * called by the engine in StartEngine() and will give the application a
-	 * chance to set the renderer of the engine. Default implementation
-	 * will create a deferred renderer (WDeferredRenderer).
+	 * chance to setup renderer of the engine. Default implementation
+	 * will call WInitializeDeferredRenderer().
 	 */
-	virtual class WRenderer* CreateRenderer();
+	virtual WError SetupRenderer();
 
 	/**
 	* This function can be overloaded by the application. This function is
@@ -361,7 +289,7 @@ protected:
 	*/
 	virtual class WPhysicsComponent* CreatePhysicsComponent();
 
-private:
+protected:
 	/** The Vulkan instance */
 	VkInstance m_vkInstance;
 	/** The used Vulkan physical device */
@@ -369,21 +297,14 @@ private:
 	/** The used Vulkan virtual device */
 	VkDevice m_vkDevice;
 	/** The used graphics queue */
-	VkQueue m_queue;
+	VkQueue m_graphicsQueue;
 	/** The swap chain */
 	VulkanSwapChain m_swapChain;
 	/** true if the swap chain has been initialized yet, false otherwise */
 	bool m_swapChainInitialized;
-	/** Vulkan properties of the physical devices */
-	VkPhysicalDeviceProperties m_deviceProperties;
-	/** Vulkan features of the physical device */
-	VkPhysicalDeviceFeatures m_deviceFeatures;
-	/** Memory types available on the device */
-	VkPhysicalDeviceMemoryProperties m_deviceMemoryProperties;
-	/** Command pool created by the engine */
-	VkCommandPool m_cmdPool;
-	/** A dummy command buffer for general use */
-	VkCommandBuffer m_copyCommandBuffer;
+
+	/** Handle to the debugging callback created in debug mode */
+	VkDebugReportCallbackEXT m_debugCallback;
 
 	/**
 	 * Destroys all resources of the engine.

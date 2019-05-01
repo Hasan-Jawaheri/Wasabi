@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ PhysicsDemo
+#define _DEMO_STATE_CLASSNAME_ FilesDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo
@@ -50,9 +50,9 @@ void WasabiTester::ApplyMousePivot() {
 		int dx = mx - 640 / 2;
 		int dy = my - 480 / 2;
 
-		if (abs(dx) < 2)
+		if (fabs(dx) < 2)
 			dx = 0;
-		if (abs(dy) < 2)
+		if (fabs(dy) < 2)
 			dy = 0;
 
 		fYaw += (float)dx / 2.0f;
@@ -72,7 +72,7 @@ void WasabiTester::ApplyMousePivot() {
 	float fMouseZ = (float)WindowAndInputComponent->MouseZ();
 	fDist += (fMouseZ / 120.0f) * (abs(fDist) / 10.0f);
 	WindowAndInputComponent->SetMouseZ(0);
-	fDist = min(-1, fDist);
+	fDist = fmin(-1, fDist);
 
 	cam->SetPosition(vPos);
 	cam->SetAngle(WQuaternion());
@@ -122,8 +122,8 @@ void WasabiTester::Cleanup() {
 	SwitchState(nullptr);
 }
 
-WRenderer* WasabiTester::CreateRenderer() {
-	return m_state->CreateRenderer();
+WError WasabiTester::SetupRenderer() {
+	return m_state->SetupRenderer();
 }
 
 WPhysicsComponent* WasabiTester::CreatePhysicsComponent() {
@@ -131,6 +131,10 @@ WPhysicsComponent* WasabiTester::CreatePhysicsComponent() {
 	if (physics)
 		return physics;
 	return Wasabi::CreatePhysicsComponent();
+}
+
+WSoundComponent* WasabiTester::CreateSoundComponent() {
+	return m_state->CreateSoundComponent();
 }
 
 void WasabiTester::SetCameraPosition(WVector3 pos) {

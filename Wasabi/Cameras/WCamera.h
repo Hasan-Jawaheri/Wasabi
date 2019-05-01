@@ -31,15 +31,18 @@ enum W_PROJECTIONTYPE {
  * This implements a camera in Wasabi.
  */
 class WCamera : public WBase, public WOrientation {
+protected:
+	virtual ~WCamera();
+
+public:
 	/**
 	 * Returns "Camera" string.
 	 * @return Returns "Camera" string
 	 */
 	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
 
-public:
 	WCamera(Wasabi* const app, unsigned int ID = 0);
-	~WCamera();
 
 	/**
 	 * This is a callback (inherited from WOrientation) to inform this object of

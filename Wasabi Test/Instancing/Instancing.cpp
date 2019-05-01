@@ -1,18 +1,28 @@
 #include "Instancing.hpp"
 
 InstancingDemo::InstancingDemo(Wasabi* const app) : WTestState(app) {
+	character = nullptr;
+	geometry = nullptr;
+	texture = nullptr;
 }
 
 void InstancingDemo::Load() {
 	geometry = new WGeometry(m_app);
-	geometry->LoadFromHXM("Media/dante.HXM");
+	if (!geometry->LoadFromHXM("Media/dante.HXM")) {
+		m_app->WindowAndInputComponent->ShowErrorMessage("Failed to load model Media/dante.HXM");
+		return;
+	}
+	//geometry->CreateCube(0.9);
 
 	texture = new WImage(m_app);
-	texture->Load("Media/dante.bmp");
+	if (!texture->Load("Media/dante.bmp")) {
+		m_app->WindowAndInputComponent->ShowErrorMessage("Failed to load image Media/dante.bmp");
+		return;
+	}
 
-	character = new WObject(m_app);
+	character = m_app->ObjectManager->CreateObject();
 	character->SetGeometry(geometry);
-	((WFRMaterial*)character->GetMaterial())->Texture(texture);
+	character->GetMaterial()->SetTexture("diffuseTexture", texture);
 
 	int instancing = 2;
 
@@ -32,9 +42,9 @@ void InstancingDemo::Load() {
 				}
 
 				if (instancing == 1) {
-					WObject* c = new WObject(m_app);
+					WObject* c = m_app->ObjectManager->CreateObject();
 					c->SetGeometry(geometry);
-					((WFRMaterial*)c->GetMaterial())->Texture(texture);
+					c->GetMaterial()->SetTexture("diffuseTexture", texture);
 					c->SetPosition(px, 0, pz);
 					objectsV.push_back(c);
 				}
@@ -47,9 +57,10 @@ void InstancingDemo::Update(float fDeltaTime) {
 }
 
 void InstancingDemo::Cleanup() {
-	character->RemoveReference();
-	geometry->RemoveReference();
-	texture->RemoveReference();
+	W_SAFE_REMOVEREF(character);
+	W_SAFE_REMOVEREF(geometry);
+	W_SAFE_REMOVEREF(texture);
 	for (unsigned int i = 0; i < objectsV.size(); i++)
 		objectsV[i]->RemoveReference();
+	objectsV.clear();
 }
