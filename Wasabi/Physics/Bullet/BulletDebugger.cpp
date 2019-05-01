@@ -2,11 +2,13 @@
 #include "../../Cameras/WCamera.h"
 #include "../../WindowAndInput/WWindowAndInputComponent.h"
 #include "../../Texts/WText.h"
-#include "../../Renderers/WForwardRenderer.h"
+#include "../../Renderers/WRenderer.h"
+#include "../../Renderers/Common/WSpritesRenderStage.h"
 #include "../../Objects/WObject.h"
 #include "../../Geometries/WGeometry.h"
 #include "../../Materials/WMaterial.h"
 #include "../../Materials/WEffect.h"
+#include "../../Images/WRenderTarget.h"
 
 struct LineVertex {
 	WVector3 pos;
@@ -17,34 +19,22 @@ class LinesVS : public WShader {
 public:
 	LinesVS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
 		}) };
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_UBO, 0, {
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gProjection"), // projection
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "gView"), // view
+			W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerFrame", {
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "proj"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
 			}),
 		};
-		LoadCodeGLSL("\
-			#version 450\n\
-			#extension GL_ARB_separate_shader_objects : enable\n\
-			#extension GL_ARB_shading_language_420pack : enable\n\
-			layout(location = 0) in vec3 inPos;\n\
-			layout(location = 1) in vec4 inCol;\n\
-			layout(location = 0) out vec4 outCol;\n\
-			layout(binding = 0) uniform UBO {\n\
-				mat4x4 gProjection;\n\
-				mat4x4 gView;\n\
-			} ubo;\n\
-			void main() {\n\
-				outCol = inCol;\n\
-				gl_Position = ubo.gProjection * ubo.gView * vec4(inPos.xyz, 1.0);\n\
-			}"
-		);
+		vector<byte> code = {
+			#include "Shaders/lines.vert.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 
@@ -52,18 +42,12 @@ class LinesPS : public WShader {
 public:
 	LinesPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load() {
+	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
-		LoadCodeGLSL("\
-			#version 450\n\
-			#extension GL_ARB_separate_shader_objects : enable\n\
-			#extension GL_ARB_shading_language_420pack : enable\n\
-			layout(location = 0) in vec4 inCol;\n\
-			layout(location = 0) out vec4 outFragColor;\n\
-			void main() {\n\
-				outFragColor = inCol;\n\
-			}"
-		);
+		vector<byte> code = {
+			#include "Shaders/lines.frag.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 
@@ -82,6 +66,66 @@ public:
 	}
 	virtual size_t GetVertexDescriptionSize(unsigned int layout_index = 0) const {
 		return sizeof(LineVertex);
+	}
+};
+
+class LinesRenderStage : public WRenderStage {
+	class WEffect* m_linesFX;
+
+public:
+	LinesRenderStage(class Wasabi* const app) : WRenderStage(app) {
+		m_stageDescription.name = __func__;
+		m_stageDescription.target = RENDER_STAGE_TARGET_BACK_BUFFER;
+		m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
+		m_linesFX = nullptr;
+	}
+
+	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+		WError err = WRenderStage::Initialize(previousStages, width, height);
+		if (!err)
+			return err;
+
+		m_linesFX = new WEffect(m_app);
+		LinesVS* vs = new LinesVS(m_app);
+		vs->Load();
+		LinesPS* ps = new LinesPS(m_app);
+		ps->Load();
+		m_linesFX->BindShader(vs);
+		m_linesFX->BindShader(ps);
+		m_linesFX->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+		m_linesFX->BuildPipeline(m_renderTarget);
+		W_SAFE_REMOVEREF(ps);
+		W_SAFE_REMOVEREF(vs);
+
+		return WError(W_SUCCEEDED);
+	}
+
+	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter) {
+		WCamera* cam = rt->GetCamera();
+
+		m_linesFX->Bind(rt);
+
+		uint numObjects = m_app->ObjectManager->GetEntitiesCount();
+		for (uint i = 0; i < numObjects; i++) {
+			WObject* obj = m_app->ObjectManager->GetEntityByIndex(i);
+			WMaterial* material = obj->GetMaterial(m_linesFX);
+			if (!material) {
+				obj->AddEffect(m_linesFX);
+				material = obj->GetMaterial(m_linesFX);
+			}
+			material->SetVariableMatrix("proj", cam->GetProjectionMatrix());
+			material->SetVariableMatrix("view", cam->GetViewMatrix());
+			obj->Render(rt, material, false);
+		}
+		return WError(W_SUCCEEDED);
+	}
+
+	virtual void Cleanup() {
+		W_SAFE_REMOVEREF(m_linesFX);
+	}
+
+	virtual WError Resize(uint width, uint height) {
+		return WRenderStage::Resize(width, height);
 	}
 };
 
@@ -153,27 +197,15 @@ WError BulletDebugger::Setup() {
 	if (!err)
 		WindowAndInputComponent->ShowErrorMessage(err.AsString());
 	else {
-		m_linesDrawer = new WObject(this);
-		WEffect* fx = new WEffect(this);
-		LinesVS* vs = new LinesVS(this);
-		vs->Load();
-		LinesPS* ps = new LinesPS(this);
-		ps->Load();
-		fx->BindShader(vs);
-		fx->BindShader(ps);
-		fx->SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
-		fx->BuildPipeline(Renderer->GetDefaultRenderTarget());
-		WMaterial* mat = new WMaterial(this);
-		mat->SetEffect(fx);
-		m_linesDrawer->SetMaterial(mat);
-		W_SAFE_REMOVEREF(ps);
-		W_SAFE_REMOVEREF(vs);
-		W_SAFE_REMOVEREF(fx);
-		W_SAFE_REMOVEREF(mat);
+		Renderer->SetRenderingStages({
+			new LinesRenderStage(this),
+		});
+
+		m_linesDrawer = ObjectManager->CreateObject();
 
 		WGeometry* geometry = new WLinesGeometry(this);
 		void* vb = calloc(m_maxLines * 2, geometry->GetVertexDescriptionSize());
-		geometry->CreateFromData(vb, m_maxLines * 2, nullptr, 0, true);
+		geometry->CreateFromData(vb, m_maxLines * 2, nullptr, 0, W_GEOMETRY_CREATE_VB_DYNAMIC | W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME);
 		free(vb);
 		m_linesDrawer->SetGeometry(geometry);
 		W_SAFE_REMOVEREF(geometry);
@@ -194,7 +226,7 @@ bool BulletDebugger::Loop(float fDeltaTime) {
 	m_linesLock.unlock();
 
 	LineVertex* vb;
-	m_linesDrawer->GetGeometry()->MapVertexBuffer((void**)&vb);
+	m_linesDrawer->GetGeometry()->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
 	for (unsigned int i = 0; i < m_maxLines*2; i += 2) {
 		unsigned int lineIndex = i / 2;
 		if (lineIndex < curLines.size()) {
@@ -203,12 +235,13 @@ bool BulletDebugger::Loop(float fDeltaTime) {
 		} else
 			memset(&vb[i], 0, sizeof(LineVertex) * 2);
 	}
-	m_linesDrawer->GetGeometry()->UnmapVertexBuffer();
+	m_linesDrawer->GetGeometry()->UnmapVertexBuffer(false);
 
 	return true;
 }
 
 void BulletDebugger::Cleanup() {
+	W_SAFE_REMOVEREF(m_linesDrawer);
 }
 
 void BulletDebugger::drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
@@ -246,8 +279,10 @@ void BulletDebugger::clearLines() {
 	m_lines[1].clear();
 }
 
-WRenderer* BulletDebugger::CreateRenderer() {
-	return new WForwardRenderer(this);
+WError BulletDebugger::SetupRenderer() {
+	return Renderer->SetRenderingStages({
+		new LinesRenderStage(this),
+	});
 }
 
 WPhysicsComponent* BulletDebugger::CreatePhysicsComponent() {

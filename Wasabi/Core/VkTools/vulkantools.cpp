@@ -136,6 +136,10 @@ namespace vkTools
 		imageMemoryBarrier.image = image;
 		imageMemoryBarrier.subresourceRange = subresourceRange;
 
+		// Put barrier on top
+		VkPipelineStageFlags srcStageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		VkPipelineStageFlags destStageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
 		// Source layouts (old)
 
 		// Undefined layout
@@ -144,6 +148,7 @@ namespace vkTools
 		if (oldImageLayout == VK_IMAGE_LAYOUT_PREINITIALIZED)
 		{
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+			srcStageFlags = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 		}
 
 		// Old layout is color attachment
@@ -151,6 +156,7 @@ namespace vkTools
 		if (oldImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 		{
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			srcStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		}
 
 		// Old layout is depth/stencil attachment
@@ -158,6 +164,7 @@ namespace vkTools
 		if (oldImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 		{
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			srcStageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		}
 
 		// Old layout is transfer source
@@ -172,6 +179,7 @@ namespace vkTools
 		if (oldImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 		{
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			srcStageFlags = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
 		}
 
 		// Target layouts (new)
@@ -181,6 +189,7 @@ namespace vkTools
 		if (newImageLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 		{
 			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			destStageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		}
 
 		// New layout is transfer source (copy, blit)
@@ -196,27 +205,24 @@ namespace vkTools
 		if (newImageLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 		{
 			imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			destStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		}
 
 		// New layout is depth attachment
 		// Make sure any writes to depth/stencil buffer have been finished
 		if (newImageLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 		{
-			imageMemoryBarrier.dstAccessMask = imageMemoryBarrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			destStageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		}
 
 		// New layout is shader read (sampler, input attachment)
 		// Make sure any writes to the image have been finished
 		if (newImageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 		{
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
 			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			destStageFlags = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
 		}
-
-		// Put barrier on top
-		VkPipelineStageFlags srcStageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		VkPipelineStageFlags destStageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 
 		// Put barrier inside setup command buffer
 		vkCmdPipelineBarrier(
@@ -395,7 +401,7 @@ namespace vkTools
 		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		moduleCreateInfo.pNext = NULL;
 
-		moduleCreateInfo.codeSize = 3 * sizeof(uint) + size + 1;
+		moduleCreateInfo.codeSize = 3 * sizeof(uint) + size;
 		moduleCreateInfo.pCode = (uint*)malloc(moduleCreateInfo.codeSize);
 		moduleCreateInfo.flags = 0;
 
@@ -403,9 +409,10 @@ namespace vkTools
 		((uint *)moduleCreateInfo.pCode)[0] = 0x07230203;
 		((uint *)moduleCreateInfo.pCode)[1] = 0;
 		((uint *)moduleCreateInfo.pCode)[2] = stage;
-		memcpy(((uint *)moduleCreateInfo.pCode + 3), shaderCode, size + 1);
+		memcpy(((uint *)moduleCreateInfo.pCode + 3), shaderCode, size);
 
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
+		free((void*)moduleCreateInfo.pCode);
 		if (err)
 			return VK_NULL_HANDLE;
 
@@ -424,7 +431,7 @@ namespace vkTools
 		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		moduleCreateInfo.pNext = NULL;
 
-		moduleCreateInfo.codeSize = 3 * sizeof(uint) + size + 1;
+		moduleCreateInfo.codeSize = 3 * sizeof(uint) + size;
 		moduleCreateInfo.pCode = (uint*)malloc(moduleCreateInfo.codeSize);
 		moduleCreateInfo.flags = 0;
 
@@ -432,9 +439,10 @@ namespace vkTools
 		((uint *)moduleCreateInfo.pCode)[0] = 0x07230203;
 		((uint *)moduleCreateInfo.pCode)[1] = 0;
 		((uint *)moduleCreateInfo.pCode)[2] = stage;
-		memcpy(((uint *)moduleCreateInfo.pCode + 3), shaderCode, size + 1);
+		memcpy(((uint *)moduleCreateInfo.pCode + 3), shaderCode, size);
 
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
+		free((void*)moduleCreateInfo.pCode);
 		if (err)
 			return VK_NULL_HANDLE;
 

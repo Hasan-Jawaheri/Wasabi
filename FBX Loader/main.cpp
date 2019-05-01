@@ -1,6 +1,8 @@
 #include "main.h"
 #include "util.h"
 
+#include <Renderers/ForwardRenderer/WForwardRenderer.h>
+#include <Renderers/DeferredRenderer/WDeferredRenderer.h>
 
 /*
 	Source: http://www.gamedev.net/topic/619416-fbx-skeleton-animation-need-help/
@@ -80,32 +82,78 @@ FbxAMatrix GetNodeBindingPose(FbxNode* pNode) {
 }
 
 class FBXLoader : public Wasabi {
-	void SaveMesh(MESHDATA m, LPCSTR filename) {
-		printf("Writing mesh to file %s...\n", filename);
+	WFile* m_file;
+	std::unordered_map<std::string, WImage*> m_loadedTextures;
+
+	void SaveMesh(MESHDATA m) {
+		printf("Writing mesh %s to file...\n", m.name.c_str());
 		WGeometry* g = new WGeometry(this);
-		g->CreateFromData(m.vb.data(), m.vb.size(), m.ib.data(), m.ib.size(), true, false, !m.bTangents);
+		g->SetName(m.name + "-geometry");
+		W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_DYNAMIC;
+		if (!m.bTangents)
+			flags |= W_GEOMETRY_CREATE_CALCULATE_TANGENTS;
+		g->CreateFromData(m.vb.data(), m.vb.size(), m.ib.data(), m.ib.size(), flags);
 		if (m.ab.size())
 			g->CreateAnimationData(m.ab.data());
-		WFile file(this);
-		file.Open(filename);
-		file.SaveAsset(g, nullptr);
-		file.Close();
+
+		WObject* obj = ObjectManager->CreateObject();
+		obj->SetToTransformation(m.transform);
+		obj->SetName(m.name);
+		obj->SetGeometry(g);
 		g->RemoveReference();
+
+		for (uint i = 0; i < m.textures.size(); i++) {
+			char drive[64];
+			char ext[64];
+			char dir[512];
+			char filename[512];
+			_splitpath_s(m.textures[i], drive, 64, dir, 512, filename, 512, ext, 64);
+
+			WError err = WError(W_SUCCEEDED);
+			WImage* img;
+			auto it = m_loadedTextures.find(m.textures[i]);
+			if (it != m_loadedTextures.end())
+				img = it->second;
+			else {
+				img = new WImage(this);
+				err = img->Load(m.textures[i], W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);
+				if (err.m_error == W_FILENOTFOUND) {
+					err = img->Load(std::string(filename) + std::string(ext), W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);
+				}
+				if (err)
+					m_loadedTextures.insert(std::make_pair(m.textures[i], img));
+			}
+			if (err) {
+				img->SetName(std::string(filename) + "-texture");
+				obj->GetMaterial()->SetTexture("diffuseTexture", img, i);
+			} else {
+				printf("Failed to load image %s\n", m.textures[i]);
+			}
+		}
+		obj->GetMaterial()->SetName(m.name + "-material");
+
+		m_file->SaveAsset(obj);
+		obj->RemoveReference();
 	}
 
-	void SaveAnimation(ANIMDATA anim, LPCSTR filename) {
-		printf("Writing animation to file %s...", filename);
+	void SaveAnimation(ANIMDATA anim) {
+		printf("Writing animation %s to file...\n", anim.name.c_str());
 		WSkeleton* s = new WSkeleton(this);
+		s->SetName(anim.name + "-skeleton");
 		for (auto it = anim.frames.begin(); it != anim.frames.end(); it++)
 			s->CreateKeyFrame(*it, 1.0f);
-		WFile file(this);
-		file.Open(filename);
-		file.SaveAsset(s, nullptr);
-		file.Close();
+		m_file->SaveAsset(s);
 		s->RemoveReference();
 	}
 
 public:
+
+	virtual WError SetupRenderer() {
+		if (true)
+			return WInitializeForwardRenderer(this);
+		else
+			return WInitializeDeferredRenderer(this);
+	}
 
 	WWindowAndInputComponent* CreateWindowAndInputComponent() {
 		WWindowAndInputComponent* component = Wasabi::CreateWindowAndInputComponent();
@@ -117,6 +165,17 @@ public:
 		WError ret = StartEngine(2, 2);
 		if (ret) {
 			RedirectIOToConsole();
+
+			std::fstream f;
+			f.open("data.WSBI", ios::out);
+			f.close();
+
+			m_file = new WFile(this);
+			ret = m_file->Open("data.WSBI");
+			if (!ret) {
+				printf("Failed to open output file: %s\n", ret.AsString().c_str());
+				return ret;
+			}
 
 			FbxManager* pManager = nullptr;
 			FbxScene* pScene = nullptr;
@@ -166,17 +225,7 @@ public:
 								MESHDATA mesh = ParseMesh(lMesh);
 								if (mesh.vb.size()) {
 									if (mesh.ib.size()) {
-										char outFile[MAX_PATH];
-										if (meshes.size() > 1)
-											strcpy_s(outFile, MAX_PATH, (char*)pNode->GetName());
-										else {
-											strcpy_s(outFile, MAX_PATH, data.cFileName);
-											for (UINT i = 0; i < strlen(outFile); i++)
-												if (outFile[i] == '.')
-													outFile[i] = '\0';
-										}
-										strcat_s(outFile, MAX_PATH, ".WSBI");
-										SaveMesh(mesh, outFile);
+										SaveMesh(mesh);
 									}
 								}
 							}
@@ -186,10 +235,7 @@ public:
 								ANIMDATA anim = ParseAnimation(pScene, pNode);
 								if (anim.frames.size()) {
 									//save the animation data
-									char skeletonName[256];
-									strcpy_s(skeletonName, 256, pNode->GetName());
-									strcat_s(skeletonName, 256, ".WSBI");
-									SaveAnimation(anim, skeletonName);
+									SaveAnimation(anim);
 									for (int i = 0; i < anim.frames.size(); i++)
 										delete anim.frames[i];
 								}
@@ -201,6 +247,12 @@ public:
 				printf("No .FBX files found in this directory.\n");
 
 			DestroySdkObjects(pManager, 0);
+
+			for (auto img : m_loadedTextures)
+				img.second->RemoveReference();
+			m_loadedTextures.clear();
+
+			m_file->Close();
 		}
 		return ret;
 	}

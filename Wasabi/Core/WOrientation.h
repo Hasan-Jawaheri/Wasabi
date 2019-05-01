@@ -11,9 +11,30 @@
 #pragma once
 
 #include "WMath.h"
+#include <type_traits>
 
 /** Type of an orientation change happening to a WOrientation */
-enum STATE_CHANGE_TYPE { CHANGE_MOTION = 0, CHANGE_ROTATION = 1 };
+enum STATE_CHANGE_TYPE { CHANGE_MOTION = 1, CHANGE_ROTATION = 2 };
+
+inline STATE_CHANGE_TYPE operator | (STATE_CHANGE_TYPE lhs, STATE_CHANGE_TYPE rhs) {
+	using T = std::underlying_type_t <STATE_CHANGE_TYPE>;
+	return static_cast<STATE_CHANGE_TYPE>(static_cast<T>(lhs) | static_cast<T>(rhs));
+}
+
+inline STATE_CHANGE_TYPE operator & (STATE_CHANGE_TYPE lhs, STATE_CHANGE_TYPE rhs) {
+	using T = std::underlying_type_t <STATE_CHANGE_TYPE>;
+	return static_cast<STATE_CHANGE_TYPE>(static_cast<T>(lhs) & static_cast<T>(rhs));
+}
+
+inline STATE_CHANGE_TYPE& operator |= (STATE_CHANGE_TYPE& lhs, STATE_CHANGE_TYPE rhs) {
+	lhs = lhs | rhs;
+	return lhs;
+}
+
+inline STATE_CHANGE_TYPE& operator &= (STATE_CHANGE_TYPE& lhs, STATE_CHANGE_TYPE rhs) {
+	lhs = lhs & rhs;
+	return lhs;
+}
 
 /**
  * @ingroup engineclass
@@ -85,6 +106,13 @@ public:
 	 * @param right New right vector
 	 */
 	void SetULRVectors(WVector3 up, WVector3 look, WVector3 right);
+
+	/**
+	 * Sets the orientation & position to match that of a given transformation
+	 * matrix.
+	 * @param mtx  Transformation matrix
+	 */
+	void SetToTransformation(WMatrix mtx);
 
 	/**
 	 * Performs a rotation around the up axis of this entity. This will

@@ -32,6 +32,8 @@ public:
 	float a;
 
 	WColor() : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {}
+	WColor(unsigned int hex) : r((float)((hex >> 24) & 0xFF) / 255.0f), g((float)((hex >> 16) & 0xFF) / 255.0f), b((float)((hex >> 8) & 0xFF) / 255.0f), a((float)((hex) & 0xFF) / 255.0f) {}
+	WColor(int hex) : r((float)(((unsigned int)hex >> 24) & 0xFF) / 255.0f), g((float)(((unsigned int)hex >> 16) & 0xFF) / 255.0f), b((float)(((unsigned int)hex >> 8) & 0xFF) / 255.0f), a((float)(((unsigned int)hex) & 0xFF) / 255.0f) {}
 	WColor(float fRGB) : r(fRGB), g(fRGB), b(fRGB), a(1.0f) {}
 	WColor(float fR, float fG, float fB) : r(fR), g(fG), b(fB), a(1.0f) {}
 	WColor(float fR, float fG, float fB, float fA) : r(fR), g(fG), b(fB), a(fA){}
@@ -785,8 +787,7 @@ const float WVec4LengthSq(const WVector4 v);
  * @param  fLerpVal Linear interpolation value
  * @return          The interpolated vector
  */
-const WVector4 WVec4Lerp(const WVector4 v1, const WVector4 v2,
-												 const float fLerpVal);
+const WVector4 WVec4Lerp(const WVector4 v1, const WVector4 v2, const float fLerpVal);
 
 /**
  * Transform a 4D vector by a matrix.
@@ -913,3 +914,12 @@ const float WPlaneDotNormal(const WPlane plane, const WVector3 vec);
  * @return       The resulting normalized plane
  */
 const WPlane WNormalizePlane(const WPlane plane);
+
+/**
+ * Linearly interpolate two colors.
+ * @param  v1       First color
+ * @param  v2       Second color
+ * @param  fLerpVal Linear interpolation value
+ * @return          The interpolated color
+ */
+const WColor WColorLerp(const WColor c1, const WColor c2, const float fLerpVal);

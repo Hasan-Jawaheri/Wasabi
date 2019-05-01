@@ -11,8 +11,7 @@ std::string WMaterialManager::GetTypeName() const {
 WMaterialManager::WMaterialManager(class Wasabi* const app) : WManager<WMaterial>(app) {
 }
 
-WMaterial::WMaterial(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
-	m_descriptorSet = VK_NULL_HANDLE;
+WMaterial::WMaterial(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID) {
 	m_descriptorPool = VK_NULL_HANDLE;
 	m_effect = nullptr;
 
@@ -22,44 +21,44 @@ WMaterial::WMaterial(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 WMaterial::~WMaterial() {
 	_DestroyResources();
 
-	W_SAFE_REMOVEREF(m_effect);
-
 	m_app->MaterialManager->RemoveEntity(this);
 }
 
-std::string WMaterial::GetTypeName() const {
+std::string WMaterial::_GetTypeName() {
 	return "Material";
 }
 
+std::string WMaterial::GetTypeName() const {
+	return _GetTypeName();
+}
+
 bool WMaterial::Valid() const {
-	return m_effect && m_effect->Valid();
+	return m_descriptorSets.size() > 0;
 }
 
 void WMaterial::_DestroyResources() {
-	VkDevice device = m_app->GetVulkanDevice();
-
-	W_SAFE_REMOVEREF(m_effect);
-
 	for (int i = 0; i < m_uniformBuffers.size(); i++) {
-		vkFreeMemory(device, m_uniformBuffers[i].memory, nullptr);
-		vkDestroyBuffer(device, m_uniformBuffers[i].descriptor.buffer, nullptr);
+		m_uniformBuffers[i].buffer.Destroy(m_app);
+		W_SAFE_FREE(m_uniformBuffers[i].data);
 	}
 	m_uniformBuffers.clear();
 
 	for (int i = 0; i < m_sampler_info.size(); i++) {
-		if (m_sampler_info[i].img)
-			m_sampler_info[i].img->RemoveReference();
+		for (uint j = 0; j < m_sampler_info[i].images.size(); j++) {
+			if (m_sampler_info[i].images[j])
+				W_SAFE_REMOVEREF(m_sampler_info[i].images[j]);
+		}
 	}
 	m_sampler_info.clear();
 
-	if (m_descriptorPool)
-		vkDestroyDescriptorPool(device, m_descriptorPool, nullptr);
+	for (auto it = m_descriptorSets.begin(); it != m_descriptorSets.end(); it++)
+		m_app->MemoryManager->ReleaseDescriptorSet(*it, m_descriptorPool, m_app->GetCurrentBufferingIndex());
+	m_app->MemoryManager->ReleaseDescriptorPool(m_descriptorPool, m_app->GetCurrentBufferingIndex());
 
-	m_descriptorSet = VK_NULL_HANDLE;
-	m_descriptorPool = VK_NULL_HANDLE;
+	W_SAFE_REMOVEREF(m_effect);
 }
 
-WError WMaterial::SetEffect(WEffect* const effect) {
+WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 	VkDevice device = m_app->GetVulkanDevice();
 
 	if (effect && !effect->Valid())
@@ -73,9 +72,14 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 	//
 	// Create the uniform buffers
 	//
+	uint numBuffers = (uint)m_app->engineParams["bufferingCount"];
+	uint writeDescriptorsSize = 0;
 	for (int i = 0; i < effect->m_shaders.size(); i++) {
 		WShader* shader = effect->m_shaders[i];
 		for (int j = 0; j < shader->m_desc.bound_resources.size(); j++) {
+			if (shader->m_desc.bound_resources[j].binding_set != bindingSet)
+				continue;
+
 			if (shader->m_desc.bound_resources[j].type == W_TYPE_UBO) {
 				bool already_added = false;
 				for (int k = 0; k < m_uniformBuffers.size(); k++) {
@@ -87,55 +91,27 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 				if (already_added)
 					continue;
 
-				UNIFORM_BUFFER_INFO ubo;
-
-				VkBufferCreateInfo bufferInfo = {};
-				VkMemoryAllocateInfo uballocInfo = {};
-				uballocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-				uballocInfo.pNext = NULL;
-				uballocInfo.allocationSize = 0;
-				uballocInfo.memoryTypeIndex = 0;
-
-				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				bufferInfo.size = shader->m_desc.bound_resources[j].GetSize();
-				bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-				// Create a new buffer
-				VkResult err = vkCreateBuffer(device, &bufferInfo, nullptr, &ubo.descriptor.buffer);
-				if (err) {
-					_DestroyResources();
-					return WError(W_UNABLETOCREATEBUFFER);
-				}
-				// Get memory requirements including size, alignment and memory type 
-				VkMemoryRequirements memReqs;
-				vkGetBufferMemoryRequirements(device, ubo.descriptor.buffer, &memReqs);
-				uballocInfo.allocationSize = memReqs.size;
-				// Gets the appropriate memory type for this type of buffer allocation
-				// Only memory types that are visible to the host
-				m_app->GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &uballocInfo.memoryTypeIndex);
-				// Allocate memory for the uniform buffer
-				err = vkAllocateMemory(device, &uballocInfo, nullptr, &(ubo.memory));
-				if (err) {
-					vkDestroyBuffer(device, ubo.descriptor.buffer, nullptr);
+				UNIFORM_BUFFER_INFO ubo = {};
+				ubo.ubo_info = &shader->m_desc.bound_resources[j];
+				VkResult result = ubo.buffer.Create(m_app, numBuffers, ubo.ubo_info->GetSize(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, nullptr, W_MEMORY_HOST_VISIBLE);
+				if (result != VK_SUCCESS) {
 					_DestroyResources();
 					return WError(W_OUTOFMEMORY);
 				}
-				// Bind memory to buffer
-				err = vkBindBufferMemory(device, ubo.descriptor.buffer, ubo.memory, 0);
-				if (err) {
-					vkDestroyBuffer(device, ubo.descriptor.buffer, nullptr);
-					vkFreeMemory(device, ubo.memory, nullptr);
-					_DestroyResources();
-					return WError(W_UNABLETOCREATEBUFFER);
+
+				ubo.data = W_SAFE_ALLOC(ubo.ubo_info->GetSize());
+				ubo.dirty.resize(numBuffers);
+				ubo.descriptorBufferInfos.resize(numBuffers);
+				for (uint b = 0; b < numBuffers; b++) {
+					ubo.dirty[b] = false;
+					ubo.descriptorBufferInfos[b].buffer = ubo.buffer.GetBuffer(m_app, b);
+					ubo.descriptorBufferInfos[b].offset = 0;
+					ubo.descriptorBufferInfos[b].range = ubo.ubo_info->GetSize();
 				}
 
-				// Store information in the uniform's descriptor
-				ubo.descriptor.offset = 0;
-				ubo.descriptor.range = shader->m_desc.bound_resources[j].GetSize();
-				ubo.ubo_info = &shader->m_desc.bound_resources[j];
-
 				m_uniformBuffers.push_back(ubo);
-			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_SAMPLER) {
+				writeDescriptorsSize += ubo.descriptorBufferInfos.size();
+			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_TEXTURE) {
 				bool already_added = false;
 				for (int k = 0; k < m_sampler_info.size(); k++) {
 					if (m_sampler_info[k].sampler_info->binding_index == shader->m_desc.bound_resources[j].binding_index) {
@@ -146,18 +122,31 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 				if (already_added)
 					continue;
 
-				SAMPLER_INFO sampler;
-				sampler.img = m_app->ImageManager->GetDefaultImage();
-				m_app->ImageManager->GetDefaultImage()->AddReference();
-				sampler.descriptor.sampler = m_app->Renderer->GetDefaultSampler();
-				sampler.descriptor.imageView = m_app->ImageManager->GetDefaultImage()->GetView();
-				sampler.descriptor.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+				uint textureArraySize = shader->m_desc.bound_resources[j].GetSize();
+				SAMPLER_INFO sampler = {};
+
+				sampler.images.resize(textureArraySize);
+				for (uint k = 0; k < textureArraySize; k++) {
+					sampler.images[k] = m_app->ImageManager->GetDefaultImage();
+					sampler.images[k]->AddReference();
+				}
+
+				sampler.descriptors.resize(numBuffers);
+				for (auto descriptors = sampler.descriptors.begin(); descriptors != sampler.descriptors.end(); descriptors++) {
+					descriptors->resize(textureArraySize);
+					for (auto descriptor = descriptors->begin(); descriptor != descriptors->end(); descriptor++) {
+						descriptor->sampler = m_app->Renderer->GetTextureSampler();
+						descriptor->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+						descriptor->imageView = VK_NULL_HANDLE; // // will be assigned in the Bind() function
+					}
+				}
 				sampler.sampler_info = &shader->m_desc.bound_resources[j];
 				m_sampler_info.push_back(sampler);
+				writeDescriptorsSize += sampler.descriptors.size() * sampler.descriptors[0].size();
 			}
 		}
 	}
-	m_writeDescriptorSets = vector<VkWriteDescriptorSet>(m_sampler_info.size());
+	m_writeDescriptorSets.resize(writeDescriptorsSize);
 
 	//
 	// Create descriptor pool
@@ -167,13 +156,15 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 	if (m_uniformBuffers.size() > 0) {
 		VkDescriptorPoolSize s;
 		s.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		s.descriptorCount = m_uniformBuffers.size();
+		s.descriptorCount = m_uniformBuffers.size() * numBuffers;
 		typeCounts.push_back(s);
 	}
 	if (m_sampler_info.size() > 0) {
 		VkDescriptorPoolSize s;
 		s.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		s.descriptorCount = m_sampler_info.size();
+		s.descriptorCount = 0;
+		for (uint i = 0; i < m_sampler_info.size(); i++)
+			s.descriptorCount += m_sampler_info[i].images.size() * numBuffers;
 		typeCounts.push_back(s);
 	}
 
@@ -187,7 +178,7 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 		descriptorPoolInfo.pPoolSizes = typeCounts.data();
 		// Set the max. number of sets that can be requested
 		// Requesting descriptors beyond maxSets will result in an error
-		descriptorPoolInfo.maxSets = descriptorPoolInfo.poolSizeCount;
+		descriptorPoolInfo.maxSets = numBuffers;
 
 		VkResult vkRes = vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_descriptorPool);
 		if (vkRes) {
@@ -199,86 +190,104 @@ WError WMaterial::SetEffect(WEffect* const effect) {
 		// Create descriptor set
 		//
 
+		m_descriptorSets.resize(descriptorPoolInfo.maxSets);
+		std::vector<VkDescriptorSetLayout> layouts(m_descriptorSets.size());
+		for (uint i = 0; i < layouts.size(); i++)
+			layouts[i] = effect->GetDescriptorSetLayout(bindingSet);
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = m_descriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = effect->GetDescriptorSetLayout();
+		allocInfo.descriptorSetCount = m_descriptorSets.size();
+		allocInfo.pSetLayouts = layouts.data();
 
-		vkRes = vkAllocateDescriptorSets(device, &allocInfo, &m_descriptorSet);
+		vkRes = vkAllocateDescriptorSets(device, &allocInfo, m_descriptorSets.data());
 		if (vkRes) {
 			_DestroyResources();
 			return WError(W_OUTOFMEMORY);
 		}
-
-		// Update descriptor sets determining the shader binding points
-		// For every binding point used in a shader there needs to be one
-		// descriptor set matching that binding point
-		vector<VkWriteDescriptorSet> writes;
-		for (int i = 0; i < m_uniformBuffers.size(); i++) {
-			VkWriteDescriptorSet writeDescriptorSet = {};
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = m_descriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			writeDescriptorSet.pBufferInfo = &m_uniformBuffers[i].descriptor;
-			writeDescriptorSet.dstBinding = m_uniformBuffers[i].ubo_info->binding_index;
-
-			writes.push_back(writeDescriptorSet);
-		}
-		for (int i = 0; i < m_sampler_info.size(); i++) {
-			VkWriteDescriptorSet writeDescriptorSet = {};
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = m_descriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
-			writeDescriptorSet.dstBinding = m_sampler_info[i].sampler_info->binding_index;
-
-			writes.push_back(writeDescriptorSet);
-		}
-
-		vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, NULL);
 	}
 
 	m_effect = effect;
-	effect->AddReference();
+	m_effect->AddReference();
+	m_setIndex = bindingSet;
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WMaterial::Bind(WRenderTarget* rt, unsigned int num_vertex_buffers) {
+WError WMaterial::Bind(WRenderTarget* rt) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
 	VkDevice device = m_app->GetVulkanDevice();
+
 	VkCommandBuffer renderCmdBuffer = rt->GetCommnadBuffer();
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	int curDSIndex = 0;
-	for (int i = 0; i < m_sampler_info.size(); i++) {
-		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
-		if (m_sampler_info[i].img && m_sampler_info[i].img->Valid()) {
-			m_sampler_info[i].descriptor.imageView = m_sampler_info[i].img->GetView();
+	int numUpdateDescriptors = 0;
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 
+	// update UBOs that changed
+	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
+		if (ubo->dirty[bufferIndex]) {
+			void* pBufferData;
+			ubo->buffer.Map(m_app, bufferIndex, &pBufferData, W_MAP_WRITE);
+			memcpy((char*)pBufferData + ubo->descriptorBufferInfos[bufferIndex].offset, ubo->data, ubo->descriptorBufferInfos[bufferIndex].range);
+			ubo->buffer.Unmap(m_app, bufferIndex);
+			ubo->dirty[bufferIndex] = false;
+		}
+
+		VkWriteDescriptorSet writeDescriptorSet = {};
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.dstSet = m_descriptorSets[bufferIndex];
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDescriptorSet.pBufferInfo = &ubo->descriptorBufferInfos[bufferIndex];
+		writeDescriptorSet.dstBinding = ubo->ubo_info->binding_index;
+
+		m_writeDescriptorSets[numUpdateDescriptors++] = writeDescriptorSet;
+	}
+
+	// update textures that changed
+	for (auto sampler = m_sampler_info.begin(); sampler != m_sampler_info.end(); sampler++) {
+		W_BOUND_RESOURCE* info = sampler->sampler_info;
+		bool bChanged = false;
+		for (uint textureArrayIndex = 0; textureArrayIndex < sampler->images.size(); textureArrayIndex++) {
+			if (sampler->images[textureArrayIndex] && sampler->images[textureArrayIndex]->Valid()) {
+				if (sampler->descriptors[bufferIndex][textureArrayIndex].imageView != sampler->images[textureArrayIndex]->GetView()) {
+					sampler->descriptors[bufferIndex][textureArrayIndex].imageView = sampler->images[textureArrayIndex]->GetView();
+					sampler->descriptors[bufferIndex][textureArrayIndex].imageLayout = sampler->images[textureArrayIndex]->GetViewLayout();
+					bChanged = true;
+				}
+			}
+		}
+		if (bChanged) {
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = m_descriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.dstSet = m_descriptorSets[bufferIndex];
 			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeDescriptorSet.pImageInfo = &m_sampler_info[i].descriptor;
+			writeDescriptorSet.descriptorCount = sampler->descriptors[bufferIndex].size();
+			writeDescriptorSet.pImageInfo = sampler->descriptors[bufferIndex].data();
 			writeDescriptorSet.dstBinding = info->binding_index;
 
-			m_writeDescriptorSets[curDSIndex++] = writeDescriptorSet;
+			m_writeDescriptorSets[numUpdateDescriptors++] = writeDescriptorSet;
 		}
 	}
-	if (curDSIndex)
-		vkUpdateDescriptorSets(device, curDSIndex, m_writeDescriptorSets.data(), 0, NULL);
+	if (numUpdateDescriptors > 0)
+		vkUpdateDescriptorSets(device, numUpdateDescriptors, m_writeDescriptorSets.data(), 0, NULL);
 
-	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *m_effect->GetPipelineLayout(), 0, 1, &m_descriptorSet, 0, NULL);
+	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_effect->GetPipelineLayout(), m_setIndex, 1, &m_descriptorSets[bufferIndex], 0, nullptr);
 
-	return m_effect->Bind(rt, num_vertex_buffers);
+	return WError(W_SUCCEEDED);
+}
+
+VkDescriptorSet WMaterial::GetDescriptorSet() const {
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	return m_descriptorSets[bufferIndex];
+}
+
+WEffect* WMaterial::GetEffect() const {
+	return m_effect;
 }
 
 WError WMaterial::SetVariableFloat(const char* varName, float fVal) {
@@ -319,22 +328,19 @@ WError WMaterial::SetVariableColor(const char* varName, WColor col) {
 
 WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 	VkDevice device = m_app->GetVulkanDevice();
+	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	bool isFound = false;
-	for (int i = 0; i < m_uniformBuffers.size(); i++) {
-		W_BOUND_RESOURCE* info = m_uniformBuffers[i].ubo_info;
+	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
+		W_BOUND_RESOURCE* info = ubo->ubo_info;
 		for (int j = 0; j < info->variables.size(); j++) {
 			if (strcmp(info->variables[j].name.c_str(), varName) == 0) {
 				size_t varsize = info->variables[j].GetSize();
 				size_t offset = info->OffsetAtVariable(j);
-				if (varsize < len)
+				if (varsize < len || offset + len > ubo->descriptorBufferInfos[bufferIndex].range)
 					return WError(W_INVALIDPARAM);
-				uint8_t *pData;
-				VkResult vkRes = vkMapMemory(device, m_uniformBuffers[i].memory, offset, len, 0, (void **)&pData);
-				if (vkRes)
-					return WError(W_UNABLETOMAPBUFFER);
-				memcpy(pData, data, len);
-				vkUnmapMemory(device, m_uniformBuffers[0].memory);
-
+				memcpy((char*)ubo->data + offset, data, len);
+				for (uint d = 0; d < ubo->dirty.size(); d++)
+					ubo->dirty[d] = true;
 				isFound = true;
 			}
 		}
@@ -342,54 +348,53 @@ WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
 }
 
-WError WMaterial::SetTexture(int binding_index, WImage* img) {
+WError WMaterial::SetTexture(int binding_index, WImage* img, uint arrayIndex) {
 	VkDevice device = m_app->GetVulkanDevice();
 	bool isFound = false;
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
 		if (info->binding_index == binding_index) {
-			if (m_sampler_info[i].img)
-				W_SAFE_REMOVEREF(m_sampler_info[i].img);
-			if (img) {
-				m_sampler_info[i].img = img;
-				img->AddReference();
-			} else {
-				m_sampler_info[i].img = m_app->ImageManager->GetDefaultImage();
-				m_app->ImageManager->GetDefaultImage()->AddReference();
+			if (arrayIndex < m_sampler_info[i].images.size()) {
+				if (m_sampler_info[i].images[arrayIndex]) {
+					W_SAFE_REMOVEREF(m_sampler_info[i].images[arrayIndex]);
+				}
+				if (img) {
+					m_sampler_info[i].images[arrayIndex] = img;
+					img->AddReference();
+				} else {
+					m_sampler_info[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
+					m_app->ImageManager->GetDefaultImage()->AddReference();
+				}
+				isFound = true;
 			}
-
-			isFound = true;
 		}
 	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
 }
 
-WError WMaterial::SetAnimationTexture(WImage* img) {
-	if (!Valid())
-		return WError(W_NOTVALID);
-
-	unsigned int binding_index = -1;
-	for (int i = 0; i < m_effect->m_shaders.size() && binding_index == -1; i++) {
-		if (m_effect->m_shaders[i]->m_desc.type == W_VERTEX_SHADER)
-			binding_index = m_effect->m_shaders[i]->m_desc.animation_texture_index;
+WError WMaterial::SetTexture(std::string name, WImage* img, uint arrayIndex) {
+	VkDevice device = m_app->GetVulkanDevice();
+	bool isFound = false;
+	for (int i = 0; i < m_sampler_info.size(); i++) {
+		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
+		if (info->name == name) {
+			if (arrayIndex < m_sampler_info[i].images.size()) {
+				if (m_sampler_info[i].images[arrayIndex]) {
+					W_SAFE_REMOVEREF(m_sampler_info[i].images[arrayIndex]);
+				}
+				if (img) {
+					m_sampler_info[i].images[arrayIndex] = img;
+					img->AddReference();
+				}
+				else {
+					m_sampler_info[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
+					m_app->ImageManager->GetDefaultImage()->AddReference();
+				}
+				isFound = true;
+			}
+		}
 	}
-	return SetTexture(binding_index, img);
-}
-
-WError WMaterial::SetInstancingTexture(WImage* img) {
-	if (!Valid())
-		return WError(W_NOTVALID);
-
-	unsigned int binding_index = -1;
-	for (int i = 0; i < m_effect->m_shaders.size() && binding_index == -1; i++) {
-		if (m_effect->m_shaders[i]->m_desc.type == W_VERTEX_SHADER)
-			binding_index = m_effect->m_shaders[i]->m_desc.instancing_texture_index;
-	}
-	return SetTexture(binding_index, img);
-}
-
-WEffect* WMaterial::GetEffect() const {
-	return m_effect;
+	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
 }
 
 WError WMaterial::SaveToStream(WFile* file, std::ostream& outputStream) {
@@ -403,56 +408,59 @@ WError WMaterial::SaveToStream(WFile* file, std::ostream& outputStream) {
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	for (uint i = 0; i < m_uniformBuffers.size(); i++) {
 		UNIFORM_BUFFER_INFO* UBO = &m_uniformBuffers[i];
-		outputStream.write((char*)&UBO->descriptor.range, sizeof(UBO->descriptor.range));
-		void* data;
-		VkResult vkRes = vkMapMemory(device, m_uniformBuffers[i].memory, 0, UBO->descriptor.range, 0, (void **)&data);
-		if (vkRes)
-			return WError(W_UNABLETOMAPBUFFER);
-		outputStream.write((char*)data, UBO->descriptor.range);
-		vkUnmapMemory(device, m_uniformBuffers[0].memory);
+		VkDeviceSize size = UBO->ubo_info->GetSize();
+		outputStream.write((char*)& size, sizeof(size));
+		outputStream.write((char*)UBO->data, size);
 	}
 
 	// write the texture data
+	char tmpName[W_MAX_ASSET_NAME_SIZE];
 	tmp = m_sampler_info.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	std::streampos texturesOffset = outputStream.tellp();
 	for (uint i = 0; i < m_sampler_info.size(); i++) {
 		SAMPLER_INFO* SI = &m_sampler_info[i];
-		tmp = 0;
+		outputStream.write((char*)& SI->sampler_info->binding_index, sizeof(SI->sampler_info->binding_index));
+		tmp = SI->images.size();
 		outputStream.write((char*)&tmp, sizeof(tmp));
-		outputStream.write((char*)&SI->sampler_info->binding_index, sizeof(SI->sampler_info->binding_index));
+		for (uint j = 0; j < SI->images.size(); j++) {
+			strcpy(tmpName, SI->images[j]->GetName().c_str());
+			outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
+		}
 	}
-	outputStream.write((char*)&tmp, sizeof(tmp)); // effect id
-	_MarkFileEnd(file, outputStream.tellp());
+	outputStream.write((char*)&m_setIndex, sizeof(m_setIndex));
+
+	strcpy(tmpName, m_effect->GetName().c_str());
+	outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
 
 	// save dependencies
 	for (uint i = 0; i < m_sampler_info.size(); i++) {
 		SAMPLER_INFO* SI = &m_sampler_info[i];
-		if (SI->img) {
-			WError err = file->SaveAsset(SI->img, &tmp);
+		for (uint j = 0; j < SI->images.size(); j++) {
+			WError err = file->SaveAsset(SI->images[j]);
 			if (!err)
 				return err;
-			outputStream.seekp(texturesOffset + std::streamoff(i * (2 * sizeof(uint))));
-			outputStream.write((char*)&tmp, sizeof(tmp));
 		}
 	}
-	WError err = file->SaveAsset(m_effect, &tmp);
+	WError err = file->SaveAsset(m_effect);
 	if (!err)
 		return err;
-	outputStream.seekp(texturesOffset + std::streamoff(m_sampler_info.size() * (2 * sizeof(uint))));
-	outputStream.write((char*)&tmp, sizeof(tmp));
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream) {
+std::vector<void*> WMaterial::LoadArgs() {
+	return std::vector<void*>({});
+}
+
+WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
 	_DestroyResources();
 
 	VkDevice device = m_app->GetVulkanDevice();
 
 	// read the UBO data
 	uint numUBOs;
-	vector<std::pair<VkDeviceSize, void*>> uboData;
+	std::vector<std::pair<VkDeviceSize, void*>> uboData;
 	inputStream.read((char*)&numUBOs, sizeof(numUBOs));
 	for (uint i = 0; i < numUBOs; i++) {
 		VkDeviceSize size;
@@ -463,30 +471,41 @@ WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream) {
 
 	// read the texture data
 	uint numTextures;
-	vector<std::pair<uint, uint>> textureData;
+	std::vector<std::pair<uint, std::vector<std::string>>> textureData;
 	inputStream.read((char*)&numTextures, sizeof(numTextures));
 	for (uint i = 0; i < numTextures; i++) {
-		uint tid, index;
-		inputStream.read((char*)&tid, sizeof(tid));
+		uint arraySize, index;
 		inputStream.read((char*)&index, sizeof(index));
-		textureData.push_back(std::pair<uint, uint>(tid, index));
+		inputStream.read((char*)&arraySize, sizeof(arraySize));
+		std::vector<std::string> names(arraySize);
+		for (uint j = 0; j < arraySize; j++) {
+			char tmpName[W_MAX_ASSET_NAME_SIZE];
+			inputStream.read(tmpName, W_MAX_ASSET_NAME_SIZE);
+			names[j] = std::string(tmpName);
+		}
+		textureData.push_back(std::make_pair(index, names));
 	}
-	uint fxId;
-	inputStream.read((char*)&fxId, sizeof(fxId));
+	inputStream.read((char*)&m_setIndex, sizeof(m_setIndex));
+	char effectName[W_MAX_ASSET_NAME_SIZE];
+	inputStream.read(effectName, W_MAX_ASSET_NAME_SIZE);
 
 	// load dependencies
 	WEffect* fx;
-	WError err = file->LoadAsset<WEffect>(fxId, &fx);
+	WError err = file->LoadAsset<WEffect>(effectName, &fx, WEffect::LoadArgs(m_app->Renderer->GetRenderTarget()));
 	if (err) {
-		err = SetEffect(fx);
+		err = CreateForEffect(fx, m_setIndex);
 		fx->RemoveReference();
 		if (err) {
 			for (uint i = 0; i < textureData.size() && err; i++) {
-				WImage* tex;
-				err = file->LoadAsset<WImage>(textureData[i].first, &tex);
-				if (err) {
-					err = SetTexture(textureData[i].second, tex);
-					tex->RemoveReference();
+				uint bindingIndex = textureData[i].first;
+				std::vector<std::string>& textureNames = textureData[i].second;
+				for (uint j = 0; j < textureNames.size(); j++) {
+					WImage* tex;
+					err = file->LoadAsset<WImage>(textureNames[j], &tex, WImage::LoadArgs());
+					if (err) {
+						err = SetTexture(bindingIndex, tex, j);
+						tex->RemoveReference();
+					}
 				}
 			}
 		}
@@ -498,18 +517,10 @@ WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream) {
 		else {
 			for (uint i = 0; i < m_uniformBuffers.size() && err; i++) {
 				UNIFORM_BUFFER_INFO* UBO = &m_uniformBuffers[i];
-				if (uboData[i].first != UBO->descriptor.range)
+				if (uboData[i].first != UBO->ubo_info->GetSize())
 					err = WError(W_INVALIDFILEFORMAT);
-				else {
-					void* pData;
-					VkResult vkRes = vkMapMemory(device, m_uniformBuffers[i].memory, 0, UBO->descriptor.range, 0, (void **)&pData);
-					if (vkRes)
-						err = WError(W_UNABLETOMAPBUFFER);
-					else {
-						memcpy(pData, uboData[i].second, UBO->descriptor.range);
-						vkUnmapMemory(device, m_uniformBuffers[0].memory);
-					}
-				}
+				else
+					memcpy(UBO->data, uboData[i].second, uboData[i].first);
 			}
 		}
 	}

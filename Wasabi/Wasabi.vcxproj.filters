@@ -13,9 +13,6 @@
     <Filter Include="Geometries">
       <UniqueIdentifier>{90a65bdb-4ed7-454c-95c7-86c2482b0fe2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Images">
-      <UniqueIdentifier>{40c7b38c-4d70-4701-ac9d-5e216c842076}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Lights">
       <UniqueIdentifier>{029f794f-971d-4bd7-9460-ef901e0bbc45}</UniqueIdentifier>
     </Filter>
@@ -45,15 +42,6 @@
     </Filter>
     <Filter Include="stb">
       <UniqueIdentifier>{a78cb392-40c1-4e4f-b5d1-9c98ffb11259}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Renderers\Shaders">
-      <UniqueIdentifier>{e1a75d12-9e6f-4bdb-8c1e-d6f2e6c5c119}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Renderers\Shaders\Deferred">
-      <UniqueIdentifier>{fac9b771-a53d-45f6-a098-09bd2e17101f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Renderers\Shaders\Forward">
-      <UniqueIdentifier>{ecd66444-6b37-4f17-b4f7-4b034dca838d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Particles">
       <UniqueIdentifier>{7924b2e4-d491-4db7-b072-6009b1894457}</UniqueIdentifier>
@@ -91,6 +79,36 @@
     <Filter Include="Files">
       <UniqueIdentifier>{8dfac54d-278a-425d-bc4a-9edec888ca1b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Images">
+      <UniqueIdentifier>{40c7b38c-4d70-4701-ac9d-5e216c842076}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\DeferredRenderer">
+      <UniqueIdentifier>{623111ba-67bf-40ab-8f1f-f78cf5d3bba1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\ForwardRenderer">
+      <UniqueIdentifier>{84ca84cc-d897-43ad-b469-d4294ffb381c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\DeferredRenderer\Shaders">
+      <UniqueIdentifier>{c342ca03-961d-4c54-a762-dfb77d7a94f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\ForwardRenderer\Shaders">
+      <UniqueIdentifier>{b2d3da71-f3af-48ef-b7b1-6f0258f6cc4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderers\Common">
+      <UniqueIdentifier>{51799f31-939b-4f0d-97d2-0b8339a0db1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{897e1cb9-582b-47db-ac50-8c18c13659bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Bullet\Shaders">
+      <UniqueIdentifier>{e47c31a5-6651-473b-8bde-c78521914137}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sprites\Shaders">
+      <UniqueIdentifier>{8cb2de24-cf24-4adf-9998-ed27cc84ca31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Texts\Shaders">
+      <UniqueIdentifier>{70b2a32b-c593-44ea-a820-5224a14f26c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -122,12 +140,6 @@
     </ClCompile>
     <ClCompile Include="Objects\WObject.cpp">
       <Filter>Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\WDeferredRenderer.cpp">
-      <Filter>Renderers</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\WForwardRenderer.cpp">
-      <Filter>Renderers</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\WRenderer.cpp">
       <Filter>Renderers</Filter>
@@ -195,6 +207,51 @@
     <ClCompile Include="Files\WFile.cpp">
       <Filter>Files</Filter>
     </ClCompile>
+    <ClCompile Include="Renderers\ForwardRenderer\WForwardRenderer.cpp">
+      <Filter>Renderers\ForwardRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\DeferredRenderer\WDeferredRenderer.cpp">
+      <Filter>Renderers\DeferredRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\WRenderStage.cpp">
+      <Filter>Renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\DeferredRenderer\WGBufferRenderStage.cpp">
+      <Filter>Renderers\DeferredRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\DeferredRenderer\WLightBufferRenderStage.cpp">
+      <Filter>Renderers\DeferredRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Common\WSpritesRenderStage.cpp">
+      <Filter>Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\ForwardRenderer\WForwardRenderStage.cpp">
+      <Filter>Renderers\ForwardRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Materials\WMaterialsStore.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.cpp">
+      <Filter>Renderers\DeferredRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\WVulkanMemoryManager.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\WBufferedImage.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\WBufferedFrameBuffer.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\WBufferedBuffer.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Common\WParticlesRenderStage.cpp">
+      <Filter>Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Common\WTextRenderStage.cpp">
+      <Filter>Renderers\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations\WAnimation.h">
@@ -229,12 +286,6 @@
     </ClInclude>
     <ClInclude Include="Physics\WPhysicsComponent.h">
       <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderers\WDeferredRenderer.h">
-      <Filter>Renderers</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderers\WForwardRenderer.h">
-      <Filter>Renderers</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\WRenderer.h">
       <Filter>Renderers</Filter>
@@ -366,46 +417,115 @@
     <ClInclude Include="Files\WFile.h">
       <Filter>Files</Filter>
     </ClInclude>
+    <ClInclude Include="Renderers\ForwardRenderer\WForwardRenderer.h">
+      <Filter>Renderers\ForwardRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\DeferredRenderer\WDeferredRenderer.h">
+      <Filter>Renderers\DeferredRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\WRenderStage.h">
+      <Filter>Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\DeferredRenderer\WGBufferRenderStage.h">
+      <Filter>Renderers\DeferredRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\DeferredRenderer\WLightBufferRenderStage.h">
+      <Filter>Renderers\DeferredRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Common\WSpritesRenderStage.h">
+      <Filter>Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\ForwardRenderer\WForwardRenderStage.h">
+      <Filter>Renderers\ForwardRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Materials\WMaterialsStore.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.h">
+      <Filter>Renderers\DeferredRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\WVulkanMemoryManager.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\WBufferedImage.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\WBufferedFrameBuffer.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\WCommon.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\WBufferedBuffer.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Common\WParticlesRenderStage.h">
+      <Filter>Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Common\WTextRenderStage.h">
+      <Filter>Renderers\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Renderers\Shaders\Deferred\scene_composition_ps.glsl">
-      <Filter>Renderers\Shaders\Deferred</Filter>
-    </None>
-    <None Include="Renderers\Shaders\Deferred\vertex_shader.glsl">
-      <Filter>Renderers\Shaders\Deferred</Filter>
-    </None>
-    <None Include="Renderers\Shaders\Deferred\pixel_shader.glsl">
-      <Filter>Renderers\Shaders\Deferred</Filter>
-    </None>
-    <None Include="Renderers\Shaders\Forward\pixel_shader.glsl">
-      <Filter>Renderers\Shaders\Forward</Filter>
-    </None>
-    <None Include="Renderers\Shaders\Forward\vertex_shader.glsl">
-      <Filter>Renderers\Shaders\Forward</Filter>
-    </None>
-    <None Include="Renderers\Shaders\Deferred\directional_light_ps.glsl">
-      <Filter>Renderers\Shaders\Deferred</Filter>
-    </None>
-    <None Include="Renderers\Shaders\Deferred\point_light_ps.glsl">
-      <Filter>Renderers\Shaders\Deferred</Filter>
-    </None>
-    <None Include="Renderers\Shaders\Deferred\spot_light_ps.glsl">
-      <Filter>Renderers\Shaders\Deferred</Filter>
-    </None>
-    <None Include="Renderers\Shaders\Deferred\spot_light_vs.glsl">
-      <Filter>Renderers\Shaders\Deferred</Filter>
-    </None>
-    <None Include="Renderers\Shaders\Deferred\point_light_vs.glsl">
-      <Filter>Renderers\Shaders\Deferred</Filter>
-    </None>
-    <None Include="Particles\Shaders\particles_ps.glsl">
+    <None Include="Particles\Shaders\particles.geom.glsl">
       <Filter>Particles\Shaders</Filter>
     </None>
-    <None Include="Particles\Shaders\particles_vs.glsl">
+    <None Include="Particles\Shaders\particles.frag.glsl">
       <Filter>Particles\Shaders</Filter>
     </None>
-    <None Include="Particles\Shaders\particles_gs.glsl">
+    <None Include="Particles\Shaders\particles.vert.glsl">
       <Filter>Particles\Shaders</Filter>
+    </None>
+    <None Include="Physics\Bullet\Shaders\lines.frag.glsl">
+      <Filter>Physics\Bullet\Shaders</Filter>
+    </None>
+    <None Include="Physics\Bullet\Shaders\lines.vert.glsl">
+      <Filter>Physics\Bullet\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.vert.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\depth.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\dirlight.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\pointlight.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\pointlight.vert.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\spotlight.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\spotlight.vert.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\DeferredRenderer\Shaders\scene_composition.frag.glsl">
+      <Filter>Renderers\DeferredRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\ForwardRenderer\Shaders\forward.frag.glsl">
+      <Filter>Renderers\ForwardRenderer\Shaders</Filter>
+    </None>
+    <None Include="Renderers\ForwardRenderer\Shaders\forward.vert.glsl">
+      <Filter>Renderers\ForwardRenderer\Shaders</Filter>
+    </None>
+    <None Include="Sprites\Shaders\sprite.frag.glsl">
+      <Filter>Sprites\Shaders</Filter>
+    </None>
+    <None Include="Sprites\Shaders\sprite.vert.glsl">
+      <Filter>Sprites\Shaders</Filter>
+    </None>
+    <None Include="Texts\Shaders\text.frag.glsl">
+      <Filter>Texts\Shaders</Filter>
+    </None>
+    <None Include="Texts\Shaders\text.vert.glsl">
+      <Filter>Texts\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

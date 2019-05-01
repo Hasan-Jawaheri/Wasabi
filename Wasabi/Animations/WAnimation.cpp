@@ -5,15 +5,15 @@ WAnimationManager::WAnimationManager(Wasabi* const app) : WManager<WAnimation>(a
 WAnimationManager::~WAnimationManager() {
 }
 void WAnimationManager::Update(float fDeltaTime) {
-	for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-		for (unsigned int i = 0; i < m_entities[j].size(); i++)
-			m_entities[j][i]->Update(fDeltaTime);
+	unsigned int entitiyCount = GetEntitiesCount();
+	for (unsigned int i = 0; i < entitiyCount; i++)
+		GetEntityByIndex(i)->Update(fDeltaTime);
 }
 std::string WAnimationManager::GetTypeName() const {
 	return "Animation";
 }
 
-WAnimation::WAnimation(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WAnimation::WAnimation(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID) {
 	AddSubAnimation();
 
 	m_bFramesOwner = true;
@@ -34,8 +34,12 @@ WAnimation::~WAnimation() {
 	m_app->AnimationManager->RemoveEntity(this);
 }
 
-std::string WAnimation::GetTypeName() const {
+std::string WAnimation::_GetTypeName() {
 	return "Animation";
+}
+
+std::string WAnimation::GetTypeName() const {
+	return _GetTypeName();
 }
 
 void WAnimation::m_UpdateFirstFrame(unsigned int subAnimation) {

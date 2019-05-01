@@ -238,9 +238,12 @@ struct W_SKELETAL_SUB_ANIMATION : public W_SUB_ANIMATION {
  * WSkeletalAnimation.h.
  */
 class WSkeleton : public WAnimation {
+protected:
+	virtual ~WSkeleton();
+
 public:
+
 	WSkeleton(Wasabi* const app, unsigned int ID = 0);
-	~WSkeleton();
 
 	/**
 	 * Appends a keyframe to the frames of this animation.
@@ -408,8 +411,9 @@ public:
 	 */
 	bool Valid() const;
 
-	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream);
+	static std::vector<void*> LoadArgs();
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
 
 private:
 	/**
@@ -431,4 +435,37 @@ private:
 	WVector3 m_bindingScale;
 	/** The world-space position of the root of the skeleton */
 	WVector3 m_parentBonePos;
+};
+
+class WSkeletalAnimationData : public WFileAsset {
+public:
+	/**
+	 * Returns "SkeletalAnimationData" string.
+	 * @return Returns "SkeletalAnimationData" string
+	 */
+	virtual std::string GetTypeName() const;
+	static std::string _GetTypeName();
+
+	WSkeletalAnimationData(Wasabi* const app, unsigned int ID = 0);
+	~WSkeletalAnimationData();
+
+	WError SetSkeleton(WBone* base);
+	WError CreateAnimation(std::string name, WBone** frames, uint numFrames);
+	WError CreateAnimation(std::string name, WMatrix* matrices, uint numFrames);
+
+	/**
+	 * Returns whether or not this skeletal animation is valid. A valid animation is one
+	 * that has a skeleton bone structure defined
+	 * @return true if the animation is valid, false otherwise
+	 */
+	bool Valid() const;
+
+	static std::vector<void*> LoadArgs();
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
+
+private:
+	WBone* m_skeletonBase;
+	std::unordered_map<uint, WBone*> m_bones;
+	std::unordered_map<std::string, std::vector<WMatrix>> m_animations;
 };

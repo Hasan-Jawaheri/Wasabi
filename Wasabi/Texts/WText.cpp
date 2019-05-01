@@ -42,23 +42,10 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
 		})};
-		LoadCodeGLSL(
-			"#version 450\n"
-			"#extension GL_ARB_separate_shader_objects : enable\n"
-			"#extension GL_ARB_shading_language_420pack : enable\n"
-			""
-			"layout(location = 0) in  vec2 inPos;\n"
-			"layout(location = 1) in  vec2 inUV;\n"
-			"layout(location = 2) in  vec4 inCol;\n"
-			"layout(location = 0) out vec2 outUV;\n"
-			"layout(location = 1) out vec4 outCol;\n"
-			""
-			"void main() {\n"
-			"	outUV = inUV;\n"
-			"	outCol = inCol;\n"
-			"	gl_Position = vec4(inPos.xy, 0.0, 1.0);\n"
-			"}\n"
-		, bSaveData);
+		vector<byte> code = {
+			#include "Shaders/text.vert.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 
@@ -69,23 +56,12 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_SAMPLER, 0),
+			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 0, "textureFont"),
 		};
-		LoadCodeGLSL(
-			"#version 450\n"
-			"#extension GL_ARB_separate_shader_objects : enable\n"
-			"#extension GL_ARB_shading_language_420pack : enable\n"
-			""
-			"layout(binding = 0) uniform sampler2D sampler;\n"
-			"layout(location = 0) in vec2 inUV;\n"
-			"layout(location = 1) in vec4 inCol;\n"
-			"layout(location = 0) out vec4 outFragColor;\n"
-			""
-			"void main() {\n"
-			"	float c = texture(sampler, inUV).r;\n"
-			"	outFragColor = vec4(c) * inCol;\n"
-			"}\n"
-		, bSaveData);
+		vector<byte> code = {
+			#include "Shaders/text.frag.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 	}
 };
 
@@ -113,6 +89,7 @@ WError WTextComponent::Initialize() {
 	ps->Load();
 	m_textEffect = new WEffect(m_app);
 	m_textEffect->SetName("textFX");
+	m_app->FileManager->AddDefaultAsset(m_textEffect->GetName(), m_textEffect);
 	WError ret = m_textEffect->BindShader(vs);
 	if (!ret) {
 		vs->RemoveReference();
@@ -147,7 +124,7 @@ WError WTextComponent::Initialize() {
 	dss.front = dss.back;
 	m_textEffect->SetDepthStencilState(dss);
 
-	ret = m_textEffect->BuildPipeline(m_app->Renderer->GetDefaultRenderTarget());
+	ret = m_textEffect->BuildPipeline(m_app->Renderer->GetRenderTarget(m_app->Renderer->GetTextsRenderStageName()));
 	vs->RemoveReference();
 	ps->RemoveReference();
 
@@ -212,20 +189,26 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 		return WError(W_ERRORUNK);
 	}
 
-	f.img = new WImage(m_app);
-	WError err = f.img->CreateFromPixelsArray(temp_bitmap, bmp_size, bmp_size, false, 1, VK_FORMAT_R8_UNORM, 1);
+	f.img = m_app->ImageManager->CreateImage(temp_bitmap, bmp_size, bmp_size, VK_FORMAT_R8_UNORM);
 	delete[] temp_bitmap;
 
-	if (!err) {
+	if (!f.img) {
 		delete[] (stbtt_bakedchar*)f.cdata;
 		f.img->RemoveReference();
-		return err;
+		return WError(W_OUTOFMEMORY);
 	}
 
-	f.textMaterial = new WMaterial(m_app);
-	err = f.textMaterial->SetEffect(m_textEffect);
-	if (!err) {
+	f.textMaterial = m_textEffect->CreateMaterial();
+	if (!f.textMaterial) {
 		delete[] (stbtt_bakedchar*)f.cdata;
+		f.img->RemoveReference();
+		W_SAFE_REMOVEREF(f.textMaterial);
+		return WError(W_OUTOFMEMORY);
+	}
+
+	WError err = f.textMaterial->SetTexture(0, f.img);
+	if (!err) {
+		delete[](stbtt_bakedchar*)f.cdata;
 		f.img->RemoveReference();
 		W_SAFE_REMOVEREF(f.textMaterial);
 		return err;
@@ -248,7 +231,7 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 	}
 
 	f.textGeometry = new TextGeometry(m_app);
-	err = f.textGeometry->CreateFromData(vb, num_verts, ib, num_indices, true);
+	err = f.textGeometry->CreateFromData(vb, num_verts, ib, num_indices, W_GEOMETRY_CREATE_VB_DYNAMIC | W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME);
 	delete[] vb;
 	delete[] ib;
 
@@ -325,14 +308,17 @@ void WTextComponent::Render(WRenderTarget* rt) {
 	float scrWidth = m_app->WindowAndInputComponent->GetWindowWidth();
 	float scrHeight = m_app->WindowAndInputComponent->GetWindowHeight();
 
+	bool isEffectBound = false;
 	for (int f = 0; f < m_fonts.size(); f++) {
 		W_FONT_OBJECT* font = &m_fonts[f];
 		TextVertex* vb = nullptr;
 		int curvert = 0;
 		if (font->texts.size()) {
-			font->textMaterial->SetTexture(0, font->img);
+			if (!isEffectBound)
+				m_textEffect->Bind(rt);
 			font->textMaterial->Bind(rt);
-			font->textGeometry->MapVertexBuffer((void**)&vb);
+			isEffectBound = true;
+			font->textGeometry->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
 		}
 		for (auto text : font->texts) {
 			float x = text.x * 2.0f / scrWidth - 1.0f;
@@ -380,7 +366,7 @@ void WTextComponent::Render(WRenderTarget* rt) {
 			}
 		}
 		if (font->texts.size()) {
-			font->textGeometry->UnmapVertexBuffer();
+			font->textGeometry->UnmapVertexBuffer(false);
 			font->textGeometry->Draw(rt, (curvert / 4) * 2 * 3);
 			font->texts.clear();
 		}

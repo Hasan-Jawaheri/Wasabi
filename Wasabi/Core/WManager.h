@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include "WBase.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -44,7 +45,8 @@ template<typename T>
 class WManager {
 protected:
 	/** a hash table of all entities registered */
-	std::vector<T*> m_entities[W_HASHTABLESIZE];
+	std::vector<WBase*> m_entities[W_HASHTABLESIZE];
+	std::unordered_map<std::string, WBase*> m_entitiesByName;
 
 	/**
 	 * This function must be implemented by a child class. It should return the
@@ -59,7 +61,7 @@ public:
 	class Wasabi* const m_app;
 
 	WManager(class Wasabi* const a) : m_app(a) { __bDbgDestructing = false; }
-	~WManager() {
+	virtual ~WManager() {
 		__bDbgDestructing = true;
 		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
 			for (unsigned int i = 0; i < m_entities[j].size(); i)
@@ -103,7 +105,7 @@ public:
 		entity->SetManager((void*)this);
 		std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Added to the manager.\n";
 		for (auto it = m_changeCallbacks.begin(); it != m_changeCallbacks.end(); it++)
-			it->second(entity, true);
+			it->second((T*)entity, true);
 	}
 
 	/**
@@ -114,7 +116,7 @@ public:
 	 */
 	bool RemoveEntity(T* entity) {
 		unsigned int tableIndex = W_HASH(entity->GetID());
-		for (unsigned int i = 0; i < m_entities[tableIndex].size(); i++)
+		for (unsigned int i = 0; i < m_entities[tableIndex].size(); i++) {
 			if (m_entities[tableIndex][i] == entity)
 			{
 				if (!__bDbgDestructing)
@@ -122,11 +124,25 @@ public:
 
 				m_entities[tableIndex].erase(m_entities[tableIndex].begin() + i);
 
+				auto it = m_entitiesByName.find(entity->GetName());
+				if (it != m_entitiesByName.end())
+					m_entitiesByName.erase(it);
+
 				for (auto it = m_changeCallbacks.begin(); it != m_changeCallbacks.end(); it++)
 					it->second(entity, false);
 				return true;
 			}
+		}
 		return false;
+	}
+
+	void OnEntityNameChanged(T* entity, std::string oldName) {
+		if (oldName != "") {
+			auto it = m_entitiesByName.find(oldName);
+			if (it != m_entitiesByName.end())
+				m_entitiesByName.erase(it);
+		}
+		m_entitiesByName.insert(std::make_pair(entity->GetName(), entity));
 	}
 
 	/**
@@ -155,10 +171,9 @@ public:
 	 * @return      The registered object, nullptr if its not found
 	 */
 	T* GetEntity(std::string name) const {
-		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-			for (unsigned int i = 0; i < m_entities[j].size(); i++)
-				if (m_entities[j][i]->GetName() == name)
-					return m_entities[j][i];
+		auto it = m_entitiesByName.find(name.c_str());
+		if (it != m_entitiesByName.end())
+			return (T*)it->second;
 		return nullptr;
 	}
 
@@ -171,7 +186,7 @@ public:
 		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
 		{
 			if (index < m_entities[j].size())
-				return m_entities[j][index];
+				return (T*)m_entities[j][index];
 			index -= m_entities[j].size();
 		}
 		return nullptr;

@@ -1,4 +1,6 @@
-Wasabi Test/WFile.WSBI
+*.glsl.spv
+*.glsl.tmp.spv
+Wasabi Test/Media/WFile.WSBI
 FBX Loader/*.fbx
 FBX Loader/*.WSBI
 

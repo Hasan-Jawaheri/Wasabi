@@ -19,16 +19,17 @@ std::string WObjectManager::GetTypeName() const {
 WObjectManager::WObjectManager(class Wasabi* const app) : WManager<WObject>(app) {
 }
 
-void WObjectManager::Render(WRenderTarget* rt) {
-	for (int i = 0; i < W_HASHTABLESIZE; i++) {
-		for (int j = 0; j < m_entities[i].size(); j++) {
-			m_entities[i][j]->Render(rt);
-		}
-	}
-}
-
 WError WObjectManager::Load() {
 	return WError(W_SUCCEEDED);
+}
+
+WObject* WObjectManager::CreateObject(unsigned int ID) const {
+	WObject* object = new WObject(m_app, ID);
+	WMaterial* mat = object->GetMaterial();
+	if (mat) {
+		mat->SetVariableColor("color", WColor(0.0f, 0.0f, 0.0f, 0.0f));
+	}
+	return object;
 }
 
 WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iObjStartID, unsigned int iObjEndID,
@@ -41,7 +42,7 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 	};
 	vector<pickStruct> pickedObjects;
 
-	WCamera* cam = m_app->Renderer->GetDefaultRenderTarget()->GetCamera();
+	WCamera* cam = m_app->Renderer->GetRenderTarget(m_app->Renderer->GetPickingRenderStageName())->GetCamera();
 	if (!cam)
 		return nullptr;
 
@@ -67,14 +68,15 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 		for (unsigned int i = m_entities[j].size() - 1; i >= 0 && i != UINT_MAX; i--) {
 			if (((m_entities[j][i]->GetID() >= iObjStartID && m_entities[j][i]->GetID() <= iObjEndID) ||
 				(!iObjStartID && !iObjEndID)) && m_entities[j][i]->Valid()) {
-				if (m_entities[j][i]->Hidden())
+				WObject* object = (WObject*)m_entities[j][i];
+				if (object->Hidden())
 					continue;
 
 				unsigned int hit = 0;
-				WGeometry* temp = m_entities[j][i]->GetGeometry();
+				WGeometry* temp = object->GetGeometry();
 				if (temp) {
 					//these calculations are per-subset
-					WMatrix inverseW = WMatrixInverse(m_entities[j][i]->GetWorldMatrix());
+					WMatrix inverseW = WMatrixInverse(object->GetWorldMatrix());
 
 					WVector3 subsetPos = WVec3TransformCoord(pos, inverseW);
 					WVector3 subsetDir = WVec3TransformNormal(dir, inverseW);
@@ -83,11 +85,11 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 					WVector3 boxSize = (temp->GetMaxPoint() - temp->GetMinPoint()) / 2.0f;
 
 					pickStruct p;
-					p.obj = m_entities[j][i];
+					p.obj = object;
 					if (WUtil::RayIntersectBox(boxSize, subsetPos, subsetDir, boxPos)) {
 						WVector3 pt;
 						bool b = temp->Intersect(subsetPos, subsetDir, &pt, &p.uv, &p.face);
-						WMatrix m = m_entities[j][i]->GetWorldMatrix();
+						WMatrix m = object->GetWorldMatrix();
 						p.pos.x = (pt.x * m(0, 0)) + (pt.y * m(1, 0)) + (pt.z * m(2, 0)) + (1 * m(3, 0));
 						p.pos.y = (pt.x * m(0, 1)) + (pt.y * m(1, 1)) + (pt.z * m(2, 1)) + (1 * m(3, 1));
 						p.pos.z = (pt.x * m(0, 2)) + (pt.y * m(1, 2)) + (pt.z * m(2, 2)) + (1 * m(3, 2));
@@ -97,7 +99,7 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 								if (faceIndex) *faceIndex = p.face;
 								if (_pt) *_pt = pt;
 								if (uv) *uv = p.uv;
-								return m_entities[j][i];
+								return object;
 							}
 							pickedObjects.push_back(p);
 						}
@@ -210,9 +212,8 @@ void WInstance::OnStateChange(STATE_CHANGE_TYPE type) {
 	m_bAltered = true;
 }
 
-WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_instanceV(0) {
+WObject::WObject(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID), m_instanceV(0) {
 	m_geometry = nullptr;
-	m_material = app->Renderer->CreateDefaultMaterial();
 	m_animation = nullptr;
 
 	m_hidden = false;
@@ -229,68 +230,67 @@ WObject::WObject(Wasabi* const app, unsigned int ID) : WBase(app, ID), m_instanc
 
 WObject::~WObject() {
 	W_SAFE_REMOVEREF(m_geometry);
-	W_SAFE_REMOVEREF(m_material);
 	W_SAFE_REMOVEREF(m_animation);
 
-	VkDevice device = m_app->GetVulkanDevice();
-	W_SAFE_REMOVEREF(m_instanceTexture);
-	for (int i = 0; i < m_instanceV.size(); i++)
-		delete m_instanceV[i];
-	m_instanceV.clear();
+	DestroyInstancingResources();
+
+	ClearEffects();
 
 	m_app->ObjectManager->RemoveEntity(this);
 }
 
-std::string WObject::GetTypeName() const {
+std::string WObject::_GetTypeName() {
 	return "Object";
 }
 
-bool WObject::Valid() const {
-	if (m_geometry && m_material && m_geometry->Valid() && m_material->Valid())
-		if (m_geometry->GetVertexDescriptionSize(0) == m_material->GetEffect()->GetInputLayoutSize(0))
-			return true;
-
-	return false;
+std::string WObject::GetTypeName() const {
+	return _GetTypeName();
 }
 
-void WObject::Render(WRenderTarget* rt) {
+bool WObject::Valid() const {
+	return m_geometry && m_geometry->Valid();
+}
+
+bool WObject::WillRender(WRenderTarget* rt) {
 	if (Valid() && !m_hidden) {
 		WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();
 		if (m_bFrustumCull) {
 			if (!InCameraView(cam))
-				return;
+				return false;
 		}
+		return true;
+	}
+	return false;
+}
 
+void WObject::Render(WRenderTarget* rt, WMaterial* material, bool updateInstances) {
+	if (updateInstances)
 		_UpdateInstanceBuffer();
 
-		m_material->SetVariableMatrix("gWorld", worldM);
-		m_material->SetVariableMatrix("gProjection", cam->GetProjectionMatrix());
-		m_material->SetVariableMatrix("gView", cam->GetViewMatrix());
-		m_material->SetVariableVector3("gCamPos", cam->GetPosition());
+	bool is_animated = m_animation && m_animation->Valid() && m_geometry->IsRigged();
+	bool is_instanced = m_instanceV.size() > 0;
+
+	if (material) {
+		WMatrix worldM = GetWorldMatrix();
+		material->SetVariableMatrix("worldMatrix", worldM);
 		// animation variables
-		bool is_animated = m_animation && m_animation->Valid() && m_geometry->IsRigged();
-		bool is_instanced = m_instanceV.size() > 0;
-		m_material->SetVariableInt("gAnimation", is_animated ? 1 : 0);
-		m_material->SetVariableInt("gInstancing", is_instanced ? 1 : 0);
+		material->SetVariableInt("isAnimated", is_animated ? 1 : 0);
+		material->SetVariableInt("isInstanced", is_instanced ? 1 : 0);
 		if (is_animated) {
 			WImage* animTex = m_animation->GetTexture();
-			m_material->SetVariableInt("gAnimationTextureWidth", animTex->GetWidth());
-			m_material->SetAnimationTexture(animTex);
+			material->SetVariableInt("animationTextureWidth", animTex->GetWidth());
+			material->SetTexture("animationTexture", animTex);
 		}
 		// instancing variables
 		if (is_instanced) {
-			m_material->SetVariableInt("gInstanceTextureWidth", m_instanceTexture->GetWidth());
-			m_material->SetInstancingTexture(m_instanceTexture);
+			material->SetVariableInt("instanceTextureWidth", m_instanceTexture->GetWidth());
+			material->SetTexture("instancingTexture", m_instanceTexture);
 		}
-
-		WError err;
-		// bind the pipeline
-		err = m_material->Bind(rt, is_animated ? 2 : 1);
-
-		// bind the rest of the buffers and draw
-		err = m_geometry->Draw(rt, -1, fmax(m_instanceV.size(), 1), is_animated);
+		material->Bind(rt);
 	}
+
+	WError err = m_geometry->Draw(rt, -1, fmax(m_instanceV.size(), 1), is_animated);
 }
 
 WError WObject::SetGeometry(class WGeometry* geometry) {
@@ -300,18 +300,6 @@ WError WObject::SetGeometry(class WGeometry* geometry) {
 	m_geometry = geometry;
 	if (geometry) {
 		m_geometry->AddReference();
-	}
-
-	return WError(W_SUCCEEDED);
-}
-
-WError WObject::SetMaterial(class WMaterial* material) {
-	if (m_material)
-		m_material->RemoveReference();
-
-	m_material = material;
-	if (material) {
-		m_material->AddReference();
 	}
 
 	return WError(W_SUCCEEDED);
@@ -337,15 +325,13 @@ WError WObject::InitInstancing(unsigned int maxInstances) {
 	while (fExactWidth > texWidth)
 		texWidth *= 2;
 
+	// the instance buffer doesn't necessarily update every frame, so dont use W_IMAGE_CREATE_REWRITE_EVERY_FRAME
 	float* texData = new float[texWidth * texWidth * 4];
-	m_instanceTexture = new WImage(m_app);
-	WError ret = m_instanceTexture->CreateFromPixelsArray(texData, texWidth, texWidth, true);
+	m_instanceTexture = m_app->ImageManager->CreateImage(texData, texWidth, texWidth, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);
 	W_SAFE_DELETE_ARRAY(texData);
 
-	if (!ret) {
-		W_SAFE_REMOVEREF(m_instanceTexture);
-		return ret;
-	}
+	if (!m_instanceTexture)
+		return WError(W_OUTOFMEMORY);
 
 	m_instancesDirty = true;
 	m_maxInstances = maxInstances;
@@ -406,7 +392,7 @@ void WObject::_UpdateInstanceBuffer() {
 				bReconstruct = true;
 		if (bReconstruct) {
 			void* pData;
-			WError ret = m_instanceTexture->MapPixels(&pData);
+			WError ret = m_instanceTexture->MapPixels(&pData, W_MAP_WRITE);
 			if (ret) {
 				for (unsigned int i = 0; i < m_instanceV.size(); i++) {
 					WMatrix m = m_instanceV[i]->m_worldM;
@@ -421,10 +407,6 @@ void WObject::_UpdateInstanceBuffer() {
 
 WGeometry* WObject::GetGeometry() const {
 	return m_geometry;
-}
-
-WMaterial* WObject::GetMaterial() const {
-	return m_material;
 }
 
 WAnimation* WObject::GetAnimation() const {
@@ -464,41 +446,9 @@ WVector3 WObject::GetScale() const {
 	return m_scale;
 }
 
-float WObject::GetScaleX() const {
-	return m_scale.x;
-}
-
-float WObject::GetScaleY() const {
-	return m_scale.y;
-}
-
-float WObject::GetScaleZ() const {
-	return m_scale.z;
-}
-
-void WObject::Scale(float x, float y, float z) {
-	m_bAltered = true;
-	m_scale = WVector3(x, y, z);
-}
-
 void WObject::Scale(WVector3 scale) {
 	m_bAltered = true;
 	m_scale = scale;
-}
-
-void WObject::ScaleX(float scale) {
-	m_bAltered = true;
-	m_scale.x = scale;
-}
-
-void WObject::ScaleY(float scale) {
-	m_bAltered = true;
-	m_scale.y = scale;
-}
-
-void WObject::ScaleZ(float scale) {
-	m_bAltered = true;
-	m_scale.z = scale;
 }
 
 WMatrix WObject::GetWorldMatrix() {
@@ -548,28 +498,43 @@ WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
 		outputStream.write((char*)&rot, sizeof(rot));
 	}
 
-	uint tmpId = 0;
-	std::streamoff dependenciesStart = outputStream.tellp();
-	WFileAsset* dependencies[3] = { m_geometry, m_material, m_animation };
-	for (uint i = 0; i < sizeof(dependencies) / sizeof(WFileAsset*); i++)
-		outputStream.write((char*)&tmpId, sizeof(tmpId));
+	uint numMaterials = m_materialMap.size();
+	outputStream.write((char*)&numMaterials, sizeof(uint));
 
-	_MarkFileEnd(file, outputStream.tellp());
+	char tmpName[W_MAX_ASSET_NAME_SIZE];
+	std::vector<WFileAsset*> dependencies({ m_geometry, m_animation });
+	if (m_defaultEffect)
+		dependencies.push_back(GetMaterial());
+	for (auto it = m_materialMap.begin(); it != m_materialMap.end(); it++) {
+		if (it->first != m_defaultEffect)
+			dependencies.push_back(it->second);
+	}
 
-	for (uint i = 0; i < sizeof(dependencies) / sizeof(WFileAsset*); i++) {
+	for (uint i = 0; i < dependencies.size(); i++) {
+		if (dependencies[i])
+			strcpy(tmpName, dependencies[i]->GetName().c_str());
+		else
+			strcpy(tmpName, "");
+		outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
+	}
+
+
+	for (uint i = 0; i < dependencies.size(); i++) {
 		if (dependencies[i]) {
-			WError err = file->SaveAsset(dependencies[i], &tmpId);
+			WError err = file->SaveAsset(dependencies[i]);
 			if (!err)
 				return err;
-			outputStream.seekp(dependenciesStart + std::streamoff(i * sizeof(uint)));
-			outputStream.write((char*)&tmpId, sizeof(tmpId));
 		}
 	}
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WObject::LoadFromStream(WFile* file, std::istream& inputStream) {
+std::vector<void*> WObject::LoadArgs() {
+	return std::vector<void*>();
+}
+
+WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
 	DestroyInstancingResources();
 
 	inputStream.read((char*)&m_hidden, sizeof(m_hidden));
@@ -600,33 +565,46 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream) {
 		}
 	}
 
+	uint numMaterials;
+	inputStream.read((char*)&numMaterials, sizeof(uint));
+
 	WError status(W_SUCCEEDED);
-	uint dependencyId;
+	std::vector<std::string> dependencies;
+	for (uint i = 0; i < numMaterials + 2; i++) {
+		char dependencyName[W_MAX_ASSET_NAME_SIZE];
+		inputStream.read(dependencyName, W_MAX_ASSET_NAME_SIZE);
+		dependencies.push_back(std::string(dependencyName));
+	}
+
 	WGeometry* geometry = nullptr;
-	WMaterial* material = nullptr;
 	WSkeleton* animation = nullptr;
 
-	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
-	if (dependencyId != 0 && status)
-		status = file->LoadAsset<WGeometry>(dependencyId, &geometry);
+	if (dependencies[0] != "" && status)
+		status = file->LoadAsset<WGeometry>(dependencies[0], &geometry, WGeometry::LoadArgs());
 	if (status)
 		status = SetGeometry(geometry);
+	W_SAFE_REMOVEREF(geometry);
 
-	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
-	if (dependencyId != 0 && status)
-		status = file->LoadAsset<WMaterial>(dependencyId, &material);
-	if (status)
-		SetMaterial(material);
-
-	inputStream.read((char*)&dependencyId, sizeof(dependencyId));
-	if (dependencyId != 0 && status)
-		status = file->LoadAsset<WSkeleton>(dependencyId, &animation);
+	if (dependencies[1] != "" && status)
+		status = file->LoadAsset<WSkeleton>(dependencies[1], &animation, WSkeleton::LoadArgs());
 	if (status)
 		SetAnimation(animation);
-
-	W_SAFE_REMOVEREF(geometry);
-	W_SAFE_REMOVEREF(material);
 	W_SAFE_REMOVEREF(animation);
+
+	if (status) {
+		ClearEffects();
+		for (uint i = 2; i < dependencies.size() && status; i++) {
+			WMaterial* mat;
+			status = file->LoadAsset<WMaterial>(dependencies[i], &mat, WMaterial::LoadArgs());
+			if (status) {
+				mat->GetEffect()->AddReference();
+				m_materialMap.insert(std::make_pair(mat->GetEffect(), mat));
+				if (!m_defaultEffect)
+					m_defaultEffect = mat->GetEffect();
+			}
+		}
+	}
+
 	if (!status)
 		DestroyInstancingResources();
 

@@ -230,7 +230,7 @@ public:
 	}
 
 	// Create the swap chain and get images with given width and height
-	void create(VkCommandBuffer cmdBuffer, uint *width, uint *height)
+	void create(VkCommandBuffer cmdBuffer, uint *width, uint *height, uint numDesiredSwapchainImages = -1)
 	{
 		VkResult err;
 		VkSwapchainKHR oldSwapchain = swapChain;
@@ -284,7 +284,9 @@ public:
 		}
 
 		// Determine the number of images
-		uint desiredNumberOfSwapchainImages = surfCaps.minImageCount + 1;
+		uint desiredNumberOfSwapchainImages = numDesiredSwapchainImages;
+		if (desiredNumberOfSwapchainImages == -1)
+			desiredNumberOfSwapchainImages = surfCaps.minImageCount + 1;
 		if ((surfCaps.maxImageCount > 0) && (desiredNumberOfSwapchainImages > surfCaps.maxImageCount))
 		{
 			desiredNumberOfSwapchainImages = surfCaps.maxImageCount;

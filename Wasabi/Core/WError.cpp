@@ -33,7 +33,8 @@ std::string WError::AsString() const {
 	case W_FAILEDTOCREATEPIPELINELAYOUT: return "Failed to create the Vulkan pipeline layout";
 	case W_NORENDERTARGET: return "The render target is invalid for this use";
 	case W_INVALIDREPEATEDBINDINGINDEX: return "The effect contains two shaders that use the same binding index for two different resources";
-	case W_ALREADYLOADED: return "Asset with the given id is already loaded, use GetAsset instead";
+	case W_ALREADYLOADED: return "Asset with the given name is already loaded, use GetAsset instead";
+	case W_NAMECONFLICT: return "Another asset with the same name is already saved";
 	default: return "Invalid error code";
 	}
 }

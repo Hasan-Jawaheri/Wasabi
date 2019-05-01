@@ -13,21 +13,20 @@
 #include <iostream>
 #include <string>
 
-class WFileAsset {
-	friend class WFile;
+#define W_MAX_ASSET_NAME_SIZE 128
+#define W_MAX_ASSET_TYPE_SIZE 32
 
+class WFileAsset : public WBase {
+	friend class WFile;
 public:
-	WFileAsset();
+	WFileAsset(class Wasabi* const app, unsigned int ID = 0);
 	virtual ~WFileAsset();
 
 	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream) = 0;
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream) = 0;
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream, vector<void*>& args) = 0;
 
 private:
 	class WFile* m_file;
-
-protected:
-	void _MarkFileEnd(class WFile* file, std::streampos pos);
 };
 
 class WFile {
@@ -40,30 +39,45 @@ public:
 	WError Open(std::string filename);
 	void Close();
 
-	WError SaveAsset(class WFileAsset* asset, uint* assetId);
+	WError SaveAsset(class WFileAsset* asset);
 
 	template<typename T>
-	WError LoadAsset(uint assetId, T** loadedAsset) {
-		WFileAsset* asset;
-		auto iter = m_assetsMap.find(assetId);
+	WError LoadAsset(std::string name, T** loadedAsset, std::vector<void*> args) {
+		WFileAsset* asset = nullptr;
+		auto iter = m_assetsMap.find(name);
 		bool addReference = iter != m_assetsMap.end() && iter->second->loadedAsset != nullptr;
-		WError err = LoadGenericAsset(assetId, &asset, [this]() { return new T(this->m_app); });
-		*loadedAsset = (T*)asset;
-		if (addReference)
-			(*loadedAsset)->AddReference();
+		WError err = LoadGenericAsset(name, &asset, [this]() { return new T(this->m_app); }, args);
+		if (loadedAsset)
+			*loadedAsset = (T*)asset;
+		if (asset) {
+			if (addReference)
+				asset->AddReference();
+			asset->SetName(name);
+		}
 		return err;
 	}
-	WError LoadGenericAsset(uint assetId, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset);
+
+	WError LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*> args);
+
+	uint GetAssetsCount() const;
+	/** Returns a pair <name, type> */
+	std::pair<std::string, std::string> GetAssetInfo(uint index);
+	/** Returns a pair <name, type> */
+	std::pair<std::string, std::string> GetAssetInfo(std::string name);
 
 private:
 	struct FILE_ASSET {
+		char name[W_MAX_ASSET_NAME_SIZE];
+		char type[W_MAX_ASSET_TYPE_SIZE];
 		std::streamoff start;
 		std::streamsize size;
-		uint id;
 		WFileAsset* loadedAsset;
 
-		FILE_ASSET(std::streamoff _start, std::streamsize _size, uint _id)
-			: start(_start), size(_size), id(_id), loadedAsset(nullptr) {}
+		FILE_ASSET(std::streamoff _start, std::streamsize _size, std::string _name, std::string _type)
+			: start(_start), size(_size), loadedAsset(nullptr) {
+			strcpy_s(name, W_MAX_ASSET_NAME_SIZE, _name.c_str());
+			strcpy_s(type, W_MAX_ASSET_TYPE_SIZE, _type.c_str());
+		}
 		static size_t GetSize() { return sizeof(FILE_ASSET) - sizeof(WFileAsset*); }
 	};
 
@@ -77,16 +91,26 @@ private:
 
 	class Wasabi* const m_app;
 
-	uint m_maxId;
 	std::fstream m_file;
 	std::streamsize m_fileSize;
-	std::unordered_map<uint, FILE_ASSET*> m_assetsMap;
+	std::unordered_map<std::string, FILE_ASSET*> m_assetsMap;
 	std::unordered_map<WFileAsset*, FILE_ASSET*> m_loadedAssetsMap;
 	std::vector<FILE_HEADER> m_headers;
 
-	void MarkFileEnd(std::streampos pos);
 	void ReleaseAsset(WFileAsset* asset);
 	WError LoadHeaders(std::streamsize maxFileSize);
 	void CreateNewHeader();
 	void WriteAssetToHeader(WFile::FILE_ASSET asset);
+};
+
+class WFileManager {
+	friend class WFile;
+
+	std::unordered_map<std::string, WFileAsset*> m_defaultAssets;
+
+public:
+	WFileManager(class Wasabi* const app);
+	~WFileManager();
+
+	void AddDefaultAsset(std::string name, WFileAsset* asset);
 };

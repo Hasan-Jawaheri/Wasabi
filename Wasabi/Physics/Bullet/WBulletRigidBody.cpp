@@ -42,8 +42,12 @@ WBulletRigidBody::~WBulletRigidBody() {
 	m_app->PhysicsComponent->RigidBodyManager->RemoveEntity(this);
 }
 
-std::string WBulletRigidBody::GetTypeName() const {
+std::string WBulletRigidBody::_GetTypeName() {
 	return "RigidBody";
+}
+
+std::string WBulletRigidBody::GetTypeName() const {
+	return _GetTypeName();
 }
 
 void WBulletRigidBody::_DestroyResources() {
@@ -102,7 +106,7 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 		if (posOffset < 0)
 			return WError(W_INVALIDPARAM);
 		float* vb = nullptr;
-		createInfo.geometry->MapVertexBuffer((void**)&vb, true);
+		createInfo.geometry->MapVertexBuffer((void**)&vb, W_MAP_READ);
 		btScalar* points = new btScalar[numVerts*3];
 		for (int i = 0; i < numVerts; i++) {
 			points[i*3 + 0] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 0);
@@ -123,9 +127,9 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 			return WError(W_INVALIDPARAM);
 		btScalar* points = nullptr;
 		int* indices = nullptr;
-		createInfo.geometry->MapVertexBuffer((void**)&points, true);
+		createInfo.geometry->MapVertexBuffer((void**)&points, W_MAP_READ);
 		if (createInfo.isTriangleList)
-			createInfo.geometry->MapIndexBuffer((uint**)&indices, true);
+			createInfo.geometry->MapIndexBuffer((uint**)&indices, W_MAP_READ);
 
 		int num_triangles = createInfo.isTriangleList ? createInfo.geometry->GetNumIndices() / 3 : createInfo.geometry->GetNumVertices() - 2;
 		btTriangleMesh* mesh = new btTriangleMesh(true, false);
@@ -322,7 +326,7 @@ WMatrix WBulletRigidBody::GetWorldMatrix() {
 }
 
 void WBulletRigidBody::OnStateChange(STATE_CHANGE_TYPE type) {
-	if (!m_isUpdating) {
+	if (!m_isUpdating && m_rigidBody) {
 		btTransform mtx = WBTConverMatrix(GetWorldMatrix());
 		m_rigidBody->setWorldTransform(mtx);
 		m_rigidBody->getMotionState()->setWorldTransform(mtx);
@@ -335,31 +339,33 @@ WError WBulletRigidBody::SaveToStream(class WFile* file, std::ostream& outputStr
 		return WError(W_NOTVALID);
 
 	outputStream.write((char*)m_savedCreateInfo, sizeof(W_RIGID_BODY_CREATE_INFO));
-	uint tmpId = 0;
-	std::streamoff geometryIdPos = outputStream.tellp();
-	outputStream.write((char*)&tmpId, sizeof(tmpId));
+	char geometryName[W_MAX_ASSET_NAME_SIZE];
+	strcpy(geometryName, m_savedCreateInfo->geometry->GetName().c_str());
+	outputStream.write(geometryName, W_MAX_ASSET_NAME_SIZE);
 
-	_MarkFileEnd(file, outputStream.tellp());
-
-	WError err = file->SaveAsset(m_savedCreateInfo->geometry, &tmpId);
-	if (err) {
-		outputStream.seekp(geometryIdPos);
-		outputStream.write((char*)&tmpId, sizeof(tmpId));
-	}
-
+	WError err = file->SaveAsset(m_savedCreateInfo->geometry);
 	return err;
 }
 
-WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputStream) {
-	bool bSaveInfo = false;
+std::vector<void*> WBulletRigidBody::LoadArgs(bool bSaveInfo) {
+	return std::vector<void*>({
+		(void*)bSaveInfo,
+	});
+}
+
+WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+	if (args.size() != 1)
+		return WError(W_INVALIDPARAM);
+	bool bSaveInfo = (bool)args[0];
+
 	_DestroyResources();
 
 	W_RIGID_BODY_CREATE_INFO info;
 	inputStream.read((char*)&info, sizeof(W_RIGID_BODY_CREATE_INFO));
 	info.orientation = nullptr;
-	uint geometryId;
-	inputStream.read((char*)&geometryId, sizeof(geometryId));
-	WError err = file->LoadAsset(geometryId, &info.geometry);
+	char geometryName[W_MAX_ASSET_NAME_SIZE];
+	inputStream.read(geometryName, W_MAX_ASSET_NAME_SIZE);
+	WError err = file->LoadAsset<WGeometry>(geometryName, &info.geometry, WGeometry::LoadArgs());
 	if (err) {
 		Create(info, bSaveInfo);
 		info.geometry->RemoveReference();

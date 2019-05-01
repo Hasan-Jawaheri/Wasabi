@@ -37,6 +37,11 @@
     <ClCompile Include="Lights\WLight.cpp" />
     <ClCompile Include="Materials\WEffect.cpp" />
     <ClCompile Include="Materials\WMaterial.cpp" />
+    <ClCompile Include="Materials\WMaterialsStore.cpp" />
+    <ClCompile Include="Memory\WBufferedBuffer.cpp" />
+    <ClCompile Include="Memory\WBufferedFrameBuffer.cpp" />
+    <ClCompile Include="Memory\WBufferedImage.cpp" />
+    <ClCompile Include="Memory\WVulkanMemoryManager.cpp" />
     <ClCompile Include="Objects\WObject.cpp" />
     <ClCompile Include="Particles\WParticles.cpp" />
     <ClCompile Include="Physics\Bullet\BulletDebugger.cpp" />
@@ -44,8 +49,16 @@
     <ClCompile Include="Physics\Bullet\WBulletRigidBody.cpp" />
     <ClCompile Include="Physics\Havok\WHavokPhysics.cpp" />
     <ClCompile Include="Physics\WRigidBody.cpp" />
-    <ClCompile Include="Renderers\WDeferredRenderer.cpp" />
-    <ClCompile Include="Renderers\WForwardRenderer.cpp" />
+    <ClCompile Include="Renderers\Common\WTextRenderStage.cpp" />
+    <ClCompile Include="Renderers\Common\WParticlesRenderStage.cpp" />
+    <ClCompile Include="Renderers\Common\WSpritesRenderStage.cpp" />
+    <ClCompile Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.cpp" />
+    <ClCompile Include="Renderers\DeferredRenderer\WDeferredRenderer.cpp" />
+    <ClCompile Include="Renderers\DeferredRenderer\WGBufferRenderStage.cpp" />
+    <ClCompile Include="Renderers\DeferredRenderer\WLightBufferRenderStage.cpp" />
+    <ClCompile Include="Renderers\ForwardRenderer\WForwardRenderer.cpp" />
+    <ClCompile Include="Renderers\ForwardRenderer\WForwardRenderStage.cpp" />
+    <ClCompile Include="Renderers\WRenderStage.cpp" />
     <ClCompile Include="Renderers\WRenderer.cpp" />
     <ClCompile Include="Sounds\OpenAL\WOpenAL.cpp" />
     <ClCompile Include="Sprites\WSprite.cpp" />
@@ -61,6 +74,7 @@
     <ClInclude Include="Core\VkTools\vulkanswapchain.hpp" />
     <ClInclude Include="Core\VkTools\vulkantools.h" />
     <ClInclude Include="Core\WBase.h" />
+    <ClInclude Include="Core\WCommon.h" />
     <ClInclude Include="Core\WCore.h" />
     <ClInclude Include="Core\WError.h" />
     <ClInclude Include="Core\WManager.h" />
@@ -75,6 +89,11 @@
     <ClInclude Include="Lights\WLight.h" />
     <ClInclude Include="Materials\WEffect.h" />
     <ClInclude Include="Materials\WMaterial.h" />
+    <ClInclude Include="Materials\WMaterialsStore.h" />
+    <ClInclude Include="Memory\WBufferedBuffer.h" />
+    <ClInclude Include="Memory\WBufferedFrameBuffer.h" />
+    <ClInclude Include="Memory\WBufferedImage.h" />
+    <ClInclude Include="Memory\WVulkanMemoryManager.h" />
     <ClInclude Include="Objects\WObject.h" />
     <ClInclude Include="Particles\WParticles.h" />
     <ClInclude Include="Physics\Bullet\BulletDebugger.h" />
@@ -83,8 +102,16 @@
     <ClInclude Include="Physics\Havok\WHavokPhysics.h" />
     <ClInclude Include="Physics\WPhysicsComponent.h" />
     <ClInclude Include="Physics\WRigidBody.h" />
-    <ClInclude Include="Renderers\WDeferredRenderer.h" />
-    <ClInclude Include="Renderers\WForwardRenderer.h" />
+    <ClInclude Include="Renderers\Common\WTextRenderStage.h" />
+    <ClInclude Include="Renderers\Common\WParticlesRenderStage.h" />
+    <ClInclude Include="Renderers\Common\WSpritesRenderStage.h" />
+    <ClInclude Include="Renderers\DeferredRenderer\WSceneCompositionRenderStage.h" />
+    <ClInclude Include="Renderers\DeferredRenderer\WDeferredRenderer.h" />
+    <ClInclude Include="Renderers\DeferredRenderer\WGBufferRenderStage.h" />
+    <ClInclude Include="Renderers\DeferredRenderer\WLightBufferRenderStage.h" />
+    <ClInclude Include="Renderers\ForwardRenderer\WForwardRenderer.h" />
+    <ClInclude Include="Renderers\ForwardRenderer\WForwardRenderStage.h" />
+    <ClInclude Include="Renderers\WRenderStage.h" />
     <ClInclude Include="Renderers\WRenderer.h" />
     <ClInclude Include="Sounds\OpenAL\WOpenAL.h" />
     <ClInclude Include="Sounds\WSound.h" />
@@ -114,50 +141,57 @@
     <ClInclude Include="WindowAndInput\WWindowAndInputComponent.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Particles\Shaders\particles_gs.glsl" />
-    <None Include="Particles\Shaders\particles_ps.glsl" />
-    <None Include="Particles\Shaders\particles_vs.glsl" />
-    <None Include="Renderers\Shaders\Deferred\directional_light_ps.glsl" />
-    <None Include="Renderers\Shaders\Deferred\point_light_vs.glsl" />
-    <None Include="Renderers\Shaders\Deferred\spot_light_vs.glsl" />
-    <None Include="Renderers\Shaders\Deferred\pixel_shader.glsl" />
-    <None Include="Renderers\Shaders\Deferred\point_light_ps.glsl" />
-    <None Include="Renderers\Shaders\Deferred\scene_composition_ps.glsl" />
-    <None Include="Renderers\Shaders\Deferred\spot_light_ps.glsl" />
-    <None Include="Renderers\Shaders\Deferred\vertex_shader.glsl" />
-    <None Include="Renderers\Shaders\Forward\pixel_shader.glsl" />
-    <None Include="Renderers\Shaders\Forward\vertex_shader.glsl" />
+    <None Include="Particles\Shaders\particles.geom.glsl" />
+    <None Include="Particles\Shaders\particles.frag.glsl" />
+    <None Include="Particles\Shaders\particles.vert.glsl" />
+    <None Include="Physics\Bullet\Shaders\lines.frag.glsl" />
+    <None Include="Physics\Bullet\Shaders\lines.vert.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\dirlight.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\depth.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\pointlight.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\pointlight.vert.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\scene_composition.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\spotlight.frag.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\spotlight.vert.glsl" />
+    <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.vert.glsl" />
+    <None Include="Renderers\ForwardRenderer\Shaders\forward.frag.glsl" />
+    <None Include="Renderers\ForwardRenderer\Shaders\forward.vert.glsl" />
+    <None Include="Sprites\Shaders\sprite.frag.glsl" />
+    <None Include="Sprites\Shaders\sprite.vert.glsl" />
+    <None Include="Texts\Shaders\text.frag.glsl" />
+    <None Include="Texts\Shaders\text.vert.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{544E7486-CC2E-42B8-9DA3-D76AEE59AA58}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Wasabi</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -186,6 +220,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(VULKAN_SDK)\Include;$(OPENAL_SDK)\include;$(BULLET_PATH)\src;$(IncludePath)</IncludePath>
     <LibraryPath>$(VULKAN_SDK)\Lib32;$(OPENAL_SDK)\libs\Win32;$(LibraryPath)</LibraryPath>
+    <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -199,6 +234,12 @@
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Command>python compile-glsl-code.py</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Compiling built-in GLSL code</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -228,6 +269,18 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <PreBuildEvent>
+      <Command>python compile-glsl-code.py</Command>
+      <Message>Compiling built-in GLSL code</Message>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
