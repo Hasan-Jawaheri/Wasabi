@@ -47,7 +47,7 @@ vec4 PointLight(vec3 pos, vec3 norm) {
 }
 
 void main() {
-	vec2 uv = (inPos.xy/inPos.w + 1) / 2;
+	vec2 uv = (inPos.xy / inPos.w + 1) / 2;
 	float z = texture(depthTexture, uv).r;
 	float x = uv.x * 2.0f - 1.0f;
 	float y = uv.y * 2.0f - 1.0f;

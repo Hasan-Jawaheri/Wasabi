@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ ParticlesDemo
+#define _DEMO_STATE_CLASSNAME_ FilesDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo
@@ -122,8 +122,8 @@ void WasabiTester::Cleanup() {
 	SwitchState(nullptr);
 }
 
-WRenderer* WasabiTester::CreateRenderer() {
-	return m_state->CreateRenderer();
+WError WasabiTester::SetupRenderer() {
+	return m_state->SetupRenderer();
 }
 
 WPhysicsComponent* WasabiTester::CreatePhysicsComponent() {
@@ -131,6 +131,10 @@ WPhysicsComponent* WasabiTester::CreatePhysicsComponent() {
 	if (physics)
 		return physics;
 	return Wasabi::CreatePhysicsComponent();
+}
+
+WSoundComponent* WasabiTester::CreateSoundComponent() {
+	return m_state->CreateSoundComponent();
 }
 
 void WasabiTester::SetCameraPosition(WVector3 pos) {

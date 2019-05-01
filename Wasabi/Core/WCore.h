@@ -246,10 +246,10 @@ protected:
 	/**
 	 * This function can be overloaded by the application. This function is
 	 * called by the engine in StartEngine() and will give the application a
-	 * chance to set the renderer of the engine. Default implementation
-	 * will create a deferred renderer (WDeferredRenderer).
+	 * chance to setup renderer of the engine. Default implementation
+	 * will call WInitializeDeferredRenderer().
 	 */
-	virtual class WRenderer* CreateRenderer();
+	virtual WError SetupRenderer();
 
 	/**
 	* This function can be overloaded by the application. This function is

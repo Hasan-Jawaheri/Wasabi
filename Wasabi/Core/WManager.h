@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include "WBase.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -44,8 +45,8 @@ template<typename T>
 class WManager {
 protected:
 	/** a hash table of all entities registered */
-	std::vector<T*> m_entities[W_HASHTABLESIZE];
-	std::unordered_map<std::string, T*> m_entitiesByName;
+	std::vector<WBase*> m_entities[W_HASHTABLESIZE];
+	std::unordered_map<std::string, WBase*> m_entitiesByName;
 
 	/**
 	 * This function must be implemented by a child class. It should return the
@@ -104,7 +105,7 @@ public:
 		entity->SetManager((void*)this);
 		std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Added to the manager.\n";
 		for (auto it = m_changeCallbacks.begin(); it != m_changeCallbacks.end(); it++)
-			it->second(entity, true);
+			it->second((T*)entity, true);
 	}
 
 	/**
@@ -172,7 +173,7 @@ public:
 	T* GetEntity(std::string name) const {
 		auto it = m_entitiesByName.find(name.c_str());
 		if (it != m_entitiesByName.end())
-			return it->second;
+			return (T*)it->second;
 		return nullptr;
 	}
 
@@ -185,7 +186,7 @@ public:
 		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
 		{
 			if (index < m_entities[j].size())
-				return m_entities[j][index];
+				return (T*)m_entities[j][index];
 			index -= m_entities[j].size();
 		}
 		return nullptr;

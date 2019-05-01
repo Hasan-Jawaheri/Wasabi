@@ -15,13 +15,8 @@ PhysicsDemo::PhysicsDemo(Wasabi* const app) : WTestState(app) {
 void PhysicsDemo::Load() {
 	m_app->PhysicsComponent->Start();
 
-	//WGeometry* ground = new WGeometry(m_app);
-	//ground->CreatePlain(100.0f, 2, 2);
-	WGeometry* ground;
-	WFile F(m_app);
-	F.Open("Media/track01_.3ds.WSBI");
-	F.LoadAsset<WGeometry>(F.GetAssetInfo(0).first, &ground, WGeometry::LoadArgs());
-	F.Close();
+	WGeometry* ground = new WGeometry(m_app);
+	ground->CreatePlain(100.0f, 2, 2);
 
 	m_ground = m_app->ObjectManager->CreateObject();
 	m_ground->SetGeometry(ground);

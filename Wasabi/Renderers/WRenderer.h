@@ -46,25 +46,6 @@ class WRenderer {
 	friend class Wasabi;
 	friend int RunWasabi(class Wasabi*);
 
-	/**
-	 * Initializes the implementation-independent components of the renderer,
-	 * such as the semaphores and the swap chain.
-	 * @return Error code, see WError.h
-	 */
-	virtual WError _Initialize();
-
-	/**
-	 * Begin rendering a frame. This should call the implementation-specific
-	 * Render(). This function is responsible for semaphore synchronization and
-	 * swap chain presentation.
-	 */
-	virtual void _Render();
-
-	/**
-	 * Frees the implementation-independent resources allocated by the renderer.
-	 */
-	virtual void _Cleanup();
-
 public:
 	WRenderer(class Wasabi* const app);
 
@@ -75,14 +56,13 @@ public:
 	 * Wasabi::StartEngine() call.
 	 * @return Error code, see WError.h
 	 */
-	virtual WError Initiailize() = 0;
+	WError Initialize();
 
 	/**
-	 * Called during Wasabi's Wasabi::StartEngine() call after WRenderer::Initialize()
-	 * and after initialization of managers.
-	 * @return Error code, see WError.h
+	 * Begin rendering a frame. This function is responsible for semaphore
+	 * synchronization and swap chain presentation.
 	 */
-	virtual WError LoadDependantResources();
+	void Render();
 
 	/**
 	 * Frees all resources allocated by the renderer. This function should be
@@ -90,7 +70,7 @@ public:
 	 * cleanup procedure. For a renderer bound to Wasabi, this function will be
 	 * called before the application closes.
 	 */
-	virtual void Cleanup() = 0;
+	void Cleanup();
 
 	/**
 	 * Notifies the renderer of a change in screen (window) size. This function
@@ -102,7 +82,7 @@ public:
 	 * @param  height New screen (window) height
 	 * @return        Error code, see WError
 	 */
-	virtual WError Resize(uint width, uint height);
+	WError Resize(uint width, uint height);
 
 	/**
 	 * Destroys the previously set render stages and assigns the new ones. This
@@ -167,7 +147,7 @@ public:
 	 * @param type  Type of the requested sampler
 	 * @return      A handle of a usable Vulkan image sampler
 	 */
-	virtual VkSampler GetTextureSampler(W_TEXTURE_SAMPLER_TYPE type = TEXTURE_SAMPLER_DEFAULT) const = 0;
+	VkSampler GetTextureSampler(W_TEXTURE_SAMPLER_TYPE type = TEXTURE_SAMPLER_DEFAULT) const;
 
 	/**
 	 * Retrieves the primary command buffer used in the current frame (should be
@@ -190,7 +170,7 @@ public:
 	 */
 	VkQueue GetQueue() const;
 
-protected:
+private:
 	/** Pointer to the Wasabi application */
 	class Wasabi* m_app;
 	/** Vulkan virtual device */
@@ -199,6 +179,8 @@ protected:
 	VkQueue m_queue;
 	/** Vulkan swap chain */
 	VulkanSwapChain* m_swapChain;
+	/** Default Vulkan sampler */
+	VkSampler m_sampler;
 	/** Currently set rendering stages */
 	std::vector<class WRenderStage*> m_renderStages;
 	/** Currently set rendering stages, stored in an unordered map for quick access */

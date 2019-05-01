@@ -7,15 +7,15 @@
 
 WRenderer::WRenderer(Wasabi* const app) : m_app(app) {
 	m_queue = VK_NULL_HANDLE;
+	m_sampler = VK_NULL_HANDLE;
 }
 
-void WRenderer::_Cleanup() {
+void WRenderer::Cleanup() {
+	m_app->MemoryManager->ReleaseSampler(m_sampler, m_app->GetCurrentBufferingIndex());
 	if (m_queue)
 		vkQueueWaitIdle(m_queue);
 	m_perBufferResources.Destroy(m_app);
 	SetRenderingStages(std::vector<WRenderStage*>({}));
-
-	Cleanup();
 }
 
 VkResult WRenderer::PerBufferResources::Create(Wasabi* app, uint numBuffers) {
@@ -75,27 +75,43 @@ void WRenderer::PerBufferResources::Destroy(Wasabi* app) {
 	memoryFences.clear();
 }
 
-WError WRenderer::LoadDependantResources() {
-	return W_SUCCEEDED;
-}
-
-WError WRenderer::_Initialize() {
-	_Cleanup();
+WError WRenderer::Initialize() {
+	Cleanup();
 
 	m_device = m_app->GetVulkanDevice();
 	m_queue = m_app->GetVulkanGraphicsQeueue();
-
 	m_swapChain = m_app->GetSwapChain();
+
+	//
+	// Create the texture sampler
+	//
+	VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
+	sampler.magFilter = VK_FILTER_LINEAR;
+	sampler.minFilter = VK_FILTER_LINEAR;
+	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	sampler.mipLodBias = 0.0f;
+	sampler.compareOp = VK_COMPARE_OP_NEVER;
+	sampler.minLod = 0.0f;
+	// Max level-of-detail should match mip level count
+	sampler.maxLod = 1;
+	// Enable anisotropic filtering
+	sampler.maxAnisotropy = 8;
+	sampler.anisotropyEnable = VK_TRUE;
+	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	VkResult err = vkCreateSampler(m_device, &sampler, nullptr, &m_sampler);
+	if (err != VK_SUCCESS)
+		return WError(W_OUTOFMEMORY);
 
 	//
 	// Setup swap chain and render target
 	//
-	Resize(m_app->WindowAndInputComponent->GetWindowWidth(), m_app->WindowAndInputComponent->GetWindowHeight());
-
-	return Initiailize();
+	return Resize(m_app->WindowAndInputComponent->GetWindowWidth(), m_app->WindowAndInputComponent->GetWindowHeight());
 }
 
-void WRenderer::_Render() {
+void WRenderer::Render() {
 	// wait for the fence to be signalled (by vkQueueSubmit of the last frame that used this buffer index (m_perBufferResources.curIndex))
 	VkResult err = vkWaitForFences(m_device, 1, &m_perBufferResources.memoryFences[m_perBufferResources.curIndex], VK_TRUE, -1);
 	if (err == VK_SUCCESS) {
@@ -388,3 +404,8 @@ uint WRenderer::GetCurrentBufferingIndex() const {
 VkQueue WRenderer::GetQueue() const {
 	return m_queue;
 }
+
+VkSampler WRenderer::GetTextureSampler(W_TEXTURE_SAMPLER_TYPE type) const {
+	return m_sampler;
+}
+

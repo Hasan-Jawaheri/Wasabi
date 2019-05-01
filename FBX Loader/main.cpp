@@ -148,11 +148,11 @@ class FBXLoader : public Wasabi {
 
 public:
 
-	virtual WRenderer* CreateRenderer() {
+	virtual WError SetupRenderer() {
 		if (true)
-			return new WForwardRenderer(this);
+			return WInitializeForwardRenderer(this);
 		else
-			return new WDeferredRenderer(this);
+			return WInitializeDeferredRenderer(this);
 	}
 
 	WWindowAndInputComponent* CreateWindowAndInputComponent() {

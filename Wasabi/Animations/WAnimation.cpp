@@ -5,9 +5,9 @@ WAnimationManager::WAnimationManager(Wasabi* const app) : WManager<WAnimation>(a
 WAnimationManager::~WAnimationManager() {
 }
 void WAnimationManager::Update(float fDeltaTime) {
-	for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-		for (unsigned int i = 0; i < m_entities[j].size(); i++)
-			m_entities[j][i]->Update(fDeltaTime);
+	unsigned int entitiyCount = GetEntitiesCount();
+	for (unsigned int i = 0; i < entitiyCount; i++)
+		GetEntityByIndex(i)->Update(fDeltaTime);
 }
 std::string WAnimationManager::GetTypeName() const {
 	return "Animation";

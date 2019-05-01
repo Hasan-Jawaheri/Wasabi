@@ -78,5 +78,5 @@ void main() {
 	//clip(normalT.x + normalT.y + normalT.z - 0.01); // reject pixel
 	vec3 pixelNormal = normalize((normalT.xyz * 2.0f) - 1.0f);
 	vec4 light = Spotlight(pixelPosition, pixelNormal);
-	outFragColor = light * uboPerLight.intensity; //scale by intensity
+	outFragColor = light* uboPerLight.intensity; //scale by intensity
 }

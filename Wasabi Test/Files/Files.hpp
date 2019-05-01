@@ -16,7 +16,7 @@ public:
 	virtual void Update(float fDeltaTime);
 	virtual void Cleanup();
 
-	virtual WRenderer* CreateRenderer() { return new WForwardRenderer(m_app); }
+	virtual WError SetupRenderer() { return WInitializeForwardRenderer(m_app); }
 	virtual WPhysicsComponent* CreatePhysicsComponent() {
 		WBulletPhysics* physics = new WBulletPhysics(m_app);
 		WError werr = physics->Initialize();

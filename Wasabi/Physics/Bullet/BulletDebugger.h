@@ -44,7 +44,7 @@ public:
 	virtual int getDebugMode() const;
 	virtual void clearLines();
 
-	virtual WRenderer* CreateRenderer();
+	virtual WError SetupRenderer();
 	virtual WPhysicsComponent* CreatePhysicsComponent();
 
 	static void Thread(void* debugger_ptr);

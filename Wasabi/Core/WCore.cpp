@@ -1,4 +1,6 @@
 #include "../Core/WCore.h"
+#include "../Renderers/WRenderer.h"
+#include "../Renderers/ForwardRenderer/WForwardRenderer.h"
 #include "../Renderers/DeferredRenderer/WDeferredRenderer.h"
 #include "../WindowAndInput/WWindowAndInputComponent.h"
 #include "../Objects/WObject.h"
@@ -59,7 +61,7 @@ int RunWasabi(Wasabi* app) {
 			if (app->AnimationManager)
 				app->AnimationManager->Update(deltaTime);
 			if (app->Renderer)
-				app->Renderer->_Render();
+				app->Renderer->Render();
 
 			numFrames++;
 
@@ -164,7 +166,7 @@ void Wasabi::_DestroyResources() {
 	if (WindowAndInputComponent)
 		WindowAndInputComponent->Cleanup();
 	if (Renderer)
-		Renderer->_Cleanup();
+		Renderer->Cleanup();
 	if (PhysicsComponent)
 		PhysicsComponent->Cleanup();
 
@@ -372,7 +374,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	if (!werr)
 		return werr;
 
-	Renderer = CreateRenderer();
+	Renderer = new WRenderer(this);
 	SoundComponent = CreateSoundComponent();
 	TextComponent = CreateTextComponent();
 	PhysicsComponent = CreatePhysicsComponent();
@@ -406,7 +408,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	if (!CameraManager->Load())
 		return WError(W_ERRORUNK);
 
-	werr = Renderer->_Initialize();
+	werr = Renderer->Initialize();
 	if (!werr)
 		return werr;
 
@@ -423,7 +425,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	if (!TerrainManager->Load())
 		return WError(W_ERRORUNK);
 
-	werr = Renderer->LoadDependantResources();
+	werr = SetupRenderer();
 	if (!werr)
 		return werr;
 
@@ -474,8 +476,8 @@ VkPhysicalDeviceFeatures Wasabi::GetDeviceFeatures() {
 	return features;
 }
 
-WRenderer* Wasabi::CreateRenderer() {
-	return new WDeferredRenderer(this);
+WError Wasabi::SetupRenderer() {
+	return WInitializeDeferredRenderer(this);
 }
 
 WSoundComponent* Wasabi::CreateSoundComponent() {

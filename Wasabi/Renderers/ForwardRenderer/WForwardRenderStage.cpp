@@ -92,6 +92,8 @@ WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_stageDescription.target = RENDER_STAGE_TARGET_BACK_BUFFER;
 	m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
 
+	if (m_app->engineParams.find("maxLights") == m_app->engineParams.end())
+		m_app->engineParams.insert(std::pair<std::string, void*>("maxLights", (void*)16));
 	m_lights.resize((int)m_app->engineParams["maxLights"]);
 
 	m_currentMatId = 0;

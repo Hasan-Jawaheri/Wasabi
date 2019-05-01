@@ -68,14 +68,15 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 		for (unsigned int i = m_entities[j].size() - 1; i >= 0 && i != UINT_MAX; i--) {
 			if (((m_entities[j][i]->GetID() >= iObjStartID && m_entities[j][i]->GetID() <= iObjEndID) ||
 				(!iObjStartID && !iObjEndID)) && m_entities[j][i]->Valid()) {
-				if (m_entities[j][i]->Hidden())
+				WObject* object = (WObject*)m_entities[j][i];
+				if (object->Hidden())
 					continue;
 
 				unsigned int hit = 0;
-				WGeometry* temp = m_entities[j][i]->GetGeometry();
+				WGeometry* temp = object->GetGeometry();
 				if (temp) {
 					//these calculations are per-subset
-					WMatrix inverseW = WMatrixInverse(m_entities[j][i]->GetWorldMatrix());
+					WMatrix inverseW = WMatrixInverse(object->GetWorldMatrix());
 
 					WVector3 subsetPos = WVec3TransformCoord(pos, inverseW);
 					WVector3 subsetDir = WVec3TransformNormal(dir, inverseW);
@@ -84,11 +85,11 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 					WVector3 boxSize = (temp->GetMaxPoint() - temp->GetMinPoint()) / 2.0f;
 
 					pickStruct p;
-					p.obj = m_entities[j][i];
+					p.obj = object;
 					if (WUtil::RayIntersectBox(boxSize, subsetPos, subsetDir, boxPos)) {
 						WVector3 pt;
 						bool b = temp->Intersect(subsetPos, subsetDir, &pt, &p.uv, &p.face);
-						WMatrix m = m_entities[j][i]->GetWorldMatrix();
+						WMatrix m = object->GetWorldMatrix();
 						p.pos.x = (pt.x * m(0, 0)) + (pt.y * m(1, 0)) + (pt.z * m(2, 0)) + (1 * m(3, 0));
 						p.pos.y = (pt.x * m(0, 1)) + (pt.y * m(1, 1)) + (pt.z * m(2, 1)) + (1 * m(3, 1));
 						p.pos.z = (pt.x * m(0, 2)) + (pt.y * m(1, 2)) + (pt.z * m(2, 2)) + (1 * m(3, 2));
@@ -98,7 +99,7 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 								if (faceIndex) *faceIndex = p.face;
 								if (_pt) *_pt = pt;
 								if (uv) *uv = p.uv;
-								return m_entities[j][i];
+								return object;
 							}
 							pickedObjects.push_back(p);
 						}

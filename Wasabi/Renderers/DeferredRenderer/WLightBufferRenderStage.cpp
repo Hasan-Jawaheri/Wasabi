@@ -254,7 +254,7 @@ WError WLightBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, u
 					material->SetVariableVector3("lightDir", WVec3TransformNormal(light->GetLVector(), cam->GetViewMatrix()));
 					material->SetVariableVector3("position", WVec3TransformCoord(light->GetPosition(), cam->GetViewMatrix()));
 					material->SetVariableVector3("lightColor", WVector3(lightColor.r, lightColor.g, lightColor.b));
-					material->SetVariableFloat("lightSpec", lightColor.a); // specular power is store in alpha component
+					material->SetVariableFloat("lightSpec", lightColor.a); // specular power is stored in alpha component
 					material->SetVariableFloat("intensity", light->GetIntensity());
 					material->SetVariableFloat("range", light->GetRange());
 					material->SetVariableFloat("minCosAngle", light->GetMinCosAngle());

@@ -12,11 +12,9 @@ WTerrainManager::~WTerrainManager() {
 }
 
 void WTerrainManager::Render(WRenderTarget* rt) {
-	for (int i = 0; i < W_HASHTABLESIZE; i++) {
-		for (int j = 0; j < m_entities[i].size(); j++) {
-			m_entities[i][j]->Render(rt);
-		}
-	}
+	unsigned int entitiyCount = GetEntitiesCount();
+	for (unsigned int i = 0; i < entitiyCount; i++)
+		GetEntityByIndex(i)->Render(rt);
 }
 
 std::string WTerrainManager::GetTypeName() const {

@@ -27,6 +27,14 @@ public:
 	static W_SHADER_DESC GetDesc(int maxLights);
 };
 
+/*
+ * Implementation of a forward rendering stage. Forward rendering is the simplest
+ * rendering technique in graphics. Forward rendering renders every object
+ * (or terrain, particles, etc...) straight to the backbuffer in one pass.
+ * Forward rendering is usually fast as it has a low overhead.
+ * Creating this stage adds the following engine parameters:
+ * * "maxLights": Maximum number of lights that can be rendered at once (Default is (void*)16)
+ */
 class WForwardRenderStage : public WRenderStage {
 	class WEffect* m_defaultFX;
 	class WMaterial* m_perFrameMaterial;

@@ -2,7 +2,7 @@
 #include "../../Cameras/WCamera.h"
 #include "../../WindowAndInput/WWindowAndInputComponent.h"
 #include "../../Texts/WText.h"
-#include "../../Renderers/ForwardRenderer/WForwardRenderer.h"
+#include "../../Renderers/WRenderer.h"
 #include "../../Renderers/Common/WSpritesRenderStage.h"
 #include "../../Objects/WObject.h"
 #include "../../Geometries/WGeometry.h"
@@ -279,8 +279,10 @@ void BulletDebugger::clearLines() {
 	m_lines[1].clear();
 }
 
-WRenderer* BulletDebugger::CreateRenderer() {
-	return new WForwardRenderer(this);
+WError BulletDebugger::SetupRenderer() {
+	return Renderer->SetRenderingStages({
+		new LinesRenderStage(this),
+	});
 }
 
 WPhysicsComponent* BulletDebugger::CreatePhysicsComponent() {

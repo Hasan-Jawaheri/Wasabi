@@ -15,5 +15,5 @@ public:
 	virtual void Update(float fDeltaTime);
 	virtual void Cleanup();
 
-	virtual WRenderer* CreateRenderer() { return new WDeferredRenderer(m_app); }
+	virtual WError SetupRenderer() { return WInitializeDeferredRenderer(m_app); }
 };
