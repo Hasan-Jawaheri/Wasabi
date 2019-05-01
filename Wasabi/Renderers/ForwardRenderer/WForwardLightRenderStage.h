@@ -13,16 +13,16 @@ struct LightStruct {
 	int pad[3];
 };
 
-class WForwardRenderStageObjectVS : public WShader {
+class WForwardLightRenderStageObjectVS : public WShader {
 public:
-	WForwardRenderStageObjectVS(class Wasabi* const app);
+	WForwardLightRenderStageObjectVS(class Wasabi* const app);
 	virtual void Load(bool bSaveData = false);
 	static W_SHADER_DESC GetDesc(int maxLights);
 };
 
-class WForwardRenderStageObjectPS : public WShader {
+class WForwardLightRenderStageObjectPS : public WShader {
 public:
-	WForwardRenderStageObjectPS(class Wasabi* const app);
+	WForwardLightRenderStageObjectPS(class Wasabi* const app);
 	virtual void Load(bool bSaveData = false);
 	static W_SHADER_DESC GetDesc(int maxLights);
 };

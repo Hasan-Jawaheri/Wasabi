@@ -7,9 +7,9 @@
 #include "../../Materials/WMaterial.h"
 #include "../../Cameras/WCamera.h"
 
-WForwardRenderStageObjectVS::WForwardRenderStageObjectVS(Wasabi* const app) : WShader(app) {}
+WForwardLightRenderStageObjectVS::WForwardLightRenderStageObjectVS(Wasabi* const app) : WShader(app) {}
 
-void WForwardRenderStageObjectVS::Load(bool bSaveData) {
+void WForwardLightRenderStageObjectVS::Load(bool bSaveData) {
 	int maxLights = (int)m_app->engineParams["maxLights"];
 	m_desc = GetDesc(maxLights);
 	vector<byte> code = {
@@ -18,7 +18,7 @@ void WForwardRenderStageObjectVS::Load(bool bSaveData) {
 	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 }
 
-W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
+W_SHADER_DESC WForwardLightRenderStageObjectVS::GetDesc(int maxLights) {
 	W_SHADER_DESC desc;
 	desc.type = W_VERTEX_SHADER;
 	desc.bound_resources = {
@@ -53,9 +53,9 @@ W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
 	return desc;
 }
 
-WForwardRenderStageObjectPS::WForwardRenderStageObjectPS(Wasabi* const app) : WShader(app) {}
+WForwardLightRenderStageObjectPS::WForwardLightRenderStageObjectPS(Wasabi* const app) : WShader(app) {}
 
-void WForwardRenderStageObjectPS::Load(bool bSaveData) {
+void WForwardLightRenderStageObjectPS::Load(bool bSaveData) {
 	int maxLights = (int)m_app->engineParams["maxLights"];
 	m_desc = GetDesc(maxLights);
 	vector<byte> code = {
@@ -64,12 +64,12 @@ void WForwardRenderStageObjectPS::Load(bool bSaveData) {
 	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 }
 
-W_SHADER_DESC WForwardRenderStageObjectPS::GetDesc(int maxLights) {
+W_SHADER_DESC WForwardLightRenderStageObjectPS::GetDesc(int maxLights) {
 	W_SHADER_DESC desc;
 	desc.type = W_FRAGMENT_SHADER;
 	desc.bound_resources = {
-		WForwardRenderStageObjectVS::GetDesc(maxLights).bound_resources[0],
-		WForwardRenderStageObjectVS::GetDesc(maxLights).bound_resources[1],
+		WForwardLightRenderStageObjectVS::GetDesc(maxLights).bound_resources[0],
+		WForwardLightRenderStageObjectVS::GetDesc(maxLights).bound_resources[1],
 		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture", {}, 8),
 	};
 	return desc;
@@ -88,12 +88,12 @@ WForwardLightRenderStage::WForwardLightRenderStage(Wasabi* const app) : WForward
 }
 
 class WEffect* WForwardLightRenderStage::LoadRenderEffect() {
-	WForwardRenderStageObjectVS* vs = new WForwardRenderStageObjectVS(m_app);
+	WForwardLightRenderStageObjectVS* vs = new WForwardLightRenderStageObjectVS(m_app);
 	vs->SetName("DefaultForwardVS");
 	m_app->FileManager->AddDefaultAsset(vs->GetName(), vs);
 	vs->Load();
 
-	WForwardRenderStageObjectPS* ps = new WForwardRenderStageObjectPS(m_app);
+	WForwardLightRenderStageObjectPS* ps = new WForwardLightRenderStageObjectPS(m_app);
 	ps->SetName("DefaultForwardPS");
 	m_app->FileManager->AddDefaultAsset(ps->GetName(), ps);
 	ps->Load();
