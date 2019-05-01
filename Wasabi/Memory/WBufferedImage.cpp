@@ -17,11 +17,15 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 	VkMemoryPropertyFlags imageMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // device local means only GPU can access it, more efficient
 	imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-	m_aspect = format == VK_FORMAT_D16_UNORM || format == VK_FORMAT_X8_D24_UNORM_PACK32 ||
-		format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_S8_UINT ||
-		format == VK_FORMAT_D16_UNORM_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT ||
-		format == VK_FORMAT_D32_SFLOAT_S8_UINT
-		? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) : VK_IMAGE_ASPECT_COLOR_BIT;
+	m_aspect =
+		(format == VK_FORMAT_D16_UNORM || format == VK_FORMAT_X8_D24_UNORM_PACK32 || format == VK_FORMAT_D32_SFLOAT)
+			? VK_IMAGE_ASPECT_DEPTH_BIT
+		: (format == VK_FORMAT_S8_UINT
+			? VK_IMAGE_ASPECT_STENCIL_BIT
+		: ((format == VK_FORMAT_D16_UNORM_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT_S8_UINT)
+			? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)
+		: VK_IMAGE_ASPECT_COLOR_BIT));
+
 	m_usage = imageUsage;
 	m_width = width;
 	m_height = height;
