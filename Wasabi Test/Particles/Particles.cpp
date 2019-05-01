@@ -14,7 +14,7 @@ void ParticlesDemo::Load() {
 	((WDefaultParticleBehavior*)m_particles[0]->GetBehavior())->m_colorGradient = {
 		std::make_pair(WColor(0xf7e01c00), 0.3f),
 		std::make_pair(WColor(0xf7691cff), 0.4f),
-		std::make_pair(WColor(0x0f0f0f00), 0.3f),
+		std::make_pair(WColor(0x0f0f0f11), 0.3f),
 		std::make_pair(WColor(0x0f0f0f00), 0.0f),
 	};
 	m_particles[0]->SetPriority(0);
@@ -85,7 +85,7 @@ void ParticlesDemo::Load() {
 	m_particles[3]->GetMaterial()->SetTexture("diffuseTexture", texture);
 	W_SAFE_REMOVEREF(texture);
 
-	((WasabiTester*)m_app)->SetCameraPosition(WVector3(0, 2, 0));
+	((WasabiTester*)m_app)->SetCameraPosition(WVector3(0, 3, 0));
 }
 
 void ParticlesDemo::Update(float fDeltaTime) {
