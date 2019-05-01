@@ -4,6 +4,7 @@
 #include "../../Images/WRenderTarget.h"
 #include "../../Particles/WParticles.h"
 #include "../../Materials/WEffect.h"
+#include "../../Materials/WMaterial.h"
 
 WParticlesRenderStage::ParticlesKey::ParticlesKey(WParticles* par) {
 	particles = par;
@@ -50,10 +51,10 @@ WError WParticlesRenderStage::Initialize(std::vector<WRenderStage*>& previousSta
 
 void WParticlesRenderStage::OnParticlesChange(WParticles* p, bool added) {
 	if (added) {
-		if (!p->GetDefaultEffect()) {
-			auto it = this->m_particleEffects.find(p->GetType());
-			if (it != this->m_particleEffects.end())
-				p->AddEffect(it->second);
+		auto it = this->m_particleEffects.find(p->GetType());
+		if (it != this->m_particleEffects.end()) {
+			p->AddEffect(it->second);
+			p->GetMaterial(it->second)->SetName("ParticlesDefaultMaterial" + std::to_string(this->m_currentMatId));
 		}
 		ParticlesKey key(p);
 		this->m_allParticles.insert(std::make_pair(key, p));

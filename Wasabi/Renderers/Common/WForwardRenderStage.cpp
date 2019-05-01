@@ -42,10 +42,8 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 void WForwardRenderStage::OnObjectChange(class WObject* object, bool added) {
 	if (added) {
-		if (!object->GetDefaultEffect()) {
-			object->AddEffect(this->m_renderEffect, 0);
-			object->GetMaterial(this->m_renderEffect)->SetName("ForwardRendererMaterial" + std::to_string(this->m_currentMatId++));
-		}
+		object->AddEffect(this->m_renderEffect, 0);
+		object->GetMaterial(this->m_renderEffect)->SetName("Material-" + m_stageDescription.name + std::to_string(this->m_currentMatId++));
 		ObjectKey key(object);
 		this->m_allObjects.insert(std::make_pair(key, object));
 	} else {
@@ -82,7 +80,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 		std::vector<ObjectKey> reindexObjects;
 		for (auto it = m_allObjects.begin(); it != m_allObjects.end(); it++) {
 			WObject* object = it->second;
-			WEffect* effect = object->GetDefaultEffect();
+			WEffect* effect = m_renderEffect;
 			WMaterial* material = object->GetMaterial(effect);
 			if (material && object->WillRender(rt)) {
 				bool isAnimated = object->GetAnimation() != nullptr;

@@ -25,6 +25,7 @@ WSpritesRenderStage::WSpritesRenderStage(Wasabi* const app, bool backbuffer) : W
 	m_stageDescription.flags = RENDER_STAGE_FLAG_SPRITES_RENDER_STAGE;
 
 	m_defaultSpriteFX = nullptr;
+	m_currentMatId = 0;
 }
 
 WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
@@ -45,8 +46,8 @@ WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 void WSpritesRenderStage::OnSpriteChange(class WSprite* s, bool added) {
 	if (added) {
-		if (!s->GetDefaultEffect())
-			s->AddEffect(this->m_defaultSpriteFX);
+		s->AddEffect(this->m_defaultSpriteFX);
+		s->GetMaterial(this->m_defaultSpriteFX)->SetName("SpriteDefaultMaterial" + std::to_string(this->m_currentMatId));
 		SpriteKey key(s);
 		this->m_allSprites.insert(std::make_pair(key, s));
 	} else {

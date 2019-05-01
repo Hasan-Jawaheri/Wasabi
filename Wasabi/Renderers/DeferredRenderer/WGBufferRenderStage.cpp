@@ -140,10 +140,8 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 void WGBufferRenderStage::OnObjectChange(class WObject* object, bool added) {
 	if (added) {
-		if (!object->GetDefaultEffect()) {
-			object->AddEffect(this->m_GBufferFX, 0);
-			object->GetMaterial(this->m_GBufferFX)->SetName("GBufferDefaultMaterial" + std::to_string(this->m_currentMatId));
-		}
+		object->AddEffect(this->m_GBufferFX, 0);
+		object->GetMaterial(this->m_GBufferFX)->SetName("GBufferDefaultMaterial" + std::to_string(this->m_currentMatId));
 		ObjectKey key(object);
 		this->m_allObjects.insert(std::make_pair(key, object));
 	} else {
@@ -185,7 +183,7 @@ WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 		std::vector<ObjectKey> reindexObjects;
 		for (auto it = m_allObjects.begin(); it != m_allObjects.end(); it++) {
 			WObject* object = it->second;
-			WEffect* effect = object->GetDefaultEffect();
+			WEffect* effect = m_GBufferFX;
 			WMaterial* material = object->GetMaterial(effect);
 			if (material && object->WillRender(rt)) {
 				bool isAnimated = object->GetAnimation() != nullptr;

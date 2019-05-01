@@ -7,6 +7,8 @@
 class WSpritesRenderStage : public WRenderStage {
 	/** Default sprite effect */
 	class WEffect* m_defaultSpriteFX;
+	/** A counter to generate unique material names */
+	uint m_currentMatId;
 
 	struct SpriteKey {
 		uint priority;

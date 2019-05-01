@@ -10,7 +10,7 @@
 WForwardLightRenderStageObjectVS::WForwardLightRenderStageObjectVS(Wasabi* const app) : WShader(app) {}
 
 void WForwardLightRenderStageObjectVS::Load(bool bSaveData) {
-	int maxLights = (int)m_app->engineParams["maxLights"];
+	int maxLights = m_app->engineParams.find("maxLights") != m_app->engineParams.end() ? (int)m_app->engineParams["maxLights"] : 0;
 	m_desc = GetDesc(maxLights);
 	vector<byte> code = {
 		#include "Shaders/forward.vert.glsl.spv"

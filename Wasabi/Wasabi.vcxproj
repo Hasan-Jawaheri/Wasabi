@@ -49,6 +49,7 @@
     <ClCompile Include="Physics\Bullet\WBulletRigidBody.cpp" />
     <ClCompile Include="Physics\Havok\WHavokPhysics.cpp" />
     <ClCompile Include="Physics\WRigidBody.cpp" />
+    <ClCompile Include="Renderers\Common\WBackfaceDepthRenderStage.cpp" />
     <ClCompile Include="Renderers\Common\WForwardRenderStage.cpp" />
     <ClCompile Include="Renderers\Common\WTextRenderStage.cpp" />
     <ClCompile Include="Renderers\Common\WParticlesRenderStage.cpp" />
@@ -103,6 +104,7 @@
     <ClInclude Include="Physics\Havok\WHavokPhysics.h" />
     <ClInclude Include="Physics\WPhysicsComponent.h" />
     <ClInclude Include="Physics\WRigidBody.h" />
+    <ClInclude Include="Renderers\Common\WBackfaceDepthRenderStage.h" />
     <ClInclude Include="Renderers\Common\WForwardRenderStage.h" />
     <ClInclude Include="Renderers\Common\WTextRenderStage.h" />
     <ClInclude Include="Renderers\Common\WParticlesRenderStage.h" />
@@ -148,6 +150,7 @@
     <None Include="Particles\Shaders\particles.vert.glsl" />
     <None Include="Physics\Bullet\Shaders\lines.frag.glsl" />
     <None Include="Physics\Bullet\Shaders\lines.vert.glsl" />
+    <None Include="Renderers\Common\Shaders\depth.frag.glsl" />
     <None Include="Renderers\DeferredRenderer\Shaders\dirlight.frag.glsl" />
     <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.frag.glsl" />
     <None Include="Renderers\DeferredRenderer\Shaders\depth.frag.glsl" />

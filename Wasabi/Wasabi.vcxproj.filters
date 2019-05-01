@@ -109,6 +109,9 @@
     <Filter Include="Texts\Shaders">
       <UniqueIdentifier>{70b2a32b-c593-44ea-a820-5224a14f26c2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Renderers\Common\Shaders">
+      <UniqueIdentifier>{c42593b3-8f89-49bf-ac41-152d24cf86c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations\WAnimation.cpp">
@@ -254,6 +257,9 @@
     </ClCompile>
     <ClCompile Include="Renderers\ForwardRenderer\WForwardLightRenderStage.cpp">
       <Filter>Renderers\ForwardRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\Common\WBackfaceDepthRenderStage.cpp">
+      <Filter>Renderers\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -471,6 +477,9 @@
     <ClInclude Include="Renderers\ForwardRenderer\WForwardLightRenderStage.h">
       <Filter>Renderers\ForwardRenderer</Filter>
     </ClInclude>
+    <ClInclude Include="Renderers\Common\WBackfaceDepthRenderStage.h">
+      <Filter>Renderers\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Particles\Shaders\particles.geom.glsl">
@@ -532,6 +541,9 @@
     </None>
     <None Include="Texts\Shaders\text.vert.glsl">
       <Filter>Texts\Shaders</Filter>
+    </None>
+    <None Include="Renderers\Common\Shaders\depth.frag.glsl">
+      <Filter>Renderers\Common\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>
