@@ -1,5 +1,5 @@
 #include "RenderTargetTexture.hpp"
-#include <Renderers/ForwardRenderer/WForwardRenderStage.h>
+#include <Renderers/ForwardRenderer/WForwardLightRenderStage.h>
 
 RenderTargetTextureDemo::RenderTargetTextureDemo(Wasabi* const app) : WTestState(app) {
 	rt = nullptr;
@@ -71,7 +71,7 @@ void RenderTargetTextureDemo::Update(float fDeltaTime) {
 	if (rt) {
 		m_app->ObjectManager->GetEntity("plain")->Hide();
 		rt->Begin();
-		m_app->Renderer->GetRenderStage("WForwardRenderStage")->Render(m_app->Renderer, rt, RENDER_FILTER_OBJECTS);
+		m_app->Renderer->GetRenderStage("WForwardLightRenderStage")->Render(m_app->Renderer, rt, RENDER_FILTER_OBJECTS);
 		rt->End();
 		m_app->ObjectManager->GetEntity("plain")->Show();
 	}

@@ -468,14 +468,15 @@ public:
 
 	/**
 	 * Map the index buffer of this geometry. This will fail if there is no
-	 * geometry, the geometry is dynamic or if the geometry is immutable.
+	 * geometry, the geometry is dynamic or if the geometry is immutable. Indices
+	 * are stored in 32-bits-per-index (unsigned int).
 	 *
 	 * Examples:
 	 * Flip this first triangle
 	 * @code
 	 * // Assuming geometry is valid and dynamic
 	 * uint* indices;
-	 * geometry->MapIndexBuffer(&indices);
+	 * geometry->MapIndexBuffer((void**)&indices);
 	 * uint temp = indices[0];
 	 * indices[0] = indices[2];
 	 * indices[2] = temp;
@@ -487,7 +488,7 @@ public:
 	 * @param  flags     Map flags (bitwise OR'd), specifying read/write intention
 	 * @return           Error code, see WError.h
 	 */
-	WError MapIndexBuffer(uint** const ib, W_MAP_FLAGS mapFlags);
+	WError MapIndexBuffer(void** const ib, W_MAP_FLAGS mapFlags);
 
 	/**
 	 * Map the animation buffer of this geometry. This will fail if there is no

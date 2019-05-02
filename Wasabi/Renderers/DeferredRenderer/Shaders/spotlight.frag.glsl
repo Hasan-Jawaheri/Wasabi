@@ -27,39 +27,31 @@ layout(set = 1, binding = 3) uniform UBOPerFrame {
 vec4 PointLight(vec3 pos, vec3 norm) {
 	vec3 lightVec = uboPerLight.position - pos;
 	float d = length(lightVec); // The distance from surface to light.
-	
-	if (d > uboPerLight.range)
-		return vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	
+
 	vec3 lDir = normalize(lightVec);
-	
+
 	// N dot L lighting term
-	float nl = dot(norm, lDir);
-	if (nl <= 0.0f)
-		return vec4(0, 0, 0, 0);
-	
+	float nl = max(0, dot(norm, lDir));
+
 	vec3 camDir = normalize(-pos); // since pos is in view space
-	
+
 	// Calculate specular term
 	vec3 h = normalize(lDir + camDir);
 	float spec = pow(clamp(dot(norm, h), 0, 1), uboPerLight.lightSpec);
-	
-	float xVal = (1.0f - d/uboPerLight.range);
+
+	float xVal = max(0, (1.0f - d / uboPerLight.range));
 	return vec4(uboPerLight.lightColor * nl, spec) * xVal;
 }
 
 vec4 Spotlight(vec3 pos, vec3 norm) {
 	vec4 color = PointLight(pos, norm);
-	if (color.a <= 0.0f)
-		return vec4(0, 0, 0, 0);
 	
 	// The vector from the surface to the light.
 	vec3 lightVec = normalize(uboPerLight.position - pos);
 
 	float cosAngle = dot(-lightVec, uboPerLight.lightDir);
-	if (cosAngle < uboPerLight.minCosAngle)
-		return vec4(0, 0, 0, 0);
-	color *= max((cosAngle - uboPerLight.minCosAngle) / (1.0f-uboPerLight.minCosAngle), 0);
+	float angleFactor = max((cosAngle - uboPerLight.minCosAngle) / (1.0f - uboPerLight.minCosAngle), 0);
+	color *= angleFactor;
 	
 	// Scale color by spotlight factor.
 	return color;

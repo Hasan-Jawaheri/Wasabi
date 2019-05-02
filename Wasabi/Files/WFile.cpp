@@ -27,6 +27,9 @@ WFileManager::~WFileManager() {
 }
 
 void WFileManager::AddDefaultAsset(std::string name, WFileAsset* asset) {
+	auto it = m_defaultAssets.find(name);
+	if (it != m_defaultAssets.end())
+		m_defaultAssets.erase(it);
 	m_defaultAssets.insert(std::make_pair(name, asset));
 }
 

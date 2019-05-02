@@ -10,6 +10,7 @@ layout(set = 0, binding = 0) uniform UBOPerObject {
 	int isAnimated;
 	int isInstanced;
 	vec4 color;
+	int isTextured;
 } uboPerObject;
 
 layout(set = 0, binding = 4) uniform sampler2D diffuseTexture[8];
@@ -23,6 +24,6 @@ layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outNormals;
 
 void main() {
-	outColor = texture(diffuseTexture[inTexIndex], inUV) + uboPerObject.color;
+	outColor = texture(diffuseTexture[inTexIndex], inUV) * uboPerObject.isTextured + uboPerObject.color;
 	outNormals = (vec4(inViewNorm, 1.0) + 1) / 2;
 }

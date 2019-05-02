@@ -326,7 +326,7 @@ WError WMaterial::SetVariableColor(const char* varName, WColor col) {
 	return SetVariableData(varName, &col, sizeof(WColor));
 }
 
-WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
+WError WMaterial::SetVariableData(const char* varName, void* data, size_t len) {
 	VkDevice device = m_app->GetVulkanDevice();
 	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	bool isFound = false;
@@ -338,9 +338,11 @@ WError WMaterial::SetVariableData(const char* varName, void* data, int len) {
 				size_t offset = info->OffsetAtVariable(j);
 				if (varsize < len || offset + len > ubo->descriptorBufferInfos[bufferIndex].range)
 					return WError(W_INVALIDPARAM);
-				memcpy((char*)ubo->data + offset, data, len);
-				for (uint d = 0; d < ubo->dirty.size(); d++)
-					ubo->dirty[d] = true;
+				if (memcmp((char*)ubo->data + offset, data, len) != 0) {
+					memcpy((char*)ubo->data + offset, data, len);
+					for (uint d = 0; d < ubo->dirty.size(); d++)
+						ubo->dirty[d] = true;
+				}
 				isFound = true;
 			}
 		}
@@ -354,7 +356,7 @@ WError WMaterial::SetTexture(int binding_index, WImage* img, uint arrayIndex) {
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
 		if (info->binding_index == binding_index) {
-			if (arrayIndex < m_sampler_info[i].images.size()) {
+			if (arrayIndex < m_sampler_info[i].images.size() && m_sampler_info[i].images[arrayIndex] != img) {
 				if (m_sampler_info[i].images[arrayIndex]) {
 					W_SAFE_REMOVEREF(m_sampler_info[i].images[arrayIndex]);
 				}
@@ -378,7 +380,7 @@ WError WMaterial::SetTexture(std::string name, WImage* img, uint arrayIndex) {
 	for (int i = 0; i < m_sampler_info.size(); i++) {
 		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
 		if (info->name == name) {
-			if (arrayIndex < m_sampler_info[i].images.size()) {
+			if (arrayIndex < m_sampler_info[i].images.size() && m_sampler_info[i].images[arrayIndex] != img) {
 				if (m_sampler_info[i].images[arrayIndex]) {
 					W_SAFE_REMOVEREF(m_sampler_info[i].images[arrayIndex]);
 				}
