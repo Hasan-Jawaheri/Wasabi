@@ -16,6 +16,7 @@
 class WForwardRenderStage : public WRenderStage {
 protected:
 	class WEffect* m_renderEffect;
+	bool m_setEffectDefault;
 	uint m_currentMatId;
 
 	struct ObjectKey {

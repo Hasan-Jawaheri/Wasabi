@@ -9,22 +9,6 @@
 #include "../../Images/WImage.h"
 #include "../../WindowAndInput/WWindowAndInputComponent.h"
 
-class DeferredRendererPSDepth : public WShader {
-public:
-	DeferredRendererPSDepth(class Wasabi* const app) : WShader(app) {}
-
-	virtual void Load(bool bSaveData = false) {
-		m_desc.type = W_FRAGMENT_SHADER;
-		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 0, 0, "colorTexture"), // NOT NECESSARY!
-		};
-		vector<byte> code = {
-			#include "Shaders/depth.frag.glsl.spv"
-		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
-	}
-};
-
 class SceneCompositionPS : public WShader {
 public:
 	SceneCompositionPS(class Wasabi* const app) : WShader(app) {}

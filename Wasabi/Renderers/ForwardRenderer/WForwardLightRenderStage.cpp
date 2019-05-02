@@ -113,6 +113,8 @@ class WEffect* WForwardLightRenderStage::LoadRenderEffect() {
 	if (!err)
 		return nullptr;
 
+	m_setEffectDefault = true; // make this effect the default for objects
+
 	return fx;
 }
 

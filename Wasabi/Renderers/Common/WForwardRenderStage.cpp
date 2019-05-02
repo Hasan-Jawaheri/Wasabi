@@ -22,6 +22,7 @@ const bool WForwardRenderStage::ObjectKey::operator< (const ObjectKey& that) con
 WForwardRenderStage::WForwardRenderStage(Wasabi* const app, bool backbuffer) : WRenderStage(app) {
 	m_currentMatId = 0;
 	m_renderEffect = nullptr;
+	m_setEffectDefault = false;
 }
 
 WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
@@ -42,7 +43,7 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 void WForwardRenderStage::OnObjectChange(class WObject* object, bool added) {
 	if (added) {
-		object->AddEffect(this->m_renderEffect, 0);
+		object->AddEffect(this->m_renderEffect, 0, this->m_setEffectDefault);
 		object->GetMaterial(this->m_renderEffect)->SetName("Material-" + m_stageDescription.name + std::to_string(this->m_currentMatId++));
 		ObjectKey key(object);
 		this->m_allObjects.insert(std::make_pair(key, object));
