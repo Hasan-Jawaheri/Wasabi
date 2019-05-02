@@ -37,7 +37,8 @@ WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (!m_defaultSpriteFX)
 		return WError(W_ERRORUNK);
 
-	for (unsigned int i = 0; i < m_app->SpriteManager->GetEntitiesCount(); i++)
+	unsigned int numEntities = m_app->SpriteManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++)
 		OnSpriteChange(m_app->SpriteManager->GetEntityByIndex(i), true);
 	m_app->SpriteManager->RegisterChangeCallback(m_stageDescription.name, [this](WSprite* s, bool a) { this->OnSpriteChange(s, a); });
 
@@ -71,6 +72,11 @@ void WSpritesRenderStage::Cleanup() {
 	WRenderStage::Cleanup();
 	W_SAFE_REMOVEREF(m_defaultSpriteFX);
 	m_app->SpriteManager->RemoveChangeCallback(m_stageDescription.name);
+	unsigned int numEntities = m_app->SpriteManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++) {
+		WSprite* sprite = m_app->SpriteManager->GetEntityByIndex(i);
+		sprite->RemoveEffect(m_defaultSpriteFX);
+	}
 }
 
 WError WSpritesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {

@@ -18,6 +18,7 @@ layout(set = 0, binding = 0) uniform UBOPerObject {
 	int isAnimated;
 	int isInstanced;
 	vec4 color;
+	int isTextured;
 } uboPerObject;
 
 layout(set = 1, binding = 1) uniform UBOPerFrame {

@@ -34,7 +34,8 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (!m_renderEffect)
 		return WError(W_ERRORUNK);
 
-	for (unsigned int i = 0; i < m_app->ObjectManager->GetEntitiesCount(); i++)
+	unsigned int numEntities = m_app->ObjectManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++)
 		OnObjectChange(m_app->ObjectManager->GetEntityByIndex(i), true);
 	m_app->ObjectManager->RegisterChangeCallback(m_stageDescription.name, [this](WObject* o, bool a) {this->OnObjectChange(o, a); });
 
@@ -68,6 +69,11 @@ void WForwardRenderStage::Cleanup() {
 	WRenderStage::Cleanup();
 	W_SAFE_REMOVEREF(m_renderEffect);
 	m_app->ObjectManager->RemoveChangeCallback(m_stageDescription.name);
+	unsigned int numEntities = m_app->ObjectManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++) {
+		WObject* object = m_app->ObjectManager->GetEntityByIndex(i);
+		object->RemoveEffect(m_renderEffect);
+	}
 }
 
 WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {

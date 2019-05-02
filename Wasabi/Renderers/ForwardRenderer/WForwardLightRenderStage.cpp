@@ -29,6 +29,7 @@ W_SHADER_DESC WForwardLightRenderStageObjectVS::GetDesc(int maxLights) {
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isAnimated"), // whether or not animation is enabled
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isInstanced"), // whether or not instancing is enabled
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"), // object color
+			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isTextured"), // whether or not to use diffuse texture
 		}),
 		W_BOUND_RESOURCE(W_TYPE_UBO, 1, 1, "uboPerFrame", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view

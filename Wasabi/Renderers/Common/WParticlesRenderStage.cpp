@@ -42,7 +42,8 @@ WError WParticlesRenderStage::Initialize(std::vector<WRenderStage*>& previousSta
 		m_particleEffects.insert(std::make_pair(*it, fx));
 	}
 
-	for (unsigned int i = 0; i < m_app->ParticlesManager->GetEntitiesCount(); i++)
+	unsigned int numEntities = m_app->ParticlesManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++)
 		OnParticlesChange(m_app->ParticlesManager->GetEntityByIndex(i), true);
 	m_app->ParticlesManager->RegisterChangeCallback(m_stageDescription.name, [this](WParticles* p, bool a) { this->OnParticlesChange(p, a); });
 
@@ -80,6 +81,11 @@ void WParticlesRenderStage::Cleanup() {
 	for (auto it = m_particleEffects.begin(); it != m_particleEffects.end(); it++)
 		W_SAFE_REMOVEREF(it->second);
 	m_app->ParticlesManager->RemoveChangeCallback(m_stageDescription.name);
+	unsigned int numEntities = m_app->ParticlesManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++) {
+		WParticles* particles = m_app->ParticlesManager->GetEntityByIndex(i);
+		particles->RemoveEffect(m_particleEffects[particles->GetType()]);
+	}
 }
 
 WError WParticlesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {

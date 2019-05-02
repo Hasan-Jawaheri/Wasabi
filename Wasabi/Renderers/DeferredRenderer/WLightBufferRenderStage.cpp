@@ -216,7 +216,8 @@ WError WLightBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousS
 		return werr;
 
 	// Call OnLightsChange for all current lights and register a callback to catch all future changes
-	for (unsigned int i = 0; i < m_app->LightManager->GetEntitiesCount(); i++)
+	unsigned int numEntities = m_app->LightManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++)
 		OnLightsChange(m_app->LightManager->GetEntityByIndex(i), true);
 	m_app->LightManager->RegisterChangeCallback(m_stageDescription.name, [this](WLight* l, bool add) { this->OnLightsChange(l, add); });
 
@@ -369,9 +370,17 @@ WError WLightBufferRenderStage::LoadSpotLightsAssets() {
 			assets.perFrameMaterial->SetTexture(1, m_app->Renderer->GetRenderTargetImage("GBufferViewSpaceNormal"));
 			assets.perFrameMaterial->SetTexture(2, m_app->Renderer->GetRenderTargetImage("GBufferDepth"));
 
+			OnlyPositionGeometry* tmpGeometry = new OnlyPositionGeometry(m_app);
+			tmpGeometry->CreateCone(1.0f, 1.0f, 0, 16, W_GEOMETRY_CREATE_VB_DYNAMIC | W_GEOMETRY_CREATE_IB_DYNAMIC);
+			tmpGeometry->ApplyTransformation(WTranslationMatrix(0, -0.5, 0) * WRotationMatrixX(W_DEGTORAD(-90)));
+			void *vb, *ib;
+			tmpGeometry->MapVertexBuffer(&vb, W_MAP_READ);
+			tmpGeometry->MapIndexBuffer(&ib, W_MAP_READ);
 			assets.geometry = new OnlyPositionGeometry(m_app);
-			assets.geometry->CreateCone(1.0f, 1.0f, 0, 16);
-			assets.geometry->ApplyTransformation(WTranslationMatrix(0, -0.5, 0) * WRotationMatrixX(W_DEGTORAD(-90)));
+			assets.geometry->CreateFromData(vb, tmpGeometry->GetNumVertices(), ib, tmpGeometry->GetNumIndices());
+			tmpGeometry->UnmapVertexBuffer(false);
+			tmpGeometry->UnmapIndexBuffer();
+			W_SAFE_REMOVEREF(tmpGeometry);
 
 			m_lightRenderingAssets.insert(std::pair<int, LightTypeAssets>((int)W_LIGHT_SPOT, assets));
 		}
