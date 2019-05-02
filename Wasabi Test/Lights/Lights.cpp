@@ -17,7 +17,7 @@ WError LightsDemo::SetupRenderer() {
 }
 
 void LightsDemo::Load() {
-	srand(2);
+	srand(3);
 
 	// Create the plain
 	m_plain = m_app->ObjectManager->CreateObject();
@@ -31,12 +31,13 @@ void LightsDemo::Load() {
 	// Create the boxes
 	WGeometry* boxGeometry = new WGeometry(m_app);
 	boxGeometry->CreateCube(2.0f);
-	for (int i = 0; i < 400; i++) {
-		float x = 30.0f * (float)(rand() % 10000) / 10000.0f - 15.0f;
-		float z = 30.0f * (float)(rand() % 10000) / 10000.0f - 15.0f;
+	for (int i = 0; i < 40; i++) {
+		float x = 20.0f * (float)(rand() % 10000) / 10000.0f - 10.0f;
+		float y =  2.0f * (float)(rand() % 10000) / 10000.0f -  0.0f;
+		float z = 20.0f * (float)(rand() % 10000) / 10000.0f - 10.0f;
 		WObject* box = m_app->ObjectManager->CreateObject();
 		box->SetGeometry(boxGeometry);
-		box->SetPosition(x, 1.0f, z);
+		box->SetPosition(x, y, z);
 		m_boxes.push_back(box);
 		box->GetMaterial()->SetVariableColor("color", WColor(0.7, 0.7, 0.7));
 		box->GetMaterial()->SetVariableInt("isTextured", 0);
@@ -58,8 +59,8 @@ void LightsDemo::Load() {
 	};
 
 	for (int i = 0; i < maxLights / 2; i++) {
-		float x = 20.0f * (float)(rand() % 10000) / 10000.0f - 20.0f;
-		float z = 30.0f * (float)(rand() % 10000) / 10000.0f - 15.0f;
+		float x = 20.0f * (float)(rand() % 10000) / 10000.0f - 10.0f;
+		float z = 20.0f * (float)(rand() % 10000) / 10000.0f - 10.0f;
 
 		WLight* l = new WPointLight(m_app);
 		l->SetRange(5.0f);
@@ -69,8 +70,8 @@ void LightsDemo::Load() {
 	}
 
 	for (int i = 0; i < maxLights / 2; i++) {
-		float x = 20.0f * (float)(rand() % 10000) / 10000.0f + 20.0f;
-		float z = (10.0f + 30.0f * (float)(rand() % 10000) / 10000.0f) * (rand() % 2 == 0 ? 1 : -1);
+		float x = 20.0f * (float)(rand() % 10000) / 10000.0f + 10.0f;
+		float z = (10.0f + 15.0f * (float)(rand() % 10000) / 10000.0f) * (rand() % 2 == 0 ? 1 : -1);
 
 		WLight* l = new WSpotLight(m_app);
 		l->SetIntensity(5.0f);

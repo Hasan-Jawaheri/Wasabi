@@ -93,7 +93,7 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	m_constantsMaterial->SetTexture("lightTexture", m_app->Renderer->GetRenderTargetImage("LightBuffer"));
 	m_constantsMaterial->SetTexture("normalTexture", m_app->Renderer->GetRenderTargetImage("GBufferViewSpaceNormal"));
 	m_constantsMaterial->SetTexture("depthTexture", m_app->Renderer->GetRenderTargetImage("GBufferDepth"));
-	WImage* backfaceDepthImg = m_app->Renderer->GetRenderTargetImage("GBufferBackfaceDepth");
+	WImage* backfaceDepthImg = m_app->Renderer->GetRenderTargetImage("BackfaceDepth");
 	if (!backfaceDepthImg) {
 		WColor pixels[1] = { WColor(0.0f, 0.0f, 0.0f, 0.0f) };
 		backfaceDepthImg = m_app->ImageManager->CreateImage(pixels, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);
