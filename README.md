@@ -122,6 +122,7 @@ WIP
 ## Gallery
 
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/particles.png" /> 
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/ssao.png" /> 
 
 ## Contact
 
