@@ -718,7 +718,7 @@ WError WGeometry::CopyFrom(WGeometry* const from, W_GEOMETRY_CREATE_FLAGS flags)
 			return WError(W_OUTOFMEMORY);
 	}
 
-	WError ret = from->MapIndexBuffer((uint**)&fromib, W_MAP_READ);
+	WError ret = from->MapIndexBuffer(&fromib, W_MAP_READ);
 	if (!ret) {
 		W_SAFE_FREE(vb);
 		return ret;
@@ -924,7 +924,7 @@ WError WGeometry::MapVertexBuffer(void** const vb, W_MAP_FLAGS mapFlags) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WGeometry::MapIndexBuffer(uint** const ib, W_MAP_FLAGS mapFlags) {
+WError WGeometry::MapIndexBuffer(void** const ib, W_MAP_FLAGS mapFlags) {
 	uint bufferIndex = m_app->GetCurrentBufferingIndex();
 	VkResult result = m_indices.Map(m_app, bufferIndex, (void**)ib, mapFlags);
 	if (result != VK_SUCCESS)
@@ -1172,7 +1172,7 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 	WError err = MapVertexBuffer(&vb, W_MAP_READ);
 	if (!err)
 		return false;
-	err = MapIndexBuffer(&ib, W_MAP_READ);
+	err = MapIndexBuffer((void**)&ib, W_MAP_READ);
 	if (!err) {
 		UnmapVertexBuffer();
 		return false;
@@ -1321,7 +1321,7 @@ WError WGeometry::SaveToStream(WFile* file, std::ostream& outputStream) {
 	if (!ret)
 		return ret;
 
-	ret = MapIndexBuffer((uint**)&ib, W_MAP_READ);
+	ret = MapIndexBuffer(&ib, W_MAP_READ);
 	if (!ret) {
 		UnmapVertexBuffer();
 		return ret;

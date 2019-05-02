@@ -126,10 +126,10 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 		if (posOffset < 0)
 			return WError(W_INVALIDPARAM);
 		btScalar* points = nullptr;
-		int* indices = nullptr;
+		unsigned int* indices = nullptr;
 		createInfo.geometry->MapVertexBuffer((void**)&points, W_MAP_READ);
 		if (createInfo.isTriangleList)
-			createInfo.geometry->MapIndexBuffer((uint**)&indices, W_MAP_READ);
+			createInfo.geometry->MapIndexBuffer((void**)&indices, W_MAP_READ);
 
 		int num_triangles = createInfo.isTriangleList ? createInfo.geometry->GetNumIndices() / 3 : createInfo.geometry->GetNumVertices() - 2;
 		btTriangleMesh* mesh = new btTriangleMesh(true, false);

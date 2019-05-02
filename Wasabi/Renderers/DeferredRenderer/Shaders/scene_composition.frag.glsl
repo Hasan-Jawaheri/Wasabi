@@ -99,8 +99,10 @@ void main() {
 		ao += getBackfaceAmbientOcclusion(inUV, coord2*(1.0+0.125), occluderPos, occluderNorm);
 	}
 
-	ao /= iterations * 4.0f;
+	ao /= iterations * 8.0f;
 
 	//outFragColor = vec4(vec3(1-(min(1, ao))), 1);
-	outFragColor = vec4((color.rgb * uboParams.ambient.rgb - vec3(max(0, ao))) + color.rgb * light.rgb * light.a, 1);
+	vec3 ambient = max(vec3(0,0,0), color.rgb * uboParams.ambient.rgb - vec3(ao));
+	vec3 lit = color.rgb * light.rgb * light.a;
+	outFragColor = vec4(ambient + lit, 1);
 }

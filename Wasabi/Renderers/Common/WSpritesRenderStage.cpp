@@ -25,6 +25,7 @@ WSpritesRenderStage::WSpritesRenderStage(Wasabi* const app, bool backbuffer) : W
 	m_stageDescription.flags = RENDER_STAGE_FLAG_SPRITES_RENDER_STAGE;
 
 	m_defaultSpriteFX = nullptr;
+	m_currentMatId = 0;
 }
 
 WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
@@ -36,7 +37,8 @@ WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (!m_defaultSpriteFX)
 		return WError(W_ERRORUNK);
 
-	for (unsigned int i = 0; i < m_app->SpriteManager->GetEntitiesCount(); i++)
+	unsigned int numEntities = m_app->SpriteManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++)
 		OnSpriteChange(m_app->SpriteManager->GetEntityByIndex(i), true);
 	m_app->SpriteManager->RegisterChangeCallback(m_stageDescription.name, [this](WSprite* s, bool a) { this->OnSpriteChange(s, a); });
 
@@ -45,8 +47,8 @@ WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 void WSpritesRenderStage::OnSpriteChange(class WSprite* s, bool added) {
 	if (added) {
-		if (!s->GetDefaultEffect())
-			s->AddEffect(this->m_defaultSpriteFX);
+		s->AddEffect(this->m_defaultSpriteFX);
+		s->GetMaterial(this->m_defaultSpriteFX)->SetName("SpriteDefaultMaterial" + std::to_string(this->m_currentMatId));
 		SpriteKey key(s);
 		this->m_allSprites.insert(std::make_pair(key, s));
 	} else {
@@ -70,6 +72,11 @@ void WSpritesRenderStage::Cleanup() {
 	WRenderStage::Cleanup();
 	W_SAFE_REMOVEREF(m_defaultSpriteFX);
 	m_app->SpriteManager->RemoveChangeCallback(m_stageDescription.name);
+	unsigned int numEntities = m_app->SpriteManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++) {
+		WSprite* sprite = m_app->SpriteManager->GetEntityByIndex(i);
+		sprite->RemoveEffect(m_defaultSpriteFX);
+	}
 }
 
 WError WSpritesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {

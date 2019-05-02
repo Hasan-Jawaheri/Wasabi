@@ -6,6 +6,8 @@
 class WParticlesRenderStage : public WRenderStage {
 	/** Default effect used by different particle systems */
 	unordered_map<W_DEFAULT_PARTICLE_EFFECT_TYPE, class WEffect*> m_particleEffects;
+	/** A counter to generate unique material names */
+	uint m_currentMatId;
 
 	struct ParticlesKey {
 		uint priority;

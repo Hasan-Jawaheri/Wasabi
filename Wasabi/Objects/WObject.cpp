@@ -28,6 +28,7 @@ WObject* WObjectManager::CreateObject(unsigned int ID) const {
 	WMaterial* mat = object->GetMaterial();
 	if (mat) {
 		mat->SetVariableColor("color", WColor(0.0f, 0.0f, 0.0f, 0.0f));
+		mat->SetVariableInt("isTextured", 1);
 	}
 	return object;
 }

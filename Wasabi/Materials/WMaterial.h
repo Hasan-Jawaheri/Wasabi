@@ -178,7 +178,7 @@ public:
 	 * @param  len     Length of data, in bytes
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableData(const char* varName, void* data, int len);
+	WError SetVariableData(const char* varName, void* data, size_t len);
 
 	/**
 	 * Sets a texture in the bound effect.

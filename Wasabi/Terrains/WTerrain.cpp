@@ -12,8 +12,8 @@ WTerrainManager::~WTerrainManager() {
 }
 
 void WTerrainManager::Render(WRenderTarget* rt) {
-	unsigned int entitiyCount = GetEntitiesCount();
-	for (unsigned int i = 0; i < entitiyCount; i++)
+	unsigned int numEntities = GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++)
 		GetEntityByIndex(i)->Render(rt);
 }
 

@@ -9,22 +9,6 @@
 #include "../../Images/WImage.h"
 #include "../../WindowAndInput/WWindowAndInputComponent.h"
 
-class DeferredRendererPSDepth : public WShader {
-public:
-	DeferredRendererPSDepth(class Wasabi* const app) : WShader(app) {}
-
-	virtual void Load(bool bSaveData = false) {
-		m_desc.type = W_FRAGMENT_SHADER;
-		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 0, 0, "colorTexture"), // NOT NECESSARY!
-		};
-		vector<byte> code = {
-			#include "Shaders/depth.frag.glsl.spv"
-		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
-	}
-};
-
 class SceneCompositionPS : public WShader {
 public:
 	SceneCompositionPS(class Wasabi* const app) : WShader(app) {}
@@ -109,7 +93,7 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	m_constantsMaterial->SetTexture("lightTexture", m_app->Renderer->GetRenderTargetImage("LightBuffer"));
 	m_constantsMaterial->SetTexture("normalTexture", m_app->Renderer->GetRenderTargetImage("GBufferViewSpaceNormal"));
 	m_constantsMaterial->SetTexture("depthTexture", m_app->Renderer->GetRenderTargetImage("GBufferDepth"));
-	WImage* backfaceDepthImg = m_app->Renderer->GetRenderTargetImage("GBufferBackfaceDepth");
+	WImage* backfaceDepthImg = m_app->Renderer->GetRenderTargetImage("BackfaceDepth");
 	if (!backfaceDepthImg) {
 		WColor pixels[1] = { WColor(0.0f, 0.0f, 0.0f, 0.0f) };
 		backfaceDepthImg = m_app->ImageManager->CreateImage(pixels, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT);

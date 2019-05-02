@@ -27,6 +27,7 @@ W_SHADER_DESC WGBufferVS::GetDesc() {
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isAnimated"), // whether or not animation is enabled
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isInstanced"), // whether or not instancing is enabled
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"), // object color
+			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isTextured"), // whether or not to use diffuse texture
 		}),
 		W_BOUND_RESOURCE(W_TYPE_UBO, 1, 1, "uboPerFrame", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
@@ -131,7 +132,8 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	m_perFrameMaterial->SetName("GBufferPerFrameMaterial");
 	m_app->FileManager->AddDefaultAsset(m_perFrameMaterial->GetName(), m_perFrameMaterial);
 
-	for (unsigned int i = 0; i < m_app->ObjectManager->GetEntitiesCount(); i++)
+	unsigned int numEntities = m_app->ObjectManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++)
 		OnObjectChange(m_app->ObjectManager->GetEntityByIndex(i), true);
 	m_app->ObjectManager->RegisterChangeCallback(m_stageDescription.name, [this](WObject* o, bool a) {this->OnObjectChange(o, a); });
 
@@ -140,10 +142,8 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 void WGBufferRenderStage::OnObjectChange(class WObject* object, bool added) {
 	if (added) {
-		if (!object->GetDefaultEffect()) {
-			object->AddEffect(this->m_GBufferFX, 0);
-			object->GetMaterial(this->m_GBufferFX)->SetName("GBufferDefaultMaterial" + std::to_string(this->m_currentMatId));
-		}
+		object->AddEffect(this->m_GBufferFX, 0);
+		object->GetMaterial(this->m_GBufferFX)->SetName("GBufferDefaultMaterial" + std::to_string(this->m_currentMatId));
 		ObjectKey key(object);
 		this->m_allObjects.insert(std::make_pair(key, object));
 	} else {
@@ -168,6 +168,11 @@ void WGBufferRenderStage::Cleanup() {
 	W_SAFE_REMOVEREF(m_GBufferFX);
 	W_SAFE_REMOVEREF(m_perFrameMaterial);
 	m_app->ObjectManager->RemoveChangeCallback(m_stageDescription.name);
+	unsigned int numEntities = m_app->ObjectManager->GetEntitiesCount();
+	for (unsigned int i = 0; i < numEntities; i++) {
+		WObject* object = m_app->ObjectManager->GetEntityByIndex(i);
+		object->RemoveEffect(m_GBufferFX);
+	}
 }
 
 WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
@@ -185,7 +190,7 @@ WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 		std::vector<ObjectKey> reindexObjects;
 		for (auto it = m_allObjects.begin(); it != m_allObjects.end(); it++) {
 			WObject* object = it->second;
-			WEffect* effect = object->GetDefaultEffect();
+			WEffect* effect = m_GBufferFX;
 			WMaterial* material = object->GetMaterial(effect);
 			if (material && object->WillRender(rt)) {
 				bool isAnimated = object->GetAnimation() != nullptr;

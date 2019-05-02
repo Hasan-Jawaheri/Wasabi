@@ -17,6 +17,7 @@ layout(set = 0, binding = 0) uniform UBO {
 	int isAnimated;
 	int isInstanced;
 	vec4 color;
+	int isTextured;
 } uboPerObject;
 
 layout(set = 1, binding = 1) uniform LUBO {
@@ -77,7 +78,7 @@ vec3 SpotLight(in vec3 pos, in vec3 dir, in vec3 col, in float intensity, in flo
 }
 
 void main() {
-	outFragColor = texture(diffuseTexture[inTexIndex], inUV) + uboPerObject.color;
+	outFragColor = texture(diffuseTexture[inTexIndex], inUV) * uboPerObject.isTextured + uboPerObject.color;
 	vec3 lighting = vec3(0,0,0);
 	for (int i = 0; i < uboPerFrame.numLights; i++) {
 		if (uboPerFrame.lights[i].type == 0)

@@ -19,7 +19,7 @@ protected:
 public:
 	WMaterialsStore();
 
-	void AddEffect(class WEffect* effect, unsigned int bindingSet = 0);
+	void AddEffect(class WEffect* effect, unsigned int bindingSet = 0, bool set_default = true);
 
 	void RemoveEffect(class WEffect* effect);
 

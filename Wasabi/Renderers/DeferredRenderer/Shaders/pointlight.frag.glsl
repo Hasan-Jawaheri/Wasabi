@@ -26,15 +26,10 @@ vec4 PointLight(vec3 pos, vec3 norm) {
 	vec3 lightVec = uboPerLight.position - pos;
 	float d = length(lightVec); // The distance from surface to light.
 	
-	if (d > uboPerLight.range)
-		return vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	
 	vec3 lDir = normalize(lightVec);
 	
 	// N dot L lighting term
-	float nl = dot(norm, lDir);
-	if (nl <= 0.0f)
-		return vec4(0, 0, 0, 0);
+	float nl = max(0, dot(norm, lDir));
 	
 	vec3 camDir = normalize(-pos); // since pos is in view space
 	
@@ -42,7 +37,7 @@ vec4 PointLight(vec3 pos, vec3 norm) {
 	vec3 h = normalize(lDir + camDir);
 	float spec = pow(clamp(dot(norm, h), 0, 1), uboPerLight.lightSpec);
 	
-	float xVal = (1.0f - d/uboPerLight.range);
+	float xVal = max(0, (1.0f - d/uboPerLight.range));
 	return vec4(uboPerLight.lightColor * nl, spec) * xVal;
 }
 
