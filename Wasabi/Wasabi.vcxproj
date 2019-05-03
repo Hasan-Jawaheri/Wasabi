@@ -162,6 +162,7 @@
     <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.vert.glsl" />
     <None Include="Renderers\ForwardRenderer\Shaders\forward.frag.glsl" />
     <None Include="Renderers\ForwardRenderer\Shaders\forward.vert.glsl" />
+    <None Include="Renderers\ForwardRenderer\Shaders\terrain.frag.glsl" />
     <None Include="Renderers\ForwardRenderer\Shaders\terrain.vert.glsl" />
     <None Include="Sprites\Shaders\sprite.frag.glsl" />
     <None Include="Sprites\Shaders\sprite.vert.glsl" />
