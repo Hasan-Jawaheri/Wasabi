@@ -48,9 +48,10 @@ public:
 
 	/**
 	 * Renders the terrain to the given render target.
-	 * @params rt  Render target to render to
+	 * @params rt      Render target to render to
+	 * @param material Material to use for rendering
 	 */
-	void Render(class WRenderTarget* rt);
+	void Render(class WRenderTarget* rt, WMaterial* material);
 
 	/**
 	 * Shows the terrain so that it can be rendered.
@@ -125,13 +126,6 @@ public:
 	 * @return Error code, see WError.h
 	 */
 	WError Load();
-
-	/**
-	 * Renders all terrains registered by this manager (by calling
-	 * their WTerrain::Render() function).
-	 * @param rt Render target to render to
-	 */
-	void Render(class WRenderTarget* rt);
 
 private:
 };

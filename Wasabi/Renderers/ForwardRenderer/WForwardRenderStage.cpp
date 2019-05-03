@@ -145,7 +145,8 @@ WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) 
 
 	m_objectsFragment = nullptr;
 	m_terrainsFragment = nullptr;
-	m_perFrameMaterial = nullptr;
+	m_perFrameObjectsMaterial = nullptr;
+	m_perFrameTerrainsMaterial = nullptr;
 }
 
 WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
@@ -207,12 +208,20 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, terrainFX, m_app);
 
-	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
-	if (!m_perFrameMaterial) {
+	m_perFrameObjectsMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
+	if (!m_perFrameObjectsMaterial) {
 		err = WError(W_ERRORUNK);
 	} else {
-		m_perFrameMaterial->SetName("PerFrameForwardMaterial");
-		m_app->FileManager->AddDefaultAsset(m_perFrameMaterial->GetName(), m_perFrameMaterial);
+		m_perFrameObjectsMaterial->SetName("PerFrameForwardMaterial");
+		m_app->FileManager->AddDefaultAsset(m_perFrameObjectsMaterial->GetName(), m_perFrameObjectsMaterial);
+	}
+
+	m_perFrameTerrainsMaterial = m_terrainsFragment->GetEffect()->CreateMaterial(1);
+	if (!m_perFrameTerrainsMaterial) {
+		err = WError(W_ERRORUNK);
+	} else {
+		m_perFrameTerrainsMaterial->SetName("PerFrameForwardTerrainMaterial");
+		m_app->FileManager->AddDefaultAsset(m_perFrameTerrainsMaterial->GetName(), m_perFrameTerrainsMaterial);
 	}
 
 	return err;
@@ -220,7 +229,8 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 void WForwardRenderStage::Cleanup() {
 	WRenderStage::Cleanup();
-	W_SAFE_REMOVEREF(m_perFrameMaterial);
+	W_SAFE_REMOVEREF(m_perFrameObjectsMaterial);
+	W_SAFE_REMOVEREF(m_perFrameTerrainsMaterial);
 	W_SAFE_DELETE(m_objectsFragment);
 	W_SAFE_DELETE(m_terrainsFragment);
 }
@@ -228,37 +238,44 @@ void WForwardRenderStage::Cleanup() {
 WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
 	WCamera* cam = rt->GetCamera();
 
-	if (filter & (RENDER_FILTER_TERRAIN | RENDER_FILTER_OBJECTS)) {
-		// create the per-frame UBO data
-		int numLights = 0;
-		for (int i = 0; numLights < m_lights.size(); i++) {
-			WLight* light = m_app->LightManager->GetEntityByIndex(i);
-			if (!light)
-				break;
-			if (!light->Hidden() && light->InCameraView(cam)) {
-				WColor c = light->GetColor();
-				WVector3 l = light->GetLVector();
-				WVector3 p = light->GetPosition();
-				m_lights[numLights].color = WVector4(c.r, c.g, c.b, light->GetIntensity());
-				m_lights[numLights].dir = WVector4(l.x, l.y, l.z, light->GetRange());
-				m_lights[numLights].pos = WVector4(p.x, p.y, p.z, light->GetMinCosAngle());
-				m_lights[numLights].type = (int)light->GetType();
-				numLights++;
-			}
+	int numLights = 0;
+	for (int i = 0; numLights < m_lights.size(); i++) {
+		WLight* light = m_app->LightManager->GetEntityByIndex(i);
+		if (!light)
+			break;
+		if (!light->Hidden() && light->InCameraView(cam)) {
+			WColor c = light->GetColor();
+			WVector3 l = light->GetLVector();
+			WVector3 p = light->GetPosition();
+			m_lights[numLights].color = WVector4(c.r, c.g, c.b, light->GetIntensity());
+			m_lights[numLights].dir = WVector4(l.x, l.y, l.z, light->GetRange());
+			m_lights[numLights].pos = WVector4(p.x, p.y, p.z, light->GetMinCosAngle());
+			m_lights[numLights].type = (int)light->GetType();
+			numLights++;
 		}
-		m_perFrameMaterial->SetVariableMatrix("viewMatrix", cam->GetViewMatrix());
-		m_perFrameMaterial->SetVariableMatrix("projectionMatrix", cam->GetProjectionMatrix());
-		m_perFrameMaterial->SetVariableVector3("camPosW", cam->GetPosition());
-		m_perFrameMaterial->SetVariableInt("numLights", numLights);
-		m_perFrameMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
-		m_perFrameMaterial->Bind(rt);
 	}
 
 	if (filter & RENDER_FILTER_TERRAIN) {
+		// create the per-frame UBO data
+		m_perFrameTerrainsMaterial->SetVariableMatrix("viewMatrix", cam->GetViewMatrix());
+		m_perFrameTerrainsMaterial->SetVariableMatrix("projectionMatrix", cam->GetProjectionMatrix());
+		m_perFrameTerrainsMaterial->SetVariableVector3("camPosW", cam->GetPosition());
+		m_perFrameTerrainsMaterial->SetVariableInt("numLights", numLights);
+		m_perFrameTerrainsMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
+		m_perFrameTerrainsMaterial->Bind(rt);
+
 		m_terrainsFragment->Render(renderer, rt);
 	}
 
 	if (filter & RENDER_FILTER_OBJECTS) {
+		// create the per-frame UBO data
+		m_perFrameObjectsMaterial->SetVariableMatrix("viewMatrix", cam->GetViewMatrix());
+		m_perFrameObjectsMaterial->SetVariableMatrix("projectionMatrix", cam->GetProjectionMatrix());
+		m_perFrameObjectsMaterial->SetVariableVector3("camPosW", cam->GetPosition());
+		m_perFrameObjectsMaterial->SetVariableInt("numLights", numLights);
+		m_perFrameObjectsMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
+		m_perFrameObjectsMaterial->Bind(rt);
+
 		m_objectsFragment->Render(renderer, rt);
 	}
 

@@ -95,6 +95,8 @@ public:
 			EntityT* entity = it->second;
 			WEffect* effect = m_renderEffect;
 			WMaterial* material = entity->GetMaterial(effect);
+			if (!material)
+				material = entity->GetMaterial();
 			effect = material->GetEffect(); // in case m_renderEffect is null, then effect is the (default) material's effect
 			if (material && entity->WillRender(rt)) {
 				bool isAnimated = IsEntityAnimated(entity);
@@ -198,7 +200,7 @@ public:
 	}
 
 	virtual void RenderEntity(WTerrain* terrain, class WRenderTarget* rt, class WMaterial* material) {
-		terrain->Render(rt);
+		terrain->Render(rt, material);
 	}
 
 	virtual bool KeyChanged(WTerrain* terrain, class WEffect* effect, WTerrainSortingKey key) {
@@ -237,6 +239,7 @@ public:
 	}
 
 	virtual void RenderEntity(WSprite* sprite, class WRenderTarget* rt, class WMaterial* material) {
+		material->Bind(rt);
 		sprite->Render(rt);
 	}
 

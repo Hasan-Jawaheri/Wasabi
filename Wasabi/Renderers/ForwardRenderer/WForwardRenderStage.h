@@ -49,9 +49,11 @@ public:
  */
 class WForwardRenderStage : public WRenderStage {
 	WObjectsRenderFragment* m_objectsFragment;
-	WTerrainRenderFragment* m_terrainsFragment;
+	class WMaterial* m_perFrameObjectsMaterial;
 
-	class WMaterial* m_perFrameMaterial;
+	WTerrainRenderFragment* m_terrainsFragment;
+	class WMaterial* m_perFrameTerrainsMaterial;
+
 	std::vector<LightStruct> m_lights;
 
 public:
