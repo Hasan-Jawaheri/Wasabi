@@ -3,18 +3,13 @@
 #include "../Images/WImage.h"
 #include "../Images/WRenderTarget.h"
 #include "../Geometries/WGeometry.h"
+#include "../Materials/WMaterial.h"
 
 WTerrainManager::WTerrainManager(class Wasabi* const app)
 	: WManager<WTerrain>(app) {
 }
 
 WTerrainManager::~WTerrainManager() {
-}
-
-void WTerrainManager::Render(WRenderTarget* rt) {
-	unsigned int numEntities = GetEntitiesCount();
-	for (unsigned int i = 0; i < numEntities; i++)
-		GetEntityByIndex(i)->Render(rt);
 }
 
 std::string WTerrainManager::GetTypeName() const {
@@ -55,7 +50,7 @@ void WTerrain::_DestroyResources() {
 }
 
 bool WTerrain::Valid() const {
-	return false;
+	return m_blockGeometry != nullptr;
 }
 
 void WTerrain::Show() {
@@ -71,15 +66,19 @@ bool WTerrain::Hidden() const {
 }
 
 WError WTerrain::Create(unsigned int N, float size) {
-	if (N > 1 && (N & (N - 1)) == 0) // check power of 2
+	if (N > 1 && (N & (N - 1)) == N) // check power of 2
 		return WError(W_INVALIDPARAM);
 	if (size <= 0)
 		return WError(W_INVALIDPARAM);
 	_DestroyResources();
 
-	m_blockGeometry->CreatePlain(N * size, N - 2, N - 2);
+	m_blockGeometry = new WGeometry(m_app);
+	WError err = m_blockGeometry->CreatePlain(N * size, N - 2, N - 2);
+	if (err) {
 
-	return WError(W_SUCCEEDED);
+	}
+
+	return err;
 }
 
 bool WTerrain::WillRender(WRenderTarget* rt) {
@@ -95,8 +94,14 @@ bool WTerrain::WillRender(WRenderTarget* rt) {
 	return false;
 }
 
-void WTerrain::Render(class WRenderTarget* const rt) {
-	WMatrix worldM = GetWorldMatrix();
+void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
+	if (material) {
+		WMatrix worldM = GetWorldMatrix();
+		material->SetVariableMatrix("worldMatrix", worldM);
+		material->Bind(rt);
+	}
+
+	m_blockGeometry->Draw(rt);
 }
 
 WMatrix WTerrain::GetWorldMatrix() {
