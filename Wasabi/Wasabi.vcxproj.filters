@@ -545,5 +545,8 @@
     <None Include="Renderers\ForwardRenderer\Shaders\terrain.vert.glsl">
       <Filter>Renderers\ForwardRenderer\Shaders</Filter>
     </None>
+    <None Include="Renderers\Common\Shaders\lighting_utils.glsl">
+      <Filter>Renderers\Common\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

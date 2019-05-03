@@ -2,6 +2,9 @@
 
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : enable
+
+#include "../../Common/Shaders/lighting_utils.glsl"
 
 struct Light {
 	vec4 color;
@@ -37,66 +40,46 @@ layout(location = 3) flat in uint inTexIndex;
 
 layout(location = 0) out vec4 outFragColor;
 
-// DIRECTIONAL LIGHT CODE
-vec3 DirectionalLight(in vec3 dir, in vec3 col, in float intensity) {
-	// N dot L lighting term
-	vec3 lDir = -normalize(dir); 
-	float nl = clamp(dot(inWorldNorm, lDir), 0, 1);
-	vec3 camDir = normalize(uboPerFrame.camPosW - inWorldPos);
-	// Calculate specular term
-	float spec = max (dot(reflect(-lDir, inWorldNorm), camDir), 0.0f);
-	vec3 unspecced = vec3(col * nl) * intensity;
-	return unspecced * spec;
-}
-
-// POINT LIGHT CODE
-vec3 PointLight(in vec3 pos, in vec3 col, in float intensity, in float range) {
-	// The distance from surface to light
-	vec3 lightVec = pos - inWorldPos;
-	float d = length (lightVec);
-	// N dot L lighting term
-	vec3 lDir = normalize(lightVec);
-	float nl = clamp(dot(inWorldNorm, lDir), 0, 1);
-	// Calculate specular term
-	vec3 camDir = normalize(uboPerFrame.camPosW - inWorldPos);
-	vec3 h = normalize(lDir + camDir);
-	float spec = clamp(dot(inWorldNorm, h), 0, 1);
-
-	float xVal = clamp((range-d)/range, 0, 1);
-	return vec3(col * xVal * spec * nl * intensity);
-}
-
-// SPOT LIGHT CODE
-vec3 SpotLight(in vec3 pos, in vec3 dir, in vec3 col, in float intensity, in float range, float minCos) {
-	vec3 color = PointLight(pos, col, intensity, range);
-	// The vector from the surface to the light
-	vec3 lightVec = normalize(pos - inWorldPos);
-
-	float cosAngle = dot(-lightVec, dir);
-	color *= max ((cosAngle - minCos) / (1.0f-minCos), 0); // Scale color by spotlight factor
-	return color;
-}
-
 void main() {
 	outFragColor = texture(diffuseTexture[inTexIndex], inUV) * uboPerObject.isTextured + uboPerObject.color;
+	vec3 camDir = normalize(uboPerFrame.camPosW - inWorldPos);
 	vec3 lighting = vec3(0,0,0);
 	for (int i = 0; i < uboPerFrame.numLights; i++) {
-		if (uboPerFrame.lights[i].type == 0)
-			lighting += DirectionalLight(uboPerFrame.lights[i].dir.xyz,
-										 uboPerFrame.lights[i].color.rgb,
-										 uboPerFrame.lights[i].color.a);
-		else if (uboPerFrame.lights[i].type == 1)
-			lighting += PointLight( uboPerFrame.lights[i].pos.xyz,
-									uboPerFrame.lights[i].color.rgb,
-									uboPerFrame.lights[i].color.a,
-									uboPerFrame.lights[i].dir.a);
-		else if (uboPerFrame.lights[i].type == 2)
-			lighting += SpotLight(  uboPerFrame.lights[i].pos.xyz,
-									uboPerFrame.lights[i].dir.xyz,
-									uboPerFrame.lights[i].color.rgb,
-									uboPerFrame.lights[i].color.a,
-									uboPerFrame.lights[i].dir.a,
-									uboPerFrame.lights[i].pos.a);
+		if (uboPerFrame.lights[i].type == 0) {
+			vec4 light = DirectionalLight(
+				inWorldPos,
+				inWorldNorm,
+				camDir,
+				uboPerFrame.lights[i].dir.xyz,
+				uboPerFrame.lights[i].color.rgb,
+				uboPerFrame.lights[i].color.a
+			);
+			lighting += light.rgb * light.a;
+		} else if (uboPerFrame.lights[i].type == 1) {
+			vec4 light = PointLight(
+				inWorldPos,
+				inWorldNorm,
+				camDir,
+				uboPerFrame.lights[i].pos.xyz,
+				uboPerFrame.lights[i].color.rgb,
+				uboPerFrame.lights[i].color.a,
+				uboPerFrame.lights[i].dir.a
+			);
+			lighting += light.rgb * light.a;
+		} else if (uboPerFrame.lights[i].type == 2) {
+			vec4 light = SpotLight(
+				inWorldPos,
+				inWorldNorm,
+				camDir,
+				uboPerFrame.lights[i].pos.xyz,
+				uboPerFrame.lights[i].dir.xyz,
+				uboPerFrame.lights[i].color.rgb,
+				uboPerFrame.lights[i].color.a,
+				uboPerFrame.lights[i].dir.a, // light range
+				uboPerFrame.lights[i].pos.a // min cosine angle
+			);
+			lighting += light.rgb * light.a;
+		}
 	}
 	outFragColor.rgb = outFragColor.rgb * 0.2f + outFragColor.rgb * 0.8f * lighting; // ambient 20%
 }

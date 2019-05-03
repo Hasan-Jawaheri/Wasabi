@@ -43,6 +43,6 @@ def compileShader(filename):
 ret = 0
 for root, dirs, files in os.walk("./"):
     for file in files:
-        if file.endswith(".glsl"):
+        if file.endswith(".vert.glsl") or file.endswith(".geom.glsl") or file.endswith(".frag.glsl") or file.endswith(".tesc.glsl") or file.endswith(".tese.glsl") or file.endswith(".comp.glsl"):
              ret += compileShader(os.path.join(root, file))
 sys.exit(ret)
