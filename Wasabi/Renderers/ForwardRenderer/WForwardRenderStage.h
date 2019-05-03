@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../Common/WForwardRenderStage.h"
+#include "../WRenderStage.h"
+#include "../Common/WRenderFragment.h"
 #include "../../Materials/WEffect.h"
 #include "../../Materials/WMaterial.h"
 #include "../../Objects/WObject.h"
@@ -13,16 +14,30 @@ struct LightStruct {
 	int pad[3];
 };
 
-class WForwardLightRenderStageObjectVS : public WShader {
+class WForwardRenderStageObjectVS : public WShader {
 public:
-	WForwardLightRenderStageObjectVS(class Wasabi* const app);
+	WForwardRenderStageObjectVS(class Wasabi* const app);
 	virtual void Load(bool bSaveData = false);
 	static W_SHADER_DESC GetDesc(int maxLights);
 };
 
-class WForwardLightRenderStageObjectPS : public WShader {
+class WForwardRenderStageObjectPS : public WShader {
 public:
-	WForwardLightRenderStageObjectPS(class Wasabi* const app);
+	WForwardRenderStageObjectPS(class Wasabi* const app);
+	virtual void Load(bool bSaveData = false);
+	static W_SHADER_DESC GetDesc(int maxLights);
+};
+
+class WForwardRenderStageTerrainVS : public WShader {
+public:
+	WForwardRenderStageTerrainVS(class Wasabi* const app);
+	virtual void Load(bool bSaveData = false);
+	static W_SHADER_DESC GetDesc(int maxLights);
+};
+
+class WForwardRenderStageTerrainPS : public WShader {
+public:
+	WForwardRenderStageTerrainPS(class Wasabi* const app);
 	virtual void Load(bool bSaveData = false);
 	static W_SHADER_DESC GetDesc(int maxLights);
 };
@@ -32,15 +47,13 @@ public:
  * Creating this stage adds the following engine parameters:
  * * "maxLights": Maximum number of lights that can be rendered at once (Default is (void*)16)
  */
-class WForwardLightRenderStage : public WForwardRenderStage {
+class WForwardRenderStage : public WRenderStage {
+	WObjectsRenderFragment* m_objectsFragment;
 	class WMaterial* m_perFrameMaterial;
 	std::vector<LightStruct> m_lights;
 
-protected:
-	virtual class WEffect* LoadRenderEffect();
-
 public:
-	WForwardLightRenderStage(class Wasabi* const app);
+	WForwardRenderStage(class Wasabi* const app);
 
 	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height);
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter);

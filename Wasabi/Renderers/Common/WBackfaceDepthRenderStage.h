@@ -1,6 +1,7 @@
 #pragma once
 
-#include "WForwardRenderStage.h"
+#include "../WRenderStage.h"
+#include "WRenderFragment.h"
 #include "../../Materials/WEffect.h"
 #include "../../Materials/WMaterial.h"
 #include "../../Objects/WObject.h"
@@ -16,11 +17,9 @@ public:
  * Creating this stage adds the following engine parameters:
  * * "maxLights": Maximum number of lights that can be rendered at once (Default is (void*)16)
  */
-class WBackfaceDepthRenderStage : public WForwardRenderStage {
+class WBackfaceDepthRenderStage : public WRenderStage {
+	WObjectsRenderFragment* m_objectsFragment;
 	class WMaterial* m_perFrameMaterial;
-
-protected:
-	virtual class WEffect* LoadRenderEffect();
 
 public:
 	WBackfaceDepthRenderStage(class Wasabi* const app);

@@ -42,46 +42,10 @@ public:
 	void Scale(WVector3 scale);
 
 	/**
-	 * Sets the X scale of this instance.
-	 * @param scale Scale factor
-	 */
-	void ScaleX(float scale);
-
-	/**
-	 * Sets the Y scale of this instance.
-	 * @param scale Scale factor
-	 */
-	void ScaleY(float scale);
-
-	/**
-	 * Sets the Z scale of this instance.
-	 * @param scale Scale factor
-	 */
-	void ScaleZ(float scale);
-
-	/**
 	 * Retrieves the scale factors of this instance.
 	 * @return 3D vector containing the scale factors
 	 */
 	WVector3 GetScale() const;
-
-	/**
-	 * Retrieves the X scale of this instance.
-	 * @return Scale factor
-	 */
-	float GetScaleX() const;
-
-	/**
-	 * Retrieves the Y scale of this instance.
-	 * @return Scale factor
-	 */
-	float GetScaleY() const;
-
-	/**
-	 * Retrieves the Z scale of this instance.
-	 * @return Scale factor
-	 */
-	float GetScaleZ() const;
 
 	/**
 	 * Retrieves the world matrix computed so far. A call to UpdateLocals()

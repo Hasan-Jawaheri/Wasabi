@@ -50,7 +50,6 @@
     <ClCompile Include="Physics\Havok\WHavokPhysics.cpp" />
     <ClCompile Include="Physics\WRigidBody.cpp" />
     <ClCompile Include="Renderers\Common\WBackfaceDepthRenderStage.cpp" />
-    <ClCompile Include="Renderers\Common\WForwardRenderStage.cpp" />
     <ClCompile Include="Renderers\Common\WTextRenderStage.cpp" />
     <ClCompile Include="Renderers\Common\WParticlesRenderStage.cpp" />
     <ClCompile Include="Renderers\Common\WSpritesRenderStage.cpp" />
@@ -59,7 +58,7 @@
     <ClCompile Include="Renderers\DeferredRenderer\WGBufferRenderStage.cpp" />
     <ClCompile Include="Renderers\DeferredRenderer\WLightBufferRenderStage.cpp" />
     <ClCompile Include="Renderers\ForwardRenderer\WForwardRenderer.cpp" />
-    <ClCompile Include="Renderers\ForwardRenderer\WForwardLightRenderStage.cpp" />
+    <ClCompile Include="Renderers\ForwardRenderer\WForwardRenderStage.cpp" />
     <ClCompile Include="Renderers\WRenderStage.cpp" />
     <ClCompile Include="Renderers\WRenderer.cpp" />
     <ClCompile Include="Sounds\OpenAL\WOpenAL.cpp" />
@@ -105,7 +104,7 @@
     <ClInclude Include="Physics\WPhysicsComponent.h" />
     <ClInclude Include="Physics\WRigidBody.h" />
     <ClInclude Include="Renderers\Common\WBackfaceDepthRenderStage.h" />
-    <ClInclude Include="Renderers\Common\WForwardRenderStage.h" />
+    <ClInclude Include="Renderers\Common\WRenderFragment.h" />
     <ClInclude Include="Renderers\Common\WTextRenderStage.h" />
     <ClInclude Include="Renderers\Common\WParticlesRenderStage.h" />
     <ClInclude Include="Renderers\Common\WSpritesRenderStage.h" />
@@ -114,7 +113,7 @@
     <ClInclude Include="Renderers\DeferredRenderer\WGBufferRenderStage.h" />
     <ClInclude Include="Renderers\DeferredRenderer\WLightBufferRenderStage.h" />
     <ClInclude Include="Renderers\ForwardRenderer\WForwardRenderer.h" />
-    <ClInclude Include="Renderers\ForwardRenderer\WForwardLightRenderStage.h" />
+    <ClInclude Include="Renderers\ForwardRenderer\WForwardRenderStage.h" />
     <ClInclude Include="Renderers\WRenderStage.h" />
     <ClInclude Include="Renderers\WRenderer.h" />
     <ClInclude Include="Sounds\OpenAL\WOpenAL.h" />
@@ -162,6 +161,7 @@
     <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.vert.glsl" />
     <None Include="Renderers\ForwardRenderer\Shaders\forward.frag.glsl" />
     <None Include="Renderers\ForwardRenderer\Shaders\forward.vert.glsl" />
+    <None Include="Renderers\ForwardRenderer\Shaders\terrain.vert.glsl" />
     <None Include="Sprites\Shaders\sprite.frag.glsl" />
     <None Include="Sprites\Shaders\sprite.vert.glsl" />
     <None Include="Texts\Shaders\text.frag.glsl" />

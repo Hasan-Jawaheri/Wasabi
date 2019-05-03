@@ -1,6 +1,7 @@
 #include "Terrain.hpp"
 
 TerrainDemo::TerrainDemo(Wasabi* const app) : WTestState(app) {
+	terrain = nullptr;
 }
 
 void TerrainDemo::Load() {

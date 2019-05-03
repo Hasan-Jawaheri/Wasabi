@@ -146,35 +146,8 @@ void WInstance::Scale(WVector3 scale) {
 	m_bAltered = true;
 }
 
-void WInstance::ScaleX(float scale) {
-	m_scale.x = scale;
-	m_bAltered = true;
-}
-
-void WInstance::ScaleY(float scale) {
-	m_scale.y = scale;
-	m_bAltered = true;
-}
-
-void WInstance::ScaleZ(float scale) {
-	m_scale.z = scale;
-	m_bAltered = true;
-}
-
 WVector3 WInstance::GetScale() const {
 	return m_scale;
-}
-
-float WInstance::GetScaleX() const {
-	return m_scale.x;
-}
-
-float WInstance::GetScaleY() const {
-	return m_scale.y;
-}
-
-float WInstance::GetScaleZ() const {
-	return m_scale.z;
 }
 
 WMatrix WInstance::GetWorldMatrix() {
