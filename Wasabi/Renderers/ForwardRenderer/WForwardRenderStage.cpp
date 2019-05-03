@@ -93,12 +93,6 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 	desc.bound_resources = {
 		W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerObject", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
-			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "animationTextureWidth"), // width of the animation texture
-			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "instanceTextureWidth"), // width of the instance texture
-			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isAnimated"), // whether or not animation is enabled
-			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isInstanced"), // whether or not instancing is enabled
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"), // object color
-			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isTextured"), // whether or not to use diffuse texture
 		}),
 		W_BOUND_RESOURCE(W_TYPE_UBO, 1, 1, "uboPerFrame", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
@@ -107,8 +101,6 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "numLights"),
 			W_SHADER_VARIABLE_INFO(W_TYPE_STRUCT, maxLights, sizeof(LightStruct), 16, "lights"),
 		}),
-		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 2, 0, "animationTexture"),
-		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 3, 0, "instancingTexture"),
 	};
 	desc.input_layouts = { W_INPUT_LAYOUT({
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
@@ -116,9 +108,6 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
 		W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 1), // texture index
-	}), W_INPUT_LAYOUT({
-		W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone indices
-		W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weights
 	}) };
 	return desc;
 }
@@ -129,7 +118,7 @@ void WForwardRenderStageTerrainPS::Load(bool bSaveData) {
 	int maxLights = (int)m_app->engineParams["maxLights"];
 	m_desc = GetDesc(maxLights);
 	vector<byte> code = {
-		#include "Shaders/forward.frag.glsl.spv"
+		#include "Shaders/terrain.frag.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
 }
@@ -138,6 +127,9 @@ W_SHADER_DESC WForwardRenderStageTerrainPS::GetDesc(int maxLights) {
 	W_SHADER_DESC desc;
 	desc.type = W_FRAGMENT_SHADER;
 	desc.bound_resources = {
+		WForwardRenderStageTerrainVS::GetDesc(maxLights).bound_resources[0],
+		WForwardRenderStageTerrainVS::GetDesc(maxLights).bound_resources[1],
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture", {}, 8),
 	};
 	return desc;
 }
@@ -186,10 +178,34 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (!err)
 		return err;
 
+	WForwardRenderStageTerrainVS* terrainVS = new WForwardRenderStageTerrainVS(m_app);
+	terrainVS->SetName("DefaultForwardTerrainVS");
+	m_app->FileManager->AddDefaultAsset(terrainVS->GetName(), terrainVS);
+	terrainVS->Load();
+
+	WForwardRenderStageTerrainPS* terrainPS = new WForwardRenderStageTerrainPS(m_app);
+	terrainPS->SetName("DefaultForwardTerrainPS");
+	m_app->FileManager->AddDefaultAsset(terrainPS->GetName(), terrainPS);
+	terrainPS->Load();
+
+	WEffect* terrainFX = new WEffect(m_app);
+	terrainFX->SetName("DefaultForwardTerrainEffect");
+	m_app->FileManager->AddDefaultAsset(terrainFX->GetName(), terrainFX);
+	err = terrainFX->BindShader(terrainVS);
+	if (err) {
+		err = terrainFX->BindShader(terrainPS);
+		if (err) {
+			err = terrainFX->BuildPipeline(m_renderTarget);
+		}
+	}
+	W_SAFE_REMOVEREF(terrainVS);
+	W_SAFE_REMOVEREF(terrainPS);
+	if (!err)
+		return err;
+
 	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, fx, m_app, true);
 
-	fx->AddReference();
-	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, fx, m_app);
+	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, terrainFX, m_app);
 
 	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
 	if (!m_perFrameMaterial) {
@@ -210,9 +226,9 @@ void WForwardRenderStage::Cleanup() {
 }
 
 WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
-	if (filter & RENDER_FILTER_OBJECTS) {
-		WCamera* cam = rt->GetCamera();
+	WCamera* cam = rt->GetCamera();
 
+	if (filter & (RENDER_FILTER_TERRAIN | RENDER_FILTER_OBJECTS)) {
 		// create the per-frame UBO data
 		int numLights = 0;
 		for (int i = 0; numLights < m_lights.size(); i++) {
@@ -236,10 +252,14 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 		m_perFrameMaterial->SetVariableInt("numLights", numLights);
 		m_perFrameMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
 		m_perFrameMaterial->Bind(rt);
+	}
 
-		m_objectsFragment->Render(renderer, rt);
-
+	if (filter & RENDER_FILTER_TERRAIN) {
 		m_terrainsFragment->Render(renderer, rt);
+	}
+
+	if (filter & RENDER_FILTER_OBJECTS) {
+		m_objectsFragment->Render(renderer, rt);
 	}
 
 	return WError(W_SUCCEEDED);
