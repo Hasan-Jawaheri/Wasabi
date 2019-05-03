@@ -7,6 +7,10 @@ WMaterialsStore::WMaterialsStore() {
 	m_defaultEffect = nullptr;
 }
 
+WMaterialsStore::~WMaterialsStore() {
+	ClearEffects();
+}
+
 void WMaterialsStore::AddEffect(WEffect* effect, unsigned int bindingSet, bool set_default) {
 	effect->AddReference();
 	RemoveEffect(effect);

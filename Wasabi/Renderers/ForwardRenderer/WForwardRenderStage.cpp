@@ -152,6 +152,7 @@ WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_lights.resize((int)m_app->engineParams["maxLights"]);
 
 	m_objectsFragment = nullptr;
+	m_terrainsFragment = nullptr;
 	m_perFrameMaterial = nullptr;
 }
 
@@ -187,6 +188,9 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, fx, m_app, true);
 
+	fx->AddReference();
+	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, fx, m_app);
+
 	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
 	if (!m_perFrameMaterial) {
 		err = WError(W_ERRORUNK);
@@ -202,6 +206,7 @@ void WForwardRenderStage::Cleanup() {
 	WRenderStage::Cleanup();
 	W_SAFE_REMOVEREF(m_perFrameMaterial);
 	W_SAFE_DELETE(m_objectsFragment);
+	W_SAFE_DELETE(m_terrainsFragment);
 }
 
 WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
@@ -233,6 +238,8 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 		m_perFrameMaterial->Bind(rt);
 
 		m_objectsFragment->Render(renderer, rt);
+
+		m_terrainsFragment->Render(renderer, rt);
 	}
 
 	return WError(W_SUCCEEDED);

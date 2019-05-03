@@ -239,8 +239,6 @@ WSprite::WSprite(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 WSprite::~WSprite() {
 	W_SAFE_REMOVEREF(m_geometry);
 
-	ClearEffects();
-
 	m_app->SpriteManager->RemoveEntity(this);
 }
 

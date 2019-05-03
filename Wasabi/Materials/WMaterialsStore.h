@@ -18,6 +18,7 @@ protected:
 
 public:
 	WMaterialsStore();
+	virtual ~WMaterialsStore();
 
 	void AddEffect(class WEffect* effect, unsigned int bindingSet = 0, bool set_default = true);
 
