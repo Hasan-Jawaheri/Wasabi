@@ -208,8 +208,6 @@ WObject::~WObject() {
 
 	DestroyInstancingResources();
 
-	ClearEffects();
-
 	m_app->ObjectManager->RemoveEntity(this);
 }
 

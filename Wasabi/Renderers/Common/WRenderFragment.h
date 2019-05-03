@@ -9,6 +9,8 @@
 
 #include "../../Objects/WObject.h"
 
+#include "../../Terrains/WTerrain.h"
+
 #include "../../Sprites/WSprite.h"
 
 #include "../../Particles/WParticles.h"
@@ -33,17 +35,17 @@ protected:
 		if (added) {
 			OnEntityAdded(entity);
 			SortingKeyT key(entity);
-			this->m_allEntities.insert(std::make_pair(key, entity));
+			m_allEntities.insert(std::make_pair(key, entity));
 		} else {
-			auto iter = this->m_allEntities.find(SortingKeyT(entity));
-			if (iter != this->m_allEntities.end())
-				this->m_allEntities.erase(iter);
+			auto iter = m_allEntities.find(SortingKeyT(entity));
+			if (iter != m_allEntities.end())
+				m_allEntities.erase(iter);
 			else {
 				// the entity seems to have changed and then removed before we cloud reindex it in the render loop
 				// need to find it manually now...
-				for (auto it = this->m_allEntities.begin(); it != this->m_allEntities.end(); it++) {
+				for (auto it = m_allEntities.begin(); it != m_allEntities.end(); it++) {
 					if (it->second == entity) {
-						this->m_allEntities.erase(it);
+						m_allEntities.erase(it);
 						break;
 					}
 				}
@@ -122,8 +124,8 @@ public:
 	virtual bool IsEntityAnimated(EntityT* entity) = 0;
 
 	virtual void OnEntityAdded(EntityT* entity) {
-		entity->AddEffect(this->m_renderEffect, 0);
-		entity->GetMaterial(this->m_renderEffect)->SetName(GenerateMaterialName());
+		entity->AddEffect(m_renderEffect, 0);
+		entity->GetMaterial(m_renderEffect)->SetName(GenerateMaterialName());
 	}
 };
 
@@ -152,7 +154,7 @@ class WObjectsRenderFragment : public WRenderFragment<WObject, WObjectSortingKey
 	bool m_setEffectDefault;
 
 public:
-	WObjectsRenderFragment(std::string fragmentName, WEffect* fx, class Wasabi* wasabi, bool setEffectDefault = false) : WRenderFragment(fragmentName, fx, wasabi->ObjectManager) {
+	WObjectsRenderFragment(std::string fragmentName, WEffect* fx, class Wasabi* wasabi, bool setEffectDefault = true) : WRenderFragment(fragmentName, fx, wasabi->ObjectManager) {
 		m_setEffectDefault = setEffectDefault;
 	}
 
@@ -169,8 +171,42 @@ public:
 	}
 
 	virtual void OnEntityAdded(WObject* object) {
-		object->AddEffect(this->m_renderEffect, 0, m_setEffectDefault);
-		object->GetMaterial(this->m_renderEffect)->SetName(GenerateMaterialName());
+		object->AddEffect(m_renderEffect, 0, m_setEffectDefault);
+		object->GetMaterial(m_renderEffect)->SetName(GenerateMaterialName());
+	}
+};
+
+struct WTerrainSortingKey {
+	class WEffect* fx;
+	class WTerrain* terrain;
+
+	WTerrainSortingKey(class WTerrain* t) {
+		terrain = t;
+		fx = terrain->GetDefaultEffect();
+	}
+
+	const bool operator< (const WTerrainSortingKey& that) const {
+		return (void*)fx < (void*)that.fx ? true : fx == that.fx ? (terrain < that.terrain) : false;
+	}
+
+	class WTerrain* GetEntity() { return terrain; }
+};
+
+class WTerrainRenderFragment : public WRenderFragment<WTerrain, WTerrainSortingKey> {
+public:
+	WTerrainRenderFragment(std::string fragmentName, WEffect* fx, class Wasabi* wasabi) : WRenderFragment(fragmentName, fx, wasabi->TerrainManager) {
+	}
+
+	virtual void RenderEntity(WTerrain* terrain, class WRenderTarget* rt, class WMaterial* material) {
+		terrain->Render(rt);
+	}
+
+	virtual bool KeyChanged(WTerrain* terrain, class WEffect* effect, WTerrainSortingKey key) {
+		return effect != key.fx;
+	}
+
+	virtual bool IsEntityAnimated(WTerrain* terrain) {
+		return false;
 	}
 };
 

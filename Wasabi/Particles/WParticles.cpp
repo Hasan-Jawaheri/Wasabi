@@ -333,8 +333,6 @@ WParticles::WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE t
 WParticles::~WParticles() {
 	_DestroyResources();
 
-	ClearEffects();
-
 	m_app->ParticlesManager->RemoveEntity(this);
 }
 

@@ -70,7 +70,7 @@ WError WBackfaceDepthRenderStage::Initialize(std::vector<WRenderStage*>& previou
 	if (!err)
 		return err;
 
-	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, fx, m_app);
+	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, fx, m_app, false);
 
 	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
 	if (!m_perFrameMaterial) {

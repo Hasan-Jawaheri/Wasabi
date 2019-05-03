@@ -69,18 +69,6 @@ W_SHADER_DESC WGBufferPS::GetDesc() {
 	return desc;
 }
 
-WGBufferRenderStage::ObjectKey::ObjectKey(WObject* object) {
-	obj = object;
-	fx = obj->GetDefaultEffect();
-	animated = obj->GetAnimation() != nullptr;
-}
-
-const bool WGBufferRenderStage::ObjectKey::operator< (const ObjectKey& that) const {
-	if (animated != that.animated)
-		return !animated;
-	return (void*)fx < (void*)that.fx ? true : fx == that.fx ? (obj < that.obj) : false;
-}
-
 WGBufferRenderStage::WGBufferRenderStage(Wasabi* const app) : WRenderStage(app) {
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = RENDER_STAGE_TARGET_BUFFER;
@@ -91,9 +79,8 @@ WGBufferRenderStage::WGBufferRenderStage(Wasabi* const app) : WRenderStage(app) 
 	});
 	m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
 
-	m_GBufferFX = nullptr;
+	m_objectsFragment = nullptr;
 	m_perFrameMaterial = nullptr;
-	m_currentMatId = 0;
 }
 
 WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
@@ -111,14 +98,14 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	m_app->FileManager->AddDefaultAsset(ps->GetName(), ps);
 	ps->Load();
 
-	m_GBufferFX = new WEffect(m_app);
-	m_GBufferFX->SetName("GBufferDefaultEffect");
-	m_app->FileManager->AddDefaultAsset(m_GBufferFX->GetName(), m_GBufferFX);
-	err = m_GBufferFX->BindShader(vs);
+	WEffect* GBufferFX = new WEffect(m_app);
+	GBufferFX->SetName("GBufferDefaultEffect");
+	m_app->FileManager->AddDefaultAsset(GBufferFX->GetName(), GBufferFX);
+	err = GBufferFX->BindShader(vs);
 	if (err) {
-		err = m_GBufferFX->BindShader(ps);
+		err = GBufferFX->BindShader(ps);
 		if (err) {
-			err = m_GBufferFX->BuildPipeline(m_renderTarget);
+			err = GBufferFX->BuildPipeline(m_renderTarget);
 		}
 	}
 	W_SAFE_REMOVEREF(ps);
@@ -126,53 +113,21 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (!err)
 		return err;
 
-	m_perFrameMaterial = m_GBufferFX->CreateMaterial(1);
+	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, GBufferFX, m_app, true);
+
+	m_perFrameMaterial = GBufferFX->CreateMaterial(1);
 	if (!m_perFrameMaterial)
 		return WError(W_ERRORUNK);
 	m_perFrameMaterial->SetName("GBufferPerFrameMaterial");
 	m_app->FileManager->AddDefaultAsset(m_perFrameMaterial->GetName(), m_perFrameMaterial);
 
-	unsigned int numEntities = m_app->ObjectManager->GetEntitiesCount();
-	for (unsigned int i = 0; i < numEntities; i++)
-		OnObjectChange(m_app->ObjectManager->GetEntityByIndex(i), true);
-	m_app->ObjectManager->RegisterChangeCallback(m_stageDescription.name, [this](WObject* o, bool a) {this->OnObjectChange(o, a); });
-
 	return WError(W_SUCCEEDED);
-}
-
-void WGBufferRenderStage::OnObjectChange(class WObject* object, bool added) {
-	if (added) {
-		object->AddEffect(this->m_GBufferFX, 0);
-		object->GetMaterial(this->m_GBufferFX)->SetName("GBufferDefaultMaterial" + std::to_string(this->m_currentMatId));
-		ObjectKey key(object);
-		this->m_allObjects.insert(std::make_pair(key, object));
-	} else {
-		auto iter = this->m_allObjects.find(ObjectKey(object));
-		if (iter != this->m_allObjects.end())
-			this->m_allObjects.erase(iter);
-		else {
-			// the sprite seems to have changed and then removed before we cloud reindex it in the render loop
-			// need to find it manually now...
-			for (auto it = this->m_allObjects.begin(); it != this->m_allObjects.end(); it++) {
-				if (it->second == object) {
-					this->m_allObjects.erase(it);
-					break;
-				}
-			}
-		}
-	}
 }
 
 void WGBufferRenderStage::Cleanup() {
 	WRenderStage::Cleanup();
-	W_SAFE_REMOVEREF(m_GBufferFX);
 	W_SAFE_REMOVEREF(m_perFrameMaterial);
-	m_app->ObjectManager->RemoveChangeCallback(m_stageDescription.name);
-	unsigned int numEntities = m_app->ObjectManager->GetEntitiesCount();
-	for (unsigned int i = 0; i < numEntities; i++) {
-		WObject* object = m_app->ObjectManager->GetEntityByIndex(i);
-		object->RemoveEffect(m_GBufferFX);
-	}
+	W_SAFE_DELETE(m_objectsFragment);
 }
 
 WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
@@ -183,32 +138,7 @@ WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 		m_perFrameMaterial->SetVariableMatrix("projectionMatrix", cam->GetProjectionMatrix());
 		m_perFrameMaterial->Bind(rt);
 
-		uint numObjects = m_app->ObjectManager->GetEntitiesCount();
-
-		WEffect* boundFX = nullptr;
-		bool isBoundFXAnimated = false;
-		std::vector<ObjectKey> reindexObjects;
-		for (auto it = m_allObjects.begin(); it != m_allObjects.end(); it++) {
-			WObject* object = it->second;
-			WEffect* effect = m_GBufferFX;
-			WMaterial* material = object->GetMaterial(effect);
-			if (material && object->WillRender(rt)) {
-				bool isAnimated = object->GetAnimation() != nullptr;
-				if (boundFX != effect || (isAnimated != isBoundFXAnimated)) {
-					effect->Bind(rt, isAnimated ? 2 : 1);
-					boundFX = effect;
-					isBoundFXAnimated = isAnimated;
-				}
-				if (effect != it->first.fx || isAnimated != it->first.animated)
-					reindexObjects.push_back(it->first);
-
-				object->Render(rt, material);
-			}
-		}
-		for (auto it = reindexObjects.begin(); it != reindexObjects.end(); it++) {
-			m_allObjects.erase(*it);
-			m_allObjects.insert(std::make_pair(ObjectKey(it->obj), it->obj));
-		}
+		m_objectsFragment->Render(renderer, rt);
 	}
 
 	return WError(W_SUCCEEDED);

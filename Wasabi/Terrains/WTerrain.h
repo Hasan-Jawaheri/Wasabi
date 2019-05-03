@@ -10,12 +10,13 @@
 #pragma once
 
 #include "../Core/WCore.h"
+#include "../Materials/WMaterialsStore.h"
 
 /**
  * @ingroup engineclass
  * This represents a terrain object and is responsible for rendering it.
  */
-class WTerrain : public WBase, public WOrientation {
+class WTerrain : public WBase, public WOrientation, public WMaterialsStore {
 protected:
 	virtual ~WTerrain();
 
@@ -38,6 +39,12 @@ public:
 	 * @return Error code, see WError.h
 	 */
 	WError Create(unsigned int N = 256, float size = 1.0f);
+
+	/**
+	 * Checks whether a call to Render() will cause any rendering (draw call) to
+	 * happen.
+	 */
+	bool WillRender(class WRenderTarget* rt);
 
 	/**
 	 * Renders the terrain to the given render target.

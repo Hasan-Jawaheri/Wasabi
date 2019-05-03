@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../WRenderStage.h"
+#include "../Common/WRenderFragment.h"
 #include "../../Materials/WEffect.h"
 
 class WGBufferVS : public WShader {
@@ -18,22 +19,8 @@ public:
 };
 
 class WGBufferRenderStage : public WRenderStage {
-	class WEffect* m_GBufferFX;
+	WObjectsRenderFragment* m_objectsFragment;
 	class WMaterial* m_perFrameMaterial;
-	uint m_currentMatId;
-
-	struct ObjectKey {
-		class WEffect* fx;
-		class WObject* obj;
-		bool animated;
-
-		ObjectKey(class WObject* object);
-		const bool operator< (const ObjectKey& that) const;
-	};
-	/** Sorted container for all the objects to be rendered by this stage */
-	std::map<ObjectKey, class WObject*> m_allObjects;
-
-	void OnObjectChange(class WObject* object, bool added);
 
 public:
 	WGBufferRenderStage(class Wasabi* const app);

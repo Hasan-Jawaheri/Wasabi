@@ -82,11 +82,21 @@ WError WTerrain::Create(unsigned int N, float size) {
 	return WError(W_SUCCEEDED);
 }
 
-void WTerrain::Render(class WRenderTarget* const rt) {
+bool WTerrain::WillRender(WRenderTarget* rt) {
 	if (Valid() && !m_hidden) {
-		WCamera* cam = rt->GetCamera();
+		/*WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();
+		if (m_bFrustumCull) {
+			if (!InCameraView(cam))
+				return false;
+		}*/
+		return true;
 	}
+	return false;
+}
+
+void WTerrain::Render(class WRenderTarget* const rt) {
+	WMatrix worldM = GetWorldMatrix();
 }
 
 WMatrix WTerrain::GetWorldMatrix() {
