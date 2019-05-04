@@ -145,7 +145,7 @@ W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 	std::vector<W_SHADER_VARIABLE_INFO> v,
 	uint textureArraySize
 ) : variables(v), type(t), binding_index(index), binding_set(set), name(_name) {
-	if (t == W_TYPE_UBO) {
+	if (t == W_TYPE_UBO || t == W_TYPE_PUSH_CONSTANT) {
 		size_t curOffset = 0;
 		_offsets.resize(variables.size());
 		for (int i = 0; i < variables.size(); i++) {
@@ -157,6 +157,12 @@ W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 			curOffset += varSize;
 		}
 		_size = curOffset;
+
+		if (t == W_TYPE_PUSH_CONSTANT) {
+			for (int i = 0; i < _offsets.size(); i++)
+				_offsets[i] += binding_index;
+			binding_index = -1;
+		}
 	} else if (t == W_TYPE_TEXTURE) {
 		_size = textureArraySize;
 	}
@@ -595,7 +601,7 @@ void WEffect::SetRasterizationState(VkPipelineRasterizationStateCreateInfo state
 	m_rasterizationState = state;
 }
 
-WError WEffect::BuildPipeline(WRenderTarget* rt) {
+WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	VkDevice device = m_app->GetVulkanDevice();
 
 	if (!_ValidShaders())
@@ -608,10 +614,11 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	//
 	unordered_map<int, W_BOUND_RESOURCE> used_bindings;
 	unordered_map<uint, vector<VkDescriptorSetLayoutBinding>> layoutBindingsMap;
+	vector<VkPushConstantRange> pushConstantRanges;
 	for (int i = 0; i < m_shaders.size(); i++) {
-		if (m_shaders[i]->m_desc.bound_resources.size()) {
-			for (int j = 0; j < m_shaders[i]->m_desc.bound_resources.size(); j++) {
-				W_BOUND_RESOURCE* boundResource = &m_shaders[i]->m_desc.bound_resources[j];
+		for (int j = 0; j < m_shaders[i]->m_desc.bound_resources.size(); j++) {
+			W_BOUND_RESOURCE* boundResource = &m_shaders[i]->m_desc.bound_resources[j];
+			if (boundResource->type == W_TYPE_UBO || boundResource->type == W_TYPE_TEXTURE) {
 				VkDescriptorSetLayoutBinding layoutBinding = {};
 				layoutBinding.stageFlags = (VkShaderStageFlagBits)m_shaders[i]->m_desc.type;
 				layoutBinding.pImmutableSamplers = NULL;
@@ -646,6 +653,12 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 					layoutBindingsMap.insert(std::pair<uint, vector<VkDescriptorSetLayoutBinding>>(boundResource->binding_set, { layoutBinding }));
 				} else
 					iter->second.push_back(layoutBinding);
+			} else if (boundResource->type == W_TYPE_PUSH_CONSTANT) {
+				VkPushConstantRange range = {};
+				range.stageFlags = (VkShaderStageFlagBits)m_shaders[i]->m_desc.type;
+				range.offset = boundResource->OffsetAtVariable(0);
+				range.size = boundResource->GetSize();
+				pushConstantRanges.push_back(range);
 			}
 		}
 	}
@@ -675,6 +688,8 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	pPipelineLayoutCreateInfo.pNext = NULL;
 	pPipelineLayoutCreateInfo.setLayoutCount = descriptorSetLayoutVector.size();
 	pPipelineLayoutCreateInfo.pSetLayouts = descriptorSetLayoutVector.data();
+	pPipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRanges.size();
+	pPipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
 
 	err = vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &m_pipelineLayout);
 	if (err)
@@ -817,14 +832,21 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	if (inputStates.size() == 1) { // 0 ILs, make one pipeline without buffers
 		pipelineCreateInfo.pVertexInputState = &inputStates[0];
 		pipelineCreateInfos.push_back(pipelineCreateInfo);
-	} else { // 1 or more ILs available, make a pipeline for each and dont make a 0-buffer pipeline
-		for (int i = 1; i < inputStates.size(); i++) {
-			pipelineCreateInfo.pVertexInputState = &inputStates[i];
-			if (i > 1) {
-				pipelineCreateInfo.basePipelineIndex = 0; // 0th index in pipelineCreateInfos
-				pipelineCreateInfo.flags |= VK_PIPELINE_CREATE_DERIVATIVE_BIT;
-			} else
-				pipelineCreateInfo.flags |= VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
+	} else { // 1 or more ILs available
+		if (buildMultiplePipelines) {
+			// make a pipeline for each and dont make a 0-buffer pipeline
+			for (int i = 1; i < inputStates.size(); i++) {
+				pipelineCreateInfo.pVertexInputState = &inputStates[i];
+				if (i > 1) {
+					pipelineCreateInfo.basePipelineIndex = 0; // 0th index in pipelineCreateInfos
+					pipelineCreateInfo.flags |= VK_PIPELINE_CREATE_DERIVATIVE_BIT;
+				} else
+					pipelineCreateInfo.flags |= VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
+				pipelineCreateInfos.push_back(pipelineCreateInfo);
+			}
+		} else {
+			// just make one pipeline for exactly as many buffers as there are input layouts
+			pipelineCreateInfo.pVertexInputState = &inputStates[inputStates.size()-1];
 			pipelineCreateInfos.push_back(pipelineCreateInfo);
 		}
 	}

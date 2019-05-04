@@ -43,13 +43,17 @@ void WMaterial::_DestroyResources() {
 	}
 	m_uniformBuffers.clear();
 
-	for (int i = 0; i < m_sampler_info.size(); i++) {
-		for (uint j = 0; j < m_sampler_info[i].images.size(); j++) {
-			if (m_sampler_info[i].images[j])
-				W_SAFE_REMOVEREF(m_sampler_info[i].images[j]);
+	for (int i = 0; i < m_samplers.size(); i++) {
+		for (uint j = 0; j < m_samplers[i].images.size(); j++) {
+			if (m_samplers[i].images[j])
+				W_SAFE_REMOVEREF(m_samplers[i].images[j]);
 		}
 	}
-	m_sampler_info.clear();
+	m_samplers.clear();
+
+	for (int i = 0; i < m_pushConstants.size(); i++)
+		W_SAFE_FREE(m_pushConstants[i].data);
+	m_pushConstants.clear();
 
 	for (auto it = m_descriptorSets.begin(); it != m_descriptorSets.end(); it++)
 		m_app->MemoryManager->ReleaseDescriptorSet(*it, m_descriptorPool, m_app->GetCurrentBufferingIndex());
@@ -113,8 +117,8 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 				writeDescriptorsSize += ubo.descriptorBufferInfos.size();
 			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_TEXTURE) {
 				bool already_added = false;
-				for (int k = 0; k < m_sampler_info.size(); k++) {
-					if (m_sampler_info[k].sampler_info->binding_index == shader->m_desc.bound_resources[j].binding_index) {
+				for (int k = 0; k < m_samplers.size(); k++) {
+					if (m_samplers[k].sampler_info->binding_index == shader->m_desc.bound_resources[j].binding_index) {
 						// two shaders have the same sampler binding index, skip (it is the same sampler, the WEffect::CreatePipeline ensures that)
 						already_added = true;
 					}
@@ -141,8 +145,26 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 					}
 				}
 				sampler.sampler_info = &shader->m_desc.bound_resources[j];
-				m_sampler_info.push_back(sampler);
+				m_samplers.push_back(sampler);
 				writeDescriptorsSize += sampler.descriptors.size() * sampler.descriptors[0].size();
+			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_PUSH_CONSTANT) {
+				bool already_added = false;
+				for (int k = 0; k < m_pushConstants.size(); k++) {
+					if (m_pushConstants[k].pc_info->OffsetAtVariable(0) == shader->m_desc.bound_resources[j].OffsetAtVariable(0) &&
+						m_pushConstants[k].pc_info->GetSize() == shader->m_desc.bound_resources[j].GetSize()) {
+						// two shaders have the same push constant ranges, merge them
+						m_pushConstants[k].shaderStages |= (VkShaderStageFlagBits)shader->m_desc.type;
+						already_added = true;
+					}
+				}
+				if (already_added)
+					continue;
+
+				PUSH_CONSTANT_INFO info = {};
+				info.pc_info = &shader->m_desc.bound_resources[j];
+				info.data = W_SAFE_ALLOC(info.pc_info->GetSize());
+				info.shaderStages = (VkShaderStageFlagBits)shader->m_desc.type;
+				m_pushConstants.push_back(info);
 			}
 		}
 	}
@@ -159,12 +181,12 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 		s.descriptorCount = m_uniformBuffers.size() * numBuffers;
 		typeCounts.push_back(s);
 	}
-	if (m_sampler_info.size() > 0) {
+	if (m_samplers.size() > 0) {
 		VkDescriptorPoolSize s;
 		s.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		s.descriptorCount = 0;
-		for (uint i = 0; i < m_sampler_info.size(); i++)
-			s.descriptorCount += m_sampler_info[i].images.size() * numBuffers;
+		for (uint i = 0; i < m_samplers.size(); i++)
+			s.descriptorCount += m_samplers[i].images.size() * numBuffers;
 		typeCounts.push_back(s);
 	}
 
@@ -249,7 +271,7 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 	}
 
 	// update textures that changed
-	for (auto sampler = m_sampler_info.begin(); sampler != m_sampler_info.end(); sampler++) {
+	for (auto sampler = m_samplers.begin(); sampler != m_samplers.end(); sampler++) {
 		W_BOUND_RESOURCE* info = sampler->sampler_info;
 		bool bChanged = false;
 		for (uint textureArrayIndex = 0; textureArrayIndex < sampler->images.size(); textureArrayIndex++) {
@@ -277,6 +299,9 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 		vkUpdateDescriptorSets(device, numUpdateDescriptors, m_writeDescriptorSets.data(), 0, NULL);
 
 	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_effect->GetPipelineLayout(), m_setIndex, 1, &m_descriptorSets[bufferIndex], 0, nullptr);
+
+	for (auto pc = m_pushConstants.begin(); pc != m_pushConstants.end(); pc++)
+		vkCmdPushConstants(renderCmdBuffer, m_effect->GetPipelineLayout(), pc->shaderStages, pc->pc_info->OffsetAtVariable(0), pc->pc_info->GetSize(), pc->data);
 
 	return WError(W_SUCCEEDED);
 }
@@ -347,24 +372,36 @@ WError WMaterial::SetVariableData(const char* varName, void* data, size_t len) {
 			}
 		}
 	}
+	for (auto pc = m_pushConstants.begin(); pc != m_pushConstants.end(); pc++) {
+		W_BOUND_RESOURCE* info = pc->pc_info;
+		for (int j = 0; j < info->variables.size(); j++) {
+			if (strcmp(info->variables[j].name.c_str(), varName) == 0) {
+				size_t varsize = info->variables[j].GetSize();
+				size_t offset = info->OffsetAtVariable(j);
+				if (varsize < len || offset + len > pc->pc_info->GetSize())
+					return WError(W_INVALIDPARAM);
+				memcpy((char*)pc->data + offset, data, len);
+			}
+		}
+	}
 	return WError(isFound ? W_SUCCEEDED : W_INVALIDPARAM);
 }
 
 WError WMaterial::SetTexture(int binding_index, WImage* img, uint arrayIndex) {
 	VkDevice device = m_app->GetVulkanDevice();
 	bool isFound = false;
-	for (int i = 0; i < m_sampler_info.size(); i++) {
-		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
+	for (int i = 0; i < m_samplers.size(); i++) {
+		W_BOUND_RESOURCE* info = m_samplers[i].sampler_info;
 		if (info->binding_index == binding_index) {
-			if (arrayIndex < m_sampler_info[i].images.size() && m_sampler_info[i].images[arrayIndex] != img) {
-				if (m_sampler_info[i].images[arrayIndex]) {
-					W_SAFE_REMOVEREF(m_sampler_info[i].images[arrayIndex]);
+			if (arrayIndex < m_samplers[i].images.size() && m_samplers[i].images[arrayIndex] != img) {
+				if (m_samplers[i].images[arrayIndex]) {
+					W_SAFE_REMOVEREF(m_samplers[i].images[arrayIndex]);
 				}
 				if (img) {
-					m_sampler_info[i].images[arrayIndex] = img;
+					m_samplers[i].images[arrayIndex] = img;
 					img->AddReference();
 				} else {
-					m_sampler_info[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
+					m_samplers[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
 					m_app->ImageManager->GetDefaultImage()->AddReference();
 				}
 				isFound = true;
@@ -377,19 +414,19 @@ WError WMaterial::SetTexture(int binding_index, WImage* img, uint arrayIndex) {
 WError WMaterial::SetTexture(std::string name, WImage* img, uint arrayIndex) {
 	VkDevice device = m_app->GetVulkanDevice();
 	bool isFound = false;
-	for (int i = 0; i < m_sampler_info.size(); i++) {
-		W_BOUND_RESOURCE* info = m_sampler_info[i].sampler_info;
+	for (int i = 0; i < m_samplers.size(); i++) {
+		W_BOUND_RESOURCE* info = m_samplers[i].sampler_info;
 		if (info->name == name) {
-			if (arrayIndex < m_sampler_info[i].images.size() && m_sampler_info[i].images[arrayIndex] != img) {
-				if (m_sampler_info[i].images[arrayIndex]) {
-					W_SAFE_REMOVEREF(m_sampler_info[i].images[arrayIndex]);
+			if (arrayIndex < m_samplers[i].images.size() && m_samplers[i].images[arrayIndex] != img) {
+				if (m_samplers[i].images[arrayIndex]) {
+					W_SAFE_REMOVEREF(m_samplers[i].images[arrayIndex]);
 				}
 				if (img) {
-					m_sampler_info[i].images[arrayIndex] = img;
+					m_samplers[i].images[arrayIndex] = img;
 					img->AddReference();
 				}
 				else {
-					m_sampler_info[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
+					m_samplers[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
 					m_app->ImageManager->GetDefaultImage()->AddReference();
 				}
 				isFound = true;
@@ -417,11 +454,11 @@ WError WMaterial::SaveToStream(WFile* file, std::ostream& outputStream) {
 
 	// write the texture data
 	char tmpName[W_MAX_ASSET_NAME_SIZE];
-	tmp = m_sampler_info.size();
+	tmp = m_samplers.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	std::streampos texturesOffset = outputStream.tellp();
-	for (uint i = 0; i < m_sampler_info.size(); i++) {
-		SAMPLER_INFO* SI = &m_sampler_info[i];
+	for (uint i = 0; i < m_samplers.size(); i++) {
+		SAMPLER_INFO* SI = &m_samplers[i];
 		outputStream.write((char*)& SI->sampler_info->binding_index, sizeof(SI->sampler_info->binding_index));
 		tmp = SI->images.size();
 		outputStream.write((char*)&tmp, sizeof(tmp));
@@ -436,8 +473,8 @@ WError WMaterial::SaveToStream(WFile* file, std::ostream& outputStream) {
 	outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
 
 	// save dependencies
-	for (uint i = 0; i < m_sampler_info.size(); i++) {
-		SAMPLER_INFO* SI = &m_sampler_info[i];
+	for (uint i = 0; i < m_samplers.size(); i++) {
+		SAMPLER_INFO* SI = &m_samplers[i];
 		for (uint j = 0; j < SI->images.size(); j++) {
 			WError err = file->SaveAsset(SI->images[j]);
 			if (!err)
