@@ -2,6 +2,9 @@
 
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : enable
+
+#include "../../Common/Shaders/object_utils.glsl"
 
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inTang;
@@ -34,74 +37,32 @@ layout(location = 1) out vec3 outViewPos;
 layout(location = 2) out vec3 outViewNorm;
 layout(location = 3) flat out uint outTexIndex;
 
-mat4x4 LoadInstanceMatrix() {
-	if (uboPerObject.isInstanced == 1) {
-		uint baseIndex = 4 * gl_InstanceIndex;
-
-		uint baseU = baseIndex % uboPerObject.instanceTextureWidth;
-		uint baseV = baseIndex / uboPerObject.instanceTextureWidth;
-
-		vec4 m1 = texelFetch(instancingTexture, ivec2(baseU + 0, baseV), 0);
-		vec4 m2 = texelFetch(instancingTexture, ivec2(baseU + 1, baseV), 0);
-		vec4 m3 = texelFetch(instancingTexture, ivec2(baseU + 2, baseV), 0);
-		vec4 m4 = vec4(m1.w, m2.w, m3.w, 1.0f);
-		m1.w = 0.0f;
-		m2.w = 0.0f;
-		m3.w = 0.0f;
-		mat4x4 m = mat4x4(1.0);
-		m[0] = m1;
-		m[1] = m2;
-		m[2] = m3;
-		m[3] = m4;
-		return m;
-	} else
-		return mat4x4(1.0);
-}
-
-mat4x4 LoadBoneMatrix(uint boneID)
-{
-	uint baseIndex = 4 * boneID;
-
-	uint baseU = baseIndex % uboPerObject.animationTextureWidth;
-	uint baseV = baseIndex / uboPerObject.animationTextureWidth;
-
-	vec4 m1 = texelFetch(animationTexture, ivec2(baseU + 0, baseV), 0);
-	vec4 m2 = texelFetch(animationTexture, ivec2(baseU + 1, baseV), 0);
-	vec4 m3 = texelFetch(animationTexture, ivec2(baseU + 2, baseV), 0);
-	vec4 m4 = vec4(m1.w, m2.w, m3.w, 1.0f);
-	m1.w = 0.0f;
-	m2.w = 0.0f;
-	m3.w = 0.0f;
-	mat4x4 m = mat4x4(1.0);
-	m[0] = m1;
-	m[1] = m2;
-	m[2] = m3;
-	m[3] = m4;
-	return m;
-}
-
 void main() {
-	outUV = inUV;
 	mat4x4 animMtx = mat4x4(1.0) * (1-uboPerObject.isAnimated);
-	mat4x4 instMtx = LoadInstanceMatrix();
+	mat4x4 instMtx =
+		uboPerObject.isInstanced == 1
+		? LoadInstanceMatrix(gl_InstanceIndex, instancingTexture, uboPerObject.instanceTextureWidth)
+		: mat4x4(1.0f);
 	if (boneWeight.x * uboPerObject.isAnimated > 0.001f) {
-		animMtx += boneWeight.x * LoadBoneMatrix(boneIndex.x); 
+		animMtx += boneWeight.x * LoadBoneMatrix(boneIndex.x, animationTexture, uboPerObject.animationTextureWidth);
 		if (boneWeight.y > 0.001f) {
-			animMtx += boneWeight.y * LoadBoneMatrix(boneIndex.y); 
+			animMtx += boneWeight.y * LoadBoneMatrix(boneIndex.y, animationTexture, uboPerObject.animationTextureWidth);
 			if (boneWeight.z > 0.001f) {
-				animMtx += boneWeight.z * LoadBoneMatrix(boneIndex.z); 
+				animMtx += boneWeight.z * LoadBoneMatrix(boneIndex.z, animationTexture, uboPerObject.animationTextureWidth);
 				if (boneWeight.w > 0.001f) {
-					animMtx += boneWeight.w * LoadBoneMatrix(boneIndex.w); 
+					animMtx += boneWeight.w * LoadBoneMatrix(boneIndex.w, animationTexture, uboPerObject.animationTextureWidth);
 				}
 			}
 		}
 	}
+
 	vec4 localPos1 = animMtx * vec4(inPos.xyz, 1.0);
 	vec4 localPos2 = instMtx * vec4(localPos1.xyz, 1.0);
 	vec4 localNorm1 = animMtx * vec4(inNorm.xyz, 0.0f);
 	vec4 localNorm2 = instMtx * vec4(localNorm1.xyz, 0.0f);
 	outViewPos = (uboPerFrame.viewMatrix * uboPerObject.worldMatrix * localPos2).xyz;
 	outViewNorm = (uboPerFrame.viewMatrix * uboPerObject.worldMatrix * localNorm2).xyz;
+	outUV = inUV;
 	outTexIndex = inTexIndex;
 	gl_Position = uboPerFrame.projectionMatrix * vec4(outViewPos, 1.0);
 }
