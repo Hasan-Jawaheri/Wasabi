@@ -248,7 +248,17 @@ private:
 		struct W_BOUND_RESOURCE* sampler_info;
 	};
 	/** List of all textures (or samplers) for the effect */
-	std::vector<SAMPLER_INFO> m_sampler_info;
+	std::vector<SAMPLER_INFO> m_samplers;
+
+	struct PUSH_CONSTANT_INFO {
+		/** Data in the push constant buffer */
+		void* data;
+		/** Shader stages for this push constant */
+		VkShaderStageFlags shaderStages;
+		/** Pointer to the push constant description in the effect */
+		struct W_BOUND_RESOURCE* pc_info;
+	};
+	std::vector<PUSH_CONSTANT_INFO> m_pushConstants;
 
 	/**
 	 * Frees all resources allocated for the material.

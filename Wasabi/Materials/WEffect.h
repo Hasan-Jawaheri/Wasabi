@@ -63,6 +63,8 @@ enum W_SHADER_BOUND_RESOURCE_TYPE {
 	W_TYPE_UBO = 0,
 	/** Bound resource is a combined sampler (texture) */
 	W_TYPE_TEXTURE = 1,
+	/** Bound resource is a push constant structure */
+	W_TYPE_PUSH_CONSTANT = 2,
 };
 
 /**
@@ -571,9 +573,14 @@ public:
 	 * convenience when one wishes to use the same effect without supplying all
 	 * required vertex shaders.
 	 * @param  rt Render target that the effect plans on rendering to
+	 * @param  buildMultiplePipelines If set to true, multiple pipelines will be
+	 *                                created for 0 input layouts, 1 input layout,
+	 *                                2...n input layouts so the pipeline can be
+	 *                                used with less-than-total vertex buffers
+	 *                                (using WEffect::Bind(rt, num_vertex_buffers))
 	 * @return    Error code, see WError.h
 	 */
-	WError BuildPipeline(class WRenderTarget* rt);
+	WError BuildPipeline(class WRenderTarget* rt, bool buildMultiplePipelines = true);
 
 	/**
 	 * Binds the effect (pipeline) to render command buffer of the specified
