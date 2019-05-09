@@ -135,26 +135,42 @@ WError WTerrain::Create(unsigned int N, float size, unsigned int numRings) {
 			ring->center = WVector2(0.0f, 0.0f);
 
 			if (i > 0) {
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomLeft + WVector2(halfM, halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomLeft + WVector2(Msize + halfM, halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomLeft + WVector2(halfM, Msize + halfM)) - ring->center));
+				// 2 strips for the L-shape (bias)
+				ring->pieces.push_back(new RingPiece(ring, m_2Mp1Geometry, 0.0f, WVector2(0.0f, 0.0f)));
+				ring->pieces.push_back(new RingPiece(ring, m_2Mp1Geometry, 1.0f, WVector2(0.0f, 0.0f)));
 
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topRight + WVector2(-halfM, -halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topRight + WVector2(-Msize - halfM, -halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topRight + WVector2(-halfM, -Msize - halfM)) - ring->center));
+				// 4 sets of 3 MxM pieces, 1 set on each corner
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, bottomLeft + WVector2(halfM, halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, bottomLeft + WVector2(Msize + halfM, halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, bottomLeft + WVector2(halfM, Msize + halfM)));
 
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomRight + WVector2(-halfM, halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomRight + WVector2(-Msize - halfM, halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomRight + WVector2(-halfM, Msize + halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, topRight + WVector2(-halfM, -halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, topRight + WVector2(-Msize - halfM, -halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, topRight + WVector2(-halfM, -Msize - halfM)));
 
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topLeft + WVector2(halfM, -halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topLeft + WVector2(Msize + halfM, -halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topLeft + WVector2(halfM, -Msize - halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, bottomRight + WVector2(-halfM, halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, bottomRight + WVector2(-Msize - halfM, halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, bottomRight + WVector2(-halfM, Msize + halfM)));
+
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, topLeft + WVector2(halfM, -halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, topLeft + WVector2(Msize + halfM, -halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, topLeft + WVector2(halfM, -Msize - halfM)));
+
+				// 4 2xM connectors, one on each side
+				ring->pieces.push_back(new RingPiece(ring, m_Mx3Geometry, 0.0f, WVector2(0.0f, bottomLeft.y + halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_Mx3Geometry, 0.0f, WVector2(0.0f, topLeft.y - halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_Mx3Geometry, 1.0f, WVector2(bottomLeft.x + halfM, 0.0f)));
+				ring->pieces.push_back(new RingPiece(ring, m_Mx3Geometry, 1.0f, WVector2(bottomRight.x - halfM, 0.0f)));
 			} else {
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomLeft + WVector2(halfM, halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topRight + WVector2(-halfM, -halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomRight + WVector2(-halfM, halfM)) - ring->center));
-				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topLeft + WVector2(halfM, -halfM)) - ring->center));
+				// 2 strips for the L-shape (bias)
+				ring->pieces.push_back(new RingPiece(ring, m_2Mp1Geometry, 0.0f, WVector2(0.0f, 0.0f)));
+				ring->pieces.push_back(new RingPiece(ring, m_2Mp1Geometry, 1.0f, WVector2(0.0f, 0.0f)));
+
+				// 4 MxM pieces in the center
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, bottomLeft + WVector2(halfM, halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, topRight + WVector2(-halfM, -halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, bottomRight + WVector2(-halfM, halfM)));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, topLeft + WVector2(halfM, -halfM)));
 			}
 
 			m_rings.push_back(ring);
@@ -203,6 +219,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		LODRing* ring = m_rings[i];
 		float unitSize = max(pow(2, i - 1), 1) * m_size;
 		float levelSize = unitSize * (m_N - 1);
+		float Msize = unitSize * (m_M - 1);
 		if (i == m_LOD - 1) {
 			// when there is more than a unit size difference, align to half unit size
 			float halfUnitSize = unitSize / 2.0f;
@@ -211,47 +228,24 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 			if (abs(m_viewpoint.z - ring->center.y) >= unitSize)
 				ring->center.y = (float)(int)(m_viewpoint.z / halfUnitSize) * halfUnitSize;
 		} else {
-			WVector2 bias = WVector2(
+			WVector2 bias = i == 0 ? WVector2(0.0f, 0.0f) : WVector2(
 				m_rings[i + 1]->center.x > m_viewpoint.x ? -1 : 1,
 				m_rings[i + 1]->center.y > m_viewpoint.z ? -1 : 1
 			);
-			if (i == 0)
-				bias = WVector2(0.0f, 0.0f);
 			ring->center = m_rings[i + 1]->center + bias * unitSize;
+
+			// given the bias, we can now set the parent ring's L-shape, which is the first 2 pieces
+			if (i == 0) {
+				m_rings[i]->pieces[0]->offsetFromCenter =     WVector2(-levelSize / 4.0f, 0.0f);
+				m_rings[i]->pieces[1]->offsetFromCenter =     WVector2(0.0f, -levelSize / 4.0f);
+				m_rings[i + 1]->pieces[0]->offsetFromCenter = WVector2(levelSize / 4.0f, 0.0f);
+				m_rings[i + 1]->pieces[1]->offsetFromCenter = WVector2(0.0f, levelSize / 4.0f);
+			} else {
+				m_rings[i + 1]->pieces[0]->offsetFromCenter = WVector2(-bias.x * (levelSize / 2.0f), 0.0f);
+				m_rings[i + 1]->pieces[1]->offsetFromCenter = WVector2(0.0f, -bias.y * (levelSize / 2.0f));
+			}
 		}
-		/*WVector2 bottomLeft;
-		if (abs(m_rings[i]->center.x - m_viewpoint.x) > unitSize) {
-			bottomLeft = WVector2(
-				(float)(int)((m_viewpoint.x + -levelSize / 2.0f - unitSize / 2.0f) / unitSize) * unitSize,
-				(float)(int)((m_viewpoint.z + -levelSize / 2.0f - unitSize / 2.0f) / unitSize) * unitSize
-			);
-		}*/
 	}
-
-	/*for (int i = 0; i < m_LOD; i++) {
-		LODRing* ring = m_rings[i];
-		float unitSize = max(pow(2, i - 1), 1) * m_size;
-		float levelSize = unitSize * (m_N - 1);
-		float Msize = unitSize * (m_M - 1);
-		float halfM = Msize / 2.0f;
-		WVector2 bias(0, 0);
-		WVector2 bottomLeft;
-		if (i == 0) {
-			levelSize = 2 * Msize;
-			bottomLeft = WVector2(
-				(float)(int)((m_viewpoint.x + -levelSize / 2.0f - unitSize / 2.0f) / unitSize) * unitSize,
-				(float)(int)((m_viewpoint.z + -levelSize / 2.0f - unitSize / 2.0f) / unitSize) * unitSize
-			);
-		} else {
-			bias = WVector2((float)(i % 2) * 2.0f - 1.0f, (float)(i % 2) * 2.0f - 1.0f);
-			bottomLeft = m_rings[i - 1]->center - WVector2(levelSize / 2.0f, levelSize / 2.0f) + bias * unitSize / 2.0f;
-			if (i == 1)
-				bottomLeft -= WVector2(0.5f, 0.5f);
-		}
-
-		ring->center = bottomLeft + WVector2(levelSize, levelSize) / 2.0f;
-	}*/
-
 
 	uint numGeometryTypes = m_pieces.size();
 
