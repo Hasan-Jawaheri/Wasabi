@@ -11,8 +11,8 @@ layout(location = 1) in vec3 inTang;
 layout(location = 2) in vec3 inNorm;
 layout(location = 3) in vec2 inUV;
 layout(location = 4) in uint inTexIndex;
-layout(location = 5) in uvec4 boneIndex;
-layout(location = 6) in vec4 boneWeight;
+layout(location = 5) in uvec4 inBoneIndex;
+layout(location = 6) in vec4 inBoneWeight;
 
 struct Light {
 	vec4 color;
@@ -50,16 +50,16 @@ void main() {
 	mat4x4 animMtx = mat4x4(1.0) * (1 - uboPerObject.isAnimated);
 	mat4x4 instMtx =
 		uboPerObject.isInstanced == 1
-		? LoadInstanceMatrix(gl_InstanceIndex, instancingTexture, uboPerObject.instanceTextureWidth)
+		? LoadMatrixFromTexture(gl_InstanceIndex, instancingTexture, uboPerObject.instanceTextureWidth)
 		: mat4x4(1.0f);
-	if (boneWeight.x * uboPerObject.isAnimated > 0.001f) {
-		animMtx += boneWeight.x * LoadBoneMatrix(boneIndex.x, animationTexture, uboPerObject.animationTextureWidth);
-		if (boneWeight.y > 0.001f) {
-			animMtx += boneWeight.y * LoadBoneMatrix(boneIndex.y, animationTexture, uboPerObject.animationTextureWidth);
-			if (boneWeight.z > 0.001f) {
-				animMtx += boneWeight.z * LoadBoneMatrix(boneIndex.z, animationTexture, uboPerObject.animationTextureWidth);
-				if (boneWeight.w > 0.001f) {
-					animMtx += boneWeight.w * LoadBoneMatrix(boneIndex.w, animationTexture, uboPerObject.animationTextureWidth);
+	if (inBoneWeight.x * uboPerObject.isAnimated > 0.001f) {
+		animMtx += inBoneWeight.x * LoadMatrixFromTexture(int(inBoneIndex.x), animationTexture, uboPerObject.animationTextureWidth);
+		if (inBoneWeight.y > 0.001f) {
+			animMtx += inBoneWeight.y * LoadMatrixFromTexture(int(inBoneIndex.y), animationTexture, uboPerObject.animationTextureWidth);
+			if (inBoneWeight.z > 0.001f) {
+				animMtx += inBoneWeight.z * LoadMatrixFromTexture(int(inBoneIndex.z), animationTexture, uboPerObject.animationTextureWidth);
+				if (inBoneWeight.w > 0.001f) {
+					animMtx += inBoneWeight.w * LoadMatrixFromTexture(int(inBoneIndex.w), animationTexture, uboPerObject.animationTextureWidth);
 				}
 			}
 		}

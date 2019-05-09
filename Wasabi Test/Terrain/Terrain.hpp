@@ -5,6 +5,9 @@
 
 class TerrainDemo : public WTestState {
 	WTerrain* terrain;
+	WObject* player;
+
+	WVector3 playerPos;
 
 public:
 	TerrainDemo(Wasabi* const app);
