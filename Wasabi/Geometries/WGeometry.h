@@ -306,13 +306,6 @@ public:
 
 	/**
 	 * Creates a box geometry.
-	 *
-	 * If this function is called while the engine parameter "geometryImmutable"
-	 * (see Wasabi::engineParams) is set to true, then the geometry will be made
-	 * immutable, regardless of the bDynamic parameter. Immutable geometry cannot
-	 * have the following function calls work: SaveToWGM(), all map and unmap
-	 * functions, all scaling functions, all offset functions and Intersect().
-	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
 	 * @param  dimensions Dimensions of the box
 	 * @param  flags      Creation flags, see W_GEOMETRY_CREATE_FLAGS
@@ -323,13 +316,6 @@ public:
 	/**
 	 * Creates a plain geometry that is segmented. The plain will be split into
 	 * (xsegs+1)*(zsegs+1) squares, which will have 2 triangles each.
-	 *
-	 * If this function is called while the engine parameter "geometryImmutable"
-	 * (see Wasabi::engineParams) is set to true, then the geometry will be made
-	 * immutable, regardless of the bDynamic parameter. Immutable geometry cannot
-	 * have the following function calls work: SaveToWGM(), all map and unmap
-	 * functions, all scaling functions, all offset functions and Intersect().
-	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
 	 * @param  size    Size (dimension) of the plain
 	 * @param  xsegs    Number of segments on the X axis, minimum is 0
@@ -340,15 +326,21 @@ public:
 	WError CreatePlain(float size, int xsegs, int zsegs, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
+	 * Creates a plain geometry that is segmented. The plain will be split into
+	 * (xsegs+1)*(zsegs+1) squares, which will have 2 triangles each.
+	 *
+	 * @param  sizeX    Size (dimension) of the plain on the X axis
+	 * @param  sizeZ    Size (dimension) of the plain on the Z axis
+	 * @param  xsegs    Number of segments on the X axis, minimum is 0
+	 * @param  zsegs    Number of segments on the Z axis, minimum is 0
+	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
+	 * @return          Error code, see WError.h
+	 */
+	WError CreateRectanglePlain(float sizeX, float sizeZ, int xsegs, int zsegs, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
+
+	/**
 	 * Creates a sphere geometry, with VRes vertical segments and URes horizontal
 	 * segments.
-	 *
-	 * If this function is called while the engine parameter "geometryImmutable"
-	 * (see Wasabi::engineParams) is set to true, then the geometry will be made
-	 * immutable, regardless of the bDynamic parameter. Immutable geometry cannot
-	 * have the following function calls work: SaveToWGM(), all map and unmap
-	 * functions, all scaling functions, all offset functions and Intersect().
-	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
 	 * @param  radius   Radius of the sphere
 	 * @param  vres     Vertical resolution, or number of vertical splits,
@@ -363,13 +355,6 @@ public:
 	/**
 	 * Creates a cone geometry, with csegs segments at the bottom circle and
 	 * hsegs segments along the cone's height.
-	 *
-	 * If this function is called while the engine parameter "geometryImmutable"
-	 * (see Wasabi::engineParams) is set to true, then the geometry will be made
-	 * immutable, regardless of the bDynamic parameter. Immutable geometry cannot
-	 * have the following function calls work: SaveToWGM(), all map and unmap
-	 * functions, all scaling functions, all offset functions and Intersect().
-	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
 	 * @param  radius   Radius of the bottom circle
 	 * @param  height   Height of the cone
@@ -384,13 +369,6 @@ public:
 	 * Creates a cylinder geometry, with csegs segments at the bottom and top
 	 * circles and hsegs segments along the cylinder's height.
 	 *
-	 * If this function is called while the engine parameter "geometryImmutable"
-	 * (see Wasabi::engineParams) is set to true, then the geometry will be made
-	 * immutable, regardless of the bDynamic parameter. Immutable geometry cannot
-	 * have the following function calls work: SaveToWGM(), all map and unmap
-	 * functions, all scaling functions, all offset functions and Intersect().
-	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
-	 * 
 	 * @param  radius   Radius of the cylinder
 	 * @param  height   Height of the cylinder
 	 * @param  hsegs    Number of segments along the height, minimum is 0
@@ -403,13 +381,6 @@ public:
 
 	/**
 	 * Copy another (non-immutable) geometry.
-	 *
-	 * If this function is called while the engine parameter "geometryImmutable"
-	 * (see Wasabi::engineParams) is set to true, then the geometry will be made
-	 * immutable, regardless of the bDynamic parameter. Immutable geometry cannot
-	 * have the following function calls work: SaveToWGM(), all map and unmap
-	 * functions, all scaling functions, all offset functions and Intersect().
-	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
 	 * 
 	 * @param  from     Geometry to copy
 	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS

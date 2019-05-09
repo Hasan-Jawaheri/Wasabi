@@ -122,7 +122,7 @@ Wasabi::Wasabi() : Timer(W_TIMER_SECONDS, true) {
 		{ "geometryImmutable", (void*)(false) }, // bool
 		{ "numGeneratedMips", (void*)(1) }, // int
 		{ "bufferingCount", (void*)(2) }, // int
-		{ "enableVulkanValidation", (void*)(false) }, // bool
+		{ "enableVulkanValidation", (void*)(true) }, // bool
 	};
 	m_swapChainInitialized = false;
 	
@@ -473,6 +473,7 @@ VkPhysicalDeviceFeatures Wasabi::GetDeviceFeatures() {
 	VkPhysicalDeviceFeatures features = {};
 	features.samplerAnisotropy = VK_TRUE;
 	features.geometryShader = VK_TRUE;
+	features.fillModeNonSolid = VK_TRUE;
 	return features;
 }
 

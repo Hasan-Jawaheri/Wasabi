@@ -4,6 +4,7 @@
 #include "../Images/WRenderTarget.h"
 #include "../Geometries/WGeometry.h"
 #include "../Materials/WMaterial.h"
+#include "../Materials/WEffect.h"
 
 WTerrainManager::WTerrainManager(class Wasabi* const app)
 	: WManager<WTerrain>(app) {
@@ -26,7 +27,13 @@ WTerrain::WTerrain(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 
 	m_WorldM = WMatrix();
 
-	m_blockGeometry = nullptr;
+	m_MxMGeometry = nullptr;
+	m_Mx3Geometry = nullptr;
+	m_2Mp1Geometry = nullptr;
+	m_instanceTexture = nullptr;
+
+	m_viewpoint = WVector3(0.0f, 0.0f, 0.0f);
+	m_LOD = 7;
 
 	app->TerrainManager->AddEntity(this);
 }
@@ -46,11 +53,21 @@ std::string WTerrain::GetTypeName() const {
 }
 
 void WTerrain::_DestroyResources() {
-	W_SAFE_REMOVEREF(m_blockGeometry);
+	W_SAFE_REMOVEREF(m_MxMGeometry);
+	W_SAFE_REMOVEREF(m_Mx3Geometry);
+	W_SAFE_REMOVEREF(m_2Mp1Geometry);
+	W_SAFE_REMOVEREF(m_instanceTexture);
+	for (auto pieceTypeIt : m_pieces)
+		for (auto pieceIt : pieceTypeIt.second)
+			delete pieceIt;
+	for (auto ringIt : m_rings)
+		delete ringIt;
+	m_rings.clear();
+	m_pieces.clear();
 }
 
 bool WTerrain::Valid() const {
-	return m_blockGeometry != nullptr;
+	return m_MxMGeometry && m_Mx3Geometry && m_2Mp1Geometry && m_instanceTexture;
 }
 
 void WTerrain::Show() {
@@ -65,20 +82,99 @@ bool WTerrain::Hidden() const {
 	return m_hidden;
 }
 
-WError WTerrain::Create(unsigned int N, float size) {
-	if (N > 1 && (N & (N - 1)) == N) // check power of 2
+WError WTerrain::Create(unsigned int N, float size, unsigned int numRings) {
+	if (N > 1 && ((N+1) & N) == 0) // check (power of 2) - 1
 		return WError(W_INVALIDPARAM);
 	if (size <= 0)
 		return WError(W_INVALIDPARAM);
 	_DestroyResources();
 
-	m_blockGeometry = new WGeometry(m_app);
-	WError err = m_blockGeometry->CreatePlain(N * size, N - 2, N - 2);
-	if (err) {
+	N = 15;
+	int M = (N + 1) / 4;
+	size = 2;
+	//m_viewpoint = WVector3(10, 0, 0);
 
+	m_MxMGeometry = new WGeometry(m_app);
+	WError err = m_MxMGeometry->CreatePlain((M-1) * size, M - 2, M - 2);
+	if (err) {
+		m_Mx3Geometry = new WGeometry(m_app);
+		err = m_Mx3Geometry->CreateRectanglePlain(2 * size, (M-1) * size, 1, M - 2);
+		if (err) {
+			m_2Mp1Geometry = new WGeometry(m_app);
+			err = m_2Mp1Geometry->CreateRectanglePlain(1 * size, (2 * M) * size, 0, 2 * M - 1);
+			if (err) {
+				m_instanceTexture = new WImage(m_app);
+				err = m_instanceTexture->CreateFromPixelsArray(nullptr, 64, 64, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
+			}
+		}
+	}
+
+	if (!err)
+		_DestroyResources();
+	else {
+		m_N = N;
+		m_M = M;
+		m_size = size;
+		m_LOD = numRings;
+
+		for (int i = 0; i < m_LOD; i++) {
+			LODRing* ring = new LODRing();
+			ring->level = i;
+
+			float unitSize = max(pow(2, i - 1), 1) * m_size;
+			float levelSize = unitSize * (m_N - 1);
+			float Msize = unitSize * (m_M - 1);
+			float halfM = Msize / 2.0f;
+			WVector2 bottomLeft = -WVector2(levelSize, levelSize) / 2.0f;
+			if (i == 0)
+				bottomLeft = -WVector2(levelSize, levelSize) / 4.0f + WVector2(unitSize, unitSize) / 2.0f;
+			WVector2 topRight = -bottomLeft;
+			WVector2 bottomRight = WVector2(topRight.x, bottomLeft.y);
+			WVector2 topLeft = WVector2(bottomLeft.x, topRight.y);
+
+			ring->center = WVector2(0.0f, 0.0f);
+
+			if (i > 0) {
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomLeft + WVector2(halfM, halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomLeft + WVector2(Msize + halfM, halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomLeft + WVector2(halfM, Msize + halfM)) - ring->center));
+
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topRight + WVector2(-halfM, -halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topRight + WVector2(-Msize - halfM, -halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topRight + WVector2(-halfM, -Msize - halfM)) - ring->center));
+
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomRight + WVector2(-halfM, halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomRight + WVector2(-Msize - halfM, halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomRight + WVector2(-halfM, Msize + halfM)) - ring->center));
+
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topLeft + WVector2(halfM, -halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topLeft + WVector2(Msize + halfM, -halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topLeft + WVector2(halfM, -Msize - halfM)) - ring->center));
+			} else {
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomLeft + WVector2(halfM, halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topRight + WVector2(-halfM, -halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (bottomRight + WVector2(-halfM, halfM)) - ring->center));
+				ring->pieces.push_back(new RingPiece(ring, m_MxMGeometry, 0.0f, (topLeft + WVector2(halfM, -halfM)) - ring->center));
+			}
+
+			m_rings.push_back(ring);
+		}
+
+		for (auto ringIt : m_rings) {
+			for (auto pieceIt : ringIt->pieces) {
+				auto piecesIt = m_pieces.find(pieceIt->geometry);
+				if (piecesIt == m_pieces.end())
+					m_pieces.insert(std::make_pair(pieceIt->geometry, std::vector<RingPiece*>()));
+				m_pieces[pieceIt->geometry].push_back(pieceIt);
+			}
+		}
 	}
 
 	return err;
+}
+
+void WTerrain::SetViewpoint(WVector3 point) {
+	m_viewpoint = point;
 }
 
 bool WTerrain::WillRender(WRenderTarget* rt) {
@@ -95,13 +191,94 @@ bool WTerrain::WillRender(WRenderTarget* rt) {
 }
 
 void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
-	if (material) {
-		WMatrix worldM = GetWorldMatrix();
-		material->SetVariableMatrix("worldMatrix", worldM);
-		material->Bind(rt);
+	if (!material)
+		return;
+
+	WMatrix worldM = GetWorldMatrix();
+	material->SetVariableMatrix("worldMatrix", worldM);
+	material->SetTexture("instancingTexture", m_instanceTexture);
+	material->Bind(rt, true, false);
+
+	for (int i = m_LOD - 1; i >= 0; i--) {
+		LODRing* ring = m_rings[i];
+		float unitSize = max(pow(2, i - 1), 1) * m_size;
+		float levelSize = unitSize * (m_N - 1);
+		if (i == m_LOD - 1) {
+			// when there is more than a unit size difference, align to half unit size
+			float halfUnitSize = unitSize / 2.0f;
+			if (abs(m_viewpoint.x - ring->center.x) >= unitSize)
+				ring->center.x = (float)(int)(m_viewpoint.x / halfUnitSize) * halfUnitSize;
+			if (abs(m_viewpoint.z - ring->center.y) >= unitSize)
+				ring->center.y = (float)(int)(m_viewpoint.z / halfUnitSize) * halfUnitSize;
+		} else {
+			WVector2 bias = WVector2(
+				m_rings[i + 1]->center.x > m_viewpoint.x ? -1 : 1,
+				m_rings[i + 1]->center.y > m_viewpoint.z ? -1 : 1
+			);
+			if (i == 0)
+				bias = WVector2(0.0f, 0.0f);
+			ring->center = m_rings[i + 1]->center + bias * unitSize;
+		}
+		/*WVector2 bottomLeft;
+		if (abs(m_rings[i]->center.x - m_viewpoint.x) > unitSize) {
+			bottomLeft = WVector2(
+				(float)(int)((m_viewpoint.x + -levelSize / 2.0f - unitSize / 2.0f) / unitSize) * unitSize,
+				(float)(int)((m_viewpoint.z + -levelSize / 2.0f - unitSize / 2.0f) / unitSize) * unitSize
+			);
+		}*/
 	}
 
-	m_blockGeometry->Draw(rt);
+	/*for (int i = 0; i < m_LOD; i++) {
+		LODRing* ring = m_rings[i];
+		float unitSize = max(pow(2, i - 1), 1) * m_size;
+		float levelSize = unitSize * (m_N - 1);
+		float Msize = unitSize * (m_M - 1);
+		float halfM = Msize / 2.0f;
+		WVector2 bias(0, 0);
+		WVector2 bottomLeft;
+		if (i == 0) {
+			levelSize = 2 * Msize;
+			bottomLeft = WVector2(
+				(float)(int)((m_viewpoint.x + -levelSize / 2.0f - unitSize / 2.0f) / unitSize) * unitSize,
+				(float)(int)((m_viewpoint.z + -levelSize / 2.0f - unitSize / 2.0f) / unitSize) * unitSize
+			);
+		} else {
+			bias = WVector2((float)(i % 2) * 2.0f - 1.0f, (float)(i % 2) * 2.0f - 1.0f);
+			bottomLeft = m_rings[i - 1]->center - WVector2(levelSize / 2.0f, levelSize / 2.0f) + bias * unitSize / 2.0f;
+			if (i == 1)
+				bottomLeft -= WVector2(0.5f, 0.5f);
+		}
+
+		ring->center = bottomLeft + WVector2(levelSize, levelSize) / 2.0f;
+	}*/
+
+
+	uint numGeometryTypes = m_pieces.size();
+
+	WColor* pixels;
+	m_instanceTexture->MapPixels((void**)& pixels, W_MAP_WRITE);
+	for (auto it : m_pieces) {
+		for (uint i = 0; i < it.second.size(); i++) {
+			RingPiece* piece = it.second[i];
+			pixels[i] = WColor(piece->offsetFromCenter.x + piece->ring->center.x, piece->offsetFromCenter.y + piece->ring->center.y, piece->ring->level + 0.01f, piece->orientation);
+		}
+		pixels += it.second.size();
+	}
+	m_instanceTexture->UnmapPixels();
+
+	uint totalNumPieces = 0;
+	for (auto it : m_pieces) {
+		WGeometry* geometry = it.first;
+		uint numPieces = it.second.size();
+		material->SetVariableInt("offsetInTexture", totalNumPieces);
+		material->Bind(rt, false, true);
+		geometry->Draw(rt, -1, numPieces, false);
+		totalNumPieces += numPieces;
+	}
+}
+
+float WTerrain::GetHeight(WVector2 pos2D) {
+	return 0.0f;
 }
 
 WMatrix WTerrain::GetWorldMatrix() {

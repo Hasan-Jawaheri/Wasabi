@@ -375,8 +375,12 @@ WError WGeometry::CreateBox(WVector3 dimensions, W_GEOMETRY_CREATE_FLAGS flags) 
 }
 
 WError WGeometry::CreatePlain(float size, int xsegs, int zsegs, W_GEOMETRY_CREATE_FLAGS flags) {
-	unsigned int numIndices = (((xsegs + 1)*(zsegs + 1)) * 2) * 3;
-	unsigned int numVertices = (xsegs + 2)*(zsegs + 2);
+	return CreateRectanglePlain(size, size, xsegs, zsegs, flags);
+}
+
+WError WGeometry::CreateRectanglePlain(float sizeX, float sizeZ, int xsegs, int zsegs, W_GEOMETRY_CREATE_FLAGS flags) {
+	unsigned int numIndices = (((xsegs + 1) * (zsegs + 1)) * 2) * 3;
+	unsigned int numVertices = (xsegs + 2) * (zsegs + 2);
 
 	//allocate the plain vertices
 	vector<WDefaultVertex> vertices(numVertices);
@@ -395,7 +399,7 @@ WError WGeometry::CreatePlain(float size, int xsegs, int zsegs, W_GEOMETRY_CREAT
 				WDefaultVertex((float)x / (vpr - 1), 0.0f, (float)z / (vpc - 1), 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, _u, _v);
 			vertices[curVert].pos.x -= 0.5f;
 			vertices[curVert].pos.z -= 0.5f;
-			vertices[curVert].pos *= size;
+			vertices[curVert].pos *= WVector3(sizeX, 1.0f, sizeZ);
 			_u += uI; //u starts from 0 increasing to 1
 			curVert++;
 		}

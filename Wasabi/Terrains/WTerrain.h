@@ -17,6 +17,10 @@
  * This represents a terrain object and is responsible for rendering it.
  */
 class WTerrain : public WBase, public WOrientation, public WMaterialsStore {
+	struct InstanceData {
+		WVector2 offset;
+	};
+
 protected:
 	virtual ~WTerrain();
 
@@ -32,13 +36,21 @@ public:
 
 	/**
 	 * Initializes the terrain.
-	 * @param N    Dimension (in number of vertices) of each block in the
-	 *             terrain, must be a power of 2 greater than 1
-	 * @param size Size of each square in the highest resolution block, must be
-	 *             greater than 0
+	 * @param N        Dimension (in number of vertices) of each block in the
+	 *                 terrain, must be a power of 2 greater than 1
+	 * @param size     Size of each square in the highest resolution block, must be
+	 *                 greater than 0
+	 * @param numRings Number of LOD rings drawn around the origin
 	 * @return Error code, see WError.h
 	 */
-	WError Create(unsigned int N = 256, float size = 1.0f);
+	WError Create(unsigned int N = 256, float size = 1.0f, unsigned int numRings = 7);
+
+	/**
+	 * Sets the point around which the terrain is loaded. The terrain will not
+	 * immediately load around the point.
+	 * @param point Point to load the terrain around
+	 */
+	void SetViewpoint(WVector3 point);
 
 	/**
 	 * Checks whether a call to Render() will cause any rendering (draw call) to
@@ -52,6 +64,13 @@ public:
 	 * @param material Material to use for rendering
 	 */
 	void Render(class WRenderTarget* rt, WMaterial* material);
+
+	/**
+	 * Retrieves the height of the terrain at a given point on the xz plain
+	 * @param pos2D x and z coordinates to retrieve the height at
+	 * @return      the height at pos2D
+	 */
+	float GetHeight(WVector2 pos2D);
 
 	/**
 	 * Shows the terrain so that it can be rendered.
@@ -95,8 +114,45 @@ private:
 	bool m_hidden;
 	/** Local world matrix */
 	WMatrix m_WorldM;
+	/** N and M of the clipmap */
+	int m_N, m_M;
+	/** Terrain size multiplier */
+	float m_size;
+	/** Number of rings to draw */
+	int m_LOD;
+	/** Viewpoint to load terrain around */
+	WVector3 m_viewpoint;
 
-	class WGeometry* m_blockGeometry;
+	class WGeometry* m_MxMGeometry;
+	class WGeometry* m_Mx3Geometry;
+	class WGeometry* m_2Mp1Geometry;
+	class WImage* m_instanceTexture;
+
+	struct LODRing;
+	struct RingPiece {
+		struct LODRing* ring;
+		WGeometry* geometry;
+		WVector2 offsetFromCenter;
+		float orientation;
+		WVector3 maxPoint, minPoint;
+
+		RingPiece(struct LODRing* r, WGeometry* g, float o, WVector2 off) {
+			geometry = g;
+			ring = r;
+			orientation = o;
+			offsetFromCenter = off;
+		}
+	};
+
+	struct LODRing {
+		int level;
+		WVector2 center;
+		std::vector<RingPiece*> pieces;
+
+		bool Update(WVector3 viewpoint);
+	};
+	std::vector<LODRing*> m_rings;
+	std::map<WGeometry*, std::vector<RingPiece*>> m_pieces;
 
 	/**
 	 * Destroys all resources held by this terrain

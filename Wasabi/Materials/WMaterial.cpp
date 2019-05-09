@@ -236,7 +236,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WMaterial::Bind(WRenderTarget* rt) {
+WError WMaterial::Bind(WRenderTarget* rt, bool bindDescSet, bool bindPushConsts) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
@@ -246,62 +246,66 @@ WError WMaterial::Bind(WRenderTarget* rt) {
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	int numUpdateDescriptors = 0;
-	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	if (bindDescSet) {
+		int numUpdateDescriptors = 0;
+		uint bufferIndex = m_app->GetCurrentBufferingIndex();
 
-	// update UBOs that changed
-	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
-		if (ubo->dirty[bufferIndex]) {
-			void* pBufferData;
-			ubo->buffer.Map(m_app, bufferIndex, &pBufferData, W_MAP_WRITE);
-			memcpy((char*)pBufferData + ubo->descriptorBufferInfos[bufferIndex].offset, ubo->data, ubo->descriptorBufferInfos[bufferIndex].range);
-			ubo->buffer.Unmap(m_app, bufferIndex);
-			ubo->dirty[bufferIndex] = false;
-		}
-
-		VkWriteDescriptorSet writeDescriptorSet = {};
-		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSet.dstSet = m_descriptorSets[bufferIndex];
-		writeDescriptorSet.descriptorCount = 1;
-		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		writeDescriptorSet.pBufferInfo = &ubo->descriptorBufferInfos[bufferIndex];
-		writeDescriptorSet.dstBinding = ubo->ubo_info->binding_index;
-
-		m_writeDescriptorSets[numUpdateDescriptors++] = writeDescriptorSet;
-	}
-
-	// update textures that changed
-	for (auto sampler = m_samplers.begin(); sampler != m_samplers.end(); sampler++) {
-		W_BOUND_RESOURCE* info = sampler->sampler_info;
-		bool bChanged = false;
-		for (uint textureArrayIndex = 0; textureArrayIndex < sampler->images.size(); textureArrayIndex++) {
-			if (sampler->images[textureArrayIndex] && sampler->images[textureArrayIndex]->Valid()) {
-				if (sampler->descriptors[bufferIndex][textureArrayIndex].imageView != sampler->images[textureArrayIndex]->GetView()) {
-					sampler->descriptors[bufferIndex][textureArrayIndex].imageView = sampler->images[textureArrayIndex]->GetView();
-					sampler->descriptors[bufferIndex][textureArrayIndex].imageLayout = sampler->images[textureArrayIndex]->GetViewLayout();
-					bChanged = true;
-				}
+		// update UBOs that changed
+		for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
+			if (ubo->dirty[bufferIndex]) {
+				void* pBufferData;
+				ubo->buffer.Map(m_app, bufferIndex, &pBufferData, W_MAP_WRITE);
+				memcpy((char*)pBufferData + ubo->descriptorBufferInfos[bufferIndex].offset, ubo->data, ubo->descriptorBufferInfos[bufferIndex].range);
+				ubo->buffer.Unmap(m_app, bufferIndex);
+				ubo->dirty[bufferIndex] = false;
 			}
-		}
-		if (bChanged) {
+
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			writeDescriptorSet.dstSet = m_descriptorSets[bufferIndex];
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeDescriptorSet.descriptorCount = sampler->descriptors[bufferIndex].size();
-			writeDescriptorSet.pImageInfo = sampler->descriptors[bufferIndex].data();
-			writeDescriptorSet.dstBinding = info->binding_index;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			writeDescriptorSet.pBufferInfo = &ubo->descriptorBufferInfos[bufferIndex];
+			writeDescriptorSet.dstBinding = ubo->ubo_info->binding_index;
 
 			m_writeDescriptorSets[numUpdateDescriptors++] = writeDescriptorSet;
 		}
+
+		// update textures that changed
+		for (auto sampler = m_samplers.begin(); sampler != m_samplers.end(); sampler++) {
+			W_BOUND_RESOURCE* info = sampler->sampler_info;
+			bool bChanged = false;
+			for (uint textureArrayIndex = 0; textureArrayIndex < sampler->images.size(); textureArrayIndex++) {
+				if (sampler->images[textureArrayIndex] && sampler->images[textureArrayIndex]->Valid()) {
+					if (sampler->descriptors[bufferIndex][textureArrayIndex].imageView != sampler->images[textureArrayIndex]->GetView()) {
+						sampler->descriptors[bufferIndex][textureArrayIndex].imageView = sampler->images[textureArrayIndex]->GetView();
+						sampler->descriptors[bufferIndex][textureArrayIndex].imageLayout = sampler->images[textureArrayIndex]->GetViewLayout();
+						bChanged = true;
+					}
+				}
+			}
+			if (bChanged) {
+				VkWriteDescriptorSet writeDescriptorSet = {};
+				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				writeDescriptorSet.dstSet = m_descriptorSets[bufferIndex];
+				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				writeDescriptorSet.descriptorCount = sampler->descriptors[bufferIndex].size();
+				writeDescriptorSet.pImageInfo = sampler->descriptors[bufferIndex].data();
+				writeDescriptorSet.dstBinding = info->binding_index;
+
+				m_writeDescriptorSets[numUpdateDescriptors++] = writeDescriptorSet;
+			}
+		}
+		if (numUpdateDescriptors > 0)
+			vkUpdateDescriptorSets(device, numUpdateDescriptors, m_writeDescriptorSets.data(), 0, NULL);
+
+		vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_effect->GetPipelineLayout(), m_setIndex, 1, &m_descriptorSets[bufferIndex], 0, nullptr);
 	}
-	if (numUpdateDescriptors > 0)
-		vkUpdateDescriptorSets(device, numUpdateDescriptors, m_writeDescriptorSets.data(), 0, NULL);
 
-	vkCmdBindDescriptorSets(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_effect->GetPipelineLayout(), m_setIndex, 1, &m_descriptorSets[bufferIndex], 0, nullptr);
-
-	for (auto pc = m_pushConstants.begin(); pc != m_pushConstants.end(); pc++)
-		vkCmdPushConstants(renderCmdBuffer, m_effect->GetPipelineLayout(), pc->shaderStages, pc->pc_info->OffsetAtVariable(0), pc->pc_info->GetSize(), pc->data);
+	if (bindPushConsts) {
+		for (auto pc = m_pushConstants.begin(); pc != m_pushConstants.end(); pc++)
+			vkCmdPushConstants(renderCmdBuffer, m_effect->GetPipelineLayout(), pc->shaderStages, pc->pc_info->OffsetAtVariable(0), pc->pc_info->GetSize(), pc->data);
+	}
 
 	return WError(W_SUCCEEDED);
 }

@@ -53,11 +53,13 @@ public:
 
 	/**
 	 * Binds the resources to the pipeline. In Vulkan terms, this binds the descriptor
-	 * set associated with this material.
-	 * @param  rt  Render target to bind to its command buffer
+	 * set associated with this material as well as the push constants.
+	 * @param  rt            Render target to bind to its command buffer
+	 * @param bindDescSet    Whether or not to bind the descriptor set
+	 * @param bindPushConsts Whether or not to bind push constants
 	 * @return     Error code, see WError.h
 	 */
-	virtual WError Bind(class WRenderTarget* rt);
+	virtual WError Bind(class WRenderTarget* rt, bool bindDescSet = true, bool bindPushConsts = true);
 
 	/**
 	 * Retrieves the Vulkan descriptor set created by this material.

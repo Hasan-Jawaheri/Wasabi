@@ -91,7 +91,7 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 	W_SHADER_DESC desc;
 	desc.type = W_VERTEX_SHADER;
 	desc.bound_resources = {
-		W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerObject", {
+		W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerTerrain", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
 		}),
 		W_BOUND_RESOURCE(W_TYPE_UBO, 1, 1, "uboPerFrame", {
@@ -101,6 +101,10 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "numLights"),
 			W_SHADER_VARIABLE_INFO(W_TYPE_STRUCT, maxLights, sizeof(LightStruct), 16, "lights"),
 		}),
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 2, 0, "instancingTexture"),
+		W_BOUND_RESOURCE(W_TYPE_PUSH_CONSTANT, 0, "pcPerGeometry", {
+			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "offsetInTexture"),
+		}),
 	};
 	desc.input_layouts = { W_INPUT_LAYOUT({
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
@@ -108,7 +112,7 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
 		W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 1), // texture index
-	}) };
+	}), };
 	return desc;
 }
 
@@ -196,6 +200,16 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (err) {
 		err = terrainFX->BindShader(terrainPS);
 		if (err) {
+			VkPipelineRasterizationStateCreateInfo rs = {};
+			rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+			rs.polygonMode = VK_POLYGON_MODE_LINE;
+			rs.cullMode = VK_CULL_MODE_BACK_BIT;
+			rs.frontFace = VK_FRONT_FACE_CLOCKWISE;
+			rs.depthClampEnable = VK_FALSE;
+			rs.rasterizerDiscardEnable = VK_FALSE;
+			rs.depthBiasEnable = VK_FALSE;
+			rs.lineWidth = 1.0f;
+			terrainFX->SetRasterizationState(rs);
 			err = terrainFX->BuildPipeline(m_renderTarget);
 		}
 	}

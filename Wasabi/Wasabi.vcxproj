@@ -151,6 +151,7 @@
     <None Include="Physics\Bullet\Shaders\lines.vert.glsl" />
     <None Include="Renderers\Common\Shaders\depth.frag.glsl" />
     <None Include="Renderers\Common\Shaders\lighting_utils.glsl" />
+    <None Include="Renderers\Common\Shaders\object_utils.glsl" />
     <None Include="Renderers\DeferredRenderer\Shaders\dirlight.frag.glsl" />
     <None Include="Renderers\DeferredRenderer\Shaders\gbuffer.frag.glsl" />
     <None Include="Renderers\DeferredRenderer\Shaders\depth.frag.glsl" />
