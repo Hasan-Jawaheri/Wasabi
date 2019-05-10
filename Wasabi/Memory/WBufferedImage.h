@@ -3,11 +3,29 @@
 #include "../Core/WCommon.h"
 #include "WVulkanMemoryManager.h"
 
+struct WBufferedImageProperties {
+	VkFormat format;
+	W_MEMORY_STORAGE memory;
+	VkImageUsageFlags usage;
+	VkSampleCountFlagBits sampleCount;
+	uint arraySize;
+	uint mipLevels;
+
+	WBufferedImageProperties(
+		VkFormat fmt,
+		W_MEMORY_STORAGE mem = W_MEMORY_DEVICE_LOCAL,
+		VkImageUsageFlags usg = VK_IMAGE_USAGE_SAMPLED_BIT,
+		uint arrSize = 1,
+		uint mips = 1,
+		VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT
+	) : format(fmt), memory(mem), usage(usg), arraySize(arrSize), mipLevels(mips), sampleCount(sampleCount) {}
+};
+
 class WBufferedImage2D {
 public:
 	WBufferedImage2D();
 
-	VkResult Create(class Wasabi* app, uint numBuffers, uint width, uint height, VkFormat format, void* pixels = nullptr, W_MEMORY_STORAGE memory = W_MEMORY_DEVICE_LOCAL, VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT);
+	VkResult Create(class Wasabi* app, uint numBuffers, uint width, uint height, WBufferedImageProperties properties, void* pixels = nullptr);
 	void Destroy(class Wasabi* app);
 
 	VkResult Map(class Wasabi* app, uint bufferIndex, void** pixels, W_MAP_FLAGS flags);

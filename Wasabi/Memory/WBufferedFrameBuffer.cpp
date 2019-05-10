@@ -8,7 +8,7 @@ VkResult WBufferedFrameBuffer::CreateForSwapchain(Wasabi* app, uint numBuffers, 
 	VkResult result = VK_SUCCESS;
 	VkDevice device = app->GetVulkanDevice();
 
-	result = m_swapchainDepthBuffer.Create(app, numBuffers, width, height, depthFormat, nullptr, W_MEMORY_DEVICE_LOCAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	result = m_swapchainDepthBuffer.Create(app, numBuffers, width, height, WBufferedImageProperties(depthFormat, W_MEMORY_DEVICE_LOCAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT));
 	if (result != VK_SUCCESS)
 		return result;
 

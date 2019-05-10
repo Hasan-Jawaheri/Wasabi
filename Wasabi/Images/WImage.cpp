@@ -168,7 +168,7 @@ WError WImage::CreateFromPixelsArray(void* pixels, uint width, uint height, VkFo
 	if (flags & W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT) usageFlags |= (isDepth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 	W_MEMORY_STORAGE memory = flags & W_IMAGE_CREATE_DYNAMIC ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL;
 	uint numBuffers = (flags & (W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT)) ? (uint)m_app->engineParams["bufferingCount"] : 1;
-	VkResult result = m_bufferedImage.Create(m_app, numBuffers, width, height, format, pixels, memory, usageFlags);
+	VkResult result = m_bufferedImage.Create(m_app, numBuffers, width, height, WBufferedImageProperties(format, memory, usageFlags), pixels);
 	if (result != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
 
