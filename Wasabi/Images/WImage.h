@@ -233,7 +233,7 @@ public:
 
 private:
 	/** Buffered image resource */
-	WBufferedImage2D m_bufferedImage;
+	WBufferedImage m_bufferedImage;
 	/** The Vulkan format */
 	VkFormat m_format;
 	/** An array of buffered maps to perform, one per buffered image */
