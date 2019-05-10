@@ -102,8 +102,9 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 			W_SHADER_VARIABLE_INFO(W_TYPE_STRUCT, maxLights, sizeof(LightStruct), 16, "lights"),
 		}),
 		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 2, 0, "instancingTexture"),
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 3, 0, "heightTexture"),
 		W_BOUND_RESOURCE(W_TYPE_PUSH_CONSTANT, 0, "pcPerGeometry", {
-			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "offsetInTexture"),
+			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "geometryOffsetInTexture"),
 		}),
 	};
 	desc.input_layouts = { W_INPUT_LAYOUT({
