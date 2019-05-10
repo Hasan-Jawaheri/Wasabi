@@ -43,6 +43,7 @@ public:
 	uint GetWidth() const;
 	uint GetHeight() const;
 	uint GetDepth() const;
+	uint GetArraySize() const;
 
 private:
 	VkImageAspectFlags m_aspect;

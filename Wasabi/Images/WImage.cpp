@@ -155,7 +155,16 @@ void WImage::_DestroyResources() {
 	m_bufferedImage.Destroy(m_app);
 }
 
-WError WImage::CreateFromPixelsArray(void* pixels, uint width, uint height, VkFormat format, W_IMAGE_CREATE_FLAGS flags) {
+
+WError WImage::CreateFromPixelsArray(
+	void* pixels,
+	uint					width,
+	uint					height,
+	uint					depth,
+	VkFormat				format,
+	uint					arraySize = 1,
+	W_IMAGE_CREATE_FLAGS	flags = W_IMAGE_CREATE_TEXTURE
+) {
 	_DestroyResources();
 
 	bool isDepth = format == VK_FORMAT_D16_UNORM || format == VK_FORMAT_X8_D24_UNORM_PACK32 ||
@@ -168,7 +177,7 @@ WError WImage::CreateFromPixelsArray(void* pixels, uint width, uint height, VkFo
 	if (flags & W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT) usageFlags |= (isDepth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 	W_MEMORY_STORAGE memory = flags & W_IMAGE_CREATE_DYNAMIC ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL;
 	uint numBuffers = (flags & (W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT)) ? (uint)m_app->engineParams["bufferingCount"] : 1;
-	VkResult result = m_bufferedImage.Create(m_app, numBuffers, width, height, 1, WBufferedImageProperties(format, memory, usageFlags), pixels);
+	VkResult result = m_bufferedImage.Create(m_app, numBuffers, width, height, depth, WBufferedImageProperties(format, memory, usageFlags, arraySize), pixels);
 	if (result != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
 
@@ -180,6 +189,9 @@ WError WImage::CreateFromPixelsArray(void* pixels, uint width, uint height, VkFo
 	m_format = format;
 
 	return WError(W_SUCCEEDED);
+}
+WError WImage::CreateFromPixelsArray(void* pixels, uint width, uint height, VkFormat format, W_IMAGE_CREATE_FLAGS flags) {
+	return CreateFromPixelsArray(pixels, width, height, 1, format, 1, flags);
 }
 
 template<typename T>
@@ -339,8 +351,16 @@ unsigned int WImage::GetHeight() const {
 	return m_bufferedImage.GetHeight();
 }
 
+unsigned int WImage::GetDepth() const {
+	return m_bufferedImage.GetDepth();
+}
+
+unsigned int WImage::GetArraySize() const {
+	return m_bufferedImage.GetArraySize();
+}
+
 unsigned int WImage::GetPixelSize() const {
-	return m_bufferedImage.GetMemorySize() / (GetWidth() * GetHeight());
+	return m_bufferedImage.GetMemorySize() / (GetWidth() * GetHeight() * GetDepth() * GetArraySize());
 }
 
 WError WImage::SaveToStream(WFile* file, std::ostream& outputStream) {
@@ -349,8 +369,12 @@ WError WImage::SaveToStream(WFile* file, std::ostream& outputStream) {
 
 	uint width = GetWidth();
 	uint height = GetHeight();
+	uint depth = GetDepth();
+	uint arraySize = GetArraySize();
 	outputStream.write((char*)&width, sizeof(width));
 	outputStream.write((char*)&height, sizeof(height));
+	outputStream.write((char*)& depth, sizeof(depth));
+	outputStream.write((char*)& arraySize, sizeof(arraySize));
 	outputStream.write((char*)&m_format, sizeof(m_format));
 	uint dataSize = m_bufferedImage.GetMemorySize();
 	outputStream.write((char*)&dataSize, sizeof(dataSize));
@@ -376,12 +400,14 @@ WError WImage::LoadFromStream(WFile* file, std::istream& inputStream, std::vecto
 		return WError(W_INVALIDPARAM);
 	W_IMAGE_CREATE_FLAGS flags = (W_IMAGE_CREATE_FLAGS)(int)(args[0]);
 
-	uint width, height;
+	uint width, height, depth, arraySize;
 	VkFormat format;
 
 	inputStream.read((char*)&width, sizeof(width));
 	inputStream.read((char*)&height, sizeof(height));
 	inputStream.read((char*)&format, sizeof(format));
+	inputStream.read((char*)&depth, sizeof(depth));
+	inputStream.read((char*)&arraySize, sizeof(arraySize));
 	uint dataSize;
 	inputStream.read((char*)&dataSize, sizeof(dataSize));
 
@@ -389,7 +415,7 @@ WError WImage::LoadFromStream(WFile* file, std::istream& inputStream, std::vecto
 	if (!pixels)
 		return WError(W_OUTOFMEMORY);
 	inputStream.read((char*)pixels, dataSize);
-	WError err = CreateFromPixelsArray(pixels, width, height, format, flags);
+	WError err = CreateFromPixelsArray(pixels, width, height, depth, format, arraySize, flags);
 	W_SAFE_FREE(pixels);
 	return err;
 }

@@ -127,11 +127,28 @@ public:
 	 * @param  flags          Image creation flags, see W_IMAGE_CREATE_FLAGS
 	 * @return                Error code, see WError.h
 	 */
-	WError CreateFromPixelsArray(void*			pixels,
-								 uint			width,
-								 uint			height,
-								 VkFormat		format,
-								 W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE);
+	WError CreateFromPixelsArray(
+		void*					pixels,
+		uint					width,
+		uint					height,
+		VkFormat				format,
+		W_IMAGE_CREATE_FLAGS	flags = W_IMAGE_CREATE_TEXTURE
+	);
+
+	/**
+	 * See CreateFromPixelsArray()
+	 * @param depth     Depth of the image
+	 * @param arraySize Can be used to crteate an array of images
+	 */
+	WError CreateFromPixelsArray(
+		void*					pixels,
+		uint					width,
+		uint					height,
+		uint					depth,
+		VkFormat				format,
+		uint					arraySize = 1,
+		W_IMAGE_CREATE_FLAGS	flags = W_IMAGE_CREATE_TEXTURE
+	);
 
 	/**
 	 * Loads an image from a file. The image format can be any of the formats
@@ -213,6 +230,18 @@ public:
 	 * @return Height of the image, in pixels
 	 */
 	unsigned int GetHeight() const;
+
+	/**
+	 * Retrieves the depth of the image.
+	 * @return Depth of the image, in pixels
+	 */
+	unsigned int GetDepth() const;
+
+	/**
+	 * Retrieves the size of the array of images (if used, default is 1).
+	 * @return Size of the image array
+	 */
+	unsigned int GetArraySize() const;
 
 	/**
 	 * Returns true if the image is valid. The image is valid if it has a usable
