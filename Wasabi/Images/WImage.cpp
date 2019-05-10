@@ -162,8 +162,8 @@ WError WImage::CreateFromPixelsArray(
 	uint					height,
 	uint					depth,
 	VkFormat				format,
-	uint					arraySize = 1,
-	W_IMAGE_CREATE_FLAGS	flags = W_IMAGE_CREATE_TEXTURE
+	uint					arraySize,
+	W_IMAGE_CREATE_FLAGS	flags
 ) {
 	_DestroyResources();
 

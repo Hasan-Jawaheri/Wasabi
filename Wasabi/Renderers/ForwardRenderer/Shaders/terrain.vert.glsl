@@ -37,7 +37,7 @@ layout(push_constant) uniform PushConstant {
 } pcPerGeometry;
 
 layout(set = 0, binding = 2) uniform sampler2D instancingTexture;
-layout(set = 0, binding = 3) uniform sampler2D heightTexture;
+layout(set = 0, binding = 3) uniform sampler2DArray heightTexture;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outWorldPos;
@@ -45,7 +45,7 @@ layout(location = 2) out vec3 outWorldNorm;
 layout(location = 3) flat out uint outTexIndex;
 
 void main() {
-	vec4 instanceData = LoadVector4FromTexture(gl_InstanceIndex + pcPerGeometry.geometryOffsetInTexture, instancingTexture, 64);
+	vec4 instanceData = LoadVector4FromTexture(gl_InstanceIndex + pcPerGeometry.geometryOffsetInTexture, instancingTexture, textureSize(instancingTexture, 0).x);
 	vec3 instanceOffset = vec3(instanceData.x, 0, instanceData.y);
 	int level = int(instanceData.z);
 	float instanceScale = pow(2, max(0, level-1));
@@ -60,7 +60,7 @@ void main() {
 	vec2 _uvHeightmap = (posScaled.xz - levelCenter) / (instanceScale * localScale) + N / 2;
 	ivec2 uvHeightmap = ivec2(int(_uvHeightmap.x), int(N) - 1 - int(_uvHeightmap.y));
 
-	posScaled.y = texelFetch(heightTexture, uvHeightmap, max(0, level - 1)).x;
+	posScaled.y = texelFetch(heightTexture, ivec3(uvHeightmap.xy, max(0, level - 1)), 0).x;
 
 	outUV = inUV;
 	outWorldPos = (uboPerTerrain.worldMatrix * vec4(posScaled, 1.0)).xyz;
