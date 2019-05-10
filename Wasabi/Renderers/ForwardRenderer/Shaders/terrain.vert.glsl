@@ -33,10 +33,11 @@ layout(set = 1, binding = 1) uniform LUBO {
 } uboPerFrame;
 
 layout(push_constant) uniform PushConstant {
-	int offsetInTexture;
+	int geometryOffsetInTexture;
 } pcPerGeometry;
 
 layout(set = 0, binding = 2) uniform sampler2D instancingTexture;
+layout(set = 0, binding = 3) uniform sampler2D heightTexture;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outWorldPos;
@@ -44,15 +45,25 @@ layout(location = 2) out vec3 outWorldNorm;
 layout(location = 3) flat out uint outTexIndex;
 
 void main() {
-	vec4 data = LoadVector4FromTexture(gl_InstanceIndex + pcPerGeometry.offsetInTexture, instancingTexture, 64);
-	vec3 instanceOffset = vec3(data.x, 0, data.y);
-	int level = int(data.z);
+	vec4 instanceData = LoadVector4FromTexture(gl_InstanceIndex + pcPerGeometry.geometryOffsetInTexture, instancingTexture, 64);
+	vec3 instanceOffset = vec3(instanceData.x, 0, instanceData.y);
+	int level = int(instanceData.z);
 	float instanceScale = pow(2, max(0, level-1));
-	float orientation = data.w;
-	vec3 pos = vec3(inPos.x * (1 - orientation) + inPos.z * orientation, inPos.y, inPos.z * (1 - orientation) + inPos.x * orientation) * vec3(((1 - orientation) * 2 - 1), 1, 1);
+	float orientation = instanceData.w;
+	vec4 levelData = LoadVector4FromTexture(level, instancingTexture, 64);
+	vec2 levelCenter = levelData.xy;
+	int N = int(levelData.z);
+	float localScale = levelData.w;
+
+	vec3 posLocal = vec3(inPos.x * (1 - orientation) + inPos.z * orientation, inPos.y, inPos.z * (1 - orientation) + inPos.x * orientation) * vec3(((1 - orientation) * 2 - 1), 1, 1);
+	vec3 posScaled = posLocal * instanceScale + instanceOffset;
+	vec2 _uvHeightmap = (posScaled.xz - levelCenter) / (instanceScale * localScale) + N / 2;
+	ivec2 uvHeightmap = ivec2(int(_uvHeightmap.x), int(N) - 1 - int(_uvHeightmap.y));
+
+	posScaled.y = texelFetch(heightTexture, uvHeightmap, max(0, level - 1)).x;
 
 	outUV = inUV;
-	outWorldPos = (uboPerTerrain.worldMatrix * vec4(pos * instanceScale + instanceOffset, 1.0)).xyz;
+	outWorldPos = (uboPerTerrain.worldMatrix * vec4(posScaled, 1.0)).xyz;
 	outWorldNorm = (uboPerTerrain.worldMatrix * vec4(inNorm.xyz, 0.0)).xyz;
 	outTexIndex = level;
 	gl_Position = uboPerFrame.projectionMatrix * uboPerFrame.viewMatrix * vec4(outWorldPos, 1.0);

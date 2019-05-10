@@ -251,20 +251,38 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 
 	WColor* pixels;
 	m_instanceTexture->MapPixels((void**)& pixels, W_MAP_WRITE);
+	// first m_LOD floats of the texture are for level data
+	for (int i = 0; i < m_LOD; i++) {
+		WColor levelData = WColor(
+			m_rings[i]->center.x, // level center x
+			m_rings[i]->center.y, // level center y
+			m_N, // N
+			m_size // terrain scale
+		);
+		pixels[i] = levelData;
+	}
+
+	pixels += m_LOD;
 	for (auto it : m_pieces) {
 		for (uint i = 0; i < it.second.size(); i++) {
 			RingPiece* piece = it.second[i];
-			pixels[i] = WColor(piece->offsetFromCenter.x + piece->ring->center.x, piece->offsetFromCenter.y + piece->ring->center.y, piece->ring->level + 0.01f, piece->orientation);
+			WColor instanceData = WColor(
+				piece->offsetFromCenter.x + piece->ring->center.x,
+				piece->offsetFromCenter.y + piece->ring->center.y,
+				piece->ring->level + 0.01f,
+				piece->orientation
+			);
+			pixels[i] = instanceData;
 		}
 		pixels += it.second.size();
 	}
 	m_instanceTexture->UnmapPixels();
 
-	uint totalNumPieces = 0;
+	uint totalNumPieces = m_LOD; // start from m_LOD since the first <m_LOD> pixels are for level data
 	for (auto it : m_pieces) {
 		WGeometry* geometry = it.first;
 		uint numPieces = it.second.size();
-		material->SetVariableInt("offsetInTexture", totalNumPieces);
+		material->SetVariableInt("geometryOffsetInTexture", totalNumPieces); // <-- push constant
 		material->Bind(rt, false, true);
 		geometry->Draw(rt, -1, numPieces, false);
 		totalNumPieces += numPieces;
