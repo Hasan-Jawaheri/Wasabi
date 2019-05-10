@@ -57,7 +57,7 @@ VkResult WBufferedImage::Create(Wasabi* app, uint numBuffers, uint width, uint h
 			break;
 		case VK_IMAGE_TYPE_2D: viewType = imageCreateInfo.arrayLayers == 1 ? VK_IMAGE_VIEW_TYPE_2D : VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 			break;
-		case VK_IMAGE_TYPE_3D: viewType = imageCreateInfo.arrayLayers == 1 ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+		case VK_IMAGE_TYPE_3D: viewType = imageCreateInfo.arrayLayers == 1 ? VK_IMAGE_VIEW_TYPE_3D: VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
 			break;
 		}
 
