@@ -21,6 +21,14 @@ WError WTerrainManager::Load() {
 	return WError(W_SUCCEEDED);
 }
 
+WTerrain* WTerrainManager::CreateTerrain(unsigned int N, float size, unsigned int numRings, unsigned int ID) {
+	WTerrain* terrain = new WTerrain(m_app, ID);
+	WError err = terrain->Create(N, size, numRings);
+	if (!err)
+		W_SAFE_REMOVEREF(terrain);
+	return terrain;
+}
+
 WTerrain::WTerrain(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_hidden = false;
 	m_bAltered = true;

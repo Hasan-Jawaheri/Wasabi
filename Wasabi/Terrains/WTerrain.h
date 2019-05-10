@@ -183,5 +183,17 @@ public:
 	 */
 	WError Load();
 
+	/**
+	 * Initializes the terrain.
+	 * @param N        Dimension (in number of vertices) of each block in the
+	 *                 terrain, must be a power of 2 greater than 1
+	 * @param size     Size of each square in the highest resolution block, must be
+	 *                 greater than 0
+	 * @param numRings Number of LOD rings drawn around the origin
+	 * @param ID       ID of the newly created terrain
+	 * @return Newly allocated terrain, or nullptr on failure
+	 */
+	WTerrain* CreateTerrain(unsigned int N = 256, float size = 1.0f, unsigned int numRings = 7, unsigned int ID = 0);
+
 private:
 };
