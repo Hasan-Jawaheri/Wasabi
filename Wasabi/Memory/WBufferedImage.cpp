@@ -9,26 +9,26 @@ WBufferedImage2D::WBufferedImage2D() {
 	m_bufferSize = 0;
 }
 
-VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint height, VkFormat format, void* pixels, W_MEMORY_STORAGE memory, VkImageUsageFlags imageUsage) {
+VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint height, WBufferedImageProperties properties, void* pixels) {
 	VkDevice device = app->GetVulkanDevice();
 	Destroy(app);
 
 	VkResult result = VK_SUCCESS;
 	VkMemoryPropertyFlags imageMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // device local means only GPU can access it, more efficient
-	imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	properties.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 	m_aspect =
-		(format == VK_FORMAT_D16_UNORM || format == VK_FORMAT_X8_D24_UNORM_PACK32 || format == VK_FORMAT_D32_SFLOAT)
+		(properties.format == VK_FORMAT_D16_UNORM || properties.format == VK_FORMAT_X8_D24_UNORM_PACK32 || properties.format == VK_FORMAT_D32_SFLOAT)
 		? VK_IMAGE_ASPECT_DEPTH_BIT
-		: (format == VK_FORMAT_S8_UINT
+		: (properties.format == VK_FORMAT_S8_UINT
 			? VK_IMAGE_ASPECT_STENCIL_BIT
-			: ((format == VK_FORMAT_D16_UNORM_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT_S8_UINT)
+			: ((properties.format == VK_FORMAT_D16_UNORM_S8_UINT || properties.format == VK_FORMAT_D24_UNORM_S8_UINT || properties.format == VK_FORMAT_D32_SFLOAT_S8_UINT)
 				? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)
 				: VK_IMAGE_ASPECT_COLOR_BIT));
-	m_usage = imageUsage;
+	m_usage = properties.usage;
 	m_width = width;
 	m_height = height;
-	std::pair<int, int> pixelSize = g_formatSizes[format];
+	std::pair<int, int> pixelSize = g_formatSizes[properties.format];
 	m_bufferSize = (pixelSize.second/8) * width * height;
 
 	WVulkanBuffer stagingBuffer;
@@ -40,10 +40,10 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 		VkImageCreateInfo imageCreateInfo = {};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageCreateInfo.format = format;
-		imageCreateInfo.mipLevels = 1; // TODO: USE m_app->engineParams["numGeneratedMips"]
-		imageCreateInfo.arrayLayers = 1;
-		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageCreateInfo.format = properties.format;
+		imageCreateInfo.mipLevels = properties.mipLevels;
+		imageCreateInfo.arrayLayers = properties.arraySize;
+		imageCreateInfo.samples = properties.sampleCount;
 		imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
@@ -54,12 +54,12 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		// imageViewCreateInfo.image = image; <--- will be automatically set
 		imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		imageViewCreateInfo.format = format;
+		imageViewCreateInfo.format = imageCreateInfo.format;
 		imageViewCreateInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
 		imageViewCreateInfo.subresourceRange.aspectMask = m_aspect;
 		imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
 		imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-		imageViewCreateInfo.subresourceRange.layerCount = 1;
+		imageViewCreateInfo.subresourceRange.layerCount = imageCreateInfo.arrayLayers;
 		imageViewCreateInfo.subresourceRange.levelCount = imageCreateInfo.mipLevels;
 
 		WVulkanImage image;
@@ -103,12 +103,12 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 		if (result != VK_SUCCESS)
 			break;
 
-		if (memory != W_MEMORY_HOST_VISIBLE)
+		if (properties.memory != W_MEMORY_HOST_VISIBLE)
 			stagingBuffer.Destroy(app);
 		else
 			m_stagingBuffers.push_back(stagingBuffer);
 
-		if (memory == W_MEMORY_DEVICE_LOCAL_HOST_COPY) {
+		if (properties.memory == W_MEMORY_DEVICE_LOCAL_HOST_COPY) {
 			m_readOnlyMemory = W_SAFE_ALLOC(m_bufferSize);
 			memcpy(m_readOnlyMemory, pixels, m_bufferSize);
 		}
