@@ -117,7 +117,7 @@ WError WTerrain::Create(unsigned int N, float size, unsigned int numRings) {
 				err = m_instanceTexture->CreateFromPixelsArray(nullptr, 64, 64, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
 				if (err) {
 					m_heightTexture = new WImage(m_app);
-					err = m_heightTexture->CreateFromPixelsArray(nullptr, N + 1, N + 1, 1, VK_FORMAT_R32_SFLOAT, numRings + 1, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
+					err = m_heightTexture->CreateFromPixelsArray(nullptr, N + 1, N + 1, 1, VK_FORMAT_R32_SFLOAT, numRings, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
 				}
 			}
 		}
@@ -292,6 +292,46 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		pixels += it.second.size();
 	}
 	m_instanceTexture->UnmapPixels();
+
+	float* heights;
+	uint textureDimension = m_N + 1;
+	m_heightTexture->MapPixels((void**)&heights, W_MAP_WRITE);
+	for (int i = m_LOD - 1; i > 0; i--) {
+		float unitSize = max(pow(2, i - 1), 1) * m_size;
+		float levelSize = unitSize * (m_N - 1);
+		for (uint y = 0; y < m_N; y++) {
+			for (uint x = 0; x < m_N; x++) {
+				WVector2 terrainTexC = WVector2(
+					m_rings[i]->center.x - levelSize / 2.0f + x * unitSize,
+					m_rings[i]->center.y - levelSize / 2.0f + y * unitSize
+				) / m_size;
+				float height = (int)fabs(terrainTexC.x+0.1) % 3;// sinf(terrainTexC.x / 5.0f)* min(5.0f, fabs(terrainTexC.x) / 8.0f) + cosf(terrainTexC.y / 5.0f) * min(5.0f, fabs(terrainTexC.y) / 8.0f);
+				float coarserHeight = height;
+
+				if (i != m_LOD - 1) {
+					WVector2 coarserLevelTexC = WVector2(
+						x / 2.0f + (m_M-1) + (m_rings[i]->center.x > m_rings[i + 1]->center.x ? 1 : 0),
+						y / 2.0f + (m_M-1) + (m_rings[i]->center.y > m_rings[i + 1]->center.y ? 0 : 1)
+					);
+					int x0 = coarserLevelTexC.x;
+					int y0 = coarserLevelTexC.y;
+					WVector2 lerpValues = WVector2(coarserLevelTexC.x - (float)x0, coarserLevelTexC.y - (float)y0);
+					float* coarserHeights = &heights[textureDimension * textureDimension * i];
+					auto coarseHeight = [coarserHeights, textureDimension](int x, int y) { return floor(coarserHeights[textureDimension * y + x]) / 100.0f; };
+					auto lerp = [](float x, float y, float alpha) { return x * (1.0f - alpha) + y * alpha; };
+					coarserHeight = lerp(
+						lerp(coarseHeight(x0, y0), coarseHeight(x0 + 1, y0), lerpValues.x),
+						lerp(coarseHeight(x0, y0 + 1), coarseHeight(x0 + 1, y0 + 1), lerpValues.x),
+						lerpValues.y
+					);
+				}
+
+				float coarserLevelDiff = 0.5f + (coarserHeight - height) / 100.0f;
+				heights[textureDimension * textureDimension * (i - 1) + textureDimension * y + x] = (float)floor(height * 100.0f) + coarserLevelDiff;
+			}
+		}
+	}
+	m_heightTexture->UnmapPixels();
 
 	uint totalNumPieces = m_LOD; // start from m_LOD since the first <m_LOD> pixels are for level data
 	for (auto it : m_pieces) {

@@ -31,11 +31,13 @@ layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inWorldPos;
 layout(location = 2) in vec3 inWorldNorm;
 layout(location = 3) flat in uint inTexIndex;
+layout(location = 4) in float inAlpha;
 
 layout(location = 0) out vec4 outFragColor;
 
 void main() {
 	outFragColor = vec4(inTexIndex == 0 || inTexIndex == 4 || inTexIndex == 5 ? 1 : 0, inTexIndex == 1 || inTexIndex == 4 || inTexIndex == 3 ? 1 : 0, inTexIndex == 2 || inTexIndex == 3 || inTexIndex == 5 ? 1 : 0, 1);// texture(diffuseTexture[inTexIndex], inUV);
+	outFragColor.rgb *= inAlpha;
 	vec3 camDir = normalize(uboPerFrame.camPosW - inWorldPos);
 	vec3 lighting = vec3(0,0,0);
 	for (int i = 0; i < uboPerFrame.numLights; i++) {

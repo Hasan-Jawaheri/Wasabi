@@ -30,7 +30,7 @@ void TerrainDemo::Update(float fDeltaTime) {
 		playerPos.y = terrain->GetHeight(WVector2(playerPos.x, playerPos.z));
 		((WasabiTester*)m_app)->SetCameraPosition(playerPos);
 		player->SetPosition(playerPos);
-		terrain->SetViewpoint(playerPos);
+		//terrain->SetViewpoint(playerPos);
 	}
 }
 

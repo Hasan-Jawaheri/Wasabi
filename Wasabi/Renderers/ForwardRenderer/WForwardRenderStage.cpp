@@ -201,7 +201,7 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (err) {
 		err = terrainFX->BindShader(terrainPS);
 		if (err) {
-			VkPipelineRasterizationStateCreateInfo rs = {};
+			/*VkPipelineRasterizationStateCreateInfo rs = {};
 			rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 			rs.polygonMode = VK_POLYGON_MODE_LINE;
 			rs.cullMode = VK_CULL_MODE_BACK_BIT;
@@ -210,7 +210,7 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 			rs.rasterizerDiscardEnable = VK_FALSE;
 			rs.depthBiasEnable = VK_FALSE;
 			rs.lineWidth = 1.0f;
-			terrainFX->SetRasterizationState(rs);
+			terrainFX->SetRasterizationState(rs);*/
 			err = terrainFX->BuildPipeline(m_renderTarget);
 		}
 	}
