@@ -39,6 +39,7 @@ WTerrain::WTerrain(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_Mx3Geometry = nullptr;
 	m_2Mp1Geometry = nullptr;
 	m_instanceTexture = nullptr;
+	m_heightTexture = nullptr;
 
 	m_viewpoint = WVector3(0.0f, 0.0f, 0.0f);
 	m_LOD = 7;
@@ -65,6 +66,7 @@ void WTerrain::_DestroyResources() {
 	W_SAFE_REMOVEREF(m_Mx3Geometry);
 	W_SAFE_REMOVEREF(m_2Mp1Geometry);
 	W_SAFE_REMOVEREF(m_instanceTexture);
+	W_SAFE_REMOVEREF(m_heightTexture);
 	for (auto pieceTypeIt : m_pieces)
 		for (auto pieceIt : pieceTypeIt.second)
 			delete pieceIt;
@@ -113,6 +115,10 @@ WError WTerrain::Create(unsigned int N, float size, unsigned int numRings) {
 			if (err) {
 				m_instanceTexture = new WImage(m_app);
 				err = m_instanceTexture->CreateFromPixelsArray(nullptr, 64, 64, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
+				if (err) {
+					m_heightTexture = new WImage(m_app);
+					err = m_heightTexture->CreateFromPixelsArray(nullptr, N + 1, N + 1, 1, VK_FORMAT_R32_SFLOAT, numRings + 1, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
+				}
 			}
 		}
 	}
@@ -123,7 +129,7 @@ WError WTerrain::Create(unsigned int N, float size, unsigned int numRings) {
 		m_N = N;
 		m_M = M;
 		m_size = size;
-		m_LOD = numRings;
+		m_LOD = numRings + 1;
 
 		for (int i = 0; i < m_LOD; i++) {
 			LODRing* ring = new LODRing();
@@ -221,6 +227,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 	WMatrix worldM = GetWorldMatrix();
 	material->SetVariableMatrix("worldMatrix", worldM);
 	material->SetTexture("instancingTexture", m_instanceTexture);
+	material->SetTexture("heightTexture", m_heightTexture);
 	material->Bind(rt, true, false);
 
 	for (int i = m_LOD - 1; i >= 0; i--) {

@@ -30,7 +30,7 @@ VkResult WBufferedImage::Create(Wasabi* app, uint numBuffers, uint width, uint h
 	m_height = height;
 	m_depth = depth;
 	std::pair<int, int> pixelSize = g_formatSizes[properties.format];
-	m_bufferSize = (pixelSize.second/8) * width * height * depth;
+	m_bufferSize = (pixelSize.second/8) * width * height * depth * properties.arraySize;
 
 	WVulkanBuffer stagingBuffer;
 	for (uint i = 0; i < numBuffers; i++) {
@@ -148,6 +148,11 @@ VkResult WBufferedImage::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer, 
 	if (result == VK_SUCCESS) {
 		VkCommandBuffer copyCmdBuffer = app->MemoryManager->GetCopyCommandBuffer();
 
+		VkImageSubresourceRange subresourceRange = {};
+		subresourceRange.aspectMask = m_aspect;
+		subresourceRange.levelCount = m_properties.mipLevels;
+		subresourceRange.layerCount = m_properties.arraySize;
+
 		// Image barrier for optimal image (target)
 		// Optimal image will be used as destination for the copy
 		vkTools::setImageLayout(
@@ -155,7 +160,9 @@ VkResult WBufferedImage::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer, 
 			image.img,
 			m_aspect,
 			initialLayout == VK_IMAGE_LAYOUT_PREINITIALIZED ? initialLayout : VK_IMAGE_LAYOUT_UNDEFINED,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			subresourceRange
+		);
 
 		// Setup buffer copy regions for each mip level
 		VkBufferImageCopy bufferCopyRegion = {};
@@ -187,7 +194,9 @@ VkResult WBufferedImage::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer, 
 			image.img,
 			m_aspect,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			targetLayout);
+			targetLayout,
+			subresourceRange
+		);
 
 		result = app->MemoryManager->EndCopyCommandBuffer(true);
 
