@@ -168,7 +168,7 @@ WError WImage::CreateFromPixelsArray(void* pixels, uint width, uint height, VkFo
 	if (flags & W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT) usageFlags |= (isDepth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 	W_MEMORY_STORAGE memory = flags & W_IMAGE_CREATE_DYNAMIC ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL;
 	uint numBuffers = (flags & (W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT)) ? (uint)m_app->engineParams["bufferingCount"] : 1;
-	VkResult result = m_bufferedImage.Create(m_app, numBuffers, width, height, WBufferedImageProperties(format, memory, usageFlags), pixels);
+	VkResult result = m_bufferedImage.Create(m_app, numBuffers, width, height, 1, WBufferedImageProperties(format, memory, usageFlags), pixels);
 	if (result != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
 
@@ -352,7 +352,7 @@ WError WImage::SaveToStream(WFile* file, std::ostream& outputStream) {
 	outputStream.write((char*)&width, sizeof(width));
 	outputStream.write((char*)&height, sizeof(height));
 	outputStream.write((char*)&m_format, sizeof(m_format));
-	uint dataSize = width * height * GetPixelSize();
+	uint dataSize = m_bufferedImage.GetMemorySize();
 	outputStream.write((char*)&dataSize, sizeof(dataSize));
 
 	void* pixels;

@@ -3,13 +3,13 @@
 
 extern std::unordered_map<VkFormat, std::pair<int, int>> g_formatSizes;
 
-WBufferedImage2D::WBufferedImage2D() {
+WBufferedImage::WBufferedImage() {
 	m_lastMapFlags = W_MAP_UNDEFINED;
 	m_readOnlyMemory = nullptr;
 	m_bufferSize = 0;
 }
 
-VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint height, WBufferedImageProperties properties, void* pixels) {
+VkResult WBufferedImage::Create(Wasabi* app, uint numBuffers, uint width, uint height, uint depth, WBufferedImageProperties properties, void* pixels) {
 	VkDevice device = app->GetVulkanDevice();
 	Destroy(app);
 
@@ -25,11 +25,12 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 			: ((properties.format == VK_FORMAT_D16_UNORM_S8_UINT || properties.format == VK_FORMAT_D24_UNORM_S8_UINT || properties.format == VK_FORMAT_D32_SFLOAT_S8_UINT)
 				? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)
 				: VK_IMAGE_ASPECT_COLOR_BIT));
-	m_usage = properties.usage;
+	m_properties = properties;
 	m_width = width;
 	m_height = height;
+	m_depth = depth;
 	std::pair<int, int> pixelSize = g_formatSizes[properties.format];
-	m_bufferSize = (pixelSize.second/8) * width * height;
+	m_bufferSize = (pixelSize.second/8) * width * height * depth;
 
 	WVulkanBuffer stagingBuffer;
 	for (uint i = 0; i < numBuffers; i++) {
@@ -39,7 +40,7 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 		//
 		VkImageCreateInfo imageCreateInfo = {};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+		imageCreateInfo.imageType = properties.type;
 		imageCreateInfo.format = properties.format;
 		imageCreateInfo.mipLevels = properties.mipLevels;
 		imageCreateInfo.arrayLayers = properties.arraySize;
@@ -47,13 +48,23 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 		imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-		imageCreateInfo.extent = { width, height, 1 };
-		imageCreateInfo.usage = m_usage;
+		imageCreateInfo.extent = { width, height, depth };
+		imageCreateInfo.usage = m_properties.usage;
+
+		VkImageViewType viewType;
+		switch (properties.type) {
+		case VK_IMAGE_TYPE_1D: viewType = imageCreateInfo.arrayLayers == 1 ? VK_IMAGE_VIEW_TYPE_1D : VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+			break;
+		case VK_IMAGE_TYPE_2D: viewType = imageCreateInfo.arrayLayers == 1 ? VK_IMAGE_VIEW_TYPE_2D : VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+			break;
+		case VK_IMAGE_TYPE_3D: viewType = imageCreateInfo.arrayLayers == 1 ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+			break;
+		}
 
 		VkImageViewCreateInfo imageViewCreateInfo = {};
 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		// imageViewCreateInfo.image = image; <--- will be automatically set
-		imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		imageViewCreateInfo.viewType = viewType;
 		imageViewCreateInfo.format = imageCreateInfo.format;
 		imageViewCreateInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
 		imageViewCreateInfo.subresourceRange.aspectMask = m_aspect;
@@ -122,12 +133,12 @@ VkResult WBufferedImage2D::Create(Wasabi* app, uint numBuffers, uint width, uint
 	return result;
 }
 
-VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer, WVulkanImage& image, VkImageLayout& initialLayout) {
+VkResult WBufferedImage::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer, WVulkanImage& image, VkImageLayout& initialLayout) {
 	VkImageLayout targetLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	if (!(m_usage & VK_IMAGE_USAGE_SAMPLED_BIT)) {
-		if (m_usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+	if (!(m_properties.usage & VK_IMAGE_USAGE_SAMPLED_BIT)) {
+		if (m_properties.usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 			targetLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		else if (m_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+		else if (m_properties.usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
 			targetLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		else
 			targetLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -151,10 +162,10 @@ VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer
 		bufferCopyRegion.imageSubresource.aspectMask = m_aspect;
 		bufferCopyRegion.imageSubresource.mipLevel = 0;
 		bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
-		bufferCopyRegion.imageSubresource.layerCount = 1;
+		bufferCopyRegion.imageSubresource.layerCount = m_properties.arraySize;
 		bufferCopyRegion.imageExtent.width = m_width;
 		bufferCopyRegion.imageExtent.height = m_height;
-		bufferCopyRegion.imageExtent.depth = 1;
+		bufferCopyRegion.imageExtent.depth = m_depth;
 		bufferCopyRegion.bufferOffset = 0;
 
 		if (m_aspect & VK_IMAGE_ASPECT_DEPTH_BIT && m_aspect & VK_IMAGE_ASPECT_STENCIL_BIT)
@@ -186,7 +197,7 @@ VkResult WBufferedImage2D::CopyStagingToImage(Wasabi* app, WVulkanBuffer& buffer
 	return result;
 }
 
-void WBufferedImage2D::Destroy(Wasabi* app) {
+void WBufferedImage::Destroy(Wasabi* app) {
 	VkDevice device = app->GetVulkanDevice();
 	for (auto it = m_images.begin(); it != m_images.end(); it++)
 		it->Destroy(app);
@@ -198,7 +209,7 @@ void WBufferedImage2D::Destroy(Wasabi* app) {
 	W_SAFE_FREE(m_readOnlyMemory);
 }
 
-VkResult WBufferedImage2D::Map(Wasabi* app, uint bufferIndex, void** pixels, W_MAP_FLAGS flags) {
+VkResult WBufferedImage::Map(Wasabi* app, uint bufferIndex, void** pixels, W_MAP_FLAGS flags) {
 	VkResult result = VK_RESULT_MAX_ENUM;
 	if (m_lastMapFlags == W_MAP_UNDEFINED && flags != W_MAP_UNDEFINED) {
 		if (m_readOnlyMemory) {
@@ -221,7 +232,7 @@ VkResult WBufferedImage2D::Map(Wasabi* app, uint bufferIndex, void** pixels, W_M
 	return result;
 }
 
-void WBufferedImage2D::Unmap(Wasabi* app, uint bufferIndex) {
+void WBufferedImage::Unmap(Wasabi* app, uint bufferIndex) {
 	if (m_lastMapFlags != W_MAP_UNDEFINED) {
 		if (m_readOnlyMemory) {
 		} else if (m_stagingBuffers.size() > 0) {
@@ -237,17 +248,17 @@ void WBufferedImage2D::Unmap(Wasabi* app, uint bufferIndex) {
 	}
 }
 
-VkImageView WBufferedImage2D::GetView(Wasabi* app, uint bufferIndex) const {
+VkImageView WBufferedImage::GetView(Wasabi* app, uint bufferIndex) const {
 	bufferIndex = bufferIndex % m_images.size();
 	return m_images[bufferIndex].view;
 }
 
-VkImageLayout WBufferedImage2D::GetLayout(uint bufferIndex) const {
+VkImageLayout WBufferedImage::GetLayout(uint bufferIndex) const {
 	bufferIndex = bufferIndex % m_images.size();
 	return m_layouts[bufferIndex];
 }
 
-void WBufferedImage2D::TransitionLayoutTo(VkCommandBuffer cmdBuf, VkImageLayout newLayout, uint bufferIndex) {
+void WBufferedImage::TransitionLayoutTo(VkCommandBuffer cmdBuf, VkImageLayout newLayout, uint bufferIndex) {
 	bufferIndex = bufferIndex % m_images.size();
 	vkTools::setImageLayout(
 		cmdBuf,
@@ -258,20 +269,24 @@ void WBufferedImage2D::TransitionLayoutTo(VkCommandBuffer cmdBuf, VkImageLayout 
 	m_layouts[bufferIndex] = newLayout;
 }
 
-bool WBufferedImage2D::Valid() const {
+bool WBufferedImage::Valid() const {
 	return m_bufferSize > 0;
 }
 
-size_t WBufferedImage2D::GetMemorySize() const {
+size_t WBufferedImage::GetMemorySize() const {
 	return m_bufferSize;
 }
 
-uint WBufferedImage2D::GetWidth() const {
+uint WBufferedImage::GetWidth() const {
 	return m_width;
 }
 
-uint WBufferedImage2D::GetHeight() const {
+uint WBufferedImage::GetHeight() const {
 	return m_height;
+}
+
+uint WBufferedImage::GetDepth() const {
+	return m_depth;
 }
 
 static std::unordered_map<VkFormat, std::pair<int, int>> g_formatSizes = {

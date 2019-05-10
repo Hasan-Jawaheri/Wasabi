@@ -181,8 +181,8 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 	//
 	// Create the frame buffers
 	//
-	std::vector<WBufferedImage2D> colorImages;
-	WBufferedImage2D depthImage;
+	std::vector<WBufferedImage> colorImages;
+	WBufferedImage depthImage;
 	for (auto it = targets.begin(); it != targets.end(); it++)
 		colorImages.push_back((*it)->m_bufferedImage);
 	if (depth)

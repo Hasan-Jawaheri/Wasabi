@@ -8,24 +8,27 @@ struct WBufferedImageProperties {
 	W_MEMORY_STORAGE memory;
 	VkImageUsageFlags usage;
 	VkSampleCountFlagBits sampleCount;
+	VkImageType type;
 	uint arraySize;
 	uint mipLevels;
 
+	WBufferedImageProperties() {}
 	WBufferedImageProperties(
-		VkFormat fmt,
-		W_MEMORY_STORAGE mem = W_MEMORY_DEVICE_LOCAL,
-		VkImageUsageFlags usg = VK_IMAGE_USAGE_SAMPLED_BIT,
-		uint arrSize = 1,
-		uint mips = 1,
-		VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT
-	) : format(fmt), memory(mem), usage(usg), arraySize(arrSize), mipLevels(mips), sampleCount(sampleCount) {}
+		VkFormat _format,
+		W_MEMORY_STORAGE _memory = W_MEMORY_DEVICE_LOCAL,
+		VkImageUsageFlags _usage = VK_IMAGE_USAGE_SAMPLED_BIT,
+		uint _arraySize = 1,
+		uint _mipLevels = 1,
+		VkImageType _type = VK_IMAGE_TYPE_2D,
+		VkSampleCountFlagBits _sampleCount = VK_SAMPLE_COUNT_1_BIT
+	) : format(_format), memory(_memory), usage(_usage), sampleCount(_sampleCount), type(_type), arraySize(_arraySize), mipLevels(_mipLevels) {}
 };
 
-class WBufferedImage2D {
+class WBufferedImage {
 public:
-	WBufferedImage2D();
+	WBufferedImage();
 
-	VkResult Create(class Wasabi* app, uint numBuffers, uint width, uint height, WBufferedImageProperties properties, void* pixels = nullptr);
+	VkResult Create(class Wasabi* app, uint numBuffers, uint width, uint height, uint depth, WBufferedImageProperties properties, void* pixels = nullptr);
 	void Destroy(class Wasabi* app);
 
 	VkResult Map(class Wasabi* app, uint bufferIndex, void** pixels, W_MAP_FLAGS flags);
@@ -39,13 +42,15 @@ public:
 	size_t GetMemorySize() const;
 	uint GetWidth() const;
 	uint GetHeight() const;
+	uint GetDepth() const;
 
 private:
 	VkImageAspectFlags m_aspect;
-	VkImageUsageFlags m_usage;
+	WBufferedImageProperties m_properties;
 	size_t m_bufferSize;
 	uint m_width;
 	uint m_height;
+	uint m_depth;
 	W_MAP_FLAGS m_lastMapFlags;
 
 	void* m_readOnlyMemory;
