@@ -18,19 +18,19 @@ void TerrainDemo::Load() {
 
 void TerrainDemo::Update(float fDeltaTime) {
 	if (m_app->WindowAndInputComponent->KeyDown('W'))
-		playerPos.z += 10.0f * fDeltaTime;
+		playerPos.z += 100.0f * fDeltaTime;
 	if (m_app->WindowAndInputComponent->KeyDown('S'))
-		playerPos.z -= 10.0f * fDeltaTime;
+		playerPos.z -= 100.0f * fDeltaTime;
 	if (m_app->WindowAndInputComponent->KeyDown('A'))
-		playerPos.x -= 10.0f * fDeltaTime;
+		playerPos.x -= 100.0f * fDeltaTime;
 	if (m_app->WindowAndInputComponent->KeyDown('D'))
-		playerPos.x += 10.0f * fDeltaTime;
+		playerPos.x += 100.0f * fDeltaTime;
 
 	if (terrain && player) {
 		playerPos.y = terrain->GetHeight(WVector2(playerPos.x, playerPos.z));
 		((WasabiTester*)m_app)->SetCameraPosition(playerPos);
 		player->SetPosition(playerPos);
-		//terrain->SetViewpoint(playerPos);
+		terrain->SetViewpoint(playerPos);
 	}
 }
 

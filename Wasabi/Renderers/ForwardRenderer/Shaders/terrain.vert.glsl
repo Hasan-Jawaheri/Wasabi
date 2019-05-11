@@ -64,15 +64,15 @@ void main() {
 
 	float heights = texelFetch(heightTexture, ivec3(uvHeightmap.xy, max(0, level - 1)), 0).x;
 	float height = floor(heights) / 100.0f;
-	float coarserHeight = height + (fract(heights) - 0.5f) * 100.0f;
+	float coarserHeight = height + (fract(heights) - 0.5f) * 1000.0f;
 	float fineAlpha = min(1.0f, max(0.0f, 3.5f - max(
 		4.0f * abs(posScaled.x - levelCenter.x) / (instanceScale * localScale * (N / 2.0f + 0.25f)),
 		4.0f * abs(posScaled.z - levelCenter.y) / (instanceScale * localScale * (N / 2.0f + 0.25f))
 	)));
-	posScaled.y = height * fineAlpha + coarserHeight * (1.0f-fineAlpha);
 
+	outWorldPos = posScaled;
+	outWorldPos.y = height * fineAlpha + coarserHeight * (1.0f-fineAlpha);
 	outUV = inUV;
-	outWorldPos = vec4(posScaled, 1.0).xyz;
 	outWorldNorm = vec4(inNorm.xyz, 0.0).xyz;
 	outTexIndex = level;
 	outAlpha = fineAlpha;
