@@ -43,7 +43,7 @@ public:
 	 * @param numRings Number of LOD rings drawn around the origin
 	 * @return Error code, see WError.h
 	 */
-	WError Create(unsigned int N = 256, float size = 1.0f, unsigned int numRings = 7);
+	WError Create(unsigned int N = 256, float size = 1.0f, unsigned int numRings = 6);
 
 	/**
 	 * Sets the point around which the terrain is loaded. The terrain will not
