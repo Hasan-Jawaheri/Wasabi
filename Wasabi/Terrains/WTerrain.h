@@ -128,6 +128,7 @@ private:
 	class WGeometry* m_2Mp1Geometry;
 	class WImage* m_instanceTexture;
 	class WImage* m_heightTexture;
+	class WImage* m_textures;
 
 	struct LODRing;
 	struct RingPiece {

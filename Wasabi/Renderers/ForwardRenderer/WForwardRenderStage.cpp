@@ -134,7 +134,7 @@ W_SHADER_DESC WForwardRenderStageTerrainPS::GetDesc(int maxLights) {
 	desc.bound_resources = {
 		WForwardRenderStageTerrainVS::GetDesc(maxLights).bound_resources[0],
 		WForwardRenderStageTerrainVS::GetDesc(maxLights).bound_resources[1],
-		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture", {}, 8),
+		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture"),
 	};
 	return desc;
 }
