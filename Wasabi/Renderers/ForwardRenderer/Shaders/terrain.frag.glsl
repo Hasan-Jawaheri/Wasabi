@@ -25,19 +25,21 @@ layout(set = 1, binding = 1) uniform LUBO {
 	Light lights[16];
 } uboPerFrame;
 
-layout(set = 0, binding = 4) uniform sampler2D diffuseTexture[8];
+layout(set = 0, binding = 4) uniform sampler2DArray diffuseTexture;
 
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inWorldPos;
 layout(location = 2) in vec3 inWorldNorm;
-layout(location = 3) flat in uint inTexIndex;
+layout(location = 3) flat in int inLevel;
 layout(location = 4) in float inAlpha;
 
 layout(location = 0) out vec4 outFragColor;
 
 void main() {
-	outFragColor = vec4(inTexIndex == 0 || inTexIndex == 4 || inTexIndex == 5 ? 1 : 0, inTexIndex == 1 || inTexIndex == 4 || inTexIndex == 3 ? 1 : 0, inTexIndex == 2 || inTexIndex == 3 || inTexIndex == 5 ? 1 : 0, 1);// texture(diffuseTexture[inTexIndex], inUV);
-	outFragColor.rgb *= inAlpha * min(max(inWorldPos.y / 50.0f, 0.2f), 2.0f);
+	// outFragColor = vec4(inTexIndex == 0 || inTexIndex == 4 || inTexIndex == 5 ? 1 : 0, inTexIndex == 1 || inTexIndex == 4 || inTexIndex == 3 ? 1 : 0, inTexIndex == 2 || inTexIndex == 3 || inTexIndex == 5 ? 1 : 0, 1);// texture(diffuseTexture[inTexIndex], inUV);
+	// outFragColor.rgb *= inAlpha * min(max(inWorldPos.y / 50.0f, 0.2f), 2.0f);
+	float heightAlpha = min(max((inWorldPos.y + 70) / 150.0f, 0.5f), 2.0f);
+	outFragColor = texture(diffuseTexture, vec3(inWorldPos.xz / 50.0f, heightAlpha)) * heightAlpha;
 	vec3 camDir = normalize(uboPerFrame.camPosW - inWorldPos);
 	vec3 lighting = vec3(0,0,0);
 	for (int i = 0; i < uboPerFrame.numLights; i++) {

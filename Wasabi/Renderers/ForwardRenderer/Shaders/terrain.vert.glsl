@@ -37,12 +37,12 @@ layout(push_constant) uniform PushConstant {
 } pcPerGeometry;
 
 layout(set = 0, binding = 2) uniform sampler2D instancingTexture;
-layout(set = 0, binding = 3) uniform sampler2DArray heightTexture;
+layout(set = 0, binding = 3) uniform usampler2DArray heightTexture;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outWorldPos;
 layout(location = 2) out vec3 outWorldNorm;
-layout(location = 3) flat out uint outTexIndex;
+layout(location = 3) flat out int outLevel;
 layout(location = 4) out float outAlpha;
 
 void main() {
@@ -62,9 +62,11 @@ void main() {
 	vec2 _uvHeightmap = vec2(1,-1) * (posScaled.xz - levelCenter) / (instanceScale * localScale) + N / 2;
 	ivec2 uvHeightmap = ivec2(int(_uvHeightmap.x), int(_uvHeightmap.y));
 
-	float heights = texelFetch(heightTexture, ivec3(uvHeightmap.xy, max(0, level - 1)), 0).x;
-	float height = floor(heights) / 100.0f;
-	float coarserHeight = height + (fract(heights) - 0.5f) * 1000.0f;
+	uint heights = texelFetch(heightTexture, ivec3(uvHeightmap.xy, max(0, level - 1)), 0).x;
+	float height = float(int(heights >> 13) - 262144) / 100.0f;
+	float coarserHeight = height + float(int(heights & 0x1FFF) - 4096) / 100.0f;
+	//float height = floor(heights) / 100.0f;
+	//float coarserHeight = height + (fract(heights) - 0.5f) * 1000.0f;
 	float fineAlpha = min(1.0f, max(0.0f, 3.5f - max(
 		4.0f * abs(posScaled.x - levelCenter.x) / (instanceScale * localScale * (N / 2.0f + 0.25f)),
 		4.0f * abs(posScaled.z - levelCenter.y) / (instanceScale * localScale * (N / 2.0f + 0.25f))
@@ -72,9 +74,9 @@ void main() {
 
 	outWorldPos = posScaled;
 	outWorldPos.y = height * fineAlpha + coarserHeight * (1.0f-fineAlpha);
-	outUV = inUV;
+	outUV = uvHeightmap;
 	outWorldNorm = vec4(inNorm.xyz, 0.0).xyz;
-	outTexIndex = level;
+	outLevel = max(0, level - 1);
 	outAlpha = fineAlpha;
 	gl_Position = uboPerFrame.projectionMatrix * uboPerFrame.viewMatrix * vec4(outWorldPos, 1.0);
 }

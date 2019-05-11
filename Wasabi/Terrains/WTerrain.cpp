@@ -40,6 +40,7 @@ WTerrain::WTerrain(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
 	m_2Mp1Geometry = nullptr;
 	m_instanceTexture = nullptr;
 	m_heightTexture = nullptr;
+	m_textures = nullptr;
 
 	m_viewpoint = WVector3(0.0f, 0.0f, 0.0f);
 	m_LOD = 7;
@@ -67,6 +68,7 @@ void WTerrain::_DestroyResources() {
 	W_SAFE_REMOVEREF(m_2Mp1Geometry);
 	W_SAFE_REMOVEREF(m_instanceTexture);
 	W_SAFE_REMOVEREF(m_heightTexture);
+	W_SAFE_REMOVEREF(m_textures);
 	for (auto pieceTypeIt : m_pieces)
 		for (auto pieceIt : pieceTypeIt.second)
 			delete pieceIt;
@@ -117,7 +119,32 @@ WError WTerrain::Create(unsigned int N, float size, unsigned int numRings) {
 				err = m_instanceTexture->CreateFromPixelsArray(nullptr, 64, 64, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);// | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
 				if (err) {
 					m_heightTexture = new WImage(m_app);
-					err = m_heightTexture->CreateFromPixelsArray(nullptr, N + 1, N + 1, 1, VK_FORMAT_R32_SFLOAT, numRings, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);// | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
+					err = m_heightTexture->CreateFromPixelsArray(nullptr, N + 1, N + 1, 1, VK_FORMAT_R32_UINT, numRings, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);// | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
+					if (err) {
+						std::vector<std::string> imageNames({
+							"Media/seamless_grass.jpg",
+							"Media/seamless_snow.jpg"
+						});
+						std::vector<std::pair<WImage*, void*>> images;
+						for (auto filename : imageNames) {
+							WImage* tmp = new WImage(m_app);
+							tmp->Load(filename, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);
+							void* pixels;
+							tmp->MapPixels(&pixels, W_MAP_READ);
+							images.push_back(std::make_pair(tmp, pixels));
+						}
+						const size_t imgMemSize = images[0].first->GetWidth() * images[0].first->GetHeight() * images[0].first->GetPixelSize();
+						char* mem = new char[imgMemSize * images.size()];
+						for (int i = 0; i < images.size(); i++)
+							memcpy(mem + i * imgMemSize, images[i].second, imgMemSize);
+						m_textures = new WImage(m_app);
+						err = m_textures->CreateFromPixelsArray(mem, images[0].first->GetWidth(), images[0].first->GetHeight(), 1, VK_FORMAT_R8G8B8A8_UNORM, images.size(), W_IMAGE_CREATE_TEXTURE);
+						delete[] mem;
+						for (auto it : images) {
+							it.first->UnmapPixels();
+							W_SAFE_REMOVEREF(it.first);
+						}
+					}
 				}
 			}
 		}
@@ -228,6 +255,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 	material->SetVariableMatrix("worldMatrix", worldM);
 	material->SetTexture("instancingTexture", m_instanceTexture);
 	material->SetTexture("heightTexture", m_heightTexture);
+	material->SetTexture("diffuseTexture", m_textures);
 	material->Bind(rt, true, false);
 
 	for (int i = m_LOD - 1; i >= 0; i--) {
@@ -297,7 +325,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		}
 		m_instanceTexture->UnmapPixels();
 
-		float* heights;
+		uint* heights;
 		uint textureDimension = m_N + 1;
 		m_heightTexture->MapPixels((void**)& heights, W_MAP_WRITE);
 		for (int i = m_LOD - 1; i > 0; i--) {
@@ -313,8 +341,9 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 					auto F2 = [](float x) {return sinf(x / 100.0f) * sqrtf(abs(x)) * 5.0f; };
 					float h1 = F1(sqrtf(abs(terrainTexC.x))) * sqrtf(abs(terrainTexC.x + terrainTexC.y) * 5.0f) + F2(terrainTexC.x);
 					float h2 = F1(sqrtf(abs(terrainTexC.y))) * sqrtf(abs(terrainTexC.x + terrainTexC.y) * 5.0f) + F2(terrainTexC.y);
-					float height = (h1 + h2);
-					float coarserHeight = height;
+					int height = (int)((float)(h1 + h2) * 100.0f);
+					//int height = (int)((float)(sinf(terrainTexC.x) * 100.0f));
+					float coarserHeightDiff = 0.0f;
 
 					if (i != m_LOD - 1) {
 						WVector2 coarserLevelTexC = WVector2(
@@ -324,18 +353,20 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 						int x0 = coarserLevelTexC.x;
 						int y0 = coarserLevelTexC.y;
 						WVector2 lerpValues = WVector2(coarserLevelTexC.x - (float)x0, coarserLevelTexC.y - (float)y0);
-						float* coarserHeights = &heights[textureDimension * textureDimension * i];
-						auto coarseHeight = [coarserHeights, textureDimension](int x, int y) { return floor(coarserHeights[textureDimension * y + x]) / 100.0f; };
+						uint* coarserHeights = &heights[textureDimension * textureDimension * i];
+						auto coarseHeight = [coarserHeights, textureDimension](int x, int y) { return int(coarserHeights[textureDimension * y + x] >> 13) - 262144; };
 						auto lerp = [](float x, float y, float alpha) { return x * (1.0f - alpha) + y * alpha; };
-						coarserHeight = lerp(
+						float coarserHeight = lerp(
 							lerp(coarseHeight(x0, y0), coarseHeight(x0 + 1, y0), lerpValues.x),
 							lerp(coarseHeight(x0, y0 + 1), coarseHeight(x0 + 1, y0 + 1), lerpValues.x),
 							lerpValues.y
 						);
+						coarserHeightDiff = (coarserHeight - height) / 100.0f;
 					}
 
-					float coarserLevelDiff = 0.5f + (coarserHeight - height) / 1000.0f;
-					heights[textureDimension * textureDimension * (i - 1) + textureDimension * y + x] = (float)floor(height * 100.0f) + coarserLevelDiff;
+					int coarserDiff = 4096 + (int)(coarserHeightDiff * 100.0f);
+					uint H = ((uint)(int)(height + 262144)) << 13 | (coarserDiff & 0x1FFF);
+					heights[textureDimension * textureDimension * (i - 1) + textureDimension * y + x] = H;
 				}
 			}
 		}
