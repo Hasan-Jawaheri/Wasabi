@@ -397,16 +397,18 @@ WError WMaterial::SetTexture(int binding_index, WImage* img, uint arrayIndex) {
 	for (int i = 0; i < m_samplers.size(); i++) {
 		W_BOUND_RESOURCE* info = m_samplers[i].sampler_info;
 		if (info->binding_index == binding_index) {
-			if (arrayIndex < m_samplers[i].images.size() && m_samplers[i].images[arrayIndex] != img) {
-				if (m_samplers[i].images[arrayIndex]) {
-					W_SAFE_REMOVEREF(m_samplers[i].images[arrayIndex]);
-				}
-				if (img) {
-					m_samplers[i].images[arrayIndex] = img;
-					img->AddReference();
-				} else {
-					m_samplers[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
-					m_app->ImageManager->GetDefaultImage()->AddReference();
+			if (arrayIndex < m_samplers[i].images.size()) {
+				if (m_samplers[i].images[arrayIndex] != img) {
+					if (m_samplers[i].images[arrayIndex]) {
+						W_SAFE_REMOVEREF(m_samplers[i].images[arrayIndex]);
+					}
+					if (img) {
+						m_samplers[i].images[arrayIndex] = img;
+						img->AddReference();
+					} else {
+						m_samplers[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
+						m_app->ImageManager->GetDefaultImage()->AddReference();
+					}
 				}
 				isFound = true;
 			}
@@ -421,17 +423,18 @@ WError WMaterial::SetTexture(std::string name, WImage* img, uint arrayIndex) {
 	for (int i = 0; i < m_samplers.size(); i++) {
 		W_BOUND_RESOURCE* info = m_samplers[i].sampler_info;
 		if (info->name == name) {
-			if (arrayIndex < m_samplers[i].images.size() && m_samplers[i].images[arrayIndex] != img) {
-				if (m_samplers[i].images[arrayIndex]) {
-					W_SAFE_REMOVEREF(m_samplers[i].images[arrayIndex]);
-				}
-				if (img) {
-					m_samplers[i].images[arrayIndex] = img;
-					img->AddReference();
-				}
-				else {
-					m_samplers[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
-					m_app->ImageManager->GetDefaultImage()->AddReference();
+			if (arrayIndex < m_samplers[i].images.size()) {
+				if (m_samplers[i].images[arrayIndex] != img) {
+					if (m_samplers[i].images[arrayIndex]) {
+						W_SAFE_REMOVEREF(m_samplers[i].images[arrayIndex]);
+					}
+					if (img) {
+						m_samplers[i].images[arrayIndex] = img;
+						img->AddReference();
+					} else {
+						m_samplers[i].images[arrayIndex] = m_app->ImageManager->GetDefaultImage();
+						m_app->ImageManager->GetDefaultImage()->AddReference();
+					}
 				}
 				isFound = true;
 			}
