@@ -340,11 +340,14 @@ WError WBulletRigidBody::SaveToStream(class WFile* file, std::ostream& outputStr
 		return WError(W_NOTVALID);
 
 	outputStream.write((char*)m_savedCreateInfo, sizeof(W_RIGID_BODY_CREATE_INFO));
-	char geometryName[W_MAX_ASSET_NAME_SIZE];
-	strcpy(geometryName, m_savedCreateInfo->geometry->GetName().c_str());
+	char geometryName[W_MAX_ASSET_NAME_SIZE] = { '\0' };
+	if (m_savedCreateInfo->geometry)
+		strcpy(geometryName, m_savedCreateInfo->geometry->GetName().c_str());
 	outputStream.write(geometryName, W_MAX_ASSET_NAME_SIZE);
 
-	WError err = file->SaveAsset(m_savedCreateInfo->geometry);
+	WError err(W_SUCCEEDED);
+	if (m_savedCreateInfo->geometry)
+		file->SaveAsset(m_savedCreateInfo->geometry);
 	return err;
 }
 
@@ -361,16 +364,19 @@ WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputSt
 
 	_DestroyResources();
 
-	W_RIGID_BODY_CREATE_INFO info;
+	W_RIGID_BODY_CREATE_INFO info = { 0 };
 	inputStream.read((char*)&info, sizeof(W_RIGID_BODY_CREATE_INFO));
 	info.orientation = nullptr;
 	char geometryName[W_MAX_ASSET_NAME_SIZE];
 	inputStream.read(geometryName, W_MAX_ASSET_NAME_SIZE);
-	WError err = file->LoadAsset<WGeometry>(geometryName, &info.geometry, WGeometry::LoadArgs());
-	if (err) {
-		Create(info, bSaveInfo);
-		info.geometry->RemoveReference();
+	if (strlen(geometryName) > 0) {
+		WError err = file->LoadAsset<WGeometry>(geometryName, &info.geometry, WGeometry::LoadArgs());
+		if (!err)
+			return err;
 	}
 
-	return err;
+	Create(info, bSaveInfo);
+	W_SAFE_REMOVEREF(info.geometry);
+
+	return WError(W_SUCCEEDED);
 }
