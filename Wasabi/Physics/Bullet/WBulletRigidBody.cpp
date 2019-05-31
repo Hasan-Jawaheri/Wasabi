@@ -184,7 +184,8 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 	if (bSaveInfo) {
 		m_savedCreateInfo = new W_RIGID_BODY_CREATE_INFO(createInfo);
 		m_savedCreateInfo->orientation = nullptr;
-		m_savedCreateInfo->geometry->AddReference(); // hold a reference to the geometry
+		if (m_savedCreateInfo->geometry)
+			m_savedCreateInfo->geometry->AddReference(); // hold a reference to the geometry
 	}
 
 	return WError(W_SUCCEEDED);
