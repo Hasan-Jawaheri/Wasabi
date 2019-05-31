@@ -201,6 +201,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 		// Set the max. number of sets that can be requested
 		// Requesting descriptors beyond maxSets will result in an error
 		descriptorPoolInfo.maxSets = numBuffers;
+		descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
 		VkResult vkRes = vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_descriptorPool);
 		if (vkRes) {
