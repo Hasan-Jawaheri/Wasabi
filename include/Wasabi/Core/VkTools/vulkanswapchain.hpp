@@ -92,34 +92,12 @@ public:
 
 	// Creates an os specific surface
 	// Tries to find a graphics and a present queue
-	bool initSurface(
-#ifdef _WIN32
-		void* platformHandle, void* platformWindow
-#else
-#ifdef __ANDROID__
-		ANativeWindow* window
-#else
-		xcb_connection_t* connection, xcb_window_t window
-#endif
-#endif
-	)
+	bool initSurface(VkSurfaceKHR _surface)
 	{
 		VkResult err;
 
 		// Create surface depending on OS
-#ifdef _WIN32
-		VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-		surfaceCreateInfo.hinstance = (HINSTANCE)platformHandle;
-		surfaceCreateInfo.hwnd = (HWND)platformWindow;
-		err = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-#else
-		VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-		surfaceCreateInfo.connection = connection;
-		surfaceCreateInfo.window = window;
-		err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-#endif
+		surface = _surface;
 
 		// Get available queue family properties
 		uint queueCount;

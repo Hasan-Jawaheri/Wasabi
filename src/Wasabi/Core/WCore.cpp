@@ -19,9 +19,7 @@
 #include "Particles/WParticles.h"
 #include "Terrains/WTerrain.h"
 
-#ifdef _WIN32
-#include "WindowAndInput/Windows/WWindowsWindowAndInputComponent.h"
-#endif
+#include "WindowAndInput/GLFW/WGLFWWindowAndInputComponent.h"
 
 int main() {
 	Wasabi* app = WInitialize();
@@ -382,9 +380,7 @@ WError Wasabi::StartEngine(int width, int height) {
 		return werr;
 
 	m_swapChain.connect(m_vkInstance, m_vkPhysDev, m_vkDevice);
-	if (!m_swapChain.initSurface(
-		WindowAndInputComponent->GetPlatformHandle(),
-		WindowAndInputComponent->GetWindowHandle()))
+	if (!m_swapChain.initSurface(WindowAndInputComponent->GetVulkanSurface()))
 		return WError(W_UNABLETOCREATESWAPCHAIN);
 	m_swapChainInitialized = true;
 
@@ -500,10 +496,7 @@ WTextComponent* Wasabi::CreateTextComponent() {
 }
 
 WWindowAndInputComponent* Wasabi::CreateWindowAndInputComponent() {
-#ifdef _WIN32
-	return new WWindowsWindowAndInputComponent(this);
-#elif defined(__linux__)
-#endif
+	return new WGLFWWindowAndInputComponent(this);
 }
 
 WPhysicsComponent* Wasabi::CreatePhysicsComponent() {

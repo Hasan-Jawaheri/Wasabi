@@ -86,6 +86,12 @@ public:
 	virtual void* GetWindowHandle() const = 0;
 
 	/**
+	 * Retrieves the Vulkan Surface that can be used to render.
+	 * @return The created VkSurfaceKHR
+	 */
+	virtual VkSurfaceKHR GetVulkanSurface() const = 0;
+
+	/**
 	 * Displays a platform-specific error or warning message.
 	 * @param error   Error message to display
 	 * @param warning whether or not to show a warning or error

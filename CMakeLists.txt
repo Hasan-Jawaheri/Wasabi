@@ -84,6 +84,12 @@ ELSE()
 ENDIF()
 #####################################
 
+# GLFW3
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory("lib/glfw-3.3")
+
 # Source files
 file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp")
 file(GLOB_RECURSE LIB_HEADERS "include/Wasabi/*")
@@ -91,6 +97,10 @@ file(GLOB_RECURSE TEST_SOURCES "src/WasabiTest/*.cpp")
 file(GLOB_RECURSE TEST_HEADERS "include/WasabiTest/*")
 file(GLOB_RECURSE FBX_LOADER_SOURCES "src/FBXLoader/*.cpp")
 file(GLOB_RECURSE FBX_LOADER_HEADERS "include/FBXLoader/*")
+
+# External libraries
+include_directories("lib/glfw-3.3/include/")
+include_directories("lib/stb/include/")
 
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${LIB_HEADERS})
@@ -106,6 +116,7 @@ assign_source_group(${TEST_SOURCES} ${TEST_HEADERS})
 add_executable(wasabi_test ${TEST_SOURCES} ${TEST_HEADERS})
 target_include_directories(wasabi_test PRIVATE "include/WasabiTest")
 target_link_libraries(wasabi_test wasabi)
+target_link_libraries(wasabi_test glfw)
 set_property(TARGET wasabi_test PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 # FBX Loader
@@ -116,6 +127,7 @@ IF (FBXSDK_ROOT)
     target_link_libraries(fbx_loader wasabi)
     target_link_libraries(fbx_loader optimized ${FBX_LIBRARIES_RELEASE})
     target_link_libraries(fbx_loader debug ${FBX_LIBRARIES_DEBUG})
+    target_link_libraries(fbx_loader glfw)
     target_include_directories(fbx_loader PRIVATE ${FBX_INCLUDE_DIR})
     set_property(TARGET fbx_loader PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 ENDIF()
