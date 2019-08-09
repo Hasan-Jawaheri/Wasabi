@@ -164,5 +164,9 @@ WError WLight::LoadFromStream(WFile* file, std::istream& inputStream, std::vecto
 	SetPosition(pos);
 	SetAngle(rot);
 
+	// this is necessary because we changed the m_type (this will allow e.g. lights renderer to reconfigure stuff for this light)
+	m_app->LightManager->RemoveEntity(this);
+	m_app->LightManager->AddEntity(this);
+
 	return WError(W_SUCCEEDED);
 }

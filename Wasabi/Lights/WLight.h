@@ -49,7 +49,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WLight(class Wasabi* const app, W_LIGHT_TYPE type, unsigned int ID = 0);
+	WLight(class Wasabi* const app, W_LIGHT_TYPE type = W_LIGHT_DIRECTIONAL, unsigned int ID = 0);
 
 	/**
 	 * Sets the color of this light

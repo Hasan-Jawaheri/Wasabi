@@ -35,65 +35,67 @@ int main() {
 }
 
 int RunWasabi(Wasabi* app) {
-	app->Timer.Start();
-	if (app && app->Setup()) {
-		unsigned int numFrames = 0;
-		auto fpsTimer = std::chrono::high_resolution_clock::now();
-		float maxFPSReached = app->maxFPS > 0.001f ? app->maxFPS : 60.0f;
-		float deltaTime = 1.0f / maxFPSReached;
-		app->FPS = 0;
-		while (!app->__EXIT) {
-			auto tStart = std::chrono::high_resolution_clock::now();
-			app->Timer.GetElapsedTime(true); // record elapsed time
+	if (app) {
+		app->Timer.Start();
+		if (app->Setup()) {
+			unsigned int numFrames = 0;
+			auto fpsTimer = std::chrono::high_resolution_clock::now();
+			float maxFPSReached = app->maxFPS > 0.001f ? app->maxFPS : 60.0f;
+			float deltaTime = 1.0f / maxFPSReached;
+			app->FPS = 0;
+			while (!app->__EXIT) {
+				auto tStart = std::chrono::high_resolution_clock::now();
+				app->Timer.GetElapsedTime(true); // record elapsed time
 
-			if (app->WindowAndInputComponent && !app->WindowAndInputComponent->Loop())
-				continue;
+				if (app->WindowAndInputComponent && !app->WindowAndInputComponent->Loop())
+					continue;
 
-			if (deltaTime >= 0.00001f) {
-				if (!app->Loop(deltaTime))
-					break;
-				if (app->curState)
-					app->curState->Update(deltaTime);
-				if (app->PhysicsComponent)
-					app->PhysicsComponent->Step(deltaTime);
-			}
-
-			if (app->AnimationManager)
-				app->AnimationManager->Update(deltaTime);
-			if (app->Renderer)
-				app->Renderer->Render();
-
-			numFrames++;
-
-			auto tEnd = std::chrono::high_resolution_clock::now();
-			auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-			deltaTime = (float)tDiff / 1000.0f;
-			maxFPSReached = fmax(maxFPSReached, 1.0f / deltaTime);
-
-			// update FPS
-			if (std::chrono::duration<double, std::milli>(tEnd - fpsTimer).count() / 1000.0f > 0.5f) {
-				app->FPS = (float)numFrames / 0.5f;
-				fpsTimer = std::chrono::high_resolution_clock::now();
-				numFrames = 0;
-			}
-
-			if (app->maxFPS > 0.001) {
-				float maxDeltaTime = 1.0f / app->maxFPS; // delta time at max FPS
-				if (deltaTime < maxDeltaTime) {
-					auto sleepStart = std::chrono::high_resolution_clock::now();
-					double diff;
-					do {
-						auto sleepNow = std::chrono::high_resolution_clock::now();
-						diff = std::chrono::duration<double, std::milli>(sleepNow - sleepStart).count();
-					} while ((float)diff / 1000.0f < (maxDeltaTime - deltaTime));
-					deltaTime = maxDeltaTime;
+				if (deltaTime >= 0.00001f) {
+					if (!app->Loop(deltaTime))
+						break;
+					if (app->curState)
+						app->curState->Update(deltaTime);
+					if (app->PhysicsComponent)
+						app->PhysicsComponent->Step(deltaTime);
 				}
-				deltaTime = fmax(deltaTime, 1.0f / app->maxFPS); // dont let deltaTime be 0
-			} else
-				deltaTime = fmax(deltaTime, 1.0f / maxFPSReached); // dont let deltaTime be 0
-		}
 
-		app->Cleanup();
+				if (app->AnimationManager)
+					app->AnimationManager->Update(deltaTime);
+				if (app->Renderer)
+					app->Renderer->Render();
+
+				numFrames++;
+
+				auto tEnd = std::chrono::high_resolution_clock::now();
+				auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+				deltaTime = (float)tDiff / 1000.0f;
+				maxFPSReached = fmax(maxFPSReached, 1.0f / deltaTime);
+
+				// update FPS
+				if (std::chrono::duration<double, std::milli>(tEnd - fpsTimer).count() / 1000.0f > 0.5f) {
+					app->FPS = (float)numFrames / 0.5f;
+					fpsTimer = std::chrono::high_resolution_clock::now();
+					numFrames = 0;
+				}
+
+				if (app->maxFPS > 0.001) {
+					float maxDeltaTime = 1.0f / app->maxFPS; // delta time at max FPS
+					if (deltaTime < maxDeltaTime) {
+						auto sleepStart = std::chrono::high_resolution_clock::now();
+						double diff;
+						do {
+							auto sleepNow = std::chrono::high_resolution_clock::now();
+							diff = std::chrono::duration<double, std::milli>(sleepNow - sleepStart).count();
+						} while ((float)diff / 1000.0f < (maxDeltaTime - deltaTime));
+						deltaTime = maxDeltaTime;
+					}
+					deltaTime = fmax(deltaTime, 1.0f / app->maxFPS); // dont let deltaTime be 0
+				} else
+					deltaTime = fmax(deltaTime, 1.0f / maxFPSReached); // dont let deltaTime be 0
+			}
+
+			app->Cleanup();
+		}
 	}
 
 	return 0;

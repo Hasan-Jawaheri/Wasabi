@@ -5,6 +5,164 @@
 #include "../Geometries/WGeometry.h"
 #include "../Materials/WMaterial.h"
 #include "../Materials/WEffect.h"
+/*
+struct TerrainProperties {
+	uint N, M, LOD;
+	float size;
+
+	TerrainProperties() {}
+	TerrainProperties(uint n, float _size, float lod) {
+		N = n;
+		M = (n + 1) / 4;
+		size = _size;
+		LOD = lod;
+	}
+};
+
+template<typename PixelType, VkFormat ImageFormat>
+class TerrainClipmap {
+protected:
+	WImage* m_texture;
+	uint m_textureDimension;
+	TerrainProperties m_terrainProps;
+
+public:
+	TerrainClipmap() {
+		m_texture = nullptr;
+		m_textureDimension = 0;
+	}
+
+	WError Create(TerrainProperties props) {
+		Destroy();
+
+		m_terrainProps = props;
+		m_texture = new WImage(m_app);
+		WError err = m_texture->CreateFromPixelsArray(nullptr, props.N + 1, props.N + 1, 1, ImageFormat, props.LOD - 1, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);
+		if (!err) {
+			W_SAFE_REMOVEREF(m_texture);
+			return err;
+		}
+		m_textureDimension = m_terrainProps.N + 1;
+		return err;
+	}
+
+	void Destroy() {
+		W_SAFE_REMOVEREF(m_texture);
+	}
+
+	virtual PixelType ComputePixelValueAt(WVector2 terrainTexC, uint fineLevel, WVector2 coarserLevelTexC, std::function<PixelType(int, int)> getCoarserPixel) = 0;
+
+	void Update(TerrainRings* rings) {
+		PixelType* pixels;
+		m_texture->MapPixels((void**)&pixels, W_MAP_WRITE);
+		for (int i = m_terrainProps.N - 1; i > 0; i--) {
+			float unitSize = max(pow(2, i - 1), 1) * m_terrainProps.size;
+			float levelSize = unitSize * (m_terrainProps.N - 1);
+			for (uint y = 0; y < m_terrainProps.N; y++) {
+				for (uint x = 0; x < m_terrainProps.N; x++) {
+					WVector2 terrainTexC = WVector2(
+						rings->m_rings[i]->center.x - levelSize / 2.0f + x * unitSize,
+						rings->m_rings[i]->center.y - levelSize / 2.0f + y * unitSize
+					) / m_terrainProps.size;
+
+					WVector2 coarserLevelTexC;
+					std::function<PixelType(int, int)> getCoarserPixel = nullptr;
+					if (i != m_terrainProps.LOD) {
+						coarserLevelTexC = WVector2(
+							x / 2.0f + (m_terrainProps.M - 1) + (rings->m_rings[i]->center.x > rings->m_rings[i + 1]->center.x ? 1 : 0),
+							y / 2.0f + (m_terrainProps.M - 1) + (rings->m_rings[i]->center.y > rings->m_rings[i + 1]->center.y ? 0 : 1)
+						);
+						uint textureDimension = m_textureDimension;
+						PixelType* coarserPixels = &pixels[m_textureDimension * m_textureDimension * i];
+						getCoarserPixel = [coarserPixels, textureDimension](int x, int y) { return coarserPixels[textureDimension * y + x]; };
+					}
+					pixels[m_textureDimension * m_textureDimension * (i - 1) + m_textureDimension * y + x] = ComputePixelValueAt(terrainTexC, i, coarserLevelTexC, getCoarserPixel);
+				}
+			}
+		}
+		m_texture->UnmapPixels();
+	}
+};
+
+class TerrainHeightClipmap : public TerrainClipmap<uint, VK_FORMAT_R32_UINT> {
+	const int m_differenceBits = 13;
+	const int m_differenceMask = ~(0xFFFFFFFF << m_differenceBits);
+	const int m_halfHeightRange = 2 << (32 - m_differenceBits - 1);
+	const int m_halfDifferenceRange = 2 << (m_differenceBits - 1);
+
+	inline int GetHeightFromPackedPixel(uint packedPixel) {
+		return int(packedPixel >> m_differenceBits) - m_halfHeightRange;
+	}
+	inline uint PackPixelValue(int height, float coarserHeightDiff) {
+		int coarserDiff = m_halfDifferenceRange + (int)(coarserHeightDiff * 100.0f);
+		return ((uint)(int)(height + m_halfHeightRange)) << m_differenceBits | (coarserDiff & m_differenceMask);
+	}
+
+	virtual uint ComputePixelValueAt(WVector2 terrainTexC, uint fineLevel, WVector2 coarserLevelTexC, std::function<uint(int, int)> getCoarserPixel) {
+		auto F1 = [](float x) {return -0.143 * sinf(1.75f * (x + 1.73)) - 0.180 * sinf(2.96 * (x + 4.98)) - 0.012 * sinf(6.23 * (x + 3.17)) + 0.088 * sinf(8.07 * (x + 4.63)); };
+		auto F2 = [](float x) {return sinf(x / 100.0f) * sqrtf(abs(x)) * 5.0f; };
+		float h1 = F1(sqrtf(abs(terrainTexC.x))) * sqrtf(abs(terrainTexC.x + terrainTexC.y) * 5.0f) + F2(terrainTexC.x);
+		float h2 = F1(sqrtf(abs(terrainTexC.y))) * sqrtf(abs(terrainTexC.x + terrainTexC.y) * 5.0f) + F2(terrainTexC.y);
+		int height = (int)((float)(h1 + h2) * 100.0f);
+		//int height = (int)((float)(sinf(terrainTexC.x) * 100.0f));
+		float coarserHeightDiff = 0.0f;
+
+		if (getCoarserPixel) {
+			int x0 = coarserLevelTexC.x;
+			int y0 = coarserLevelTexC.y;
+			WVector2 lerpValues = WVector2(coarserLevelTexC.x - (float)x0, coarserLevelTexC.y - (float)y0);
+			auto lerp = [](float x, float y, float alpha) { return x * (1.0f - alpha) + y * alpha; };
+			float coarserHeight = lerp(
+				lerp(GetHeightFromPackedPixel(getCoarserPixel(x0, y0)), GetHeightFromPackedPixel(getCoarserPixel(x0 + 1, y0)), lerpValues.x),
+				lerp(GetHeightFromPackedPixel(getCoarserPixel(x0, y0 + 1)), GetHeightFromPackedPixel(getCoarserPixel(x0 + 1, y0 + 1)), lerpValues.x),
+				lerpValues.y
+			);
+			coarserHeightDiff = (coarserHeight - height) / 100.0f;
+		}
+
+		return PackPixelValue(height, coarserHeightDiff);
+	}
+};
+
+class TerrainDiffuseClipmap : public TerrainClipmap<WVector4, VK_FORMAT_R32G32B32A32_SFLOAT> {
+	WVector4 ComputePixelValueAt(WVector2 terrainTexC, uint fineLevel, WVector4* coarserPixels, WVector2 coarserLevelTexC) {
+		return WVector4();
+	}
+};
+
+class TerrainRings {
+public:
+	struct LODRing;
+	struct RingPiece {
+		struct LODRing* ring;
+		WGeometry* geometry;
+		WVector2 offsetFromCenter;
+		float orientation;
+		WVector3 maxPoint, minPoint;
+
+		RingPiece(struct LODRing* r, WGeometry* g, float o, WVector2 off) {
+			geometry = g;
+			ring = r;
+			orientation = o;
+			offsetFromCenter = off;
+		}
+	};
+
+	struct LODRing {
+		int level;
+		WVector2 center;
+		std::vector<RingPiece*> pieces;
+
+		bool Update(WVector3 viewpoint);
+	};
+	std::vector<LODRing*> m_rings;
+	std::map<WGeometry*, std::vector<RingPiece*>> m_pieces;
+
+	TerrainRings() {
+	}
+
+
+};*/
 
 WTerrainManager::WTerrainManager(class Wasabi* const app)
 	: WManager<WTerrain>(app) {
