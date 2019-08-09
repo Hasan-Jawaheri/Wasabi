@@ -137,7 +137,7 @@ Please let me know about any issues, dead links, suggestions or any comments. My
 ## Acknowledgments
 
 * Thanks [nothings](https://github.com/nothings) for the [stb](https://github.com/nothings/stb) library which Wasabi uses for font rendering.
-* Thanks [Abdulrahman Fayad]()
+* Thanks [Abdulrahman Fayad](https://github.com/aboudfayad)
 
 ## License
 

@@ -60,6 +60,7 @@ public:
 
 	virtual void* GetPlatformHandle() const;
 	virtual void* GetWindowHandle() const;
+	virtual VkSurfaceKHR GetVulkanSurface() const;
 
 	virtual void ShowErrorMessage(std::string error, bool warning = false);
 
@@ -105,6 +106,8 @@ private:
 	HWND m_mainWindow;
 	/** Instance handle */
 	HINSTANCE m_hInstance;
+	/** Vulkan surface */
+	VkSurfaceKHR m_surface;
 	/** Minimum window width */
 	int m_minWindowX;
 	/** Minimum window height */

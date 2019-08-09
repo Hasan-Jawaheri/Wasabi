@@ -12,6 +12,7 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
 
 WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent(Wasabi* const app) : WWindowAndInputComponent(app) {
 	m_mainWindow = nullptr;
+	m_surface = nullptr;
 	m_hInstance = GetModuleHandleA(nullptr);
 	m_minWindowX = 640 / 4;
 	m_minWindowY = 480 / 4;
@@ -114,6 +115,18 @@ WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
 
 	//give the main window's procedure an instance of the core
 	SetWindowLongPtrA(m_mainWindow, GWLP_USERDATA, (LONG_PTR)(void*)m_app);
+
+	if (!m_surface) {
+		VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
+		surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+		surfaceCreateInfo.hinstance = m_hInstance;
+		surfaceCreateInfo.hwnd = m_mainWindow;
+		VkResult err = vkCreateWin32SurfaceKHR(m_app->GetVulkanInstance(), &surfaceCreateInfo, nullptr, &m_surface);
+		if (err != VK_SUCCESS) {
+			Cleanup();
+			return WError(W_ERRORUNK);
+		}
+	}
 
 	m_isMinimized = false;
 
@@ -232,6 +245,10 @@ void* WWindowsWindowAndInputComponent::GetPlatformHandle() const {
 
 void* WWindowsWindowAndInputComponent::GetWindowHandle() const {
 	return (void*)m_mainWindow;
+}
+
+VkSurfaceKHR WWindowsWindowAndInputComponent::GetVulkanSurface() const {
+	return m_surface;
 }
 
 void WWindowsWindowAndInputComponent::SetFullScreenState(bool bFullScreen) {
