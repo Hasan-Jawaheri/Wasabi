@@ -87,7 +87,15 @@ void WBulletPhysics::Step(float deltaTime) {
 	if (m_isRunning) {
 		m_isStepping = true;
 
-		m_dynamicsWorld->stepSimulation(fmin(deltaTime, 1.0f / 60.0f) * m_speed, 5);
+		static float accumulator = 0.0f;
+		accumulator += deltaTime;
+
+		while (accumulator > m_speed / 60.0f) {
+			m_dynamicsWorld->stepSimulation(m_speed / 60.0f, 1, m_speed / 60.0f);
+			accumulator -= 1.0f / 60.0f;
+		}
+		// m_dynamicsWorld->stepSimulation(deltaTime* m_speed, 5, m_speed / 60.0f);
+
 		((WBulletRigidBodyManager*)RigidBodyManager)->Update(deltaTime);
 		if (m_debugger)
 			m_dynamicsWorld->debugDrawWorld();

@@ -345,6 +345,19 @@ WError WBulletRigidBody::SaveToStream(class WFile* file, std::ostream& outputStr
 		strcpy(geometryName, m_savedCreateInfo->geometry->GetName().c_str());
 	outputStream.write(geometryName, W_MAX_ASSET_NAME_SIZE);
 
+	float linDamp = m_rigidBody->getLinearDamping();
+	outputStream.write((char*)&linDamp, sizeof(linDamp));
+	float angDamp = m_rigidBody->getAngularDamping();
+	outputStream.write((char*)&angDamp, sizeof(angDamp));
+	float bouncePower = m_rigidBody->getRestitution();
+	outputStream.write((char*)&bouncePower, sizeof(bouncePower));
+	float mass = m_rigidBody->getInvMass();
+	outputStream.write((char*)&mass, sizeof(mass));
+	WVector3 centerOfMass = BTWConvertVec3(m_rigidBody->getCenterOfMassPosition());
+	outputStream.write((char*)&centerOfMass, sizeof(centerOfMass));
+	float friction = m_rigidBody->getFriction();
+	outputStream.write((char*)&friction, sizeof(friction));
+
 	WError err(W_SUCCEEDED);
 	if (m_savedCreateInfo->geometry)
 		file->SaveAsset(m_savedCreateInfo->geometry);
@@ -369,6 +382,22 @@ WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputSt
 	info.orientation = nullptr;
 	char geometryName[W_MAX_ASSET_NAME_SIZE];
 	inputStream.read(geometryName, W_MAX_ASSET_NAME_SIZE);
+
+	float linDamp, angDamp, bouncePower, mass, friction;
+	WVector3 centerOfMass;
+	inputStream.read((char*)&linDamp, sizeof(linDamp));
+	inputStream.read((char*)&angDamp, sizeof(angDamp));
+	inputStream.read((char*)&bouncePower, sizeof(bouncePower));
+	inputStream.read((char*)&mass, sizeof(mass));
+	inputStream.read((char*)&centerOfMass, sizeof(centerOfMass));
+	inputStream.read((char*)&friction, sizeof(friction));
+	SetLinearDamping(linDamp);
+	SetAngularDamping(angDamp);
+	SetBouncingPower(bouncePower);
+	SetMass(mass);
+	SetMassCenter(centerOfMass.x, centerOfMass.y, centerOfMass.z);
+	SetFriction(friction);
+
 	if (strlen(geometryName) > 0) {
 		WError err = file->LoadAsset<WGeometry>(geometryName, &info.geometry, WGeometry::LoadArgs());
 		if (!err)
