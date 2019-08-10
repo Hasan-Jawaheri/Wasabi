@@ -176,7 +176,7 @@ WError WImage::CreateFromPixelsArray(
 	if (flags & W_IMAGE_CREATE_DYNAMIC) usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	if (flags & W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT) usageFlags |= (isDepth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 	W_MEMORY_STORAGE memory = flags & W_IMAGE_CREATE_DYNAMIC ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL;
-	uint numBuffers = (flags & (W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT)) ? (uint)m_app->engineParams["bufferingCount"] : 1;
+	uint numBuffers = (flags & (W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT)) ? m_app->GetEngineParam<uint>("bufferingCount") : 1;
 	VkResult result = m_bufferedImage.Create(m_app, numBuffers, width, height, depth, WBufferedImageProperties(format, memory, usageFlags, arraySize), pixels);
 	if (result != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
@@ -398,7 +398,7 @@ std::vector<void*> WImage::LoadArgs(W_IMAGE_CREATE_FLAGS flags) {
 WError WImage::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
 	if (args.size() != 1)
 		return WError(W_INVALIDPARAM);
-	W_IMAGE_CREATE_FLAGS flags = (W_IMAGE_CREATE_FLAGS)(int)(args[0]);
+	W_IMAGE_CREATE_FLAGS flags = static_cast<W_IMAGE_CREATE_FLAGS>(reinterpret_cast<size_t>(args[0]));
 
 	uint width, height, depth, arraySize;
 	VkFormat format;

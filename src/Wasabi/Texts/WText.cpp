@@ -168,9 +168,9 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 	fread(buffer, 1, fsize+1, fp);
 	fclose(fp);
 
-	unsigned int bmp_size = (unsigned int)m_app->engineParams["fontBmpSize"];
-	unsigned int char_height = (unsigned int)m_app->engineParams["fontBmpCharHeight"];
-	unsigned int num_chars = (unsigned int)m_app->engineParams["fontBmpNumChars"];
+	unsigned int bmp_size = m_app->GetEngineParam<uint>("fontBmpSize");
+	unsigned int char_height = m_app->GetEngineParam<uint>("fontBmpCharHeight");
+	unsigned int num_chars = m_app->GetEngineParam<uint>("fontBmpNumChars");
 	W_FONT_OBJECT f;
 	unsigned char* temp_bitmap = new unsigned char[bmp_size*bmp_size];
 	f.cdata = new stbtt_bakedchar[num_chars];
@@ -214,8 +214,8 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 		return err;
 	}
 
-	unsigned int num_verts = (unsigned int)m_app->engineParams["textBatchSize"] * 4;
-	unsigned int num_indices = (unsigned int)m_app->engineParams["textBatchSize"] * 6;
+	unsigned int num_verts = m_app->GetEngineParam<uint>("textBatchSize") * 4;
+	unsigned int num_indices = m_app->GetEngineParam<uint>("textBatchSize") * 6;
 	TextVertex* vb = new TextVertex[num_verts];
 	uint* ib = new uint[num_indices];
 
@@ -286,7 +286,7 @@ WError WTextComponent::RenderText(std::string text, float x, float y, float fHei
 }
 
 WError WTextComponent::RenderText(std::string text, float x, float y, float fHeight, unsigned int fontID, WColor col) {
-	if (text.length() > (unsigned int)m_app->engineParams["textBatchSize"])
+	if (text.length() > m_app->GetEngineParam<uint>("textBatchSize"))
 		return WError(W_INVALIDPARAM);
 
 	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(fontID);

@@ -76,7 +76,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint bindingSet) {
 	//
 	// Create the uniform buffers
 	//
-	uint numBuffers = (uint)m_app->engineParams["bufferingCount"];
+	uint numBuffers = m_app->GetEngineParam<uint>("bufferingCount");
 	uint writeDescriptorsSize = 0;
 	for (int i = 0; i < effect->m_shaders.size(); i++) {
 		WShader* shader = effect->m_shaders[i];

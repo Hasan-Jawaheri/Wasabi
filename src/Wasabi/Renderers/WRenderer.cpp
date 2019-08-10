@@ -253,7 +253,7 @@ WError WRenderer::Resize(uint width, uint height) {
 	err = vkBeginCommandBuffer(cmdBuf, &cmdBufInfo);
 	if (!err) {
 		// record swapchain creation commands
-		m_swapChain->create(cmdBuf, &m_width, &m_height, (uint)m_app->engineParams["bufferingCount"]);
+		m_swapChain->create(cmdBuf, &m_width, &m_height, m_app->GetEngineParam<uint>("bufferingCount"));
 
 		// end command buffer
 		err = vkEndCommandBuffer(cmdBuf);

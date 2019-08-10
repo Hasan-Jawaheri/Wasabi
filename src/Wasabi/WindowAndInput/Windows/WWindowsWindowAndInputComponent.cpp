@@ -27,18 +27,18 @@ WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent(Wasabi* const a
 	for (uint i = 0; i < 256; i++)
 		m_keyDown[i] = false;
 
-	app->engineParams.insert(std::pair<std::string, void*>("classStyle", (void*)(CS_HREDRAW | CS_VREDRAW))); // uint
-	app->engineParams.insert(std::pair<std::string, void*>("classIcon", (void*)(NULL))); // HICON
-	app->engineParams.insert(std::pair<std::string, void*>("classCursor", (void*)(LoadCursorA(NULL, MAKEINTRESOURCEA(32512))))); // HCURSOR
-	app->engineParams.insert(std::pair<std::string, void*>("menuName", (void*)(NULL))); // LPCSTR
-	app->engineParams.insert(std::pair<std::string, void*>("menuProc", (void*)(NULL))); // void (*) (HMENU, uint)
-	app->engineParams.insert(std::pair<std::string, void*>("classIcon_sm", (void*)(NULL))); // HICON
-	app->engineParams.insert(std::pair<std::string, void*>("windowMenu", (void*)(NULL))); // HMENU
-	app->engineParams.insert(std::pair<std::string, void*>("windowParent", (void*)(NULL))); // HWND
-	app->engineParams.insert(std::pair<std::string, void*>("windowStyle", (void*)(WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_VISIBLE))); // uint
-	app->engineParams.insert(std::pair<std::string, void*>("windowStyleEx", (void*)(WS_EX_OVERLAPPEDWINDOW))); // uint
-	app->engineParams.insert(std::pair<std::string, void*>("defWndX", (void*)(-1))); // int
-	app->engineParams.insert(std::pair<std::string, void*>("defWndY", (void*)(-1))); //int
+	app->SetEngineParam<uint>("classStyle", CS_HREDRAW | CS_VREDRAW);
+	app->SetEngineParam<HICON>("classIcon", NULL);
+	app->SetEngineParam<HCURSOR>("classCursor", LoadCursorA(NULL, MAKEINTRESOURCEA(32512)));
+	app->SetEngineParam<LPCSTR>("menuName", NULL);
+	app->SetEngineParam<void*>("menuProc", NULL);
+	app->SetEngineParam<HICON>("classIcon_sm", NULL);
+	app->SetEngineParam<HMENU>("windowMenu", NULL);
+	app->SetEngineParam<HWND>("windowParent", NULL);
+	app->SetEngineParam<uint>("windowStyle", WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+	app->SetEngineParam<uint>("windowStyleEx", WS_EX_OVERLAPPEDWINDOW);
+	app->SetEngineParam<int>("defWndX", -1);
+	app->SetEngineParam<int>("defWndY", -1);
 }
 
 WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
@@ -50,9 +50,9 @@ WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
 		rc.top = 0;
 		rc.right = width;
 		rc.bottom = height;
-		AdjustWindowRectEx(&rc, (uint)m_app->engineParams["windowStyle"],
-			(m_app->engineParams["windowMenu"] == nullptr) ? FALSE : TRUE,
-			(uint)m_app->engineParams["windowStyleEx"]);
+		AdjustWindowRectEx(&rc, m_app->GetEngineParam<uint>("windowStyle"),
+			(m_app->GetEngineParam<HMENU>("windowMenu") == nullptr) ? FALSE : TRUE,
+			m_app->GetEngineParam<uint>("windowStyleEx"));
 
 		//adjust window position (no window re-creation)
 		SetWindowPos(m_mainWindow, nullptr, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE);
@@ -62,19 +62,19 @@ WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
 
 	//create window class
 	WNDCLASSEXA wcex;
-	std::string classname = "WNDCLASS " + std::to_string((long)this);
+	std::string classname = "WNDCLASS " + std::to_string((size_t)this);
 	wcex.cbSize = sizeof(WNDCLASSEXA);
-	wcex.style = (uint)m_app->engineParams["classStyle"];
+	wcex.style = m_app->GetEngineParam<uint>("classStyle");
 	wcex.lpfnWndProc = hMainWndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = m_hInstance;
-	wcex.hIcon = (HICON)m_app->engineParams["classIcon"];
-	wcex.hCursor = (HCURSOR)m_app->engineParams["classCursor"];
+	wcex.hIcon = m_app->GetEngineParam<HICON>("classIcon");
+	wcex.hCursor = m_app->GetEngineParam<HCURSOR>("classCursor");
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = (LPCSTR)m_app->engineParams["menuName"];
+	wcex.lpszMenuName = m_app->GetEngineParam<const char*>("menuName");
 	wcex.lpszClassName = classname.c_str();
-	wcex.hIconSm = (HICON)m_app->engineParams["classIcon_sm"];
+	wcex.hIconSm = m_app->GetEngineParam<HICON>("classIcon_sm");
 
 	//keep trying to register the class until a valid name exist (for multiple cores)
 	if (!RegisterClassExA(&wcex))
@@ -86,28 +86,28 @@ WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
 	rc.top = 0;
 	rc.right = width;
 	rc.bottom = height;
-	AdjustWindowRectEx(&rc, (uint)m_app->engineParams["windowStyle"],
-		(m_app->engineParams["windowMenu"] == nullptr) ? FALSE : TRUE,
-		(uint)m_app->engineParams["windowStyleEx"]);
+	AdjustWindowRectEx(&rc, m_app->GetEngineParam<uint>("windowStyle"),
+		(m_app->GetEngineParam<HMENU>("windowMenu") == nullptr) ? FALSE : TRUE,
+		m_app->GetEngineParam<uint>("windowStyleEx"));
 
 	//set to default positions if specified
 	int x, y;
-	if ((int)m_app->engineParams["defWndX"] == -1 && (int)m_app->engineParams["defWndY"] == -1) {
+	if (m_app->GetEngineParam<int>("defWndX") == -1 && m_app->GetEngineParam<int>("defWndY") == -1) {
 		x = (GetSystemMetrics(SM_CXSCREEN) / 2) - ((rc.right - rc.left) / 2);
 		y = (GetSystemMetrics(SM_CYSCREEN) / 2) - ((rc.bottom - rc.top) / 2);
 	} else {
-		x = (int)m_app->engineParams["defWndX"];
-		y = (int)m_app->engineParams["defWndY"];
+		x = m_app->GetEngineParam<int>("defWndX");
+		y = m_app->GetEngineParam<int>("defWndY");
 	}
 
 	//
 	//Create the main window
 	//
-	m_mainWindow = CreateWindowExA((uint)m_app->engineParams["windowStyleEx"], wcex.lpszClassName,
-		(LPCSTR)m_app->engineParams["appName"],
-		(uint)m_app->engineParams["windowStyle"],
+	m_mainWindow = CreateWindowExA(m_app->GetEngineParam<uint>("windowStyleEx"), wcex.lpszClassName,
+		m_app->GetEngineParam<const char*>("appName"),
+		m_app->GetEngineParam<uint>("windowStyle"),
 		x, y, rc.right - rc.left, rc.bottom - rc.top,
-		(HWND)m_app->engineParams["windowParent"], (HMENU)m_app->engineParams["windowMenu"], m_hInstance, nullptr);
+		m_app->GetEngineParam<HWND>("windowParent"), m_app->GetEngineParam<HMENU>("windowMenu"), m_hInstance, nullptr);
 
 	GetWindowRect(m_mainWindow, &rc);
 	if (!m_mainWindow) //error creating the window
@@ -152,7 +152,7 @@ bool WWindowsWindowAndInputComponent::Loop() {
 }
 
 void WWindowsWindowAndInputComponent::ShowErrorMessage(std::string error, bool warning) {
-	MessageBoxA(m_mainWindow, error.c_str(), (LPCSTR)m_app->engineParams["appName"], MB_OK | (warning ? MB_ICONWARNING : MB_ICONERROR));
+	MessageBoxA(m_mainWindow, error.c_str(), m_app->GetEngineParam<const char*>("appName"), MB_OK | (warning ? MB_ICONWARNING : MB_ICONERROR));
 }
 
 void WWindowsWindowAndInputComponent::Cleanup() {
@@ -269,8 +269,8 @@ void WWindowsWindowAndInputComponent::SetFullScreenState(bool bFullScreen) {
 	} else {
 		RECT rc;
 		GetClientRect(m_mainWindow, &rc);
-		DWORD newStyle = (uint)m_app->engineParams["windowStyle"] | WS_BORDER | WS_VISIBLE;
-		DWORD newExStyle = (uint)m_app->engineParams["windowStyleEx"];
+		DWORD newStyle = m_app->GetEngineParam<uint>("windowStyle") | WS_BORDER | WS_VISIBLE;
+		DWORD newExStyle = m_app->GetEngineParam<uint>("windowStyleEx");
 		AdjustWindowRectEx(&rc, newStyle, FALSE, newExStyle);
 		SetWindowLongPtr(m_mainWindow, GWL_STYLE, newStyle);
 		SetWindowLongPtr(m_mainWindow, GWL_EXSTYLE, newExStyle);
@@ -579,8 +579,8 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		//send messages to child windows
 		if (HIWORD(wParam) == 0)
-			if (appInst->engineParams["windowMenu"] != nullptr && appInst->engineParams["menuPorc"] != nullptr)
-				((void(*)(HMENU, uint))appInst->engineParams["menuProc"])(GetMenu(hWnd), LOWORD(wParam));
+			if (appInst->GetEngineParam<HMENU>("windowMenu") != nullptr && appInst->GetEngineParam<void*>("menuPorc") != nullptr)
+				(appInst->GetEngineParam<void(*)(HMENU, uint)>("menuProc"))(GetMenu(hWnd), LOWORD(wParam));
 		break;
 	}
 	default: //default behavior for other messages

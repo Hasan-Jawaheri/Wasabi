@@ -5,6 +5,7 @@
 #include <windows.h>
 #endif
 
+#include <GLFW/glfw3.h>
 #include "GLFW/glfw3native.h"
 
 WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : WWindowAndInputComponent(app) {
@@ -27,19 +28,19 @@ WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
 	if (!glfwInit())
 		return WError(W_ERRORUNK);
 
-	m_monitor = glfwGetPrimaryMonitor();
+	m_monitor = (void*)glfwGetPrimaryMonitor();
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	m_window = glfwCreateWindow(width, height, "Wasabi", NULL, NULL);
+	m_window = (void*)glfwCreateWindow(width, height, "Wasabi", NULL, NULL);
 	if (!m_window)
 		return WError(W_WINDOWNOTCREATED);
-	glfwSetWindowUserPointer(m_window, (void*)this);
+	glfwSetWindowUserPointer((GLFWwindow*)m_window, (void*)this);
 
 	SetCallbacks();
 
-	VkResult err = glfwCreateWindowSurface(m_app->GetVulkanInstance(), m_window, NULL, &m_surface);
+	VkResult err = glfwCreateWindowSurface(m_app->GetVulkanInstance(), (GLFWwindow*)m_window, NULL, &m_surface);
 	if (err != VK_SUCCESS) {
-		glfwDestroyWindow(m_window);
+		glfwDestroyWindow((GLFWwindow*)m_window);
 		m_window = nullptr;
 		return WError(W_WINDOWNOTCREATED);
 	}
@@ -49,7 +50,7 @@ WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
 
 bool WGLFWWindowAndInputComponent::Loop() {
 	glfwPollEvents();
-	bool shouldClose = glfwWindowShouldClose(m_window);
+	bool shouldClose = glfwWindowShouldClose((GLFWwindow*)m_window);
 	if (shouldClose)
 		m_app->__EXIT = true;
 	return !shouldClose && !m_isMinimized;
@@ -57,7 +58,7 @@ bool WGLFWWindowAndInputComponent::Loop() {
 
 void WGLFWWindowAndInputComponent::Cleanup() {
 	if (m_window) {
-		glfwDestroyWindow(m_window);
+		glfwDestroyWindow((GLFWwindow*)m_window);
 		m_window = nullptr;
 	}
 	glfwTerminate();
@@ -68,7 +69,7 @@ void* WGLFWWindowAndInputComponent::GetPlatformHandle() const {
 }
 
 void* WGLFWWindowAndInputComponent::GetWindowHandle() const {
-	return (void*)m_window;
+	return m_window;
 }
 
 VkSurfaceKHR WGLFWWindowAndInputComponent::GetVulkanSurface() const {
@@ -77,58 +78,58 @@ VkSurfaceKHR WGLFWWindowAndInputComponent::GetVulkanSurface() const {
 
 void WGLFWWindowAndInputComponent::ShowErrorMessage(std::string error, bool warning) {
 #ifdef _WIN32
-	HWND hWnd = glfwGetWin32Window(m_window);
-	MessageBoxA(hWnd, error.c_str(), (LPCSTR)m_app->engineParams["appName"], MB_OK | (warning ? MB_ICONWARNING : MB_ICONERROR));
+	HWND hWnd = glfwGetWin32Window((GLFWwindow*)m_window);
+	MessageBoxA(hWnd, error.c_str(), m_app->GetEngineParam<LPCSTR>("appName"), MB_OK | (warning ? MB_ICONWARNING : MB_ICONERROR));
 #endif
 }
 
 void WGLFWWindowAndInputComponent::SetWindowTitle(const char* const title) {
-	glfwSetWindowTitle(m_window, title);
+	glfwSetWindowTitle((GLFWwindow*)m_window, title);
 }
 
 void WGLFWWindowAndInputComponent::SetWindowPosition(int x, int y) {
-	glfwSetWindowPos(m_window, x, y);
+	glfwSetWindowPos((GLFWwindow*)m_window, x, y);
 }
 
 void WGLFWWindowAndInputComponent::SetWindowSize(int width, int height) {
-	glfwSetWindowSize(m_window, width, height);
+	glfwSetWindowSize((GLFWwindow*)m_window, width, height);
 }
 
 void WGLFWWindowAndInputComponent::MaximizeWindow() {
-	glfwMaximizeWindow(m_window);
+	glfwMaximizeWindow((GLFWwindow*)m_window);
 }
 
 void WGLFWWindowAndInputComponent::MinimizeWindow() {
-	glfwIconifyWindow(m_window);
+	glfwIconifyWindow((GLFWwindow*)m_window);
 }
 
 uint WGLFWWindowAndInputComponent::RestoreWindow() {
 	int ret = !m_isMinimized;
-	glfwRestoreWindow(m_window);
+	glfwRestoreWindow((GLFWwindow*)m_window);
 	return ret;
 }
 
 uint WGLFWWindowAndInputComponent::GetWindowWidth() const {
 	int w, h;
-	glfwGetWindowSize(m_window, &w, &h);
+	glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
 	return (uint)w;
 }
 
 uint WGLFWWindowAndInputComponent::GetWindowHeight() const {
 	int w, h;
-	glfwGetWindowSize(m_window, &w, &h);
+	glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
 	return (uint)h;
 }
 
 int WGLFWWindowAndInputComponent::GetWindowPositionX() const {
 	int x, y;
-	glfwGetWindowPos(m_window, &x, &y);
+	glfwGetWindowPos((GLFWwindow*)m_window, &x, &y);
 	return x;
 }
 
 int WGLFWWindowAndInputComponent::GetWindowPositionY() const {
 	int x, y;
-	glfwGetWindowPos(m_window, &x, &y);
+	glfwGetWindowPos((GLFWwindow*)m_window, &x, &y);
 	return y;
 }
 
@@ -138,30 +139,30 @@ void WGLFWWindowAndInputComponent::SetFullScreenState(bool bFullScreen) {
 
 	if (bFullScreen) {
 		// backup windwo position and window size
-		glfwGetWindowPos(m_window, &m_storedWindowDimensions[0], &m_storedWindowDimensions[1]);
-		glfwGetWindowSize(m_window, &m_storedWindowDimensions[2], &m_storedWindowDimensions[3]);
+		glfwGetWindowPos((GLFWwindow*)m_window, &m_storedWindowDimensions[0], &m_storedWindowDimensions[1]);
+		glfwGetWindowSize((GLFWwindow*)m_window, &m_storedWindowDimensions[2], &m_storedWindowDimensions[3]);
 
-		const GLFWvidmode* mode = glfwGetVideoMode(m_monitor);
-		glfwSetWindowMonitor(m_window, m_monitor, 0, 0, mode->width, mode->height, 0);
+		const GLFWvidmode* mode = glfwGetVideoMode((GLFWmonitor*)m_monitor);
+		glfwSetWindowMonitor((GLFWwindow*)m_window, (GLFWmonitor*)m_monitor, 0, 0, mode->width, mode->height, 0);
 	} else {
-		glfwSetWindowMonitor(m_window, nullptr, m_storedWindowDimensions[0], m_storedWindowDimensions[1], m_storedWindowDimensions[2], m_storedWindowDimensions[3], 0);
+		glfwSetWindowMonitor((GLFWwindow*)m_window, nullptr, m_storedWindowDimensions[0], m_storedWindowDimensions[1], m_storedWindowDimensions[2], m_storedWindowDimensions[3], 0);
 	}
 }
 
 bool WGLFWWindowAndInputComponent::GetFullScreenState() const {
-	return glfwGetWindowMonitor(m_window) != nullptr;
+	return glfwGetWindowMonitor((GLFWwindow*)m_window) != nullptr;
 }
 
 void WGLFWWindowAndInputComponent::SetWindowMinimumSize(int minX, int minY) {
 	m_windowSizeLimits[0] = minX;
 	m_windowSizeLimits[1] = minY;
-	glfwSetWindowSizeLimits(m_window, m_windowSizeLimits[0], m_windowSizeLimits[1], m_windowSizeLimits[2], m_windowSizeLimits[3]);
+	glfwSetWindowSizeLimits((GLFWwindow*)m_window, m_windowSizeLimits[0], m_windowSizeLimits[1], m_windowSizeLimits[2], m_windowSizeLimits[3]);
 }
 
 void WGLFWWindowAndInputComponent::SetWindowMaximumSize(int maxX, int maxY) {
 	m_windowSizeLimits[2] = maxX;
 	m_windowSizeLimits[3] = maxY;
-	glfwSetWindowSizeLimits(m_window, m_windowSizeLimits[0], m_windowSizeLimits[1], m_windowSizeLimits[2], m_windowSizeLimits[3]);
+	glfwSetWindowSizeLimits((GLFWwindow*)m_window, m_windowSizeLimits[0], m_windowSizeLimits[1], m_windowSizeLimits[2], m_windowSizeLimits[3]);
 }
 
 bool WGLFWWindowAndInputComponent::MouseClick(W_MOUSEBUTTON button) const {
@@ -176,26 +177,28 @@ bool WGLFWWindowAndInputComponent::MouseClick(W_MOUSEBUTTON button) const {
 
 int WGLFWWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint vpID) const {
 	double mx, my;
-	glfwGetCursorPos(m_window, &mx, &my);
+	glfwGetCursorPos((GLFWwindow*)m_window, &mx, &my);
 	if (posT == MOUSEPOS_VIEWPORT)
 		return (int)mx;
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
-		glfwGetWindowPos(m_window, &wx, &wy);
+		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
 		return mx + wx;
 	}
+	return 0;
 }
 
 int WGLFWWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint vpID) const {
 	double mx, my;
-	glfwGetCursorPos(m_window, &mx, &my);
+	glfwGetCursorPos((GLFWwindow*)m_window, &mx, &my);
 	if (posT == MOUSEPOS_VIEWPORT)
 		return (int)my;
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
-		glfwGetWindowPos(m_window, &wx, &wy);
+		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
 		return my + wy;
 	}
+	return 0;
 }
 
 int WGLFWWindowAndInputComponent::MouseZ() const {
@@ -208,11 +211,11 @@ bool WGLFWWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint vpID)
 
 void WGLFWWindowAndInputComponent::SetMousePosition(uint x, uint y, W_MOUSEPOSTYPE posT) {
 	if (posT == MOUSEPOS_VIEWPORT)
-		glfwSetCursorPos(m_window, (double)x, (double)y);
+		glfwSetCursorPos((GLFWwindow*)m_window, (double)x, (double)y);
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
-		glfwGetWindowPos(m_window, &wx, &wy);
-		glfwSetCursorPos(m_window, (double)(x - wx), (double)(y - wy));
+		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
+		glfwSetCursorPos((GLFWwindow*)m_window, (double)(x - wx), (double)(y - wy));
 	}
 }
 
@@ -222,9 +225,9 @@ void WGLFWWindowAndInputComponent::SetMouseZ(int value) {
 
 void WGLFWWindowAndInputComponent::ShowCursor(bool bShow) {
 	if (bShow)
-		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode((GLFWwindow*)m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	else
-		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		glfwSetInputMode((GLFWwindow*)m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
 void WGLFWWindowAndInputComponent::EnableEscapeKeyQuit() {
@@ -247,13 +250,13 @@ void WGLFWWindowAndInputComponent::InsertRawInput(unsigned int key, bool state) 
 }
 
 void WGLFWWindowAndInputComponent::SetCallbacks() {
-	glfwSetCharCallback(m_window, [](GLFWwindow* window, unsigned int c) {
+	glfwSetCharCallback((GLFWwindow*)m_window, [](GLFWwindow* window, unsigned int c) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (comp->m_app->curState)
 			comp->m_app->curState->OnInput(c);
 	});
 
-	glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scancode, int mode, int mods) {
+	glfwSetKeyCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int key, int scancode, int mode, int mods) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (mode == GLFW_RELEASE) {
 			comp->InsertRawInput(key, false);
@@ -268,23 +271,23 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 		} else if (mode == GLFW_REPEAT) {}
 	});
 	
-	glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* window, int w, int h) {
+	glfwSetFramebufferSizeCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int w, int h) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (w > 0 && h > 0)
 			comp->m_app->Resize(w, h);
 	});
 
-	glfwSetWindowMaximizeCallback(m_window, [](GLFWwindow* window, int isMaximized) {
+	glfwSetWindowMaximizeCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int isMaximized) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		comp->m_isMinimized = false;
 	});
 
-	glfwSetWindowIconifyCallback(m_window, [](GLFWwindow* window, int isMinimized) {
+	glfwSetWindowIconifyCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int isMinimized) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		comp->m_isMinimized = isMinimized;
 	});
 
-	glfwSetMouseButtonCallback(m_window, [](GLFWwindow* window, int button, int mode, int mods) {
+	glfwSetMouseButtonCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int button, int mode, int mods) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (button == GLFW_MOUSE_BUTTON_1)
 			comp->m_leftClick = mode == GLFW_PRESS;
@@ -294,12 +297,12 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 			comp->m_middleClick = mode == GLFW_PRESS;
 	});
 
-	glfwSetCursorEnterCallback(m_window, [](GLFWwindow* window, int entered) {
+	glfwSetCursorEnterCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int entered) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		comp->m_isMouseInScreen = entered == GLFW_TRUE;
 	});
 
-	glfwSetScrollCallback(m_window, [](GLFWwindow* window, double x, double y) {
+	glfwSetScrollCallback((GLFWwindow*)m_window, [](GLFWwindow* window, double x, double y) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		comp->m_mouseZ += y;
 	});

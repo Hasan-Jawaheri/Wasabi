@@ -248,8 +248,8 @@ WError WGeometry::CreateFromData(void* vb, unsigned int numVerts, void* ib, unsi
 		_CalcTangents(vb, numVerts);
 
 
-	uint numBuffersVB = (flags & W_GEOMETRY_CREATE_VB_DYNAMIC) ? (uint)m_app->engineParams["bufferingCount"] : 1;
-	uint numBuffersIB = (flags & W_GEOMETRY_CREATE_IB_DYNAMIC) ? (uint)m_app->engineParams["bufferingCount"] : 1;
+	uint numBuffersVB = (flags & W_GEOMETRY_CREATE_VB_DYNAMIC) ? m_app->GetEngineParam<uint>("bufferingCount") : 1;
+	uint numBuffersIB = (flags & W_GEOMETRY_CREATE_IB_DYNAMIC) ? m_app->GetEngineParam<uint>("bufferingCount") : 1;
 
 	W_MEMORY_STORAGE memory = (flags & W_GEOMETRY_CREATE_VB_DYNAMIC) ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL_HOST_COPY;
 	VkResult result = m_vertices.Create(m_app, numBuffersVB, vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, vb, memory);
@@ -295,7 +295,7 @@ WError WGeometry::CreateAnimationData(void* ab, W_GEOMETRY_CREATE_FLAGS flags) {
 		return WError(W_INVALIDPARAM);
 
 	int animBufferSize = m_numVertices * GetVertexDescription(1).GetSize();
-	uint numBuffers = (flags & W_GEOMETRY_CREATE_AB_DYNAMIC) ? (uint)m_app->engineParams["bufferingCount"] : 1;
+	uint numBuffers = (flags & W_GEOMETRY_CREATE_AB_DYNAMIC) ? m_app->GetEngineParam<uint>("bufferingCount") : 1;
 	W_MEMORY_STORAGE memory = (flags & W_GEOMETRY_CREATE_AB_DYNAMIC) ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL_HOST_COPY;
 	VkResult result = m_animationbuf.Create(m_app, numBuffers, animBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, ab, memory);
 	if (result != VK_SUCCESS)
@@ -1379,7 +1379,7 @@ std::vector<void*> WGeometry::LoadArgs(W_GEOMETRY_CREATE_FLAGS flags) {
 WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
 	if (args.size() != 1)
 		return WError(W_INVALIDPARAM);
-	W_GEOMETRY_CREATE_FLAGS flags = (W_GEOMETRY_CREATE_FLAGS)(int)(args[0]);
+	W_GEOMETRY_CREATE_FLAGS flags = static_cast<W_GEOMETRY_CREATE_FLAGS>(reinterpret_cast<size_t>(args[0]));
 
 	vector<W_VERTEX_DESCRIPTION> from_descs;
 	char temp[256];

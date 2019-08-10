@@ -46,31 +46,19 @@
  */
 class Wasabi {
 public:
-	/**
-	 * A map of various parameters used by the engine. Built-in parameters are:
-	 * * "appName": Pointer to the name of the application. Default is
-	 * 	  (void*)"Wasabi".
-	 * * "enableVulkanValidation": Whether or not to enable Vulkan SDK validation
-	 *    while in debug mode. Default is (void*)(false).
-	 * * "bufferingCount": Buffering count, usually double (2) or triple (3) is
-	 *                     used. Buffering defines the maximum number of frames
-	 *                     that can be all in-flight (rendering) at the same time.
-	 *                     Default is 2.
-	 * * "fontBmpSize": The size of the font bitmap when a new font is created.
-	 * 		default is (void*)(512).
-	 * * "fontBmpCharHeight": The height of each character when a new font bitmap
-	 * 		is crated. Default is (void*)(32).
-	 * * "fontBmpNumChars": Number of characters to put when a new font bitmap
-	 * 		is created. Default is (void*)(96).
-	 * * "textBatchSize": The maximum number of characters to be passed in for
-	 * 		a single text draw. Default is (void*)(256).
-	 * * "geometryImmutable": When set to true, created geometry will be
-	 * 		immutable (more efficient and uses less memory, but loses all dynamic
-	 * 		attributes). Default is (void*)(false).
-	 * * "numGeneratedMips": Number of mipmaps to generate when a new image is
-	 * 		crated. Default is (void*)(1).
-	 */
-	std::map<std::string, void*> engineParams;
+	template<typename T>
+	T GetEngineParam(std::string paramName, T fallback = T()) {
+		auto it = engineParams.find(paramName);
+		if (it == engineParams.end())
+			return fallback;
+		return (T)(reinterpret_cast<size_t>(it->second));
+	}
+
+	template<typename T>
+	void SetEngineParam(std::string paramName, T value) {
+		engineParams[paramName] = reinterpret_cast<void*>((size_t)(value));
+	}
+
 	/** Pointer to the vulkan memory manager */
 	class WVulkanMemoryManager* MemoryManager;
 	/** Pointer to the attached sound component */
@@ -305,6 +293,32 @@ protected:
 
 	/** Handle to the debugging callback created in debug mode */
 	VkDebugReportCallbackEXT m_debugCallback;
+
+	/**
+	 * A map of various parameters used by the engine. Built-in parameters are:
+	 * * "appName": Pointer to the name of the application. Default is
+	 * 	  (void*)"Wasabi".
+	 * * "enableVulkanValidation": Whether or not to enable Vulkan SDK validation
+	 *    while in debug mode. Default is (void*)(false).
+	 * * "bufferingCount": Buffering count, usually double (2) or triple (3) is
+	 *                     used. Buffering defines the maximum number of frames
+	 *                     that can be all in-flight (rendering) at the same time.
+	 *                     Default is 2.
+	 * * "fontBmpSize": The size of the font bitmap when a new font is created.
+	 * 		default is (void*)(512).
+	 * * "fontBmpCharHeight": The height of each character when a new font bitmap
+	 * 		is crated. Default is (void*)(32).
+	 * * "fontBmpNumChars": Number of characters to put when a new font bitmap
+	 * 		is created. Default is (void*)(96).
+	 * * "textBatchSize": The maximum number of characters to be passed in for
+	 * 		a single text draw. Default is (void*)(256).
+	 * * "geometryImmutable": When set to true, created geometry will be
+	 * 		immutable (more efficient and uses less memory, but loses all dynamic
+	 * 		attributes). Default is (void*)(false).
+	 * * "numGeneratedMips": Number of mipmaps to generate when a new image is
+	 * 		crated. Default is (void*)(1).
+	 */
+	std::map<std::string, void*> engineParams;
 
 	/**
 	 * Destroys all resources of the engine.

@@ -187,7 +187,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 		colorImages.push_back((*it)->m_bufferedImage);
 	if (depth)
 		depthImage = depth->m_bufferedImage;
-	uint numBuffers = (uint)m_app->engineParams["bufferingCount"];
+	uint numBuffers = m_app->GetEngineParam<uint>("bufferingCount");
 	m_bufferedFrameBuffer.Create(m_app, numBuffers, width, height, m_renderPass, colorImages, depthImage);
 
 
@@ -306,7 +306,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	std::vector<VkImageView> swapchainViewsVector(numViews);
 	for (uint i = 0; i < numViews; i++)
 		swapchainViewsVector[i] = views[i];
-	uint numBuffers = (uint)m_app->engineParams["bufferingCount"];
+	uint numBuffers = m_app->GetEngineParam<uint>("bufferingCount");
 	m_bufferedFrameBuffer.CreateForSwapchain(m_app, numBuffers, width, height, m_renderPass, swapchainViewsVector, depthFormat);
 
 	m_width = width;

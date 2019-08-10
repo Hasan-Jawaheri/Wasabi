@@ -10,7 +10,7 @@
 WForwardRenderStageObjectVS::WForwardRenderStageObjectVS(Wasabi* const app) : WShader(app) {}
 
 void WForwardRenderStageObjectVS::Load(bool bSaveData) {
-	int maxLights = m_app->engineParams.find("maxLights") != m_app->engineParams.end() ? (int)m_app->engineParams["maxLights"] : 0;
+	int maxLights = m_app->GetEngineParam<int>("maxLights", 0);
 	m_desc = GetDesc(maxLights);
 	vector<byte> code = {
 		#include "Shaders/forward.vert.glsl.spv"
@@ -57,7 +57,7 @@ W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
 WForwardRenderStageObjectPS::WForwardRenderStageObjectPS(Wasabi* const app) : WShader(app) {}
 
 void WForwardRenderStageObjectPS::Load(bool bSaveData) {
-	int maxLights = (int)m_app->engineParams["maxLights"];
+	int maxLights = m_app->GetEngineParam<int>("maxLights", 0);
 	m_desc = GetDesc(maxLights);
 	vector<byte> code = {
 		#include "Shaders/forward.frag.glsl.spv"
@@ -79,7 +79,7 @@ W_SHADER_DESC WForwardRenderStageObjectPS::GetDesc(int maxLights) {
 WForwardRenderStageTerrainVS::WForwardRenderStageTerrainVS(Wasabi* const app) : WShader(app) {}
 
 void WForwardRenderStageTerrainVS::Load(bool bSaveData) {
-	int maxLights = m_app->engineParams.find("maxLights") != m_app->engineParams.end() ? (int)m_app->engineParams["maxLights"] : 0;
+	int maxLights = m_app->GetEngineParam<int>("maxLights", 0);
 	m_desc = GetDesc(maxLights);
 	vector<byte> code = {
 		#include "Shaders/terrain.vert.glsl.spv"
@@ -120,7 +120,7 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 WForwardRenderStageTerrainPS::WForwardRenderStageTerrainPS(Wasabi* const app) : WShader(app) {}
 
 void WForwardRenderStageTerrainPS::Load(bool bSaveData) {
-	int maxLights = (int)m_app->engineParams["maxLights"];
+	int maxLights = m_app->GetEngineParam<int>("maxLights", 0);
 	m_desc = GetDesc(maxLights);
 	vector<byte> code = {
 		#include "Shaders/terrain.frag.glsl.spv"
@@ -144,9 +144,9 @@ WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_stageDescription.target = RENDER_STAGE_TARGET_BACK_BUFFER;
 	m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
 
-	if (m_app->engineParams.find("maxLights") == m_app->engineParams.end())
-		m_app->engineParams.insert(std::pair<std::string, void*>("maxLights", (void*)16));
-	m_lights.resize((int)m_app->engineParams["maxLights"]);
+	if (m_app->GetEngineParam<int>("maxLights", -1) == -1)
+		m_app->SetEngineParam<int>("maxLights", 16);
+	m_lights.resize(m_app->GetEngineParam<int>("maxLights"));
 
 	m_objectsFragment = nullptr;
 	m_terrainsFragment = nullptr;
