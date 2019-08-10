@@ -63,11 +63,11 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 - Clone and build [BulletPhysics](https://github.com/bulletphysics/bullet3) (make sure to pass `-DUSE_MSVC_RUNTIME_LIBRARY_DLL=ON` to the `cmake` command). After `cmake` a Visual Studio `.sln` file will be generated, which you should open and build using Visual Studio (both Debug and Release)
 - Install [OpenAL SDK](https://www.openal.org/)
 - (Optional) Install [FBX SDK](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2019-0)
-- Run the following (*replace `Visual Studio 16 2019` with your installed version of visual studio, run `cmake --help` to see a list, replace `BULLET_ROOT` with the path where you built Bullet and replace OpenAL/FBXSDK paths if necessary*):
+- Run the following (*replace `BULLET_ROOT` with the path where you built Bullet and replace OpenAL/FBXSDK paths if necessary*):
 ```bash
 mkdir build
 cd build
-cmake -G "Visual Studio 16 2019" -DBULLET_ROOT="C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build" -DBULLET_INCLUDE_DIR="C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/src" -DOPENAL_INCLUDE_DIR="c:/Program Files (x86)/OpenAL 1.1 SDK/include" -DOPENAL_LIBRARY="c:/Program Files (x86)/OpenAL 1.1 SDK/libs/Win64/OpenAL32.lib" -DFBXSDK_ROOT="C:/Program Files/Autodesk/FBX/FBX SDK/2019.0" ..
+cmake -DBULLET_ROOT="C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build" -DBULLET_INCLUDE_DIR="C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/src" -DOPENAL_INCLUDE_DIR="c:/Program Files (x86)/OpenAL 1.1 SDK/include" -DOPENAL_LIBRARY="c:/Program Files (x86)/OpenAL 1.1 SDK/libs/Win64/OpenAL32.lib" -DFBXSDK_ROOT="C:/Program Files/Autodesk/FBX/FBX SDK/2019.0" ..
 ```
 - Open `build/Wasabi.sln` in Visual Studio and build/run the code
 

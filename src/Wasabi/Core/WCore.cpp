@@ -21,6 +21,14 @@
 
 #include "WindowAndInput/GLFW/WGLFWWindowAndInputComponent.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+int main();
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow) {
+	return main();
+}
+#endif
+
 int main() {
 	Wasabi* app = WInitialize();
 	int ret = RunWasabi(app);
