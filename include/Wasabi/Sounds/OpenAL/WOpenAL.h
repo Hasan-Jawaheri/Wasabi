@@ -8,11 +8,6 @@ desc.: Wasabi Engine OpenAL wrapper
 
 #include "Wasabi/Sounds/WSound.h"
 
-#include <al.h>				//openAL sound header
-#include <alc.h>			//openAL sound header
-
-#pragma comment(lib, "OpenAL32.lib") //openAL library
-
 #define W_NUM_SOUND_BUFFERS_PER_SOUND 10
 
 //forward declaration
@@ -30,8 +25,8 @@ public:
 	virtual void Cleanup();
 	virtual WSound* CreateSound(unsigned int ID = 0) const;
 
-	ALCdevice* GetALSoundDevice() const;
-	ALCcontext* GetALSoundDeviceContext() const;
+	void* GetALSoundDevice() const;
+	void* GetALSoundDeviceContext() const;
 
 	virtual void SetSoundSpeed(float fSpeed);
 	virtual void SetDopplerFactor(float fFactor);
@@ -50,8 +45,8 @@ protected:
 	class Wasabi* m_app;
 
 private:
-	ALCdevice* m_oalDevice;
-	ALCcontext* m_oalContext;
+	void* m_oalDevice;
+	void* m_oalContext;
 };
 
 /*********************************************************************
@@ -70,8 +65,7 @@ public:
 
 	virtual bool Valid() const;
 	virtual WError LoadWAV(std::string Filename, uint buffer, bool bSaveData = false);
-	WError LoadFromMemory(uint buffer, void* data, size_t dataSize,
-					ALenum format, uint frequency, bool bSaveData = false);
+	WError LoadFromMemory(uint buffer, void* data, size_t dataSize, int format, uint frequency, bool bSaveData = false);
 	virtual void Play();
 	virtual void Loop();
 	virtual void Pause();
@@ -85,8 +79,8 @@ public:
 	virtual void SetFrequency(uint buffer, uint frequency);
 	virtual uint GetNumChannels(uint buffer) const;
 	virtual uint GetBitDepth(uint buffer) const;
-	ALuint GetALBuffer(uint buffer) const;
-	ALuint GetALSource() const;
+	uint GetALBuffer(uint buffer) const;
+	uint GetALSource() const;
 
 	virtual void SetPosition(float x, float y, float z);
 	virtual void SetPosition(WVector3 pos);
@@ -103,13 +97,13 @@ public:
 
 private:
 	bool m_valid;
-	ALuint* m_buffers;
-	ALuint m_source;
+	uint* m_buffers;
+	uint m_source;
 	uint m_numBuffers;
 
 	struct __SAVEDATA {
 		uint buffer;
-		ALenum format;
+		int format;
 		size_t dataSize;
 		void* data;
 	};

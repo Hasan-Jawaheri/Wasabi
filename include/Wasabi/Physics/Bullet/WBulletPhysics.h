@@ -2,29 +2,6 @@
 
 #include "Wasabi/Physics/WPhysicsComponent.h"
 
-#include <btBulletCollisionCommon.h>
-#include <btBulletDynamicsCommon.h>
-
-#ifdef _DEBUG
-// #pragma comment(lib, "Bullet3Collision_debug.lib")
-// #pragma comment(lib, "Bullet3Common_debug.lib")
-// #pragma comment(lib, "Bullet3Dynamics_debug.lib")
-// #pragma comment(lib, "Bullet3Geometry_debug.lib")
-#pragma comment(lib, "BulletSoftBody_debug.lib")
-#pragma comment(lib, "BulletCollision_debug.lib")
-#pragma comment(lib, "BulletDynamics_debug.lib")
-#pragma comment(lib, "LinearMath_debug.lib")
-#else
-// #pragma comment(lib, "Bullet3Collision.lib")
-// #pragma comment(lib, "Bullet3Common.lib")
-// #pragma comment(lib, "Bullet3Dynamics.lib")
-// #pragma comment(lib, "Bullet3Geometry.lib")
-#pragma comment(lib, "BulletSoftBody.lib")
-#pragma comment(lib, "BulletCollision.lib")
-#pragma comment(lib, "BulletDynamics.lib")
-#pragma comment(lib, "LinearMath.lib")
-#endif
-
 /*
  * Creating an instance of this class creates the following engine parameters :
  ** "maxBulletDebugLines" : Maximum number of line segments the debugger can draw
@@ -61,17 +38,19 @@ private:
 	/** debugger (if enabled) */
 	class BulletDebugger* m_debugger;
 	/** Bullet collision configuration */
-	btDefaultCollisionConfiguration* m_collisionConfiguration;
+	void* m_collisionConfiguration;
 	/** Bullet dispatcher */
-	btCollisionDispatcher* m_dispatcher;
+	void* m_dispatcher;
 	/** Bullet stuff */
-	btBroadphaseInterface* m_overlappingPairCache;
+	void* m_overlappingPairCache;
 	/** Bullet solver */
-	btSequentialImpulseConstraintSolver* m_solver;
+	void* m_solver;
 	/** Bullet world */
-	btDiscreteDynamicsWorld* m_dynamicsWorld;
+	void* m_dynamicsWorld;
 };
 
+#ifdef COMPILING_WASABI
+#include <btBulletCollisionCommon.h>
 /** Converts a WVector3 to a btVector3 */
 btVector3 WBTConvertVec3(WVector3 vec);
 /** Converts a btVector3 to a WVector3 */
@@ -88,3 +67,4 @@ WVector4 BTWConvertVec4(btVector4 vec);
 btQuaternion WBTConvertQuaternion(WQuaternion quat);
 /** Converts a btQuaternion to a WQuaternion */
 WQuaternion BTWConvertQuaternion(btQuaternion quat);
+#endif
