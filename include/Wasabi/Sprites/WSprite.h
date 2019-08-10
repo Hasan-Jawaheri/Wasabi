@@ -12,9 +12,9 @@
 
 #pragma once
 
-#include "Core/WCore.h"
-#include "Materials/WMaterialsStore.h"
-#include "Materials/WEffect.h"
+#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Materials/WMaterialsStore.h"
+#include "Wasabi/Materials/WEffect.h"
 
 class WSpriteVS : public WShader {
 public:

@@ -1,4 +1,4 @@
-#include "WindowAndInput/GLFW/WGLFWWindowAndInputComponent.h"
+#include "Wasabi/WindowAndInput/GLFW/WGLFWWindowAndInputComponent.h"
 
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32

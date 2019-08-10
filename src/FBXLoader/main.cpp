@@ -1,8 +1,8 @@
 #include "main.h"
 #include "util.h"
 
-#include <Renderers/ForwardRenderer/WForwardRenderer.h>
-#include <Renderers/DeferredRenderer/WDeferredRenderer.h>
+#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h>
+#include <Wasabi/Renderers/DeferredRenderer/WDeferredRenderer.h>
 
 /*
 	Source: http://www.gamedev.net/topic/619416-fbx-skeleton-animation-need-help/

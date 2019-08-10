@@ -1,5 +1,5 @@
-#include "Cameras/WCamera.h"
-#include "WindowAndInput/WWindowAndInputComponent.h"
+#include "Wasabi/Cameras/WCamera.h"
+#include "Wasabi/WindowAndInput/WWindowAndInputComponent.h"
 
 WCameraManager::WCameraManager(Wasabi* const app) : WManager<WCamera>(app) {
 	m_default_camera = nullptr;

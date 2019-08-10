@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "Core/WBase.h"
+#include "Wasabi/Core/WBase.h"
 #include <vector>
 #include <string>
 #include <iostream>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/WCommon.h"
+#include "Wasabi/Core/WCommon.h"
 
 /** A bitfield specifying the intention for a map operation */
 enum W_MAP_FLAGS {

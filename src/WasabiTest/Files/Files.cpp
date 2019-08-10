@@ -1,5 +1,5 @@
 #include "Files/Files.hpp"
-#include <Physics/Bullet/WBulletRigidBody.h>
+#include <Wasabi/Physics/Bullet/WBulletRigidBody.h>
 #include <iostream>
 
 class VS : public WShader {

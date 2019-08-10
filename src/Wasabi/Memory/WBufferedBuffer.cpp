@@ -1,5 +1,5 @@
-#include "Memory/WBufferedBuffer.h"
-#include "Core/WCore.h"
+#include "Wasabi/Memory/WBufferedBuffer.h"
+#include "Wasabi/Core/WCore.h"
 
 WBufferedBuffer::WBufferedBuffer() {
 	m_lastMapFlags = W_MAP_UNDEFINED;

@@ -7,7 +7,7 @@
  *  @bug No known bugs.
  */
 
-#include "Files/WFile.h"
+#include "Wasabi/Files/WFile.h"
 
 const short FILE_MAGIC = 0x3DE0;
 

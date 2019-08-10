@@ -1,5 +1,5 @@
-#include "Lights/WLight.h"
-#include "Cameras/WCamera.h"
+#include "Wasabi/Lights/WLight.h"
+#include "Wasabi/Cameras/WCamera.h"
 
 WLightManager::WLightManager(Wasabi* const app) : WManager<WLight>(app) {
 	m_defaultLight = nullptr;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TestSuite.hpp"
-#include <Renderers/ForwardRenderer/WForwardRenderer.h>
+#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class InstancingDemo : public WTestState {
 	WObject* character;

@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Core/WCore.h"
+#include "Wasabi/Core/WCore.h"
 
 /** Describes a light type */
 enum W_LIGHT_TYPE {

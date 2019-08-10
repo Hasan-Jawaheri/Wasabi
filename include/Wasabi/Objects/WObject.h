@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include "Core/WCore.h"
-#include "Materials/WMaterialsStore.h"
+#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Materials/WMaterialsStore.h"
 
 /**
  * @ingroup engineclass

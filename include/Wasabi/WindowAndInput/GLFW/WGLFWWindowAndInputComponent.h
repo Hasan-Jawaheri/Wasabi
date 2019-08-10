@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "WindowAndInput/WWindowAndInputComponent.h"
+#include "Wasabi/WindowAndInput/WWindowAndInputComponent.h"
 
  /**
   */

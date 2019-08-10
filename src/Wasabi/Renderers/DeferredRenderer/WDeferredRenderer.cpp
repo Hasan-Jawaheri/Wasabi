@@ -1,12 +1,12 @@
-#include "Renderers/DeferredRenderer/WDeferredRenderer.h"
-#include "Renderers/WRenderer.h"
-#include "Renderers/DeferredRenderer/WGBufferRenderStage.h"
-#include "Renderers/DeferredRenderer/WLightBufferRenderStage.h"
-#include "Renderers/DeferredRenderer/WSceneCompositionRenderStage.h"
-#include "Renderers/Common/WSpritesRenderStage.h"
-#include "Renderers/Common/WTextRenderStage.h"
-#include "Renderers/Common/WParticlesRenderStage.h"
-#include "Renderers/Common/WBackfaceDepthRenderStage.h"
+#include "Wasabi/Renderers/DeferredRenderer/WDeferredRenderer.h"
+#include "Wasabi/Renderers/WRenderer.h"
+#include "Wasabi/Renderers/DeferredRenderer/WGBufferRenderStage.h"
+#include "Wasabi/Renderers/DeferredRenderer/WLightBufferRenderStage.h"
+#include "Wasabi/Renderers/DeferredRenderer/WSceneCompositionRenderStage.h"
+#include "Wasabi/Renderers/Common/WSpritesRenderStage.h"
+#include "Wasabi/Renderers/Common/WTextRenderStage.h"
+#include "Wasabi/Renderers/Common/WParticlesRenderStage.h"
+#include "Wasabi/Renderers/Common/WBackfaceDepthRenderStage.h"
 
 WError WInitializeDeferredRenderer(Wasabi* app) {
 	return app->Renderer->SetRenderingStages({

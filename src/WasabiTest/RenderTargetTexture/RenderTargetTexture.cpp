@@ -1,5 +1,5 @@
 #include "RenderTargetTexture/RenderTargetTexture.hpp"
-#include <Renderers/ForwardRenderer/WForwardRenderStage.h>
+#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderStage.h>
 
 RenderTargetTextureDemo::RenderTargetTextureDemo(Wasabi* const app) : WTestState(app) {
 	rt = nullptr;

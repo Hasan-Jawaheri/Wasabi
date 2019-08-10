@@ -1,9 +1,9 @@
-#include "Renderers/ForwardRenderer/WForwardRenderer.h"
-#include "Renderers/WRenderer.h"
-#include "Renderers/ForwardRenderer/WForwardRenderStage.h"
-#include "Renderers/Common/WSpritesRenderStage.h"
-#include "Renderers/Common/WParticlesRenderStage.h"
-#include "Renderers/Common/WTextRenderStage.h"
+#include "Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h"
+#include "Wasabi/Renderers/WRenderer.h"
+#include "Wasabi/Renderers/ForwardRenderer/WForwardRenderStage.h"
+#include "Wasabi/Renderers/Common/WSpritesRenderStage.h"
+#include "Wasabi/Renderers/Common/WParticlesRenderStage.h"
+#include "Wasabi/Renderers/Common/WTextRenderStage.h"
 
 WError WInitializeForwardRenderer(Wasabi* app) {
 	return app->Renderer->SetRenderingStages({

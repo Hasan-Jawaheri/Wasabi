@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TestSuite.hpp"
-#include <Sounds/OpenAL/WOpenAL.h>
+#include <Wasabi/Sounds/OpenAL/WOpenAL.h>
 
 class SoundDemo : public WTestState {
 	WSound* m_sound;

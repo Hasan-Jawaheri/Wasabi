@@ -6,7 +6,7 @@ desc.: Wasabi Engine OpenAL wrapper
 
 #pragma once
 
-#include "Sounds/WSound.h"
+#include "Wasabi/Sounds/WSound.h"
 
 #include <al.h>				//openAL sound header
 #include <alc.h>			//openAL sound header

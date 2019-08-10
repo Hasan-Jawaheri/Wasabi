@@ -12,8 +12,8 @@
 
 #include <vulkan/vulkan.h>
 #pragma comment (lib, "vulkan-1.lib")
-#include "Core/VkTools/vulkanswapchain.hpp"
-#include "Core/VkTools/vulkantools.h"
+#include "Wasabi/Core/VkTools/vulkanswapchain.hpp"
+#include "Wasabi/Core/VkTools/vulkantools.h"
 
 #include <math.h>
 #include <float.h>
@@ -27,6 +27,6 @@
 #include <array>
 #include <chrono>
 
-#include "Core/WError.h"
-#include "Core/WTimer.h"
-#include "Core/WMath.h"
+#include "Wasabi/Core/WError.h"
+#include "Wasabi/Core/WTimer.h"
+#include "Wasabi/Core/WMath.h"

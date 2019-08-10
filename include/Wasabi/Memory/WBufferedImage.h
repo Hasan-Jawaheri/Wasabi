@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/WCommon.h"
-#include "Memory/WVulkanMemoryManager.h"
+#include "Wasabi/Core/WCommon.h"
+#include "Wasabi/Memory/WVulkanMemoryManager.h"
 
 struct WBufferedImageProperties {
 	VkFormat format;

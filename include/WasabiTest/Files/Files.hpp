@@ -1,8 +1,8 @@
 #pragma once
 
 #include "TestSuite.hpp"
-#include <Physics/Bullet/WBulletPhysics.h>
-#include <Renderers/ForwardRenderer/WForwardRenderer.h>
+#include <Wasabi/Physics/Bullet/WBulletPhysics.h>
+#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class FilesDemo : public WTestState {
 	WMaterial* m_material;

@@ -5,7 +5,7 @@
  *  @bug No known bugs.
  */
 
-#include "WindowAndInput/Windows/WWindowsWindowAndInputComponent.h"
+#include "Wasabi/WindowAndInput/Windows/WWindowsWindowAndInputComponent.h"
 #include <windows.h>
 
 LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);

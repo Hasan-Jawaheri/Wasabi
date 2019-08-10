@@ -1,7 +1,7 @@
-#include "Materials/WEffect.h"
-#include "Materials/WMaterial.h"
-#include "Images/WRenderTarget.h"
-#include "Renderers/WRenderer.h"
+#include "Wasabi/Materials/WEffect.h"
+#include "Wasabi/Materials/WMaterial.h"
+#include "Wasabi/Images/WRenderTarget.h"
+#include "Wasabi/Renderers/WRenderer.h"
 
 #include <iostream>
 #include <unordered_map>

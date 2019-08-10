@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Renderers/WRenderStage.h"
-#include "Renderers/Common/WRenderFragment.h"
+#include "Wasabi/Renderers/WRenderStage.h"
+#include "Wasabi/Renderers/Common/WRenderFragment.h"
 
 class WSpritesRenderStage : public WRenderStage {
 	WSpritesRenderFragment* m_spritesFragment;
