@@ -8,6 +8,8 @@
 #include <GLFW/glfw3.h>
 #include "GLFW/glfw3native.h"
 
+static bool g_glfwInitialized = false;
+
 WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : WWindowAndInputComponent(app) {
 	m_window = nullptr;
 	m_surface = nullptr;
@@ -25,8 +27,12 @@ WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : 
 }
 
 WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
-	if (!glfwInit())
-		return WError(W_ERRORUNK);
+	if (!g_glfwInitialized) {
+		g_glfwInitialized = true;
+		if (!glfwInit())
+			return WError(W_ERRORUNK);
+		WRegisterGlobalCleanup([]() { glfwTerminate(); });
+	}
 
 	m_monitor = (void*)glfwGetPrimaryMonitor();
 	
@@ -61,7 +67,6 @@ void WGLFWWindowAndInputComponent::Cleanup() {
 		glfwDestroyWindow((GLFWwindow*)m_window);
 		m_window = nullptr;
 	}
-	glfwTerminate();
 }
 
 void* WGLFWWindowAndInputComponent::GetPlatformHandle() const {
