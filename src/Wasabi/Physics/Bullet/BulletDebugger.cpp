@@ -181,7 +181,7 @@ void BulletDebugger::ApplyMousePivot() {
 	}
 
 	float fMouseZ = (float)WindowAndInputComponent->MouseZ();
-	fDist += (fMouseZ / 120.0f) * (abs(fDist) / 10.0f);
+	fDist += fMouseZ * (abs(fDist) / 10.0f);
 	WindowAndInputComponent->SetMouseZ(0);
 	fDist = min(-1, fDist);
 
