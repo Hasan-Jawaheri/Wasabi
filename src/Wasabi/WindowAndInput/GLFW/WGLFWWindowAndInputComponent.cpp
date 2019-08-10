@@ -266,7 +266,7 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (comp->m_app->curState)
 			comp->m_app->curState->OnInput(c);
-	});
+		});
 
 	glfwSetKeyCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int key, int scancode, int mode, int mods) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
@@ -281,32 +281,53 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 			if (comp->m_app->curState)
 				comp->m_app->curState->OnKeyDown(key);
 		} else if (mode == GLFW_REPEAT) {}
-	});
-	
+		});
+
 	glfwSetFramebufferSizeCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int w, int h) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (w > 0 && h > 0)
 			comp->m_app->Resize(w, h);
-	});
+		});
 
 	glfwSetWindowMaximizeCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int isMaximized) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		comp->m_isMinimized = false;
-	});
+		});
 
 	glfwSetWindowIconifyCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int isMinimized) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		comp->m_isMinimized = isMinimized;
-	});
+		});
 
 	glfwSetMouseButtonCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int button, int mode, int mods) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
-		if (button == GLFW_MOUSE_BUTTON_1)
+		bool validButton = false;
+		if (button == GLFW_MOUSE_BUTTON_1) {
 			comp->m_leftClick = mode == GLFW_PRESS;
-		else if (button == GLFW_MOUSE_BUTTON_2)
+			validButton = true;
+		} else if (button == GLFW_MOUSE_BUTTON_2) {
 			comp->m_rightClick = mode == GLFW_PRESS;
-		else if (button == GLFW_MOUSE_BUTTON_3)
+			validButton = true;
+		} else if (button == GLFW_MOUSE_BUTTON_3) {
 			comp->m_middleClick = mode == GLFW_PRESS;
+			validButton = true;
+		}
+
+		if (comp->m_app->curState && validButton) {
+			W_MOUSEBUTTON wbutton = button == GLFW_MOUSE_BUTTON_1 ? MOUSE_LEFT : (button == GLFW_MOUSE_BUTTON_2 ? MOUSE_RIGHT : MOUSE_MIDDLE);
+			int mx = comp->MouseX(MOUSEPOS_VIEWPORT);
+			int my = comp->MouseY(MOUSEPOS_VIEWPORT);
+			if (mode == GLFW_PRESS)
+				comp->m_app->curState->OnMouseDown(wbutton, mx, my);
+			else if (mode == GLFW_RELEASE)
+				comp->m_app->curState->OnMouseUp(wbutton, mx, my);
+		}
+	});
+
+	glfwSetCursorPosCallback((GLFWwindow*)m_window, [](GLFWwindow* window, double x, double y) {
+		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
+		if (comp->m_app->curState)
+			comp->m_app->curState->OnMouseMove((int)x, (int)y);
 	});
 
 	glfwSetCursorEnterCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int entered) {
