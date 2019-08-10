@@ -1,4 +1,4 @@
-#include "Core/WOrientation.h"
+#include "Wasabi/Core/WOrientation.h"
 
 WOrientation::WOrientation() {
 	//default values

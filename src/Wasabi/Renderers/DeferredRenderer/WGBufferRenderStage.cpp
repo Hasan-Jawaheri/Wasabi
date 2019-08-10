@@ -1,10 +1,10 @@
-#include "Renderers/DeferredRenderer/WGBufferRenderStage.h"
-#include "Core/WCore.h"
-#include "Renderers/WRenderer.h"
-#include "Images/WRenderTarget.h"
-#include "Objects/WObject.h"
-#include "Materials/WMaterial.h"
-#include "Cameras/WCamera.h"
+#include "Wasabi/Renderers/DeferredRenderer/WGBufferRenderStage.h"
+#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Renderers/WRenderer.h"
+#include "Wasabi/Images/WRenderTarget.h"
+#include "Wasabi/Objects/WObject.h"
+#include "Wasabi/Materials/WMaterial.h"
+#include "Wasabi/Cameras/WCamera.h"
 
 WGBufferVS::WGBufferVS(Wasabi* const app) : WShader(app) {}
 

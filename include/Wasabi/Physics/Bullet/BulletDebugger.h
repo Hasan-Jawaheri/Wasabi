@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Physics/Bullet/WBulletPhysics.h"
+#include "Wasabi/Physics/Bullet/WBulletPhysics.h"
 #include <thread>
 #include <vector>
 #include <mutex>

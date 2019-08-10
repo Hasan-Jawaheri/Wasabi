@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Renderers/WRenderStage.h"
-#include "Renderers/Common/WRenderFragment.h"
-#include "Materials/WEffect.h"
-#include "Materials/WMaterial.h"
-#include "Objects/WObject.h"
+#include "Wasabi/Renderers/WRenderStage.h"
+#include "Wasabi/Renderers/Common/WRenderFragment.h"
+#include "Wasabi/Materials/WEffect.h"
+#include "Wasabi/Materials/WMaterial.h"
+#include "Wasabi/Objects/WObject.h"
 
 class WBackfaceDepthRenderStageObjectPS : public WShader {
 public:

@@ -3,12 +3,6 @@ cmake_minimum_required(VERSION 3.15)
 project(Wasabi)
 set(CMAKE_CXX_STANDARD 17)
 
-# ignore compiler warnings from external headers for MSVC
-if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0 ")
-    set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
-endif()
-
 # Helper function for VS filters
 function(assign_source_group)
     foreach(_source IN ITEMS ${ARGN})
@@ -86,14 +80,18 @@ file(GLOB_RECURSE TEST_HEADERS "include/WasabiTest/*")
 file(GLOB_RECURSE FBX_LOADER_SOURCES "src/FBXLoader/*.cpp")
 file(GLOB_RECURSE FBX_LOADER_HEADERS "include/FBXLoader/*")
 
+# put the Wasabi include files in the build directory
+file(COPY "include/Wasabi/" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/include/Wasabi/")
+
 # External libraries
 include_directories(SYSTEM "lib/glfw-3.3/include/")
 include_directories(SYSTEM "lib/stb/include/")
 
+include_directories("include/")
+
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${LIB_HEADERS})
 add_library(wasabi STATIC ${LIB_SOURCES} ${LIB_HEADERS})
-include_directories("include/Wasabi")
 add_custom_command(TARGET wasabi
     PRE_BUILD
     COMMAND cd ${CMAKE_SOURCE_DIR}/src/ && python compile-glsl-code.py
@@ -129,7 +127,10 @@ if (FBXSDK_ROOT)
 endif()
 
 # ignore MSVC warnings for external headers
-if (MSVC)
+if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0 ")
+    set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
+    
     get_filename_component(STB_INCLUDE_PATH "lib/stb/include/" ABSOLUTE)
     target_compile_options(wasabi PRIVATE /external:I${STB_INCLUDE_PATH})
     target_compile_options(wasabi_test PRIVATE /external:I${STB_INCLUDE_PATH})

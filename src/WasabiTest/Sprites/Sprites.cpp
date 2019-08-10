@@ -1,5 +1,5 @@
 #include "Sprites/Sprites.hpp"
-#include <Renderers/Common/WSpritesRenderStage.h>
+#include <Wasabi/Renderers/Common/WSpritesRenderStage.h>
 
 class CustomSpritePS : public WShader {
 public:

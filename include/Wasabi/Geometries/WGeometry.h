@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Core/WCore.h"
+#include "Wasabi/Core/WCore.h"
 
 #define W_ATTRIBUTE_POSITION	W_VERTEX_ATTRIBUTE("position", 3)
 #define W_ATTRIBUTE_TANGENT		W_VERTEX_ATTRIBUTE("tangent", 3)

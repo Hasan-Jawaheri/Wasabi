@@ -1,5 +1,5 @@
 #include "Sound/Sound.hpp"
-#include <Sounds/OpenAL/WOpenAL.h>
+#include <Wasabi/Sounds/OpenAL/WOpenAL.h>
 
 SoundDemo::SoundDemo(Wasabi* const app) : WTestState(app) {}
 

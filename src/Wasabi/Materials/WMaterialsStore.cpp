@@ -1,7 +1,7 @@
-#include "Materials/WMaterialsStore.h"
-#include "Materials/WMaterial.h"
-#include "Materials/WEffect.h"
-#include "Renderers/WRenderer.h"
+#include "Wasabi/Materials/WMaterialsStore.h"
+#include "Wasabi/Materials/WMaterial.h"
+#include "Wasabi/Materials/WEffect.h"
+#include "Wasabi/Renderers/WRenderer.h"
 
 WMaterialsStore::WMaterialsStore() {
 	m_defaultEffect = nullptr;

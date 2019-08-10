@@ -1,4 +1,4 @@
-#include "Sounds/OpenAL/WOpenAL.h"
+#include "Wasabi/Sounds/OpenAL/WOpenAL.h"
 
 template<typename T>
 T BytesTo(char* bytes, bool bLittleEndian = false) {

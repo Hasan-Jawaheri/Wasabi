@@ -1,7 +1,7 @@
-#include "Images/WRenderTarget.h"
-#include "Images/WImage.h"
-#include "Cameras/WCamera.h"
-#include "Renderers/WRenderer.h"
+#include "Wasabi/Images/WRenderTarget.h"
+#include "Wasabi/Images/WImage.h"
+#include "Wasabi/Cameras/WCamera.h"
+#include "Wasabi/Renderers/WRenderer.h"
 
 WRenderTargetManager::WRenderTargetManager(Wasabi* const app) : WManager<WRenderTarget>(app) {
 }

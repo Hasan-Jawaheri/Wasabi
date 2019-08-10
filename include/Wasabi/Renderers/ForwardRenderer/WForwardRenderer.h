@@ -7,6 +7,6 @@
 
 #pragma once
 
-#include "Core/WCore.h"
+#include "Wasabi/Core/WCore.h"
 
 WError WInitializeForwardRenderer(Wasabi* app);

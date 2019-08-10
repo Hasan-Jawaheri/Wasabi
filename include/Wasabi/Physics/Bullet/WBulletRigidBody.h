@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "Physics/WRigidBody.h"
-#include "Core/WCore.h"
+#include "Wasabi/Physics/WRigidBody.h"
+#include "Wasabi/Core/WCore.h"
 
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>

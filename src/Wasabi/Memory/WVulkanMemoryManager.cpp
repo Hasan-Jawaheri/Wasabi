@@ -1,5 +1,5 @@
-#include "Memory/WVulkanMemoryManager.h"
-#include "Core/WCore.h"
+#include "Wasabi/Memory/WVulkanMemoryManager.h"
+#include "Wasabi/Core/WCore.h"
 
 enum VULKAN_RESOURCE_TYPE {
 	VULKAN_RESOURCE_RENDERPASS = 0,

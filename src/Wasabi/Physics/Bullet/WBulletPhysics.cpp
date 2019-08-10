@@ -1,6 +1,6 @@
-#include "Physics/Bullet/WBulletPhysics.h"
-#include "Physics/Bullet/WBulletRigidBody.h"
-#include "Physics/Bullet/BulletDebugger.h"
+#include "Wasabi/Physics/Bullet/WBulletPhysics.h"
+#include "Wasabi/Physics/Bullet/WBulletRigidBody.h"
+#include "Wasabi/Physics/Bullet/BulletDebugger.h"
 #include <thread>
 
 WBulletPhysics::WBulletPhysics(Wasabi* app) : WPhysicsComponent(app) {

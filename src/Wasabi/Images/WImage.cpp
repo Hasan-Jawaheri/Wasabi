@@ -1,5 +1,5 @@
-#include "Images/WImage.h"
-#include "Renderers/WRenderer.h"
+#include "Wasabi/Images/WImage.h"
+#include "Wasabi/Renderers/WRenderer.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push

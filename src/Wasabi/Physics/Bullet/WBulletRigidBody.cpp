@@ -1,8 +1,8 @@
-#include "Physics/Bullet/WBulletRigidBody.h"
-#include "Physics/Bullet/WBulletPhysics.h"
-#include "Physics/WRigidBody.h"
-#include "Core/WCore.h"
-#include "Geometries/WGeometry.h"
+#include "Wasabi/Physics/Bullet/WBulletRigidBody.h"
+#include "Wasabi/Physics/Bullet/WBulletPhysics.h"
+#include "Wasabi/Physics/WRigidBody.h"
+#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Geometries/WGeometry.h"
 
 WBulletRigidBodyManager::WBulletRigidBodyManager(class Wasabi* const app)
 	: WRigidBodyManager(app) {

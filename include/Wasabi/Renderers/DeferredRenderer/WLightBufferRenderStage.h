@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderers/WRenderStage.h"
+#include "Wasabi/Renderers/WRenderStage.h"
 
 class WShader;
 

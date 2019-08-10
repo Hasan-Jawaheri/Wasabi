@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Renderers/WRenderStage.h"
-#include "Renderers/Common/WRenderFragment.h"
-#include "Particles/WParticles.h"
+#include "Wasabi/Renderers/WRenderStage.h"
+#include "Wasabi/Renderers/Common/WRenderFragment.h"
+#include "Wasabi/Particles/WParticles.h"
 
 class WParticlesRenderStage : public WRenderStage {
 	WParticlesRenderFragment* m_particlesFragment;

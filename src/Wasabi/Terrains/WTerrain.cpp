@@ -1,10 +1,10 @@
-#include "Terrains/WTerrain.h"
-#include "Cameras/WCamera.h"
-#include "Images/WImage.h"
-#include "Images/WRenderTarget.h"
-#include "Geometries/WGeometry.h"
-#include "Materials/WMaterial.h"
-#include "Materials/WEffect.h"
+#include "Wasabi/Terrains/WTerrain.h"
+#include "Wasabi/Cameras/WCamera.h"
+#include "Wasabi/Images/WImage.h"
+#include "Wasabi/Images/WRenderTarget.h"
+#include "Wasabi/Geometries/WGeometry.h"
+#include "Wasabi/Materials/WMaterial.h"
+#include "Wasabi/Materials/WEffect.h"
 /*
 struct TerrainProperties {
 	uint N, M, LOD;

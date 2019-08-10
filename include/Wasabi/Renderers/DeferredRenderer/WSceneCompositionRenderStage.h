@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderers/WRenderStage.h"
+#include "Wasabi/Renderers/WRenderStage.h"
 
 class WSceneCompositionRenderStage : public WRenderStage {
 	class WSprite* m_fullscreenSprite;

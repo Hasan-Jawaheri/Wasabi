@@ -1,9 +1,9 @@
-#include "Renderers/WRenderer.h"
-#include "Renderers/WRenderStage.h"
-#include "Images/WRenderTarget.h"
-#include "Images/WImage.h"
-#include "Geometries/WGeometry.h"
-#include "WindowAndInput/WWindowAndInputComponent.h"
+#include "Wasabi/Renderers/WRenderer.h"
+#include "Wasabi/Renderers/WRenderStage.h"
+#include "Wasabi/Images/WRenderTarget.h"
+#include "Wasabi/Images/WImage.h"
+#include "Wasabi/Geometries/WGeometry.h"
+#include "Wasabi/WindowAndInput/WWindowAndInputComponent.h"
 
 WRenderer::WRenderer(Wasabi* const app) : m_app(app) {
 	m_queue = VK_NULL_HANDLE;

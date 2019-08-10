@@ -1,5 +1,5 @@
-#include "Core/WBase.h"
-#include "Core/WManager.h"
+#include "Wasabi/Core/WBase.h"
+#include "Wasabi/Core/WManager.h"
 
 /********************************************************************************
 ***********************************WBase class**********************************

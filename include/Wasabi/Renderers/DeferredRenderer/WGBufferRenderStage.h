@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Renderers/WRenderStage.h"
-#include "Renderers/Common/WRenderFragment.h"
-#include "Materials/WEffect.h"
+#include "Wasabi/Renderers/WRenderStage.h"
+#include "Wasabi/Renderers/Common/WRenderFragment.h"
+#include "Wasabi/Materials/WEffect.h"
 
 class WGBufferVS : public WShader {
 public:

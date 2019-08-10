@@ -8,7 +8,7 @@
 #include <unordered_map>
 #pragma comment ( lib, "libfbxsdk-md.lib" )
 
-#include "Wasabi.h"
+#include "Wasabi/Wasabi.h"
 
 using namespace std;
 

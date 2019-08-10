@@ -1,4 +1,4 @@
-#include "Core/WError.h"
+#include "Wasabi/Core/WError.h"
 
 WError::WError() {
 	m_error = W_ERRORUNK;

@@ -1,7 +1,7 @@
-#include "Renderers/WRenderStage.h"
-#include "Renderers/WRenderer.h"
-#include "Images/WImage.h"
-#include "Images/WRenderTarget.h"
+#include "Wasabi/Renderers/WRenderStage.h"
+#include "Wasabi/Renderers/WRenderer.h"
+#include "Wasabi/Images/WImage.h"
+#include "Wasabi/Images/WRenderTarget.h"
 
 WRenderStage::OUTPUT_IMAGE::OUTPUT_IMAGE() {
 	name = "";

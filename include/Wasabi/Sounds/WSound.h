@@ -6,7 +6,7 @@ desc.: Wasabi Engine sounds interface to be implemented
 
 #pragma once
 
-#include "Core/WCore.h"
+#include "Wasabi/Core/WCore.h"
 
 class WSound;
 class WBase;

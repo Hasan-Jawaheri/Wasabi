@@ -1,10 +1,10 @@
-#include "Particles/WParticles.h"
-#include "Cameras/WCamera.h"
-#include "Images/WRenderTarget.h"
-#include "Geometries/WGeometry.h"
-#include "Materials/WEffect.h"
-#include "Materials/WMaterial.h"
-#include "Renderers/WRenderer.h"
+#include "Wasabi/Particles/WParticles.h"
+#include "Wasabi/Cameras/WCamera.h"
+#include "Wasabi/Images/WRenderTarget.h"
+#include "Wasabi/Geometries/WGeometry.h"
+#include "Wasabi/Materials/WEffect.h"
+#include "Wasabi/Materials/WMaterial.h"
+#include "Wasabi/Renderers/WRenderer.h"
 
 class WParticlesGeometry : public WGeometry {
 	const W_VERTEX_DESCRIPTION m_desc = W_VERTEX_DESCRIPTION({

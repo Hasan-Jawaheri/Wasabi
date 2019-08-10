@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "Core/WCore.h"
+#include "Wasabi/Core/WCore.h"
 
 /**
  * Represents an animation frame.

@@ -1,7 +1,7 @@
-#include "Physics/WRigidBody.h"
-#include "Objects/WObject.h"
-#include "Geometries/WGeometry.h"
-#include "Core/WOrientation.h"
+#include "Wasabi/Physics/WRigidBody.h"
+#include "Wasabi/Objects/WObject.h"
+#include "Wasabi/Geometries/WGeometry.h"
+#include "Wasabi/Core/WOrientation.h"
 
 W_RIGID_BODY_CREATE_INFO W_RIGID_BODY_CREATE_INFO::ForComplexObject(WObject* object, bool isTriangleList) {
 	W_RIGID_BODY_CREATE_INFO info = {};

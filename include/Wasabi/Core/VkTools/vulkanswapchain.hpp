@@ -27,7 +27,7 @@
 #endif
 
 #include <vulkan/vulkan.h>
-#include "Core/VkTools/vulkantools.h"
+#include "Wasabi/Core/VkTools/vulkantools.h"
 
 #ifdef __ANDROID__
 #include "vulkanandroid.h"

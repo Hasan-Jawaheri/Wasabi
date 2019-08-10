@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "Core/WMath.h"
+#include "Wasabi/Core/WMath.h"
 #include <type_traits>
 
 /** Type of an orientation change happening to a WOrientation */

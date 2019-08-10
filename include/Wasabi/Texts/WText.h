@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "Core/WCore.h"
+#include "Wasabi/Core/WCore.h"
 
 /** Represents a text that is to be rendered next frame */
 typedef struct W_RENDERING_TEXT {

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "Core/WCore.h"
+#include "Wasabi/Core/WCore.h"
 
 /** Shape of a rigid body in the physics simulation */
 enum W_RIGID_BODY_SHAPE {

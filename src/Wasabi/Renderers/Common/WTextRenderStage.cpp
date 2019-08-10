@@ -1,9 +1,9 @@
-#include "Renderers/Common/WTextRenderStage.h"
-#include "Core/WCore.h"
-#include "Renderers/WRenderer.h"
-#include "Images/WRenderTarget.h"
-#include "Materials/WEffect.h"
-#include "Texts/WText.h"
+#include "Wasabi/Renderers/Common/WTextRenderStage.h"
+#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Renderers/WRenderer.h"
+#include "Wasabi/Images/WRenderTarget.h"
+#include "Wasabi/Materials/WEffect.h"
+#include "Wasabi/Texts/WText.h"
 
 
 WTextsRenderStage::WTextsRenderStage(Wasabi* const app, bool backbuffer) : WRenderStage(app) {

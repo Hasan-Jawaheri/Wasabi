@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Physics/WPhysicsComponent.h"
+#include "Wasabi/Physics/WPhysicsComponent.h"
 
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>

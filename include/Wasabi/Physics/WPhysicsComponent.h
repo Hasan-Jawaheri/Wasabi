@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include "Core/WCore.h"
-#include "Physics/WRigidBody.h"
+#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Physics/WRigidBody.h"
 
 /** Output of a ray cast operation */
 typedef struct W_RAYCAST_OUTPUT {
