@@ -97,9 +97,9 @@ public:
 	virtual void EnableEscapeKeyQuit();
 	virtual void DisableEscapeKeyQuit();
 
-	virtual bool KeyDown(char key) const;
+	virtual bool KeyDown(unsigned int key) const;
 
-	virtual void InsertRawInput(char key, bool state);
+	virtual void InsertRawInput(unsigned int key, bool state);
 
 private:
 	/** Window handle */

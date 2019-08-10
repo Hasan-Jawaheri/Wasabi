@@ -10,19 +10,32 @@
 WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : WWindowAndInputComponent(app) {
 	m_window = nullptr;
 	m_surface = nullptr;
-
-	app->engineParams.insert(std::pair<std::string, void*>("defWndX", (void*)(-1))); // int
-	app->engineParams.insert(std::pair<std::string, void*>("defWndY", (void*)(-1))); //int
+	m_isMinimized = false;
+	m_escapeQuit = true;
+	m_leftClick = false;
+	m_rightClick = false;
+	m_middleClick = false;
+	m_isMouseInScreen = false;
+	m_mouseZ = 0;
+	for (uint i = 0; i < sizeof(m_keyDown) / sizeof(m_keyDown[0]); i++)
+		m_keyDown[i] = false;
+	for (uint i = 0; i < 4; i++)
+		m_windowSizeLimits[i] = GLFW_DONT_CARE;
 }
 
 WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
 	if (!glfwInit())
 		return WError(W_ERRORUNK);
+
+	m_monitor = glfwGetPrimaryMonitor();
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	m_window = glfwCreateWindow(width, height, "Wasabi", NULL, NULL);
 	if (!m_window)
 		return WError(W_WINDOWNOTCREATED);
+	glfwSetWindowUserPointer(m_window, (void*)this);
+
+	SetCallbacks();
 
 	VkResult err = glfwCreateWindowSurface(m_app->GetVulkanInstance(), m_window, NULL, &m_surface);
 	if (err != VK_SUCCESS) {
@@ -39,7 +52,7 @@ bool WGLFWWindowAndInputComponent::Loop() {
 	bool shouldClose = glfwWindowShouldClose(m_window);
 	if (shouldClose)
 		m_app->__EXIT = true;
-	return !shouldClose;
+	return !shouldClose && !m_isMinimized;
 }
 
 void WGLFWWindowAndInputComponent::Cleanup() {
@@ -70,27 +83,29 @@ void WGLFWWindowAndInputComponent::ShowErrorMessage(std::string error, bool warn
 }
 
 void WGLFWWindowAndInputComponent::SetWindowTitle(const char* const title) {
-
+	glfwSetWindowTitle(m_window, title);
 }
 
 void WGLFWWindowAndInputComponent::SetWindowPosition(int x, int y) {
-
+	glfwSetWindowPos(m_window, x, y);
 }
 
 void WGLFWWindowAndInputComponent::SetWindowSize(int width, int height) {
-
+	glfwSetWindowSize(m_window, width, height);
 }
 
 void WGLFWWindowAndInputComponent::MaximizeWindow() {
-
+	glfwMaximizeWindow(m_window);
 }
 
 void WGLFWWindowAndInputComponent::MinimizeWindow() {
-
+	glfwIconifyWindow(m_window);
 }
 
 uint WGLFWWindowAndInputComponent::RestoreWindow() {
-	return 0;
+	int ret = !m_isMinimized;
+	glfwRestoreWindow(m_window);
+	return ret;
 }
 
 uint WGLFWWindowAndInputComponent::GetWindowWidth() const {
@@ -118,66 +133,174 @@ int WGLFWWindowAndInputComponent::GetWindowPositionY() const {
 }
 
 void WGLFWWindowAndInputComponent::SetFullScreenState(bool bFullScreen) {
+	if (GetFullScreenState() == bFullScreen)
+		return;
 
+	if (bFullScreen) {
+		// backup windwo position and window size
+		glfwGetWindowPos(m_window, &m_storedWindowDimensions[0], &m_storedWindowDimensions[1]);
+		glfwGetWindowSize(m_window, &m_storedWindowDimensions[2], &m_storedWindowDimensions[3]);
+
+		const GLFWvidmode* mode = glfwGetVideoMode(m_monitor);
+		glfwSetWindowMonitor(m_window, m_monitor, 0, 0, mode->width, mode->height, 0);
+	} else {
+		glfwSetWindowMonitor(m_window, nullptr, m_storedWindowDimensions[0], m_storedWindowDimensions[1], m_storedWindowDimensions[2], m_storedWindowDimensions[3], 0);
+	}
 }
 
 bool WGLFWWindowAndInputComponent::GetFullScreenState() const {
-	return false;
+	return glfwGetWindowMonitor(m_window) != nullptr;
 }
 
 void WGLFWWindowAndInputComponent::SetWindowMinimumSize(int minX, int minY) {
-
+	m_windowSizeLimits[0] = minX;
+	m_windowSizeLimits[1] = minY;
+	glfwSetWindowSizeLimits(m_window, m_windowSizeLimits[0], m_windowSizeLimits[1], m_windowSizeLimits[2], m_windowSizeLimits[3]);
 }
 
 void WGLFWWindowAndInputComponent::SetWindowMaximumSize(int maxX, int maxY) {
-
+	m_windowSizeLimits[2] = maxX;
+	m_windowSizeLimits[3] = maxY;
+	glfwSetWindowSizeLimits(m_window, m_windowSizeLimits[0], m_windowSizeLimits[1], m_windowSizeLimits[2], m_windowSizeLimits[3]);
 }
 
 bool WGLFWWindowAndInputComponent::MouseClick(W_MOUSEBUTTON button) const {
+	if (button == MOUSE_LEFT)
+		return m_leftClick;
+	else if (button == MOUSE_RIGHT)
+		return m_rightClick;
+	else if (button == MOUSE_MIDDLE)
+		return m_middleClick;
 	return false;
 }
 
 int WGLFWWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint vpID) const {
-	return 0;
+	double mx, my;
+	glfwGetCursorPos(m_window, &mx, &my);
+	if (posT == MOUSEPOS_VIEWPORT)
+		return (int)mx;
+	else if (posT == MOUSEPOS_DESKTOP) {
+		int wx, wy;
+		glfwGetWindowPos(m_window, &wx, &wy);
+		return mx + wx;
+	}
 }
 
 int WGLFWWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint vpID) const {
-	return 0;
+	double mx, my;
+	glfwGetCursorPos(m_window, &mx, &my);
+	if (posT == MOUSEPOS_VIEWPORT)
+		return (int)my;
+	else if (posT == MOUSEPOS_DESKTOP) {
+		int wx, wy;
+		glfwGetWindowPos(m_window, &wx, &wy);
+		return my + wy;
+	}
 }
 
 int WGLFWWindowAndInputComponent::MouseZ() const {
-	return 0;
+	return m_mouseZ;
 }
 
 bool WGLFWWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint vpID) const {
-	return false;
+	return m_isMouseInScreen;
 }
 
-
 void WGLFWWindowAndInputComponent::SetMousePosition(uint x, uint y, W_MOUSEPOSTYPE posT) {
-
+	if (posT == MOUSEPOS_VIEWPORT)
+		glfwSetCursorPos(m_window, (double)x, (double)y);
+	else if (posT == MOUSEPOS_DESKTOP) {
+		int wx, wy;
+		glfwGetWindowPos(m_window, &wx, &wy);
+		glfwSetCursorPos(m_window, (double)(x - wx), (double)(y - wy));
+	}
 }
 
 void WGLFWWindowAndInputComponent::SetMouseZ(int value) {
-
+	m_mouseZ = value;
 }
 
 void WGLFWWindowAndInputComponent::ShowCursor(bool bShow) {
-
+	if (bShow)
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	else
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
 void WGLFWWindowAndInputComponent::EnableEscapeKeyQuit() {
-
+	m_escapeQuit = true;
 }
 
 void WGLFWWindowAndInputComponent::DisableEscapeKeyQuit() {
-
+	m_escapeQuit = false;
 }
 
-bool WGLFWWindowAndInputComponent::KeyDown(char key) const {
-	return false;
+bool WGLFWWindowAndInputComponent::KeyDown(unsigned int key) const {
+	if (key >= 350)
+		return false;
+	return m_keyDown[key];
 }
 
-void WGLFWWindowAndInputComponent::InsertRawInput(char key, bool state) {
+void WGLFWWindowAndInputComponent::InsertRawInput(unsigned int key, bool state) {
+	if (key < 350)
+		m_keyDown[key] = state;
+}
 
+void WGLFWWindowAndInputComponent::SetCallbacks() {
+	glfwSetCharCallback(m_window, [](GLFWwindow* window, unsigned int c) {
+		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
+		if (comp->m_app->curState)
+			comp->m_app->curState->OnInput(c);
+	});
+
+	glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scancode, int mode, int mods) {
+		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
+		if (mode == GLFW_RELEASE) {
+			comp->InsertRawInput(key, false);
+			if (comp->m_app->curState)
+				comp->m_app->curState->OnKeyUp(key);
+		} else if (mode == GLFW_PRESS) {
+			comp->InsertRawInput(key, true);
+			if (key == W_KEY_ESCAPE && comp->m_escapeQuit)
+				glfwSetWindowShouldClose(window, 1);
+			if (comp->m_app->curState)
+				comp->m_app->curState->OnKeyDown(key);
+		} else if (mode == GLFW_REPEAT) {}
+	});
+	
+	glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* window, int w, int h) {
+		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
+		if (w > 0 && h > 0)
+			comp->m_app->Resize(w, h);
+	});
+
+	glfwSetWindowMaximizeCallback(m_window, [](GLFWwindow* window, int isMaximized) {
+		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
+		comp->m_isMinimized = false;
+	});
+
+	glfwSetWindowIconifyCallback(m_window, [](GLFWwindow* window, int isMinimized) {
+		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
+		comp->m_isMinimized = isMinimized;
+	});
+
+	glfwSetMouseButtonCallback(m_window, [](GLFWwindow* window, int button, int mode, int mods) {
+		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
+		if (button == GLFW_MOUSE_BUTTON_1)
+			comp->m_leftClick = mode == GLFW_PRESS;
+		else if (button == GLFW_MOUSE_BUTTON_2)
+			comp->m_rightClick = mode == GLFW_PRESS;
+		else if (button == GLFW_MOUSE_BUTTON_3)
+			comp->m_middleClick = mode == GLFW_PRESS;
+	});
+
+	glfwSetCursorEnterCallback(m_window, [](GLFWwindow* window, int entered) {
+		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
+		comp->m_isMouseInScreen = entered == GLFW_TRUE;
+	});
+
+	glfwSetScrollCallback(m_window, [](GLFWwindow* window, double x, double y) {
+		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
+		comp->m_mouseZ += y;
+	});
 }

@@ -436,12 +436,15 @@ void WWindowsWindowAndInputComponent::DisableEscapeKeyQuit() {
 	m_escapeE = false;
 }
 
-bool WWindowsWindowAndInputComponent::KeyDown(char key) const {
+bool WWindowsWindowAndInputComponent::KeyDown(unsigned int key) const {
+	if (key >= 256)
+		return false;
 	return m_keyDown[key];
 }
 
-void WWindowsWindowAndInputComponent::InsertRawInput(char key, bool state) {
-	m_keyDown[key] = state;
+void WWindowsWindowAndInputComponent::InsertRawInput(unsigned int key, bool state) {
+	if (key < 256)
+		m_keyDown[key] = state;
 }
 
 //window procedure

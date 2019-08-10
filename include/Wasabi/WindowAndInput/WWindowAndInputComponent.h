@@ -12,6 +12,7 @@
 #pragma once
 
 #include "Core/WCore.h"
+#include "WindowAndInput/WKeyCodes.h"
 
 /**
  * @ingroup engineclass
@@ -267,7 +268,7 @@ public:
 	 * @param  key Key to check
 	 * @return     true if key is pressed, false otherwise
 	 */
-	virtual bool KeyDown(char key) const = 0;
+	virtual bool KeyDown(unsigned int key) const = 0;
 
 	/**
 	 * Forcefully sets the state of a key.
@@ -275,7 +276,7 @@ public:
 	 * @param state State to set the key to, true being pressed and false being
 	 *              released
 	 */
-	virtual void InsertRawInput(char key, bool state) = 0;
+	virtual void InsertRawInput(unsigned int key, bool state) = 0;
 
 protected:
 	/** Pointer to the owner Wasabi class */
