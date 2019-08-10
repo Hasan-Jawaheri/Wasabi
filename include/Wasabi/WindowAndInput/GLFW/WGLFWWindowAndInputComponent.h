@@ -9,8 +9,6 @@
 
 #include "WindowAndInput/WWindowAndInputComponent.h"
 
-#include <GLFW/glfw3.h>
-
  /**
   */
 class WGLFWWindowAndInputComponent : public WWindowAndInputComponent {
@@ -45,13 +43,10 @@ public:
 	virtual void SetWindowMaximumSize(int maxX, int maxY);
 
 	virtual bool MouseClick(W_MOUSEBUTTON button) const;
-	virtual int MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-		uint vpID = 0) const;
-	virtual int MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-		uint vpID = 0) const;
+	virtual int MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint vpID = 0) const;
+	virtual int MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint vpID = 0) const;
 	virtual int MouseZ() const;
-	virtual bool MouseInScreen(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-		uint vpID = 0) const;
+	virtual bool MouseInScreen(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint vpID = 0) const;
 
 	virtual void SetMousePosition(uint x, uint y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT);
 	virtual void SetMouseZ(int value);
@@ -66,9 +61,9 @@ public:
 
 private:
 	/** GLFW window */
-	GLFWwindow* m_window;
+	void* m_window;
 	/** Primary monitor */
-	GLFWmonitor* m_monitor;
+	void* m_monitor;
 	/** Vulkan surface */
 	VkSurfaceKHR m_surface;
 	/** Whether or not window is minimized */

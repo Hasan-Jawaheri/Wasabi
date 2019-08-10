@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.15)
 project(Wasabi)
 set(CMAKE_CXX_STANDARD 17)
 
+if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0 ")
+    set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
+endif()
+
 # Helper function for VS filters
 function(assign_source_group)
     foreach(_source IN ITEMS ${ARGN})
@@ -19,69 +24,51 @@ endfunction(assign_source_group)
 
 ############# Vulkan ###############
 find_package(Vulkan)
-IF (NOT Vulkan_FOUND)
+if (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Could not find Vulkan library!")
-ELSE()
+else()
 	message(STATUS "Vulkan library: " ${Vulkan_LIBRARY})
 	message(STATUS "Vulkan include: " ${Vulkan_INCLUDE_DIRS})
-ENDIF()
+endif()
 link_libraries(${Vulkan_LIBRARY})
-include_directories(${Vulkan_INCLUDE_DIRS})
+include_directories(SYSTEM ${Vulkan_INCLUDE_DIRS})
 #####################################
 
 ############# OpenAL ################
 find_package(OpenAL)
-IF (NOT OPENAL_FOUND)
+if (NOT OPENAL_FOUND)
 	message(FATAL_ERROR "Could not find OpenAL library!")
-ELSE()
+else()
 	message(STATUS "OpenAL library: " ${OPENAL_LIBRARY})
 	message(STATUS "OpenAL include: " ${OPENAL_INCLUDE_DIR})
-ENDIF()
+endif()
 link_libraries(${OPENAL_LIBRARY})
-include_directories(${OPENAL_INCLUDE_DIR})
+include_directories(SYSTEM ${OPENAL_INCLUDE_DIR})
 #####################################
 
 ############# Bullet ################
 find_package(Bullet)
-IF (NOT Bullet_FOUND)
+if (NOT Bullet_FOUND)
 	message(FATAL_ERROR "Could not find Bullet physics library!")
-ELSE()
-    # set(BULLET_LIBRARIES optimized
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Release/Bullet3Common.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Release/Bullet3Dynamics.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Release/Bullet3Collision.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Release/Bullet3Geometry.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Release/BulletCollision.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Release/BulletDynamics.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Release/LinearMath.lib"
-    # )
-    # set(BULLET_LIBRARIES debug
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Debug/Bullet3Common_debug.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Debug/Bullet3Dynamics_debug.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Debug/Bullet3Collision_debug.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Debug/Bullet3Geometry_debug.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Debug/BulletCollision_debug.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Debug/BulletDynamics_debug.lib"
-    #     "C:/Users/Hasan Al-Jawaheri/Documents/bullet3-2.88/build/lib/Debug/LinearMath_debug.lib"
-    # )
+else()
 	message(STATUS "Bullet libraries: " ${BULLET_LIBRARIES})
     message(STATUS "Bullet include: " ${BULLET_INCLUDE_DIRS})
-ENDIF()
+endif()
 link_libraries(${BULLET_LIBRARIES})
-include_directories(${BULLET_INCLUDE_DIRS})
+include_directories(SYSTEM ${BULLET_INCLUDE_DIRS})
 #####################################
 
 ############# FBX SDK ###############
-IF (NOT FBXSDK_ROOT)
+if (NOT FBXSDK_ROOT)
     message(WARNING "Could not find FBX SDK")
-ELSE()
+else()
     SET(FBX_LIBRARIES_RELEASE "${FBXSDK_ROOT}/lib/vs2015/x64/release/libfbxsdk-md.lib")
     SET(FBX_LIBRARIES_DEBUG "${FBXSDK_ROOT}/lib/vs2015/x64/debug/libfbxsdk-md.lib")
     SET(FBX_INCLUDE_DIR ${FBXSDK_ROOT}/include)
 
 	message(STATUS "FBXSDK libraries: " ${FBX_LIBRARIES_RELEASE})
 	message(STATUS "FBXSDK include: " ${FBX_INCLUDE_DIR})
-ENDIF()
+endif()
 #####################################
 
 # GLFW3
@@ -99,8 +86,8 @@ file(GLOB_RECURSE FBX_LOADER_SOURCES "src/FBXLoader/*.cpp")
 file(GLOB_RECURSE FBX_LOADER_HEADERS "include/FBXLoader/*")
 
 # External libraries
-include_directories("lib/glfw-3.3/include/")
-include_directories("lib/stb/include/")
+include_directories(SYSTEM "lib/glfw-3.3/include/")
+include_directories(SYSTEM "lib/stb/include/")
 
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${LIB_HEADERS})
@@ -124,7 +111,7 @@ target_link_libraries(wasabi_test glfw)
 set_property(TARGET wasabi_test PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 # FBX Loader
-IF (FBXSDK_ROOT)
+if (FBXSDK_ROOT)
     assign_source_group(${FBX_LOADER_SOURCES} ${FBX_LOADER_HEADERS})
     if (WIN32)
         add_executable(fbx_loader WIN32 ${FBX_LOADER_SOURCES} ${FBX_LOADER_HEADERS})
@@ -138,4 +125,13 @@ IF (FBXSDK_ROOT)
     target_link_libraries(fbx_loader glfw)
     target_include_directories(fbx_loader PRIVATE ${FBX_INCLUDE_DIR})
     set_property(TARGET fbx_loader PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-ENDIF()
+endif()
+
+# ignore MSVC warnings for external headers
+if (MSVC)
+    get_filename_component(STB_INCLUDE_PATH "lib/stb/include/" ABSOLUTE)
+    target_compile_options(wasabi PRIVATE /external:I${STB_INCLUDE_PATH})
+    target_compile_options(wasabi_test PRIVATE /external:I${STB_INCLUDE_PATH})
+    target_compile_options(wasabi PRIVATE /external:I${BULLET_INCLUDE_DIRS})
+    target_compile_options(wasabi_test PRIVATE /external:I${BULLET_INCLUDE_DIRS})
+endif()

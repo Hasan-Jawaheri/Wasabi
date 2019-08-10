@@ -45,8 +45,8 @@ bool NodeExists(FbxNode* pNode) {
 
 void CreateNewNode(BONEIDTABLEENTITY entity) {
 	boneIDTable.push_back(entity);
-	g_boneID_to_boneIndex.insert(pair<UINT, UINT>(entity.mapsTo, boneIDTable.size() - 1));
-	g_node_to_boneIndex.insert(pair<FbxNode*, UINT>(entity.node, boneIDTable.size() - 1));
+	g_boneID_to_boneIndex.insert(pair<UINT, UINT>(entity.mapsTo, (UINT)boneIDTable.size() - 1));
+	g_node_to_boneIndex.insert(pair<FbxNode*, UINT>(entity.node, (UINT)boneIDTable.size() - 1));
 }
 
 UINT GetNodeID(FbxNode* pNode) {
@@ -157,7 +157,7 @@ public:
 
 	WWindowAndInputComponent* CreateWindowAndInputComponent() {
 		WWindowAndInputComponent* component = Wasabi::CreateWindowAndInputComponent();
-		engineParams["windowStyle"] = (void*)((DWORD)engineParams["windowStyle"] & (~WS_VISIBLE));
+		SetEngineParam<uint>("windowStyle", GetEngineParam<uint>("windowStyle") & (~WS_VISIBLE));
 		return component;
 	}
 
@@ -214,7 +214,7 @@ public:
 								}
 							}
 
-							printf("Found %d mesh(es) and %d skeletons in the file\n", meshes.size(), skeletons.size());
+							printf("Found %zd mesh(es) and %zd skeletons in the file\n", meshes.size(), skeletons.size());
 
 							for (auto it = meshes.begin(); it != meshes.end(); it++) {
 								FbxNode* pNode = *it;

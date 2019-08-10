@@ -2,7 +2,7 @@
 
 WPhysicsComponent* PhysicsDemo::CreatePhysicsComponent() {
 	WBulletPhysics* physics = new WBulletPhysics(m_app);
-	m_app->engineParams["maxBulletDebugLines"] = (void*)10000;
+	m_app->SetEngineParam<int>("maxBulletDebugLines", 10000);
 	WError werr = physics->Initialize(true);
 	if (!werr)
 		W_SAFE_DELETE(physics);

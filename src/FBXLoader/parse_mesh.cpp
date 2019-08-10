@@ -202,7 +202,7 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 		for (int i = 0; i < boneWeights.size(); i++) {
 			sort(boneWeights[i].begin(), boneWeights[i].end(), [](pair<UINT, float> b1, pair<UINT, float> b2) -> bool {return b1.second > b2.second;});
 			if (boneWeights[i].size() > 4)
-				printf("Warning: vertex %d has %d weights (max is 4)\n", i, boneWeights[i].size());
+				printf("Warning: vertex %d has %zd weights (max is 4)\n", i, boneWeights[i].size());
 			float fTotalWeight = 0.0f;
 			for (int j = 0; j < min(4, boneWeights[i].size()); j++)
 				fTotalWeight += boneWeights[i][j].second;
