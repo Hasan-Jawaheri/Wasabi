@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 project(Wasabi)
 set(CMAKE_CXX_STANDARD 17)
 
+# ignore compiler warnings from external headers for MSVC
 if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0 ")
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
