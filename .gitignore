@@ -1,4 +1,5 @@
 build/
+data.WSBI
 
 *.glsl.spv
 *.glsl.tmp.spv
