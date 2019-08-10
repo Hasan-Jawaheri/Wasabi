@@ -1,5 +1,7 @@
 #include "Wasabi/WindowAndInput/GLFW/WGLFWWindowAndInputComponent.h"
 
+#include <mutex>
+
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <windows.h>
@@ -9,6 +11,7 @@
 #include "GLFW/glfw3native.h"
 
 static bool g_glfwInitialized = false;
+static std::mutex g_glfwMutex;
 
 WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : WWindowAndInputComponent(app) {
 	m_window = nullptr;
@@ -27,12 +30,16 @@ WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : 
 }
 
 WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
+	g_glfwMutex.lock();
 	if (!g_glfwInitialized) {
 		g_glfwInitialized = true;
-		if (!glfwInit())
+		if (!glfwInit()) {
+			g_glfwMutex.unlock();
 			return WError(W_ERRORUNK);
+		}
 		WRegisterGlobalCleanup([]() { glfwTerminate(); });
 	}
+	g_glfwMutex.unlock();
 
 	m_monitor = (void*)glfwGetPrimaryMonitor();
 	
