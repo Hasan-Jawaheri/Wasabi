@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 project(Wasabi)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # Helper function for VS filters
 function(assign_source_group)

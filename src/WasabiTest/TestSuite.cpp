@@ -70,7 +70,7 @@ void WasabiTester::ApplyMousePivot() {
 	}
 
 	float fMouseZ = (float)WindowAndInputComponent->MouseZ();
-	fDist += (fMouseZ / 120.0f) * (abs(fDist) / 10.0f);
+	fDist += (fMouseZ) * (abs(fDist) / 10.0f);
 	WindowAndInputComponent->SetMouseZ(0);
 	fDist = fmin(-1, fDist);
 
@@ -111,10 +111,17 @@ WError WasabiTester::Setup() {
 bool WasabiTester::Loop(float fDeltaTime) {
 	ApplyMousePivot();
 
-	if (!WindowAndInputComponent->KeyDown(VK_F1)) {
+	if (!WindowAndInputComponent->KeyDown(W_KEY_F1)) {
 		char title[128];
 		sprintf_s(title, 128, "FPS: %.2f (Elapsed %.2fs)", FPS, Timer.GetElapsedTime());
 		TextComponent->RenderText(title, 5, 5, 32, 1);
+	}
+
+	if (WindowAndInputComponent->KeyDown(W_KEY_F8)) {
+		WindowAndInputComponent->SetFullScreenState(true);
+	}
+	if (WindowAndInputComponent->KeyDown(W_KEY_F7)) {
+		WindowAndInputComponent->SetFullScreenState(false);
 	}
 
 	return true;
