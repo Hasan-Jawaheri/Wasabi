@@ -4,6 +4,9 @@
 #include "Wasabi/Core/WCore.h"
 #include "Wasabi/Geometries/WGeometry.h"
 
+#include <btBulletCollisionCommon.h>
+#include <btBulletDynamicsCommon.h>
+
 WBulletRigidBodyManager::WBulletRigidBodyManager(class Wasabi* const app)
 	: WRigidBodyManager(app) {
 }
@@ -54,13 +57,15 @@ void WBulletRigidBody::_DestroyResources() {
 	WBulletPhysics* physics = (WBulletPhysics*)m_app->PhysicsComponent;
 
 	if (m_rigidBody) {
-		if (m_rigidBody->getMotionState())
-			delete m_rigidBody->getMotionState();
-		physics->m_dynamicsWorld->removeCollisionObject(m_rigidBody);
+		if (((btRigidBody*)m_rigidBody)->getMotionState())
+			delete ((btRigidBody*)m_rigidBody)->getMotionState();
+		((btDynamicsWorld*)physics->m_dynamicsWorld)->removeCollisionObject(((btRigidBody*)m_rigidBody));
 	}
 
-	W_SAFE_DELETE(m_rigidBody);
-	W_SAFE_DELETE(m_collisionShape);
+	btRigidBody* rigidBody = (btRigidBody*)m_rigidBody;
+	btCollisionShape* collisionShape = (btCollisionShape*)m_collisionShape;
+	W_SAFE_DELETE(rigidBody);
+	W_SAFE_DELETE(collisionShape);
 	if (m_savedCreateInfo) {
 		W_SAFE_REMOVEREF(m_savedCreateInfo->geometry);
 		W_SAFE_DELETE(m_savedCreateInfo);
@@ -83,19 +88,19 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 
 	switch (createInfo.shape) {
 	case RIGID_BODY_SHAPE_CUBE:
-		m_collisionShape = new btBoxShape(WBTConvertVec3(createInfo.dimensions));
+		m_collisionShape = (void*)new btBoxShape(WBTConvertVec3(createInfo.dimensions));
 		break;
 	case RIGID_BODY_SHAPE_SPHERE:
-		m_collisionShape = new btSphereShape(btScalar(createInfo.dimensions.x));
+		m_collisionShape = (void*)new btSphereShape(btScalar(createInfo.dimensions.x));
 		break;
 	case RIGID_BODY_SHAPE_CAPSULE:
-		m_collisionShape = new btCapsuleShape(btScalar(createInfo.dimensions.y), btScalar(createInfo.dimensions.x));
+		m_collisionShape = (void*)new btCapsuleShape(btScalar(createInfo.dimensions.y), btScalar(createInfo.dimensions.x));
 		break;
 	case RIGID_BODY_SHAPE_CYLINDER:
-		m_collisionShape = new btCylinderShape(WBTConvertVec3(createInfo.dimensions / WVector3(1.0f, 2.0f, 1.0f)));
+		m_collisionShape = (void*)new btCylinderShape(WBTConvertVec3(createInfo.dimensions / WVector3(1.0f, 2.0f, 1.0f)));
 		break;
 	case RIGID_BODY_SHAPE_CONE:
-		m_collisionShape = new btConeShape(btScalar(createInfo.dimensions.y), btScalar(createInfo.dimensions.x));
+		m_collisionShape = (void*) new btConeShape(btScalar(createInfo.dimensions.y), btScalar(createInfo.dimensions.x));
 		break;
 	case RIGID_BODY_SHAPE_CONVEX:
 	{
@@ -114,7 +119,7 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 			points[i*3 + 2] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 8);
 		}
 		createInfo.geometry->UnmapVertexBuffer();
-		m_collisionShape = new btConvexHullShape(points, numVerts, 3 * sizeof(btScalar));
+		m_collisionShape = (void*)new btConvexHullShape(points, numVerts, 3 * sizeof(btScalar));
 		delete[] points;
 		break;
 	}
@@ -144,7 +149,7 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 			mesh->addTriangle(WBTConvertVec3(t0), WBTConvertVec3(t1), WBTConvertVec3(t2), false);
 		}
 		createInfo.mass = 0.0f;
-		m_collisionShape = new btBvhTriangleMeshShape(mesh, true);
+		m_collisionShape = (void*)new btBvhTriangleMeshShape(mesh, true);
 		createInfo.geometry->UnmapVertexBuffer();
 		if (createInfo.isTriangleList)
 			createInfo.geometry->UnmapIndexBuffer();
@@ -168,15 +173,15 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
 	btVector3 localInertia(0, 0, 0);
 	if (mass > 0.0001f)
-		m_collisionShape->calculateLocalInertia(mass, localInertia);
+		((btCollisionShape*)m_collisionShape)->calculateLocalInertia(mass, localInertia);
 
 	//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
 	btDefaultMotionState* motionState = new btDefaultMotionState(transformation);
-	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, m_collisionShape, localInertia);
-	m_rigidBody = new btRigidBody(rbInfo);
+	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, ((btCollisionShape*)m_collisionShape), localInertia);
+	m_rigidBody = (void*)new btRigidBody(rbInfo);
 
 	//add the body to the dynamics world
-	physics->m_dynamicsWorld->addRigidBody(m_rigidBody);
+	((btDynamicsWorld*)physics->m_dynamicsWorld)->addRigidBody(((btRigidBody*)m_rigidBody));
 
 	SetBouncingPower(0.2f);
 	SetFriction(0.2f);
@@ -194,9 +199,9 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 void WBulletRigidBody::Update(float deltaTime) {
 	m_isUpdating = true;
 	if (m_boundObject && m_rigidBody) {
-		btQuaternion rotation = m_rigidBody->getOrientation();
+		btQuaternion rotation = ((btRigidBody*)m_rigidBody)->getOrientation();
 		WQuaternion wRot = BTWConvertQuaternion(rotation);
-		btTransform transformation = m_rigidBody->getWorldTransform();
+		btTransform transformation = ((btRigidBody*)m_rigidBody)->getWorldTransform();
 		btVector3 position = transformation.getOrigin();
 		WVector3 wPos = BTWConvertVec3(position);
 		SetPosition(wPos);
@@ -221,104 +226,104 @@ void WBulletRigidBody::BindObject(WOrientation* obj, WBase* objBase) {
 
 void WBulletRigidBody::SetLinearVelocity(WVector3 vel) {
 	if (m_rigidBody) {
-		m_rigidBody->setLinearVelocity(WBTConvertVec3(vel));
-		m_rigidBody->activate();
+		((btRigidBody*)m_rigidBody)->setLinearVelocity(WBTConvertVec3(vel));
+		((btRigidBody*)m_rigidBody)->activate();
 	}
 }
 
 void WBulletRigidBody::SetAngularVelocity(WVector3 vel) {
 	if (m_rigidBody) {
-		m_rigidBody->setAngularVelocity(WBTConvertVec3(vel));
-		m_rigidBody->activate();
+		((btRigidBody*)m_rigidBody)->setAngularVelocity(WBTConvertVec3(vel));
+		((btRigidBody*)m_rigidBody)->activate();
 	}
 }
 
 void WBulletRigidBody::SetLinearDamping(float power) {
 	if (m_rigidBody)
-		m_rigidBody->setDamping(btScalar(power), m_rigidBody->getAngularDamping());
+		((btRigidBody*)m_rigidBody)->setDamping(btScalar(power), ((btRigidBody*)m_rigidBody)->getAngularDamping());
 }
 
 void WBulletRigidBody::SetAngularDamping(float power) {
 	if (m_rigidBody)
-		m_rigidBody->setDamping(m_rigidBody->getLinearDamping(), btScalar(power));
+		((btRigidBody*)m_rigidBody)->setDamping(((btRigidBody*)m_rigidBody)->getLinearDamping(), btScalar(power));
 }
 
 void WBulletRigidBody::SetBouncingPower(float bouncing) {
 	if (m_rigidBody)
-		m_rigidBody->setRestitution(btScalar(bouncing));
+		((btRigidBody*)m_rigidBody)->setRestitution(btScalar(bouncing));
 }
 
 void WBulletRigidBody::SetMass(float mass) {
 	if (m_rigidBody)
-		m_rigidBody->setMassProps(btScalar(mass), m_rigidBody->getLocalInertia());
+		((btRigidBody*)m_rigidBody)->setMassProps(btScalar(mass), ((btRigidBody*)m_rigidBody)->getLocalInertia());
 }
 
 void WBulletRigidBody::SetMassCenter(float x, float y, float z) {
 	if (m_rigidBody)
-		m_rigidBody->setCenterOfMassTransform(WBTConverMatrix(WTranslationMatrix(x, y, z)));
+		((btRigidBody*)m_rigidBody)->setCenterOfMassTransform(WBTConverMatrix(WTranslationMatrix(x, y, z)));
 }
 
 void WBulletRigidBody::SetFriction(float friction) {
 	if (m_rigidBody)
-		m_rigidBody->setFriction(btScalar(friction));
+		((btRigidBody*)m_rigidBody)->setFriction(btScalar(friction));
 }
 
 void WBulletRigidBody::ApplyForce(WVector3 force) {
 	if (m_rigidBody) {
-		m_rigidBody->applyCentralForce(WBTConvertVec3(force));
-		m_rigidBody->activate();
+		((btRigidBody*)m_rigidBody)->applyCentralForce(WBTConvertVec3(force));
+		((btRigidBody*)m_rigidBody)->activate();
 	}
 }
 
 void WBulletRigidBody::ApplyForce(WVector3 force, WVector3 relative_pos) {
 	if (m_rigidBody) {
-		m_rigidBody->applyForce(WBTConvertVec3(force), WBTConvertVec3(relative_pos));
-		m_rigidBody->activate();
+		((btRigidBody*)m_rigidBody)->applyForce(WBTConvertVec3(force), WBTConvertVec3(relative_pos));
+		((btRigidBody*)m_rigidBody)->activate();
 	}
 }
 
 void WBulletRigidBody::ApplyImpulse(WVector3 impulse) {
 	if (m_rigidBody) {
-		m_rigidBody->applyCentralImpulse(WBTConvertVec3(impulse));
-		m_rigidBody->activate();
+		((btRigidBody*)m_rigidBody)->applyCentralImpulse(WBTConvertVec3(impulse));
+		((btRigidBody*)m_rigidBody)->activate();
 	}
 }
 
 void WBulletRigidBody::ApplyImpulse(WVector3 impulse, WVector3 relative_pos) {
 	if (m_rigidBody) {
-		m_rigidBody->applyImpulse(WBTConvertVec3(impulse), WBTConvertVec3(relative_pos));
-		m_rigidBody->activate();
+		((btRigidBody*)m_rigidBody)->applyImpulse(WBTConvertVec3(impulse), WBTConvertVec3(relative_pos));
+		((btRigidBody*)m_rigidBody)->activate();
 	}
 }
 
 void WBulletRigidBody::ApplyTorque(WVector3 torque) {
 	if (m_rigidBody) {
-		m_rigidBody->applyTorque(WBTConvertVec3(torque));
-		m_rigidBody->activate();
+		((btRigidBody*)m_rigidBody)->applyTorque(WBTConvertVec3(torque));
+		((btRigidBody*)m_rigidBody)->activate();
 	}
 }
 
 WVector3 WBulletRigidBody::getLinearVelocity() const {
 	if (m_rigidBody)
-		return BTWConvertVec3(m_rigidBody->getLinearVelocity());
+		return BTWConvertVec3(((btRigidBody*)m_rigidBody)->getLinearVelocity());
 	return WVector3();
 }
 
 WVector3 WBulletRigidBody::getAngularVelocity() const {
 	if (m_rigidBody)
-		return BTWConvertVec3(m_rigidBody->getAngularVelocity());
+		return BTWConvertVec3(((btRigidBody*)m_rigidBody)->getAngularVelocity());
 	return WVector3();
 }
 
 WVector3 WBulletRigidBody::getTotalForce() const {
 	if (m_rigidBody)
-		return BTWConvertVec3(m_rigidBody->getTotalForce());
+		return BTWConvertVec3(((btRigidBody*)m_rigidBody)->getTotalForce());
 	return WVector3();
 }
 
 WVector3 WBulletRigidBody::getTotalTorque() const {
 	if (m_rigidBody)
-		return BTWConvertVec3(m_rigidBody->getTotalTorque());
+		return BTWConvertVec3(((btRigidBody*)m_rigidBody)->getTotalTorque());
 	return WVector3();
 }
 
@@ -329,9 +334,9 @@ WMatrix WBulletRigidBody::GetWorldMatrix() {
 void WBulletRigidBody::OnStateChange(STATE_CHANGE_TYPE type) {
 	if (!m_isUpdating && m_rigidBody) {
 		btTransform mtx = WBTConverMatrix(GetWorldMatrix());
-		m_rigidBody->setWorldTransform(mtx);
-		m_rigidBody->getMotionState()->setWorldTransform(mtx);
-		m_rigidBody->activate();
+		((btRigidBody*)m_rigidBody)->setWorldTransform(mtx);
+		((btRigidBody*)m_rigidBody)->getMotionState()->setWorldTransform(mtx);
+		((btRigidBody*)m_rigidBody)->activate();
 	}
 }
 
@@ -345,17 +350,17 @@ WError WBulletRigidBody::SaveToStream(class WFile* file, std::ostream& outputStr
 		strcpy(geometryName, m_savedCreateInfo->geometry->GetName().c_str());
 	outputStream.write(geometryName, W_MAX_ASSET_NAME_SIZE);
 
-	float linDamp = m_rigidBody->getLinearDamping();
+	float linDamp = ((btRigidBody*)m_rigidBody)->getLinearDamping();
 	outputStream.write((char*)&linDamp, sizeof(linDamp));
-	float angDamp = m_rigidBody->getAngularDamping();
+	float angDamp = ((btRigidBody*)m_rigidBody)->getAngularDamping();
 	outputStream.write((char*)&angDamp, sizeof(angDamp));
-	float bouncePower = m_rigidBody->getRestitution();
+	float bouncePower = ((btRigidBody*)m_rigidBody)->getRestitution();
 	outputStream.write((char*)&bouncePower, sizeof(bouncePower));
-	float mass = m_rigidBody->getInvMass();
+	float mass = ((btRigidBody*)m_rigidBody)->getInvMass();
 	outputStream.write((char*)&mass, sizeof(mass));
-	WVector3 centerOfMass = BTWConvertVec3(m_rigidBody->getCenterOfMassPosition());
+	WVector3 centerOfMass = BTWConvertVec3(((btRigidBody*)m_rigidBody)->getCenterOfMassPosition());
 	outputStream.write((char*)&centerOfMass, sizeof(centerOfMass));
-	float friction = m_rigidBody->getFriction();
+	float friction = ((btRigidBody*)m_rigidBody)->getFriction();
 	outputStream.write((char*)&friction, sizeof(friction));
 
 	WError err(W_SUCCEEDED);

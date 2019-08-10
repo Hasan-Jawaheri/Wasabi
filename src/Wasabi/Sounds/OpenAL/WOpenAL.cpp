@@ -1,5 +1,8 @@
 #include "Wasabi/Sounds/OpenAL/WOpenAL.h"
 
+#include <al.h>
+#include <alc.h>
+
 template<typename T>
 T BytesTo(char* bytes, bool bLittleEndian = false) {
 	T ret = 0;
@@ -29,15 +32,15 @@ WError WOpenALSoundComponent::Initialize() {
 	//
 	//Initialize open AL
 	//
-	m_oalDevice = alcOpenDevice(nullptr); // select the "preferred device"
+	m_oalDevice = (void*)alcOpenDevice(nullptr); // select the "preferred device"
 	if (m_oalDevice) {
-		m_oalContext = alcCreateContext(m_oalDevice, nullptr);
+		m_oalContext = (void*)alcCreateContext((ALCdevice*)m_oalDevice, nullptr);
 		if (!m_oalContext) {
-			alcCloseDevice(m_oalDevice);
+			alcCloseDevice((ALCdevice*)m_oalDevice);
 			m_oalDevice = nullptr;
 			return WError(W_ERRORUNK);
 		}
-		alcMakeContextCurrent(m_oalContext);
+		alcMakeContextCurrent((ALCcontext*)m_oalContext);
 	} else
 		return WError(W_ERRORUNK);
 
@@ -49,19 +52,19 @@ void WOpenALSoundComponent::Cleanup() {
 
 	// Exit open AL
 	alcMakeContextCurrent(nullptr);
-	alcDestroyContext(m_oalContext);
-	alcCloseDevice(m_oalDevice);
+	alcDestroyContext((ALCcontext*)m_oalContext);
+	alcCloseDevice((ALCdevice*)m_oalDevice);
 }
 
 WSound* WOpenALSoundComponent::CreateSound(unsigned int ID) const {
 	return new WOpenALSound(m_app, ID);
 }
 
-ALCdevice* WOpenALSoundComponent::GetALSoundDevice() const {
+void* WOpenALSoundComponent::GetALSoundDevice() const {
 	return m_oalDevice;
 }
 
-ALCcontext* WOpenALSoundComponent::GetALSoundDeviceContext() const {
+void* WOpenALSoundComponent::GetALSoundDeviceContext() const {
 	return m_oalContext;
 }
 
@@ -185,7 +188,7 @@ std::string WOpenALSound::GetTypeName() const {
 	return _GetTypeName();
 }
 
-WError WOpenALSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, ALenum format, uint frequency, bool bSaveData) {
+WError WOpenALSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, int format, uint frequency, bool bSaveData) {
 	if (!m_bCheck(true)) return WError(W_ERRORUNK);
 
 	alBufferData(m_buffers[buffer], format, data, dataSize, frequency);
@@ -198,7 +201,7 @@ WError WOpenALSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, AL
 		__SAVEDATA saveData;
 		saveData.buffer = buffer;
 		saveData.dataSize = dataSize;
-		saveData.format = format;
+		saveData.format = (int)format;
 		saveData.data = W_SAFE_ALLOC(dataSize);
 		memcpy(saveData.data, data, dataSize);
 		m_dataV.push_back(saveData);
@@ -296,7 +299,7 @@ WError WOpenALSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) 
 		__SAVEDATA saveData;
 		saveData.buffer = buffer;
 		saveData.dataSize = dataSize;
-		saveData.format = format;
+		saveData.format = (int)format;
 		saveData.data = W_SAFE_ALLOC(dataSize);
 		memcpy(saveData.data, data, dataSize);
 		m_dataV.push_back(saveData);
@@ -394,13 +397,13 @@ uint WOpenALSound::GetBitDepth(uint buffer) const {
 	return out;
 }
 
-ALuint WOpenALSound::GetALBuffer(uint buffer) const {
+uint WOpenALSound::GetALBuffer(uint buffer) const {
 	if (!m_bCheck() || buffer >= m_numBuffers) return 0;
 
 	return m_buffers[buffer];
 }
 
-ALuint WOpenALSound::GetALSource() const {
+uint WOpenALSound::GetALSource() const {
 	if (!m_bCheck()) return 0;
 
 	return m_source;
@@ -483,7 +486,7 @@ WError WOpenALSound::SaveToStream(WFile* file, std::ostream& outputStream) {
 		outputStream.write((char*)&numBuffers, 1);
 		for (uint i = 0; i < numBuffers; i++) {
 			outputStream.write((char*)&m_dataV[i].buffer, 4); //buffer index
-			outputStream.write((char*)&m_dataV[i].format, sizeof(ALenum)); //buffer format
+			outputStream.write((char*)&m_dataV[i].format, sizeof(int)); //buffer format
 			alGetBufferf(m_buffers[m_dataV[i].buffer], AL_FREQUENCY, &temp[0]);
 			outputStream.write((char*)&temp[0], 4); //frequency
 			outputStream.write((char*)&m_dataV[i].dataSize, 4); //size of data
@@ -519,7 +522,7 @@ WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream, std:
 	for (uint i = 0; i < numBuffers; i++) {
 		__SAVEDATA data;
 		inputStream.read((char*)&data.buffer, 4); //buffer index
-		inputStream.read((char*)&data.format, sizeof(ALenum)); //buffer format
+		inputStream.read((char*)&data.format, sizeof(int)); //buffer format
 		inputStream.read((char*)&temp[0], 4); //frequency
 		inputStream.read((char*)&data.dataSize, 4); //size of data
 		data.data = W_SAFE_ALLOC(data.dataSize);

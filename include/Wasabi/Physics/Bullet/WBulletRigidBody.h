@@ -14,9 +14,6 @@
 #include "Wasabi/Physics/WRigidBody.h"
 #include "Wasabi/Core/WCore.h"
 
-#include <btBulletCollisionCommon.h>
-#include <btBulletDynamicsCommon.h>
-
  /**
   * @ingroup engineclass
   * This represents a rigid body and is responsible for integrating it with
@@ -87,9 +84,9 @@ private:
 	WBase* m_boundObjectBase;
 
 	/** Collision shape used by Bullet */
-	btCollisionShape* m_collisionShape;
+	void* m_collisionShape;
 	/** Bullet's rigid body */
-	btRigidBody* m_rigidBody;
+	void* m_rigidBody;
 
 	/** If Create is called with bSaveInfo set to true, this will point to
 	 *  a an allocated copy of it. the WOrientation* part will always be null

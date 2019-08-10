@@ -3,19 +3,8 @@ cmake_minimum_required(VERSION 3.15)
 project(Wasabi)
 set(CMAKE_CXX_STANDARD 17)
 
-# Helper function for VS filters
-function(assign_source_group)
-    foreach(_source IN ITEMS ${ARGN})
-        if (IS_ABSOLUTE "${_source}")
-            file(RELATIVE_PATH _source_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${_source}")
-        else()
-            set(_source_rel "${_source}")
-        endif()
-        get_filename_component(_source_path "${_source_rel}" PATH)
-        string(REPLACE "/" "\\" _source_path_msvc "${_source_path}")
-        source_group("${_source_path_msvc}" FILES "${_source}")
-    endforeach()
-endfunction(assign_source_group)
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+include(WasabiHelpers)
 
 ############# Vulkan ###############
 find_package(Vulkan)
@@ -37,8 +26,6 @@ else()
 	message(STATUS "OpenAL library: " ${OPENAL_LIBRARY})
 	message(STATUS "OpenAL include: " ${OPENAL_INCLUDE_DIR})
 endif()
-link_libraries(${OPENAL_LIBRARY})
-include_directories(SYSTEM ${OPENAL_INCLUDE_DIR})
 #####################################
 
 ############# Bullet ################
@@ -46,11 +33,14 @@ find_package(Bullet)
 if (NOT Bullet_FOUND)
 	message(FATAL_ERROR "Could not find Bullet physics library!")
 else()
+    execute_process(OUTPUT_VARIABLE BULLET_LIBRARIES_LIST COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/CMake/tokenize_bullet_libraries.py" ${BULLET_LIBRARIES})
+    list(GET BULLET_LIBRARIES_LIST 0 BULLET_LIBRARIES_DEBUG)
+    list(GET BULLET_LIBRARIES_LIST 1 BULLET_LIBRARIES_RELEASE)
+    message(STATUS "====> " ${BULLET_LIBRARIES_DEBUG})
+    message(STATUS "====> " ${BULLET_LIBRARIES_RELEASE})
 	message(STATUS "Bullet libraries: " ${BULLET_LIBRARIES})
     message(STATUS "Bullet include: " ${BULLET_INCLUDE_DIRS})
 endif()
-link_libraries(${BULLET_LIBRARIES})
-include_directories(SYSTEM ${BULLET_INCLUDE_DIRS})
 #####################################
 
 ############# FBX SDK ###############
@@ -70,6 +60,7 @@ endif()
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_GENERATED_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/lib/glfw-3.3/src/Debug/glfw3.lib")
 add_subdirectory("lib/glfw-3.3")
 
 # Source files
@@ -91,11 +82,27 @@ include_directories("include/")
 
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${LIB_HEADERS})
+add_compile_definitions(COMPILING_WASABI)
 add_library(wasabi STATIC ${LIB_SOURCES} ${LIB_HEADERS})
-add_custom_command(TARGET wasabi
-    PRE_BUILD
+target_link_libraries(wasabi ${OPENAL_LIBRARY})
+target_link_libraries(wasabi ${BULLET_LIBRARIES})
+target_include_directories(wasabi PRIVATE SYSTEM ${OPENAL_INCLUDE_DIR})
+target_include_directories(wasabi PRIVATE SYSTEM ${BULLET_INCLUDE_DIRS})
+add_custom_command(TARGET wasabi PRE_BUILD
     COMMAND cd ${CMAKE_SOURCE_DIR}/src/ && python compile-glsl-code.py
 )
+
+# Bundle the libraries together
+if (MSVC)
+    set(MSVC_LIBTOOL "${CMAKE_CXX_COMPILER}/../lib.exe")
+    add_custom_command(TARGET wasabi POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rename $<TARGET_FILE:wasabi> $<TARGET_FILE_DIR:wasabi>/wasabi-standalone.lib
+    )
+    add_custom_command(TARGET wasabi POST_BUILD
+        COMMAND ${MSVC_LIBTOOL} "/OUT:$<TARGET_FILE:wasabi>" $<TARGET_FILE_DIR:wasabi>/wasabi-standalone.lib ${GLFW_GENERATED_LIBRARY} ${OPENAL_LIBRARY} $<$<CONFIG:Debug>:${BULLET_LIBRARIES_DEBUG}>$<$<CONFIG:Release>:${BULLET_LIBRARIES_RELEASE}>
+    )
+else()
+endif()
 
 # Wasabi test application(s)
 assign_source_group(${TEST_SOURCES} ${TEST_HEADERS})
@@ -106,7 +113,6 @@ else()
 endif()
 target_include_directories(wasabi_test PRIVATE "include/WasabiTest")
 target_link_libraries(wasabi_test wasabi)
-target_link_libraries(wasabi_test glfw)
 set_property(TARGET wasabi_test PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 # FBX Loader
@@ -121,14 +127,13 @@ if (FBXSDK_ROOT)
     target_link_libraries(fbx_loader wasabi)
     target_link_libraries(fbx_loader optimized ${FBX_LIBRARIES_RELEASE})
     target_link_libraries(fbx_loader debug ${FBX_LIBRARIES_DEBUG})
-    target_link_libraries(fbx_loader glfw)
     target_include_directories(fbx_loader PRIVATE ${FBX_INCLUDE_DIR})
     set_property(TARGET fbx_loader PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
 
 # ignore MSVC warnings for external headers
 if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0 ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0")
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
     
     get_filename_component(STB_INCLUDE_PATH "lib/stb/include/" ABSOLUTE)
