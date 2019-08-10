@@ -429,3 +429,8 @@ Wasabi* WInitialize();
  * required to run the engine in the right environment.
  */
 int RunWasabi(Wasabi* app);
+
+/**
+ * Registers a function to be executed before the process exists
+ */
+void WRegisterGlobalCleanup(std::function<void()> fun);

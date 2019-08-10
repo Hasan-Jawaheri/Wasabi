@@ -21,6 +21,8 @@
 
 #include "Wasabi/WindowAndInput/GLFW/WGLFWWindowAndInputComponent.h"
 
+static std::vector<std::function<void()>> g_cleanupCalls;
+
 #ifdef _WIN32
 #include <Windows.h>
 int main();
@@ -33,7 +35,13 @@ int main() {
 	Wasabi* app = WInitialize();
 	int ret = RunWasabi(app);
 	W_SAFE_DELETE(app);
+	for (auto it : g_cleanupCalls)
+		it();
 	return ret;
+}
+
+void WRegisterGlobalCleanup(std::function<void()> fun) {
+	g_cleanupCalls.push_back(fun);
 }
 
 int RunWasabi(Wasabi* app) {
