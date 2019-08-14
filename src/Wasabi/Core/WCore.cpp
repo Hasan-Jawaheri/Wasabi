@@ -242,7 +242,7 @@ VkInstance Wasabi::CreateVKInstance() {
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = (const char*)engineParams["appName"];
 	appInfo.pEngineName = W_ENGINE_NAME;
-	appInfo.apiVersion = VK_API_VERSION_1_0;
+	appInfo.apiVersion = VK_API_VERSION_1_1;
 
 	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
 	std::vector<const char*> enabledLayers = {};
@@ -389,7 +389,6 @@ WError Wasabi::StartEngine(int width, int height) {
 	Renderer = new WRenderer(this);
 	SoundComponent = CreateSoundComponent();
 	TextComponent = CreateTextComponent();
-	PhysicsComponent = CreatePhysicsComponent();
 
 	werr = WindowAndInputComponent->Initialize(width, height);
 	if (!werr)
@@ -399,6 +398,8 @@ WError Wasabi::StartEngine(int width, int height) {
 	if (!m_swapChain.initSurface(WindowAndInputComponent->GetVulkanSurface()))
 		return WError(W_UNABLETOCREATESWAPCHAIN);
 	m_swapChainInitialized = true;
+
+	PhysicsComponent = CreatePhysicsComponent();
 
 	FileManager = new WFileManager(this);
 	ObjectManager = new WObjectManager(this);

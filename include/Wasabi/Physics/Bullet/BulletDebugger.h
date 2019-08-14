@@ -12,9 +12,10 @@ class BulletDebugger : public Wasabi, public btIDebugDraw {
 	};
 
 public:
+	std::string m_appName;
 	/** This is the physics component running in the main thread, not this one */
 	WBulletPhysics* m_physics;
-	bool m_keep_running;
+	bool m_keepRunning;
 	std::thread m_thread;
 
 	int m_debugMode;
@@ -30,7 +31,7 @@ public:
 
 	void ApplyMousePivot();
 
-	BulletDebugger(WBulletPhysics* physics, uint maxLines);
+	BulletDebugger(WBulletPhysics* physics, uint maxLines, std::string appName);
 
 	virtual WError Setup();
 	virtual bool Loop(float fDeltaTime);

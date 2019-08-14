@@ -129,9 +129,10 @@ public:
 	}
 };
 
-BulletDebugger::BulletDebugger(WBulletPhysics* physics, uint maxLines) : Wasabi(), btIDebugDraw() {
+BulletDebugger::BulletDebugger(WBulletPhysics* physics, uint maxLines, std::string appName) : Wasabi(), btIDebugDraw() {
+	m_appName = appName + "-bullet-debugger";
 	m_physics = physics;
-	m_keep_running = true;
+	m_keepRunning = true;
 	m_debugMode = 1;
 	m_maxLines = maxLines;
 	fYaw = 0;
@@ -193,6 +194,8 @@ void BulletDebugger::ApplyMousePivot() {
 }
 
 WError BulletDebugger::Setup() {
+	SetEngineParam("appName", m_appName.c_str());
+
 	WError err = StartEngine(800, 600);
 	if (!err)
 		WindowAndInputComponent->ShowErrorMessage(err.AsString());

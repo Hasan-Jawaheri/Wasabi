@@ -51,7 +51,7 @@ WError WBulletPhysics::Initialize(bool debug) {
 	SetGravity(0, -10, 0);
 
 	if (debug) {
-		m_debugger = new BulletDebugger(this, m_app->GetEngineParam<uint>("maxBulletDebugLines"));
+		m_debugger = new BulletDebugger(this, m_app->GetEngineParam<uint>("maxBulletDebugLines"), std::string(m_app->GetEngineParam<const char*>("appName")));
 		((btDynamicsWorld*)m_dynamicsWorld)->setDebugDrawer(m_debugger);
 		m_debugger->m_thread = std::thread(BulletDebugger::Thread, m_debugger);
 	}
