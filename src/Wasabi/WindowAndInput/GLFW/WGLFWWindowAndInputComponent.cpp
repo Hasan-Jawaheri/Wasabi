@@ -44,7 +44,7 @@ WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
 	m_monitor = (void*)glfwGetPrimaryMonitor();
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	m_window = (void*)glfwCreateWindow(width, height, "Wasabi", NULL, NULL);
+	m_window = (void*)glfwCreateWindow(width, height, m_app->GetEngineParam<const char*>("appName", "Wasabi"), NULL, NULL);
 	if (!m_window)
 		return WError(W_WINDOWNOTCREATED);
 	glfwSetWindowUserPointer((GLFWwindow*)m_window, (void*)this);
