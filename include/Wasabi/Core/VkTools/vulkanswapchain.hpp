@@ -17,7 +17,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <vector>
-#include <mutex>
 #ifdef _WIN32
 #include <windows.h>
 #include <fcntl.h>
@@ -211,9 +210,6 @@ public:
 	// Create the swap chain and get images with given width and height
 	void create(VkCommandBuffer cmdBuffer, uint *width, uint *height, uint numDesiredSwapchainImages = -1)
 	{
-		static std::mutex surfaceCreationMutex = std::mutex();
-		surfaceCreationMutex.lock();
-
 		VkResult err;
 		VkSwapchainKHR oldSwapchain = swapChain;
 
@@ -362,8 +358,6 @@ public:
 			err = vkCreateImageView(device, &colorAttachmentView, nullptr, &buffers[i].view);
 			assert(!err);
 		}
-
-		surfaceCreationMutex.unlock();
 	}
 
 	// Acquires the next image in the swap chain

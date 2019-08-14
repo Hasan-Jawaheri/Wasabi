@@ -21,6 +21,9 @@
 
 #include "Wasabi/WindowAndInput/GLFW/WGLFWWindowAndInputComponent.h"
 
+#include <mutex>
+
+std::mutex gStartEngineMutex;
 static std::vector<std::function<void()>> g_cleanupCalls;
 
 #ifdef _WIN32
@@ -301,6 +304,9 @@ VkInstance Wasabi::CreateVKInstance() {
 }
 
 WError Wasabi::StartEngine(int width, int height) {
+	// lock this function - only one thread can be here at a time
+	std::lock_guard<std::mutex> lockGuard(gStartEngineMutex);
+
 	_DestroyResources();
 
 	// This is created first so we can use its error message utility
@@ -389,6 +395,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	Renderer = new WRenderer(this);
 	SoundComponent = CreateSoundComponent();
 	TextComponent = CreateTextComponent();
+	PhysicsComponent = CreatePhysicsComponent();
 
 	werr = WindowAndInputComponent->Initialize(width, height);
 	if (!werr)
@@ -398,8 +405,6 @@ WError Wasabi::StartEngine(int width, int height) {
 	if (!m_swapChain.initSurface(WindowAndInputComponent->GetVulkanSurface()))
 		return WError(W_UNABLETOCREATESWAPCHAIN);
 	m_swapChainInitialized = true;
-
-	PhysicsComponent = CreatePhysicsComponent();
 
 	FileManager = new WFileManager(this);
 	ObjectManager = new WObjectManager(this);
