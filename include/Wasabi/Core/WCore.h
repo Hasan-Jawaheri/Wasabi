@@ -116,7 +116,7 @@ public:
 	bool __EXIT;
 
 	Wasabi();
-	~Wasabi();
+	virtual ~Wasabi();
 
 	/**
 	 * This function must be implemented by an application. It is called after
