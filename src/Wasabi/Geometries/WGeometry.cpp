@@ -1376,7 +1376,7 @@ std::vector<void*> WGeometry::LoadArgs(W_GEOMETRY_CREATE_FLAGS flags) {
 	});
 }
 
-WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	if (args.size() != 1)
 		return WError(W_INVALIDPARAM);
 	W_GEOMETRY_CREATE_FLAGS flags = static_cast<W_GEOMETRY_CREATE_FLAGS>(reinterpret_cast<size_t>(args[0]));

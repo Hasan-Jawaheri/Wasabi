@@ -375,7 +375,7 @@ std::vector<void*> WBulletRigidBody::LoadArgs(bool bSaveInfo) {
 	});
 }
 
-WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	if (args.size() != 1)
 		return WError(W_INVALIDPARAM);
 	bool bSaveInfo = (bool)args[0];
@@ -404,7 +404,7 @@ WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputSt
 	SetFriction(friction);
 
 	if (strlen(geometryName) > 0) {
-		WError err = file->LoadAsset<WGeometry>(geometryName, &info.geometry, WGeometry::LoadArgs());
+		WError err = file->LoadAsset<WGeometry>(geometryName, &info.geometry, WGeometry::LoadArgs(), ""); // never copy geometry, always share
 		if (!err)
 			return err;
 	}

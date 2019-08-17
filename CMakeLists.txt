@@ -91,6 +91,9 @@ target_include_directories(wasabi PRIVATE SYSTEM ${BULLET_INCLUDE_DIRS})
 add_custom_command(TARGET wasabi PRE_BUILD
     COMMAND cd ${CMAKE_SOURCE_DIR}/src/ && python compile-glsl-code.py
 )
+add_custom_command(TARGET wasabi POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/include/Wasabi/" "${CMAKE_CURRENT_BINARY_DIR}/include/Wasabi/"
+)
 
 # Bundle the libraries together
 if (MSVC)

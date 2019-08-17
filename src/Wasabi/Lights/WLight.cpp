@@ -149,7 +149,7 @@ std::vector<void*> WLight::LoadArgs() {
 	return std::vector<void*>();
 }
 
-WError WLight::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WLight::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	WVector3 pos;
 	WQuaternion rot;
 	inputStream.read((char*)&m_type, sizeof(m_type));

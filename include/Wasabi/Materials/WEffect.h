@@ -457,7 +457,7 @@ public:
 
 	static std::vector<void*> LoadArgs(bool bSaveData = false);
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
 };
 
 /**
@@ -642,7 +642,7 @@ public:
 
 	static std::vector<void*> LoadArgs(class WRenderTarget* rt, bool bSaveData = false);
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
 
 private:
 	/** List of pipelines created for this effect */

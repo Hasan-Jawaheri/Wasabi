@@ -506,7 +506,7 @@ std::vector<void*> WObject::LoadArgs() {
 	return std::vector<void*>();
 }
 
-WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	DestroyInstancingResources();
 
 	inputStream.read((char*)&m_hidden, sizeof(m_hidden));
@@ -552,13 +552,13 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 	WSkeleton* animation = nullptr;
 
 	if (dependencies[0] != "" && status)
-		status = file->LoadAsset<WGeometry>(dependencies[0], &geometry, WGeometry::LoadArgs());
+		status = file->LoadAsset<WGeometry>(dependencies[0], &geometry, WGeometry::LoadArgs(), ""); // never copy the geometry
 	if (status)
 		status = SetGeometry(geometry);
 	W_SAFE_REMOVEREF(geometry);
 
 	if (dependencies[1] != "" && status)
-		status = file->LoadAsset<WSkeleton>(dependencies[1], &animation, WSkeleton::LoadArgs());
+		status = file->LoadAsset<WSkeleton>(dependencies[1], &animation, WSkeleton::LoadArgs(), nameSuffix); // copy the skeleton (if required)
 	if (status)
 		SetAnimation(animation);
 	W_SAFE_REMOVEREF(animation);
@@ -567,7 +567,7 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 		ClearEffects();
 		for (uint i = 2; i < dependencies.size() && status; i++) {
 			WMaterial* mat;
-			status = file->LoadAsset<WMaterial>(dependencies[i], &mat, WMaterial::LoadArgs());
+			status = file->LoadAsset<WMaterial>(dependencies[i], &mat, WMaterial::LoadArgs(), nameSuffix); // copy the materials (if required)
 			if (status) {
 				mat->GetEffect()->AddReference();
 				m_materialMap.insert(std::make_pair(mat->GetEffect(), mat));

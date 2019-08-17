@@ -127,7 +127,7 @@ WError WFile::SaveAsset(WFileAsset* asset) {
 	return status;
 }
 
-WError WFile::LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*> args) {
+WError WFile::LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*> args, std::string nameSuffix) {
 	if (!m_file.is_open())
 		return WError(W_FILENOTFOUND);
 
@@ -150,11 +150,13 @@ WError WFile::LoadGenericAsset(std::string name, WFileAsset** assetOut, std::fun
 	} else {
 		*assetOut = createAsset();
 		m_file.seekg(assetData->start);
-		err = (*assetOut)->LoadFromStream(this, m_file, args);
+		err = (*assetOut)->LoadFromStream(this, m_file, args, nameSuffix);
 		if (err) {
-			(*assetOut)->m_file = this;
-			assetData->loadedAsset = (*assetOut);
-			m_loadedAssetsMap.insert(std::pair<WFileAsset*, FILE_ASSET*>(*assetOut, assetData));
+			if (nameSuffix == "") {
+				(*assetOut)->m_file = this;
+				assetData->loadedAsset = (*assetOut);
+				m_loadedAssetsMap.insert(std::pair<WFileAsset*, FILE_ASSET*>(*assetOut, assetData));
+			}
 		} else
 			W_SAFE_DELETE((*assetOut)); // not using removeref because we assume that only 1 reference exists, this keeps it general and not require asset to be a WBase
 	}

@@ -72,7 +72,7 @@ public:
 
 	static std::vector<void*> LoadArgs(bool bSaveInfo = false);
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
 
 private:
 	/** Set to true while inside Update() */

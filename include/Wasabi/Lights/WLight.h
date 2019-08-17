@@ -154,7 +154,7 @@ public:
 
 	static std::vector<void*> LoadArgs();
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args);
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
 
 private:
 	/** true if the light is hidden, false otherwise */

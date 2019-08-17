@@ -227,7 +227,7 @@ public:
 	virtual WError UseAnimationFrames(const WAnimation* const anim) = 0;
 
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) = 0;
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) = 0;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) = 0;
 
 protected:
 	/**

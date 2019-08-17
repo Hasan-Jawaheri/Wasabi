@@ -652,7 +652,7 @@ std::vector<void*> WSkeleton::LoadArgs() {
 	return std::vector<void*>();
 }
 
-WError WSkeleton::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WSkeleton::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	//delete the bone texture and any existing frames
 	W_SAFE_REMOVEREF(m_boneTex);
 	if (WAnimation::m_bFramesOwner)
