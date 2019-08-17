@@ -358,7 +358,7 @@ std::vector<void*> WShader::LoadArgs(bool bSaveData) {
 	});
 }
 
-WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	if (args.size() != 1)
 		return WError(W_INVALIDPARAM);
 	bool bSaveData = (bool)args[0];
@@ -941,7 +941,7 @@ std::vector<void*> WEffect::LoadArgs(WRenderTarget* rt, bool bSaveData) {
 	});
 }
 
-WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	if (args.size() != 2)
 		return WError(W_INVALIDPARAM);
 	WRenderTarget* rt = (WRenderTarget*)args[0];
@@ -969,7 +969,7 @@ WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 	WError err;
 	for (uint i = 0; i < dependencyNames.size(); i++) {
 		WShader* shader;
-		err = file->LoadAsset<WShader>(dependencyNames[i], &shader, WShader::LoadArgs(bSaveData));
+		err = file->LoadAsset<WShader>(dependencyNames[i], &shader, WShader::LoadArgs(bSaveData), ""); // never copy shaders, always share
 		if (!err)
 			break;
 		err = BindShader(shader);

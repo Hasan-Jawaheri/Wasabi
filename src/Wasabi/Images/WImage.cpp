@@ -395,7 +395,7 @@ std::vector<void*> WImage::LoadArgs(W_IMAGE_CREATE_FLAGS flags) {
 	});
 }
 
-WError WImage::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WImage::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	if (args.size() != 1)
 		return WError(W_INVALIDPARAM);
 	W_IMAGE_CREATE_FLAGS flags = static_cast<W_IMAGE_CREATE_FLAGS>(reinterpret_cast<size_t>(args[0]));

@@ -23,7 +23,7 @@ public:
 	virtual ~WFileAsset();
 
 	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream) = 0;
-	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream, vector<void*>& args) = 0;
+	virtual WError LoadFromStream(class WFile* file, std::istream& inputStream, vector<void*>& args, std::string nameSuffix) = 0;
 
 private:
 	class WFile* m_file;
@@ -41,23 +41,38 @@ public:
 
 	WError SaveAsset(class WFileAsset* asset);
 
+	/**
+	 * Loads an asset from the file given its name. If the asset with the given
+	 * was already loaded, it will be immediately returned (and its refernce count
+	 * will increase). If nameSuffix is not "" and the object hasn't been loaded
+	 * before, then the object will be loaded into a new name and will not be
+	 * saved and reused for the next LoadAsset call.
+	 * Default assets, the ones that the engine internally creates, are never
+	 * stored in the file, and when loaded, will just fetch the same engine assets
+	 * and increase their reference count. Default assets ignore the nameSuffix
+	 * parameter.
+	 * @param name 
+	 * @param loadedAsset
+	 * @param args
+	 * @param nameSuffix
+	 */
 	template<typename T>
-	WError LoadAsset(std::string name, T** loadedAsset, std::vector<void*> args) {
+	WError LoadAsset(std::string name, T** loadedAsset, std::vector<void*> args, std::string nameSuffix = "") {
 		WFileAsset* asset = nullptr;
 		auto iter = m_assetsMap.find(name);
 		bool addReference = iter != m_assetsMap.end() && iter->second->loadedAsset != nullptr;
-		WError err = LoadGenericAsset(name, &asset, [this]() { return new T(this->m_app); }, args);
+		WError err = LoadGenericAsset(name, &asset, [this]() { return new T(this->m_app); }, args, nameSuffix);
 		if (loadedAsset)
 			*loadedAsset = (T*)asset;
 		if (asset) {
 			if (addReference)
 				asset->AddReference();
-			asset->SetName(name);
+			asset->SetName(name + nameSuffix);
 		}
 		return err;
 	}
 
-	WError LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*> args);
+	WError LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*> args, std::string nameSuffix);
 
 	uint GetAssetsCount() const;
 	/** Returns a pair <name, type> */

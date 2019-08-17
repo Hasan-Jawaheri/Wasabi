@@ -500,7 +500,7 @@ std::vector<void*> WMaterial::LoadArgs() {
 	return std::vector<void*>({});
 }
 
-WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	_DestroyResources();
 
 	VkDevice device = m_app->GetVulkanDevice();
@@ -538,7 +538,7 @@ WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream, std::ve
 
 	// load dependencies
 	WEffect* fx;
-	WError err = file->LoadAsset<WEffect>(effectName, &fx, WEffect::LoadArgs(m_app->Renderer->GetRenderTarget()));
+	WError err = file->LoadAsset<WEffect>(effectName, &fx, WEffect::LoadArgs(m_app->Renderer->GetRenderTarget()), ""); // never copy the effect, always share
 	if (err) {
 		err = CreateForEffect(fx, m_setIndex);
 		fx->RemoveReference();
@@ -548,7 +548,7 @@ WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream, std::ve
 				std::vector<std::string>& textureNames = textureData[i].second;
 				for (uint j = 0; j < textureNames.size(); j++) {
 					WImage* tex;
-					err = file->LoadAsset<WImage>(textureNames[j], &tex, WImage::LoadArgs());
+					err = file->LoadAsset<WImage>(textureNames[j], &tex, WImage::LoadArgs(), ""); // never copy the image, always share
 					if (err) {
 						err = SetTexture(bindingIndex, tex, j);
 						tex->RemoveReference();

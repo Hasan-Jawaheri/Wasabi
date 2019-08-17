@@ -502,7 +502,7 @@ std::vector<void*> WOpenALSound::LoadArgs() {
 	return std::vector<void*>();
 }
 
-WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args) {
+WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
 	bool bSaveData = false;
 	float temp[3];
 
