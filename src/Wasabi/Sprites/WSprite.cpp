@@ -17,10 +17,11 @@ class SpriteGeometry : public WGeometry {
 public:
 	SpriteGeometry(Wasabi* const app) : WGeometry(app) {}
 
-	virtual unsigned int GetVertexBufferCount() const {
+	virtual uint32_t GetVertexBufferCount() const {
 		return 1;
 	}
-	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int index) const {
+	virtual W_VERTEX_DESCRIPTION GetVertexDescription(uint32_t index) const {
+		UNREFERENCED_PARAMETER(index);
 		return W_VERTEX_DESCRIPTION({
 			W_VERTEX_ATTRIBUTE("pos2", 2),
 			W_ATTRIBUTE_UV,
@@ -38,7 +39,7 @@ void WSpriteVS::Load(bool bSaveData) {
 	vector<byte> code = {
 		#include "Shaders/sprite.vert.glsl.spv"
 	};
-	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 }
 
 WSpritePS::WSpritePS(Wasabi* const app) : WShader(app) {}
@@ -53,7 +54,7 @@ void WSpritePS::Load(bool bSaveData) {
 	vector<byte> code = {
 		#include "Shaders/sprite.frag.glsl.spv"
 	};
-	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 }
 
 std::string WSpriteManager::GetTypeName() const {
@@ -93,14 +94,17 @@ WError WSpriteManager::Load() {
 	return WError(W_SUCCEEDED);
 }
 
-WError WSpriteManager::Resize(unsigned int width, unsigned int height) {
-	uint numSprites = GetEntitiesCount();
-	for (uint i = 0; i < numSprites; i++)
+WError WSpriteManager::Resize(uint32_t width, uint32_t height) {
+	UNREFERENCED_PARAMETER(width);
+	UNREFERENCED_PARAMETER(height);
+
+	uint32_t numSprites = GetEntitiesCount();
+	for (uint32_t i = 0; i < numSprites; i++)
 		GetEntityByIndex(i)->m_geometryChanged = true;
 	return WError(W_SUCCEEDED);
 }
 
-WSprite* WSpriteManager::CreateSprite(WImage* img, unsigned int ID) const {
+WSprite* WSpriteManager::CreateSprite(WImage* img, uint32_t ID) const {
 	WGeometry* geometry = CreateSpriteGeometry();
 	if (!geometry)
 		return nullptr;
@@ -119,7 +123,7 @@ WSprite* WSpriteManager::CreateSprite(WImage* img, unsigned int ID) const {
 }
 
 WGeometry* WSpriteManager::CreateSpriteGeometry() const {
-	const unsigned int num_verts = 4;
+	const uint32_t num_verts = 4;
 	SpriteVertex vb[num_verts];
 	vb[0].pos = WVector2(-1, -1);
 	vb[0].uv = WVector2(0, 0);
@@ -223,7 +227,7 @@ std::string WSprite::GetTypeName() const {
 	return _GetTypeName();
 }
 
-WSprite::WSprite(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WSprite::WSprite(Wasabi* const app, uint32_t ID) : WBase(app, ID) {
 	m_hidden = false;
 	m_geometry = nullptr;
 	m_angle = 0.0f;
@@ -258,7 +262,7 @@ void WSprite::SetSize(WVector2 size) {
 }
 
 void WSprite::SetSize(WImage* image) {
-	SetSize(WVector2(image->GetWidth(), image->GetHeight()));
+	SetSize(WVector2((float)image->GetWidth(), (float)image->GetHeight()));
 }
 
 void WSprite::SetAngle(float fAngle) {
@@ -281,18 +285,19 @@ void WSprite::SetRotationCenter(WVector2 center) {
 	m_geometryChanged = true;
 }
 
-void WSprite::SetPriority(unsigned int priority) {
+void WSprite::SetPriority(uint32_t priority) {
 	m_priority = priority;
 	m_geometryChanged = true;
 }
 
 bool WSprite::WillRender(WRenderTarget* rt) {
+	UNREFERENCED_PARAMETER(rt);
 	return !m_hidden && Valid();
 }
 
 void WSprite::Render(WRenderTarget* rt) {
-	WVector2 screenDimensions = WVector2(m_app->WindowAndInputComponent->GetWindowWidth(),
-										 m_app->WindowAndInputComponent->GetWindowHeight());
+	WVector2 screenDimensions = WVector2((float)m_app->WindowAndInputComponent->GetWindowWidth(),
+										 (float)m_app->WindowAndInputComponent->GetWindowHeight());
 	WGeometry* geometry = m_geometry;
 
 	if (WVec2LengthSq(m_pos) < 0.1f && WVec2LengthSq(m_size - screenDimensions) < 0.1f && fabs(m_angle) < 0.001f) {
@@ -350,7 +355,7 @@ WVector2 WSprite::GetSize() const {
 	return m_size;
 }
 
-unsigned int WSprite::GetPriority() const {
+uint32_t WSprite::GetPriority() const {
 	return m_priority;
 }
 

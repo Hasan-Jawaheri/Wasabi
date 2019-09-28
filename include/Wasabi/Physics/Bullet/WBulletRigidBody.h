@@ -31,7 +31,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WBulletRigidBody(class Wasabi* const app, unsigned int ID = 0);
+	WBulletRigidBody(class Wasabi* const app, uint32_t ID = 0);
 
 	virtual WError Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveInfo = false);
 

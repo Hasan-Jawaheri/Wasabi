@@ -18,7 +18,7 @@ void WRenderer::Cleanup() {
 	SetRenderingStages(std::vector<WRenderStage*>({}));
 }
 
-VkResult WRenderer::PerBufferResources::Create(Wasabi* app, uint numBuffers) {
+VkResult WRenderer::PerBufferResources::Create(Wasabi* app, uint32_t numBuffers) {
 	Destroy(app);
 	VkDevice device = app->GetVulkanDevice();
 	VkResult err = VK_SUCCESS;
@@ -40,7 +40,7 @@ VkResult WRenderer::PerBufferResources::Create(Wasabi* app, uint numBuffers) {
 	VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
 	VkSemaphore sem = VK_NULL_HANDLE;
 	VkFence fence = VK_NULL_HANDLE;
-	for (uint i = 0; i < numBuffers; i++) {
+	for (uint32_t i = 0; i < numBuffers; i++) {
 		err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &sem);
 		if (err)
 			break;
@@ -60,7 +60,6 @@ VkResult WRenderer::PerBufferResources::Create(Wasabi* app, uint numBuffers) {
 }
 
 void WRenderer::PerBufferResources::Destroy(Wasabi* app) {
-	VkDevice device = app->GetVulkanDevice();
 	for (auto it = primaryCommandBuffers.begin(); it != primaryCommandBuffers.end(); it++)
 		app->MemoryManager->ReleaseCommandBuffer(*it, app->GetCurrentBufferingIndex());
 	primaryCommandBuffers.clear();
@@ -113,7 +112,7 @@ WError WRenderer::Initialize() {
 
 void WRenderer::Render() {
 	// wait for the fence to be signalled (by vkQueueSubmit of the last frame that used this buffer index (m_perBufferResources.curIndex))
-	VkResult err = vkWaitForFences(m_device, 1, &m_perBufferResources.memoryFences[m_perBufferResources.curIndex], VK_TRUE, -1);
+	VkResult err = vkWaitForFences(m_device, 1, &m_perBufferResources.memoryFences[m_perBufferResources.curIndex], VK_TRUE, (uint64_t)-1);
 	if (err == VK_SUCCESS) {
 		err = vkResetFences(m_device, 1, &m_perBufferResources.memoryFences[m_perBufferResources.curIndex]);
 	}
@@ -173,7 +172,7 @@ void WRenderer::Render() {
 			if (!status)
 				return;
 		}
-		WError status = stage->Render(this, currentRT, -1);
+		WError status = stage->Render(this, currentRT, (uint32_t)-1);
 		if (!status)
 			return;
 	}
@@ -197,7 +196,7 @@ void WRenderer::Render() {
 		return;
 
 	// Get next image in the swap chain (back/front buffer)
-	uint currentSwapchainIndex;
+	uint32_t currentSwapchainIndex;
 	err = m_swapChain->acquireNextImage(m_perBufferResources.presentComplete[m_perBufferResources.curIndex], &currentSwapchainIndex);
 	if (err)
 		return;
@@ -222,7 +221,7 @@ void WRenderer::Render() {
 	m_perBufferResources.curIndex = (m_perBufferResources.curIndex + 1) % m_perBufferResources.presentComplete.size();
 }
 
-WError WRenderer::Resize(uint width, uint height) {
+WError WRenderer::Resize(uint32_t width, uint32_t height) {
 	if (m_width == width && m_height == height)
 		return W_SUCCEEDED;
 
@@ -253,7 +252,7 @@ WError WRenderer::Resize(uint width, uint height) {
 	err = vkBeginCommandBuffer(cmdBuf, &cmdBufInfo);
 	if (!err) {
 		// record swapchain creation commands
-		m_swapChain->create(cmdBuf, &m_width, &m_height, m_app->GetEngineParam<uint>("bufferingCount"));
+		m_swapChain->create(cmdBuf, &m_width, &m_height, m_app->GetEngineParam<uint32_t>("bufferingCount"));
 
 		// end command buffer
 		err = vkEndCommandBuffer(cmdBuf);
@@ -280,10 +279,10 @@ WError WRenderer::Resize(uint width, uint height) {
 		return WError(W_ERRORUNK);
 
 	for (auto it = m_renderStages.begin(); it != m_renderStages.end(); it++) {
-		WError err = (*it)->Resize(m_width, m_height);
+		WError werr = (*it)->Resize(m_width, m_height);
 		vkDeviceWaitIdle(m_device);
-		if (!err)
-			return err;
+		if (!werr)
+			return werr;
 	}
 
 	return WError(W_SUCCEEDED);
@@ -303,7 +302,7 @@ WError WRenderer::SetRenderingStages(std::vector<WRenderStage*> stages) {
 
 	if (stages.size() > 0) {
 		// make sure the input has a sprites rendering stage, texts rendering stage and a picking stage
-		uint allFlags = 0;
+		uint32_t allFlags = 0;
 		for (auto it = stages.begin(); it != stages.end(); it++)
 			allFlags |= (*it)->m_stageDescription.flags;
 
@@ -317,9 +316,9 @@ WError WRenderer::SetRenderingStages(std::vector<WRenderStage*> stages) {
 		if (lastTarget != RENDER_STAGE_TARGET_BACK_BUFFER)
 			return WError(W_INVALIDPARAM);
 
-		uint w = m_app->WindowAndInputComponent->GetWindowWidth();
-		uint h = m_app->WindowAndInputComponent->GetWindowHeight();
-		for (uint i = 0; i < stages.size(); i++) {
+		uint32_t w = m_app->WindowAndInputComponent->GetWindowWidth();
+		uint32_t h = m_app->WindowAndInputComponent->GetWindowHeight();
+		for (uint32_t i = 0; i < stages.size(); i++) {
 			m_renderStages.push_back(stages[i]);
 			m_renderStageMap.insert(std::make_pair(stages[i]->m_stageDescription.name, stages[i]));
 			if (stages[i]->m_stageDescription.flags & RENDER_STAGE_FLAG_SPRITES_RENDER_STAGE)
@@ -381,7 +380,7 @@ WImage* WRenderer::GetRenderTargetImage(std::string imageName) const {
 	for (auto it = m_renderStages.begin(); it != m_renderStages.end(); it++) {
 		if ((*it)->m_stageDescription.depthOutput.name == imageName)
 			return (*it)->m_depthOutput;
-		for (uint i = 0; i < (*it)->m_stageDescription.colorOutputs.size(); i++)
+		for (uint32_t i = 0; i < (*it)->m_stageDescription.colorOutputs.size(); i++)
 			if ((*it)->m_stageDescription.colorOutputs[i].name == imageName)
 				return (*it)->m_colorOutputs[i];
 	}
@@ -397,7 +396,7 @@ VkCommandBuffer WRenderer::GetCurrentPrimaryCommandBuffer() const {
 	return m_perBufferResources.primaryCommandBuffers[m_perBufferResources.curIndex];
 }
 
-uint WRenderer::GetCurrentBufferingIndex() const {
+uint32_t WRenderer::GetCurrentBufferingIndex() const {
 	return m_perBufferResources.curIndex;
 }
 
@@ -406,6 +405,7 @@ VkQueue WRenderer::GetQueue() const {
 }
 
 VkSampler WRenderer::GetTextureSampler(W_TEXTURE_SAMPLER_TYPE type) const {
+	UNREFERENCED_PARAMETER(type);
 	return m_sampler;
 }
 

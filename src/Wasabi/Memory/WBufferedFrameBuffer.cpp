@@ -4,7 +4,7 @@
 WBufferedFrameBuffer::WBufferedFrameBuffer() {
 }
 
-VkResult WBufferedFrameBuffer::CreateForSwapchain(Wasabi* app, uint numBuffers, uint width, uint height, VkRenderPass renderPass, std::vector<VkImageView> swapchainViews, VkFormat depthFormat) {
+VkResult WBufferedFrameBuffer::CreateForSwapchain(Wasabi* app, uint32_t numBuffers, uint32_t width, uint32_t height, VkRenderPass renderPass, std::vector<VkImageView> swapchainViews, VkFormat depthFormat) {
 	VkResult result = VK_SUCCESS;
 	VkDevice device = app->GetVulkanDevice();
 
@@ -16,14 +16,14 @@ VkResult WBufferedFrameBuffer::CreateForSwapchain(Wasabi* app, uint numBuffers, 
 	VkFramebufferCreateInfo frameBufferCreateInfo = {};
 	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	frameBufferCreateInfo.renderPass = renderPass;
-	frameBufferCreateInfo.attachmentCount = attachments.size();
+	frameBufferCreateInfo.attachmentCount = (uint32_t)attachments.size();
 	frameBufferCreateInfo.pAttachments = attachments.data();
 	frameBufferCreateInfo.width = width;
 	frameBufferCreateInfo.height = height;
 	frameBufferCreateInfo.layers = 1;
 
 	// Create the frame buffer
-	for (uint i = 0; i < numBuffers; i++) {
+	for (uint32_t i = 0; i < numBuffers; i++) {
 		attachments[0] = swapchainViews[i];
 		attachments[1] = m_swapchainDepthBuffer.GetView(app, i);
 
@@ -40,7 +40,7 @@ VkResult WBufferedFrameBuffer::CreateForSwapchain(Wasabi* app, uint numBuffers, 
 	return result;
 }
 
-VkResult WBufferedFrameBuffer::Create(Wasabi* app, uint numBuffers, uint width, uint height, VkRenderPass renderPass, std::vector<WBufferedImage> colorImages, WBufferedImage depthImage) {
+VkResult WBufferedFrameBuffer::Create(Wasabi* app, uint32_t numBuffers, uint32_t width, uint32_t height, VkRenderPass renderPass, std::vector<WBufferedImage> colorImages, WBufferedImage depthImage) {
 	VkResult result = VK_SUCCESS;
 	VkDevice device = app->GetVulkanDevice();
 
@@ -48,15 +48,15 @@ VkResult WBufferedFrameBuffer::Create(Wasabi* app, uint numBuffers, uint width, 
 	VkFramebufferCreateInfo frameBufferCreateInfo = {};
 	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	frameBufferCreateInfo.renderPass = renderPass;
-	frameBufferCreateInfo.attachmentCount = attachments.size();
+	frameBufferCreateInfo.attachmentCount = (uint32_t)attachments.size();
 	frameBufferCreateInfo.pAttachments = attachments.data();
 	frameBufferCreateInfo.width = width;
 	frameBufferCreateInfo.height = height;
 	frameBufferCreateInfo.layers = 1;
 
 	// Create the frame buffer
-	for (uint i = 0; i < numBuffers; i++) {
-		for (uint j = 0; j < colorImages.size(); j++)
+	for (uint32_t i = 0; i < numBuffers; i++) {
+		for (uint32_t j = 0; j < colorImages.size(); j++)
 			attachments[j] = colorImages[j].GetView(app, i);
 		if (depthImage.Valid())
 			attachments[attachments.size()-1] = depthImage.GetView(app, i);
@@ -82,7 +82,7 @@ void WBufferedFrameBuffer::Destroy(Wasabi* app) {
 	m_swapchainDepthBuffer.Destroy(app);
 }
 
-VkFramebuffer WBufferedFrameBuffer::GetFrameBuffer(uint bufferIndex) {
+VkFramebuffer WBufferedFrameBuffer::GetFrameBuffer(uint32_t bufferIndex) {
 	return m_frameBuffers[bufferIndex];
 }
 

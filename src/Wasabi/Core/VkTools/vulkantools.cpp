@@ -13,7 +13,7 @@ namespace vkTools
 
 	VkBool32 checkGlobalExtensionPresent(const char* extensionName)
 	{
-		uint extensionCount = 0;
+		uint32_t extensionCount = 0;
 		std::vector<VkExtensionProperties> extensions;
 		vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
 		extensions.resize(extensionCount);
@@ -30,7 +30,7 @@ namespace vkTools
 
 	VkBool32 checkDeviceExtensionPresent(VkPhysicalDevice physicalDevice, const char* extensionName)
 	{
-		uint extensionCount = 0;
+		uint32_t extensionCount = 0;
 		std::vector<VkExtensionProperties> extensions;
 		vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &extensionCount, NULL);
 		extensions.resize(extensionCount);
@@ -129,6 +129,8 @@ namespace vkTools
 		VkImageLayout newImageLayout,
 		VkImageSubresourceRange subresourceRange)
 	{
+		UNREFERENCED_PARAMETER(aspectMask);
+
 		// Create an image barrier object
 		VkImageMemoryBarrier imageMemoryBarrier = vkTools::initializers::imageMemoryBarrier();
 		imageMemoryBarrier.oldLayout = oldImageLayout;
@@ -341,6 +343,8 @@ namespace vkTools
 #else
 	VkShaderModule loadShader(const char *fileName, VkDevice device, VkShaderStageFlagBits stage)
 	{
+		UNREFERENCED_PARAMETER(stage);
+
 		size_t size = 0;
 		const char *shaderCode = readBinaryFile(fileName, &size);
 		if (size <= 0)
@@ -363,6 +367,8 @@ namespace vkTools
 		return shaderModule;
 	}
 	VkShaderModule loadShaderFromCode(const char *code, int len, VkDevice device, VkShaderStageFlagBits stage) {
+		UNREFERENCED_PARAMETER(stage);
+
 		size_t size = len;
 		const char *shaderCode = code;
 		if (size <= 0)
@@ -406,10 +412,10 @@ namespace vkTools
 		moduleCreateInfo.flags = 0;
 
 		// Magic SPV number
-		((uint *)moduleCreateInfo.pCode)[0] = 0x07230203;
-		((uint *)moduleCreateInfo.pCode)[1] = 0;
-		((uint *)moduleCreateInfo.pCode)[2] = stage;
-		memcpy(((uint *)moduleCreateInfo.pCode + 3), shaderCode, size);
+		((uint32_t *)moduleCreateInfo.pCode)[0] = 0x07230203;
+		((uint32_t *)moduleCreateInfo.pCode)[1] = 0;
+		((uint32_t *)moduleCreateInfo.pCode)[2] = stage;
+		memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderCode, size);
 
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
 		free((void*)moduleCreateInfo.pCode);
@@ -436,10 +442,10 @@ namespace vkTools
 		moduleCreateInfo.flags = 0;
 
 		// Magic SPV number
-		((uint *)moduleCreateInfo.pCode)[0] = 0x07230203;
-		((uint *)moduleCreateInfo.pCode)[1] = 0;
-		((uint *)moduleCreateInfo.pCode)[2] = stage;
-		memcpy(((uint *)moduleCreateInfo.pCode + 3), shaderCode, size);
+		((uint32_t *)moduleCreateInfo.pCode)[0] = 0x07230203;
+		((uint32_t *)moduleCreateInfo.pCode)[1] = 0;
+		((uint32_t *)moduleCreateInfo.pCode)[2] = stage;
+		memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderCode, size);
 
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
 		free((void*)moduleCreateInfo.pCode);
@@ -498,7 +504,7 @@ VkMemoryAllocateInfo vkTools::initializers::memoryAllocateInfo()
 	return memAllocInfo;
 }
 
-VkCommandBufferAllocateInfo vkTools::initializers::commandBufferAllocateInfo(VkCommandPool commandPool, VkCommandBufferLevel level, uint bufferCount)
+VkCommandBufferAllocateInfo vkTools::initializers::commandBufferAllocateInfo(VkCommandPool commandPool, VkCommandBufferLevel level, uint32_t bufferCount)
 {
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -679,9 +685,9 @@ VkBufferCreateInfo vkTools::initializers::bufferCreateInfo(
 }
 
 VkDescriptorPoolCreateInfo vkTools::initializers::descriptorPoolCreateInfo(
-	uint poolSizeCount,
+	uint32_t poolSizeCount,
 	VkDescriptorPoolSize* pPoolSizes,
-	uint maxSets)
+	uint32_t maxSets)
 {
 	VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -694,7 +700,7 @@ VkDescriptorPoolCreateInfo vkTools::initializers::descriptorPoolCreateInfo(
 
 VkDescriptorPoolSize vkTools::initializers::descriptorPoolSize(
 	VkDescriptorType type,
-	uint descriptorCount)
+	uint32_t descriptorCount)
 {
 	VkDescriptorPoolSize descriptorPoolSize = {};
 	descriptorPoolSize.type = type;
@@ -705,7 +711,7 @@ VkDescriptorPoolSize vkTools::initializers::descriptorPoolSize(
 VkDescriptorSetLayoutBinding vkTools::initializers::descriptorSetLayoutBinding(
 	VkDescriptorType type,
 	VkShaderStageFlags stageFlags,
-	uint binding)
+	uint32_t binding)
 {
 	VkDescriptorSetLayoutBinding setLayoutBinding = {};
 	setLayoutBinding.descriptorType = type;
@@ -718,7 +724,7 @@ VkDescriptorSetLayoutBinding vkTools::initializers::descriptorSetLayoutBinding(
 
 VkDescriptorSetLayoutCreateInfo vkTools::initializers::descriptorSetLayoutCreateInfo(
 	const VkDescriptorSetLayoutBinding* pBindings,
-	uint bindingCount)
+	uint32_t bindingCount)
 {
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
 	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -730,7 +736,7 @@ VkDescriptorSetLayoutCreateInfo vkTools::initializers::descriptorSetLayoutCreate
 
 VkPipelineLayoutCreateInfo vkTools::initializers::pipelineLayoutCreateInfo(
 	const VkDescriptorSetLayout* pSetLayouts,
-	uint setLayoutCount)
+	uint32_t setLayoutCount)
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -743,7 +749,7 @@ VkPipelineLayoutCreateInfo vkTools::initializers::pipelineLayoutCreateInfo(
 VkDescriptorSetAllocateInfo vkTools::initializers::descriptorSetAllocateInfo(
 	VkDescriptorPool descriptorPool,
 	const VkDescriptorSetLayout* pSetLayouts,
-	uint descriptorSetCount)
+	uint32_t descriptorSetCount)
 {
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -766,7 +772,7 @@ VkDescriptorImageInfo vkTools::initializers::descriptorImageInfo(VkSampler sampl
 VkWriteDescriptorSet vkTools::initializers::writeDescriptorSet(
 	VkDescriptorSet dstSet,
 	VkDescriptorType type,
-	uint binding,
+	uint32_t binding,
 	VkDescriptorBufferInfo* bufferInfo)
 {
 	VkWriteDescriptorSet writeDescriptorSet = {};
@@ -784,7 +790,7 @@ VkWriteDescriptorSet vkTools::initializers::writeDescriptorSet(
 VkWriteDescriptorSet vkTools::initializers::writeDescriptorSet(
 	VkDescriptorSet dstSet,
 	VkDescriptorType type,
-	uint binding,
+	uint32_t binding,
 	VkDescriptorImageInfo * imageInfo)
 {
 	VkWriteDescriptorSet writeDescriptorSet = {};
@@ -800,8 +806,8 @@ VkWriteDescriptorSet vkTools::initializers::writeDescriptorSet(
 }
 
 VkVertexInputBindingDescription vkTools::initializers::vertexInputBindingDescription(
-	uint binding,
-	uint stride,
+	uint32_t binding,
+	uint32_t stride,
 	VkVertexInputRate inputRate)
 {
 	VkVertexInputBindingDescription vInputBindDescription = {};
@@ -812,10 +818,10 @@ VkVertexInputBindingDescription vkTools::initializers::vertexInputBindingDescrip
 }
 
 VkVertexInputAttributeDescription vkTools::initializers::vertexInputAttributeDescription(
-	uint binding,
-	uint location,
+	uint32_t binding,
+	uint32_t location,
 	VkFormat format,
-	uint offset)
+	uint32_t offset)
 {
 	VkVertexInputAttributeDescription vInputAttribDescription = {};
 	vInputAttribDescription.location = location;
@@ -874,7 +880,7 @@ VkPipelineColorBlendAttachmentState vkTools::initializers::pipelineColorBlendAtt
 }
 
 VkPipelineColorBlendStateCreateInfo vkTools::initializers::pipelineColorBlendStateCreateInfo(
-	uint attachmentCount,
+	uint32_t attachmentCount,
 	const VkPipelineColorBlendAttachmentState * pAttachments)
 {
 	VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
@@ -901,8 +907,8 @@ VkPipelineDepthStencilStateCreateInfo vkTools::initializers::pipelineDepthStenci
 }
 
 VkPipelineViewportStateCreateInfo vkTools::initializers::pipelineViewportStateCreateInfo(
-	uint viewportCount,
-	uint scissorCount,
+	uint32_t viewportCount,
+	uint32_t scissorCount,
 	VkPipelineViewportStateCreateFlags flags)
 {
 	VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {};
@@ -917,6 +923,8 @@ VkPipelineMultisampleStateCreateInfo vkTools::initializers::pipelineMultisampleS
 	VkSampleCountFlagBits rasterizationSamples,
 	VkPipelineMultisampleStateCreateFlags flags)
 {
+	UNREFERENCED_PARAMETER(flags);
+
 	VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = {};
 	pipelineMultisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	pipelineMultisampleStateCreateInfo.rasterizationSamples = rasterizationSamples;
@@ -925,9 +933,11 @@ VkPipelineMultisampleStateCreateInfo vkTools::initializers::pipelineMultisampleS
 
 VkPipelineDynamicStateCreateInfo vkTools::initializers::pipelineDynamicStateCreateInfo(
 	const VkDynamicState * pDynamicStates,
-	uint dynamicStateCount,
+	uint32_t dynamicStateCount,
 	VkPipelineDynamicStateCreateFlags flags)
 {
+	UNREFERENCED_PARAMETER(flags);
+
 	VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = {};
 	pipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	pipelineDynamicStateCreateInfo.pDynamicStates = pDynamicStates;
@@ -935,7 +945,7 @@ VkPipelineDynamicStateCreateInfo vkTools::initializers::pipelineDynamicStateCrea
 	return pipelineDynamicStateCreateInfo;
 }
 
-VkPipelineTessellationStateCreateInfo vkTools::initializers::pipelineTessellationStateCreateInfo(uint patchControlPoints)
+VkPipelineTessellationStateCreateInfo vkTools::initializers::pipelineTessellationStateCreateInfo(uint32_t patchControlPoints)
 {
 	VkPipelineTessellationStateCreateInfo pipelineTessellationStateCreateInfo = {};
 	pipelineTessellationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
@@ -968,8 +978,8 @@ VkComputePipelineCreateInfo vkTools::initializers::computePipelineCreateInfo(VkP
 
 VkPushConstantRange vkTools::initializers::pushConstantRange(
 	VkShaderStageFlags stageFlags,
-	uint size,
-	uint offset)
+	uint32_t size,
+	uint32_t offset)
 {
 	VkPushConstantRange pushConstantRange = {};
 	pushConstantRange.stageFlags = stageFlags;

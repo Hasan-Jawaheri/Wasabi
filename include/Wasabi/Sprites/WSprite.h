@@ -39,7 +39,7 @@ class WSprite : public WBase, public WMaterialsStore {
 	friend class WSpriteManager;
 
 protected:
-	WSprite(Wasabi* const app, unsigned int ID = 0);
+	WSprite(Wasabi* const app, uint32_t ID = 0);
 	~WSprite();
 
 public:
@@ -124,7 +124,7 @@ public:
 	 * on top of those with lower priority.
 	 * @param priority New priority to set
 	 */
-	void SetPriority(unsigned int priority);
+	void SetPriority(uint32_t priority);
 
 	/**
 	 * Show the sprite.
@@ -164,7 +164,7 @@ public:
 	 * Retrieves the current priority of the sprite. See SetPriority().
 	 * @return The current priority of the sprite
 	 */
-	unsigned int GetPriority() const;
+	uint32_t GetPriority() const;
 
 	/**
 	 * Checks the validity of the sprite. A sprite is valid if it has a texture
@@ -185,7 +185,7 @@ private:
 	/** Angle of the sprite, in radians */
 	float m_angle;
 	/** Priority of the sprite, higher priority sprites render over lower ones */
-	unsigned int m_priority;
+	uint32_t m_priority;
 	/** true if position/size/etc... changed and geometry needs to be rebuilt */
 	bool m_geometryChanged;
 
@@ -222,7 +222,7 @@ public:
 	 * @param height New screen height
 	 * @return Error code, see WError.h
 	 */
-	WError Resize(unsigned int width, unsigned int height);
+	WError Resize(uint32_t width, uint32_t height);
 
 	/**
 	 * Allocates and initializes a new sprite. If an image is supplied, it
@@ -231,7 +231,7 @@ public:
 	 * @param ID  Id of the new image
 	 * @return    New sprite
 	 */
-	WSprite* CreateSprite(class WImage* img = nullptr, unsigned int ID = 0) const;
+	WSprite* CreateSprite(class WImage* img = nullptr, uint32_t ID = 0) const;
 
 	/**
 	 * Retrieves the default vertex shader that sprites use.

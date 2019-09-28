@@ -31,7 +31,7 @@ class WMaterial : public WFileAsset {
 
 protected:
 	virtual ~WMaterial();
-	WMaterial(class Wasabi* const app, unsigned int ID = 0);
+	WMaterial(class Wasabi* const app, uint32_t ID = 0);
 
 	/**
 	 * Builds the material's resources to be used for a certain effect. The
@@ -41,7 +41,7 @@ protected:
 	 * @param  bindingSet  Set index to use from effect
 	 * @return             Error code, see WError.h
 	 */
-	WError CreateForEffect(class WEffect* const effect, uint bindingSet = 0);
+	WError CreateForEffect(class WEffect* const effect, uint32_t bindingSet = 0);
 
 public:
 	/**
@@ -189,7 +189,7 @@ public:
 	 * @param  arrayIndex    Index into the texture array (if its an array)
 	 * @return               Error code, see WError.h
 	 */
-	WError SetTexture(int bindingIndex, class WImage* img, uint arrayIndex = 0);
+	WError SetTexture(uint32_t bindingIndex, class WImage* img, uint32_t arrayIndex = 0);
 
 	/**
 	 * Sets a texture in the bound effect.
@@ -198,7 +198,7 @@ public:
 	 * @param  arrayIndex  Index into the texture array (if its an array)
 	 * @return             Error code, see WError.h
 	 */
-	WError SetTexture(std::string name, class WImage* img, uint arrayIndex = 0);
+	WError SetTexture(std::string name, class WImage* img, uint32_t arrayIndex = 0);
 
 	/**
 	 * Checks the validity of the material. A material is valid if it has a
@@ -219,7 +219,7 @@ private:
 	/** The Vulkan descriptor set objects, one per buffered frame */
 	std::vector<VkDescriptorSet> m_descriptorSets;
 	/** The set index of m_descriptorSet */
-	uint m_setIndex;
+	uint32_t m_setIndex;
 	/** An array to hold write descriptor sets (filled/initialized on every
 	    Bind() call) */
 	std::vector<VkWriteDescriptorSet> m_writeDescriptorSets;

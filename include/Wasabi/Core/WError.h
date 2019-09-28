@@ -16,7 +16,7 @@ using std::string;
 /**
  * List of all Wasabi error codes.
  */
-enum W_ERROR {
+enum W_ERROR: uint8_t {
 	/** Unkown error occurred */
 	W_ERRORUNK = 0,
 	/** Succeeded */

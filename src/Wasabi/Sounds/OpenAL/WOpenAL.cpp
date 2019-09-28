@@ -8,10 +8,10 @@ T BytesTo(char* bytes, bool bLittleEndian = false) {
 	T ret = 0;
 
 	if (bLittleEndian)
-		for (uint i = sizeof(bytes) - 1; i >= 0 && i != UINT_MAX; i--)
+		for (uint32_t i = sizeof(bytes) - 1; i >= 0 && i != UINT_MAX; i--)
 			ret = (ret << 8) + (unsigned char)bytes[i];
 	else
-		for (uint i = 0; i < sizeof(bytes); i++)
+		for (uint32_t i = 0; i < sizeof(bytes); i++)
 			ret = (ret << 8) + (unsigned char)bytes[i];
 
 	return ret;
@@ -56,7 +56,7 @@ void WOpenALSoundComponent::Cleanup() {
 	alcCloseDevice((ALCdevice*)m_oalDevice);
 }
 
-WSound* WOpenALSoundComponent::CreateSound(unsigned int ID) const {
+WSound* WOpenALSoundComponent::CreateSound(uint32_t ID) const {
 	return new WOpenALSound(m_app, ID);
 }
 
@@ -102,7 +102,7 @@ void WOpenALSoundComponent::SetListenerVelocity(WVector3 vel) {
 
 void WOpenALSoundComponent::SetListenerOrientation(WVector3 look, WVector3 up) {
 	float fVals[6];
-	for (uint i = 0; i < 6; i++) {
+	for (uint32_t i = 0; i < 6; i++) {
 		if (i < 3)
 			fVals[i] = look[i];
 		else
@@ -113,7 +113,7 @@ void WOpenALSoundComponent::SetListenerOrientation(WVector3 look, WVector3 up) {
 
 void WOpenALSoundComponent::SetListenerOrientation(WOrientation* ori) {
 	float fVals[6];
-	for (uint i = 0; i < 6; i++) {
+	for (uint32_t i = 0; i < 6; i++) {
 		if (i < 3)
 			fVals[i] = ori->GetLVector()[i];
 		else
@@ -124,7 +124,7 @@ void WOpenALSoundComponent::SetListenerOrientation(WOrientation* ori) {
 
 void WOpenALSoundComponent::SetListenerToOrientation(WOrientation* ori) {
 	float fVals[6];
-	for (uint i = 0; i < 6; i++) {
+	for (uint32_t i = 0; i < 6; i++) {
 		if (i < 3)
 			fVals[i] = ori->GetLVector()[i];
 		else
@@ -146,7 +146,7 @@ std::string WOpenALSoundManager::GetTypeName() const {
 }
 
 
-WOpenALSound::WOpenALSound(Wasabi* const app, uint ID) : WSound(app, ID) {
+WOpenALSound::WOpenALSound(Wasabi* const app, uint32_t ID) : WSound(app, ID) {
 	m_valid = false;
 	m_numBuffers = W_NUM_SOUND_BUFFERS_PER_SOUND;
 	m_buffers = new ALuint[m_numBuffers];
@@ -155,7 +155,6 @@ WOpenALSound::WOpenALSound(Wasabi* const app, uint ID) : WSound(app, ID) {
 	// Generate Buffers
 	alGetError(); // clear error code
 	alGenBuffers(m_numBuffers, m_buffers);
-	ALenum err = alGetError();
 
 	// Generate Source
 	alGetError(); //clear errors
@@ -170,7 +169,7 @@ WOpenALSound::~WOpenALSound() {
 
 	W_SAFE_DELETE_ARRAY(m_buffers);
 
-	for (uint i = 0; i < m_dataV.size(); i++) {
+	for (uint32_t i = 0; i < m_dataV.size(); i++) {
 		W_SAFE_FREE(m_dataV[i].data);
 	}
 	m_dataV.clear();
@@ -188,10 +187,10 @@ std::string WOpenALSound::GetTypeName() const {
 	return _GetTypeName();
 }
 
-WError WOpenALSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, int format, uint frequency, bool bSaveData) {
+WError WOpenALSound::LoadFromMemory(uint32_t buffer, void* data, size_t dataSize, int format, uint32_t frequency, bool bSaveData) {
 	if (!m_bCheck(true)) return WError(W_ERRORUNK);
 
-	alBufferData(m_buffers[buffer], format, data, dataSize, frequency);
+	alBufferData(m_buffers[buffer], format, data, (ALsizei)dataSize, (ALsizei)frequency);
 
 	// Attach buffer to source
 	alSourcei(m_source, AL_BUFFER, m_buffers[buffer]);
@@ -210,7 +209,7 @@ WError WOpenALSound::LoadFromMemory(uint buffer, void* data, size_t dataSize, in
 	return WError(W_SUCCEEDED);
 }
 
-WError WOpenALSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) {
+WError WOpenALSound::LoadWAV(std::string Filename, uint32_t buffer, bool bSaveData) {
 	if (!m_bCheck(true)) return WError(W_ERRORUNK);
 
 	std::fstream file(Filename, ios::in | ios::binary);
@@ -218,8 +217,8 @@ WError WOpenALSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) 
 		return WError(W_FILENOTFOUND);
 
 	ALenum format;
-	uint dataSize;
-	uint freq;
+	uint32_t dataSize;
+	uint32_t freq;
 
 	bool bLittleEndian = true;
 	char buffer4Bytes[4] = { 0 };
@@ -238,17 +237,17 @@ WError WOpenALSound::LoadWAV(std::string Filename, uint buffer, bool bSaveData) 
 	//frequency at offset 24 (4 bytes long)
 	file.seekg(24);
 	file.read(buffer4Bytes, 4);
-	freq = BytesTo<uint>((char*)buffer4Bytes, bLittleEndian);
+	freq = BytesTo<uint32_t>((char*)buffer4Bytes, bLittleEndian);
 
 	//data size at offset 22 (2 bytes long)
 	file.seekg(22);
 	file.read(buffer2Bytes, 2);
-	uint numChannels = BytesTo<short>((char*)buffer2Bytes, bLittleEndian);
+	uint32_t numChannels = BytesTo<short>((char*)buffer2Bytes, bLittleEndian);
 
 	//bits per sample at offset 34 (2 bytes long)
 	file.seekg(34);
 	file.read(buffer2Bytes, 2);
-	uint bps = BytesTo<short>((char*)buffer2Bytes, bLittleEndian);
+	uint32_t bps = BytesTo<short>((char*)buffer2Bytes, bLittleEndian);
 
 	if (numChannels == 1)
 		format = bps == 8 ? AL_FORMAT_MONO8 : AL_FORMAT_MONO16;
@@ -341,7 +340,7 @@ void WOpenALSound::Reset() {
 	alSourceRewind(m_source);
 }
 
-void WOpenALSound::SetTime(uint time) {
+void WOpenALSound::SetTime(uint32_t time) {
 	if (!m_bCheck()) return;
 
 	alSourcef(m_source, AL_SEC_OFFSET, time / 1000.0f);
@@ -369,19 +368,19 @@ void WOpenALSound::SetVolume(float volume) {
 	alSourcef(m_source, AL_GAIN, volume / 100.0f);
 }
 
-void WOpenALSound::SetPitch(float fPitch) {
+void WOpenALSound::SetPitch(int pitch) {
 	if (!m_bCheck()) return;
 
-	alSourcei(m_source, AL_PITCH, fPitch);
+	alSourcei(m_source, AL_PITCH, (ALint)pitch);
 }
 
-void WOpenALSound::SetFrequency(uint buffer, uint frequency) {
+void WOpenALSound::SetFrequency(uint32_t buffer, uint32_t frequency) {
 	if (!m_bCheck() || buffer >= m_numBuffers) return;
 
 	alBufferi(m_buffers[buffer], AL_FREQUENCY, frequency);
 }
 
-uint WOpenALSound::GetNumChannels(uint buffer) const {
+uint32_t WOpenALSound::GetNumChannels(uint32_t buffer) const {
 	if (!m_bCheck() || buffer >= m_numBuffers) return 0;
 
 	ALint out = 0;
@@ -389,7 +388,7 @@ uint WOpenALSound::GetNumChannels(uint buffer) const {
 	return out;
 }
 
-uint WOpenALSound::GetBitDepth(uint buffer) const {
+uint32_t WOpenALSound::GetBitDepth(uint32_t buffer) const {
 	if (!m_bCheck() || buffer >= m_numBuffers) return 0;
 
 	ALint out = 0;
@@ -397,13 +396,13 @@ uint WOpenALSound::GetBitDepth(uint buffer) const {
 	return out;
 }
 
-uint WOpenALSound::GetALBuffer(uint buffer) const {
+uint32_t WOpenALSound::GetALBuffer(uint32_t buffer) const {
 	if (!m_bCheck() || buffer >= m_numBuffers) return 0;
 
 	return m_buffers[buffer];
 }
 
-uint WOpenALSound::GetALSource() const {
+uint32_t WOpenALSound::GetALSource() const {
 	if (!m_bCheck()) return 0;
 
 	return m_source;
@@ -467,9 +466,11 @@ bool WOpenALSound::m_bCheck(bool ignoreValidness) const {
 }
 
 WError WOpenALSound::SaveToStream(WFile* file, std::ostream& outputStream) {
-	if (Valid() && m_dataV.size()) //only attempt to save if the sound is valid and there is something to save
-	{
+	UNREFERENCED_PARAMETER(file);
+
+	if (Valid() && m_dataV.size()) { //only attempt to save if the sound is valid and there is something to save
 		float temp[3];
+		int freq;
 
 		//write pitch & volume
 		alGetSourcef(m_source, AL_PITCH, &temp[0]);
@@ -482,14 +483,14 @@ WError WOpenALSound::SaveToStream(WFile* file, std::ostream& outputStream) {
 		alGetSource3f(m_source, AL_DIRECTION, &temp[0], &temp[1], &temp[2]);
 		outputStream.write((char*)temp, 3 * sizeof(float));
 
-		char numBuffers = m_dataV.size();
+		char numBuffers = (char)m_dataV.size();
 		outputStream.write((char*)&numBuffers, 1);
-		for (uint i = 0; i < numBuffers; i++) {
-			outputStream.write((char*)&m_dataV[i].buffer, 4); //buffer index
+		for (uint32_t i = 0; i < (uint32_t)numBuffers; i++) {
+			outputStream.write((char*)&m_dataV[i].buffer, sizeof(uint32_t)); //buffer index
 			outputStream.write((char*)&m_dataV[i].format, sizeof(int)); //buffer format
-			alGetBufferf(m_buffers[m_dataV[i].buffer], AL_FREQUENCY, &temp[0]);
-			outputStream.write((char*)&temp[0], 4); //frequency
-			outputStream.write((char*)&m_dataV[i].dataSize, 4); //size of data
+			alGetBufferi(m_buffers[m_dataV[i].buffer], AL_FREQUENCY, &freq);
+			outputStream.write((char*)&freq, sizeof(int)); //frequency
+			outputStream.write((char*)&m_dataV[i].dataSize, sizeof(size_t)); //size of data
 			outputStream.write((char*)&m_dataV[i].data, m_dataV[i].dataSize); //data
 		}
 	} else
@@ -503,8 +504,12 @@ std::vector<void*> WOpenALSound::LoadArgs() {
 }
 
 WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
+	UNREFERENCED_PARAMETER(file);
+	UNREFERENCED_PARAMETER(args);
+
 	bool bSaveData = false;
 	float temp[3];
+	int freq;
 
 	//read pitch & volume
 	inputStream.read((char*)temp, 2 * sizeof(float));
@@ -519,16 +524,16 @@ WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream, std:
 
 	char numBuffers = 0;
 	inputStream.read((char*)&numBuffers, 1);
-	for (uint i = 0; i < numBuffers; i++) {
+	for (uint32_t i = 0; i < (uint32_t)numBuffers; i++) {
 		__SAVEDATA data;
-		inputStream.read((char*)&data.buffer, 4); //buffer index
+		inputStream.read((char*)&data.buffer, sizeof(uint32_t)); //buffer index
 		inputStream.read((char*)&data.format, sizeof(int)); //buffer format
-		inputStream.read((char*)&temp[0], 4); //frequency
-		inputStream.read((char*)&data.dataSize, 4); //size of data
+		inputStream.read((char*)&freq, sizeof(int)); //frequency
+		inputStream.read((char*)&data.dataSize, sizeof(size_t)); //size of data
 		data.data = W_SAFE_ALLOC(data.dataSize);
 		inputStream.read((char*)&data.data, m_dataV[i].dataSize); //data
 
-		WError err = LoadFromMemory(data.buffer, data.data, data.dataSize, data.format, temp[0], bSaveData);
+		WError err = LoadFromMemory(data.buffer, data.data, data.dataSize, data.format, freq, bSaveData);
 
 		W_SAFE_FREE(data.data);
 

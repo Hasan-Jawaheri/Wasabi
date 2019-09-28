@@ -19,7 +19,7 @@
 class WFileAsset : public WBase {
 	friend class WFile;
 public:
-	WFileAsset(class Wasabi* const app, unsigned int ID = 0);
+	WFileAsset(class Wasabi* const app, uint32_t ID = 0);
 	virtual ~WFileAsset();
 
 	virtual WError SaveToStream(class WFile* file, std::ostream& outputStream) = 0;
@@ -74,9 +74,9 @@ public:
 
 	WError LoadGenericAsset(std::string name, WFileAsset** assetOut, std::function<WFileAsset* ()> createAsset, std::vector<void*> args, std::string nameSuffix);
 
-	uint GetAssetsCount() const;
+	uint32_t GetAssetsCount() const;
 	/** Returns a pair <name, type> */
-	std::pair<std::string, std::string> GetAssetInfo(uint index);
+	std::pair<std::string, std::string> GetAssetInfo(uint32_t index);
 	/** Returns a pair <name, type> */
 	std::pair<std::string, std::string> GetAssetInfo(std::string name);
 

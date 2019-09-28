@@ -2,13 +2,13 @@
 
 #include "Wasabi/Core/WCore.h"
 
-enum W_RENDER_STAGE_TARGET {
+enum W_RENDER_STAGE_TARGET: uint8_t {
 	RENDER_STAGE_TARGET_BUFFER = 0,
 	RENDER_STAGE_TARGET_BACK_BUFFER = 1,
 	RENDER_STAGE_TARGET_PREVIOUS = 2,
 };
 
-enum W_RENDER_STAGE_FLAGS {
+enum W_RENDER_STAGE_FLAGS: uint32_t {
 	RENDER_STAGE_FLAG_NONE = 0,
 	RENDER_STAGE_FLAG_SPRITES_RENDER_STAGE = 1,
 	RENDER_STAGE_FLAG_TEXTS_RENDER_STAGE = 2,
@@ -41,7 +41,7 @@ protected:
 		W_RENDER_STAGE_TARGET target;
 		std::vector<OUTPUT_IMAGE> colorOutputs;
 		OUTPUT_IMAGE depthOutput;
-		uint flags;
+		uint32_t flags;
 	} m_stageDescription;
 
 public:
@@ -50,8 +50,8 @@ public:
 	class WRenderTarget* GetRenderTarget() const;
 	class WImage* GetOutputImage(std::string name) const;
 
-	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height);
-	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter) = 0;
+	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height);
+	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint32_t filter) = 0;
 	virtual void Cleanup();
-	virtual WError Resize(uint width, uint height);
+	virtual WError Resize(uint32_t width, uint32_t height);
 };

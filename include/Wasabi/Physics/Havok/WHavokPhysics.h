@@ -116,15 +116,15 @@
 #pragma comment ( lib, "VdbClient.lib" )
 
 //enums
-enum W_MOTIONTYPE { MOTIONTYPE_DYNAMIC = 0, MOTIONTYPE_STATIC = 1, MOTIONTYPE_KEYFRAMED = 2 };
-enum W_COLLISIONQUALITY {
+enum W_MOTIONTYPE: uint8_t { MOTIONTYPE_DYNAMIC = 0, MOTIONTYPE_STATIC = 1, MOTIONTYPE_KEYFRAMED = 2 };
+enum W_COLLISIONQUALITY: uint8_t {
 	COLLISIONQUALITY_FIXED = 0, COLLISIONQUALITY_KEYFRAMED = 1,
 	COLLISIONQUALITY_DEBRIS = 2, COLLISIONQUALITY_DEBRIS_SIMPLE_TOI = 3,
 	COLLISIONQUALITY_MOVING = 4, COLLISIONQUALITY_CRITICAL = 5,
 	COLLISIONQUALITY_BULLET = 6, COLLISIONQUALITY_USER = 7,
 	COLLISIONQUALITY_CHARACTER = 8, COLLISIONQUALITY_KEYFRAMED_REPORTING = 9
 };
-enum W_RIGIDBODYTYPE { RIGIDBODY_BOX = 0, RIGIDBODY_SPHERE = 1, RIGIDBODY_COMPLEX = 2 };
+enum W_RIGIDBODYTYPE: uint8_t { RIGIDBODY_BOX = 0, RIGIDBODY_SPHERE = 1, RIGIDBODY_COMPLEX = 2 };
 
 //structures
 struct _WRawPhysicsProps {
@@ -186,17 +186,17 @@ class WRigidBody : public WBase, public WOrientation {
 	std::string GetTypeName() const;
 
 public:
-	WRigidBody(class Wasabi* const app, unsigned int ID = 0);
+	WRigidBody(class Wasabi* const app, uint32_t ID = 0);
 	~WRigidBody();
 
 	WError					BuildFromGeometries(W_RIGIDBODYTYPE type, class WGeometry* const* geometries,
-												unsigned int numGeometries, bool bFixed = false, bool bSimplify = true,
-												void* mopp = nullptr, unsigned int moppsize = 0);
+												uint32_t numGeometries, bool bFixed = false, bool bSimplify = true,
+												void* mopp = nullptr, uint32_t moppsize = 0);
 	void					Destroy();
 
 	void					BindObject(class WObject* const object);
 	void					UnbindObject(class WObject* const object);
-	void					UnbindObject(unsigned int ID);
+	void					UnbindObject(uint32_t ID);
 
 	void					Enable();
 	void					Disable();
@@ -231,12 +231,12 @@ private:
 	//physics
 	hkpRigidBody*		m_rigidBody;
 	W_RIGIDBODYTYPE		m_rbType;
-	uint				m_rbNumVerts;
+	uint32_t				m_rbNumVerts;
 	WVector3*			m_rbVerts;
-	uint				m_numGeometries;
+	uint32_t				m_numGeometries;
 	uint*				m_geometryIDs;
 	void*				m_moppcode;
-	uint				m_moppcodeSize;
+	uint32_t				m_moppcodeSize;
 	bool				m_physics;
 	bool				m_simpleMesh;
 
@@ -269,7 +269,7 @@ class WConstraint : public WBase{
 	std::string GetTypeName() const;
 
 public:
-	WConstraint(class Wasabi* const app, unsigned int ID = 0);
+	WConstraint(class Wasabi* const app, uint32_t ID = 0);
 	~WConstraint();
 
 	virtual void	Build(const WRigidBody* const rb1, const WRigidBody* const rb2, bool breakable = false) = 0;
@@ -303,7 +303,7 @@ mostly used for doors and such objects to simulate opening and closing
 *********************************************************************/
 class WHinge : public WConstraint {
 public:
-	WHinge(class Wasabi* const app, unsigned int ID = 0);
+	WHinge(class Wasabi* const app, uint32_t ID = 0);
 	~WHinge();
 
 	void	Build(const WRigidBody* const rb1, const WRigidBody* const rb2, bool breakable = false);
@@ -326,7 +326,7 @@ simulate opening and closing
 *********************************************************************/
 class WLimitedHinge : public WConstraint {
 public:
-	WLimitedHinge(class Wasabi* const app, unsigned int ID = 0);
+	WLimitedHinge(class Wasabi* const app, uint32_t ID = 0);
 	~WLimitedHinge();
 
 	void	Build(const WRigidBody* const rb1, const WRigidBody* const rb2, bool breakable = false);
@@ -364,7 +364,7 @@ two objects are joined at a point
 *********************************************************************/
 class WBallAndSocket : public WConstraint {
 public:
-	WBallAndSocket(class Wasabi* const app, unsigned int ID = 0);
+	WBallAndSocket(class Wasabi* const app, uint32_t ID = 0);
 	~WBallAndSocket();
 
 	void	Build(const WRigidBody* const rb1, const WRigidBody* const rb2, bool breakable = false);
@@ -385,7 +385,7 @@ this constraint acts as a rope between two objects
 *********************************************************************/
 class WStiffSpring : public WConstraint {
 public:
-	WStiffSpring(class Wasabi* const app, unsigned int ID = 0);
+	WStiffSpring(class Wasabi* const app, uint32_t ID = 0);
 	~WStiffSpring();
 
 	void	Build(const WRigidBody* const rb1, const WRigidBody* const rb2, bool breakable = false);
@@ -407,7 +407,7 @@ in space so it looks like a hoisting machine
 *********************************************************************/
 class WPulley : public WConstraint {
 public:
-	WPulley(class Wasabi* const app, unsigned int ID = 0);
+	WPulley(class Wasabi* const app, uint32_t ID = 0);
 	~WPulley();
 
 	void	Build(const WRigidBody* const rb1, const WRigidBody* const rb2, bool breakable = false);
@@ -434,7 +434,7 @@ to 1 axis to move along
 *********************************************************************/
 class WPrismaticConstraint : public WConstraint {
 public:
-	WPrismaticConstraint(class Wasabi* const app, unsigned int ID = 0);
+	WPrismaticConstraint(class Wasabi* const app, uint32_t ID = 0);
 	~WPrismaticConstraint();
 
 	void	Build(const WRigidBody* const rb1, const WRigidBody* const rb2, bool breakable = false);
@@ -467,7 +467,7 @@ class WPhysicsAction : public WBase, public hkpUnaryAction {
 	std::string GetTypeName() const;
 
 public:
-	WPhysicsAction(class Wasabi* const app, WRigidBody* const body, unsigned int ID = 0);
+	WPhysicsAction(class Wasabi* const app, WRigidBody* const body, uint32_t ID = 0);
 	~WPhysicsAction();
 
 	void Initialize();
@@ -500,7 +500,7 @@ public:
 
 class WMarbleAction : public WPhysicsAction {
 public:
-	WMarbleAction(class Wasabi* const app, WRigidBody* const body, unsigned int ID = 0);
+	WMarbleAction(class Wasabi* const app, WRigidBody* const body, uint32_t ID = 0);
 	~WMarbleAction();
 
 	void applyAction(const hkStepInfo& stepInfo);

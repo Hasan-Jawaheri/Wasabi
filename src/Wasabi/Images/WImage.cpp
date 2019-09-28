@@ -42,8 +42,8 @@ WImageManager::~WImageManager() {
 
 	// we need to perform this here because some destructed images will need access to m_dynamicImages
 	// which will be destructed by the time WManager::~WManager() destroys the images this way
-	for (unsigned int j = 0; j < W_HASHTABLESIZE; j++) {
-		for (unsigned int i = 0; i < m_entities[j].size(); i)
+	for (uint32_t j = 0; j < W_HASHTABLESIZE; j++) {
+		for (uint32_t i = 0; i < m_entities[j].size(); i)
 			m_entities[j][i]->RemoveReference();
 		m_entities[j].clear();
 	}
@@ -85,11 +85,11 @@ WImage* WImageManager::GetDefaultImage() const {
 	return m_checkerImage;
 }
 
-WImage* WImageManager::CreateImage(unsigned int ID) {
+WImage* WImageManager::CreateImage(uint32_t ID) {
 	return new WImage(m_app, ID);
 }
 
-WImage* WImageManager::CreateImage(void* pixels, uint width, uint height, VkFormat format, W_IMAGE_CREATE_FLAGS flags, unsigned int ID) {
+WImage* WImageManager::CreateImage(void* pixels, uint32_t width, uint32_t height, VkFormat format, W_IMAGE_CREATE_FLAGS flags, uint32_t ID) {
 	WImage* img = new WImage(m_app, ID);
 	WError err = img->CreateFromPixelsArray(pixels, width, height, format, flags);
 	if (!err)
@@ -97,7 +97,7 @@ WImage* WImageManager::CreateImage(void* pixels, uint width, uint height, VkForm
 	return img;
 }
 
-WImage* WImageManager::CreateImage(std::string filename, W_IMAGE_CREATE_FLAGS flags, unsigned int ID) {
+WImage* WImageManager::CreateImage(std::string filename, W_IMAGE_CREATE_FLAGS flags, uint32_t ID) {
 	WImage* img = new WImage(m_app, ID);
 	WError err = img->Load(filename, flags);
 	if (!err)
@@ -105,7 +105,7 @@ WImage* WImageManager::CreateImage(std::string filename, W_IMAGE_CREATE_FLAGS fl
 	return img;
 }
 
-WImage* WImageManager::CreateImage(WImage* const image, W_IMAGE_CREATE_FLAGS flags, unsigned int ID) {
+WImage* WImageManager::CreateImage(WImage* const image, W_IMAGE_CREATE_FLAGS flags, uint32_t ID) {
 	WImage* img = new WImage(m_app, ID);
 	WError err = img->CopyFrom(image, flags);
 	if (!err)
@@ -113,13 +113,13 @@ WImage* WImageManager::CreateImage(WImage* const image, W_IMAGE_CREATE_FLAGS fla
 	return img;
 }
 
-void WImageManager::UpdateDynamicImages(uint bufferIndex) const {
+void WImageManager::UpdateDynamicImages(uint32_t bufferIndex) const {
 	for (auto it = m_dynamicImages.begin(); it != m_dynamicImages.end(); it++) {
 		it->first->_PerformPendingMap(bufferIndex);
 	}
 }
 
-WImage::WImage(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID) {
+WImage::WImage(Wasabi* const app, uint32_t ID) : WFileAsset(app, ID) {
 	m_app->ImageManager->AddEntity(this);
 }
 WImage::~WImage() {
@@ -158,11 +158,11 @@ void WImage::_DestroyResources() {
 
 WError WImage::CreateFromPixelsArray(
 	void* pixels,
-	uint					width,
-	uint					height,
-	uint					depth,
+	uint32_t					width,
+	uint32_t					height,
+	uint32_t					depth,
 	VkFormat				format,
-	uint					arraySize,
+	uint32_t					arraySize,
 	W_IMAGE_CREATE_FLAGS	flags
 ) {
 	_DestroyResources();
@@ -176,7 +176,7 @@ WError WImage::CreateFromPixelsArray(
 	if (flags & W_IMAGE_CREATE_DYNAMIC) usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	if (flags & W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT) usageFlags |= (isDepth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 	W_MEMORY_STORAGE memory = flags & W_IMAGE_CREATE_DYNAMIC ? W_MEMORY_HOST_VISIBLE : W_MEMORY_DEVICE_LOCAL;
-	uint numBuffers = (flags & (W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT)) ? m_app->GetEngineParam<uint>("bufferingCount") : 1;
+	uint32_t numBuffers = (flags & (W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_RENDER_TARGET_ATTACHMENT)) ? m_app->GetEngineParam<uint32_t>("bufferingCount") : 1;
 	VkResult result = m_bufferedImage.Create(m_app, numBuffers, width, height, depth, WBufferedImageProperties(format, memory, usageFlags, arraySize), pixels);
 	if (result != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
@@ -190,16 +190,16 @@ WError WImage::CreateFromPixelsArray(
 
 	return WError(W_SUCCEEDED);
 }
-WError WImage::CreateFromPixelsArray(void* pixels, uint width, uint height, VkFormat format, W_IMAGE_CREATE_FLAGS flags) {
+WError WImage::CreateFromPixelsArray(void* pixels, uint32_t width, uint32_t height, VkFormat format, W_IMAGE_CREATE_FLAGS flags) {
 	return CreateFromPixelsArray(pixels, width, height, 1, format, 1, flags);
 }
 
 template<typename T>
-T* convertPixels(uchar* data, uint w, uint h, uchar n, uchar new_num_components, T zero, T one, T(*convert)(uchar)) {
+T* convertPixels(uint8_t* data, uint32_t w, uint32_t h, uint8_t n, uint8_t new_num_components, T zero, T one, T(*convert)(uint8_t)) {
 	T* pixels = new T[w * h * new_num_components];
-	for (uint y = 0; y < h; y++) {
-		for (uint x = 0; x < w; x++) {
-			for (uint c = 0; c < new_num_components; c++) {
+	for (uint32_t y = 0; y < h; y++) {
+		for (uint32_t x = 0; x < w; x++) {
+			for (uint32_t c = 0; c < new_num_components; c++) {
 				T value;
 				if (c < n)
 					value = convert(data[(y * w + x) * n + c]);// / (float)(unsigned char)(-1);
@@ -232,7 +232,7 @@ WError WImage::Load(std::string filename, W_IMAGE_CREATE_FLAGS flags) {
 		return WError(W_INVALIDFILEFORMAT);
 
 	// convert from 8-bit char components to 32-bit float components
-	uchar* pixels = convertPixels<uchar>(data, w, h, n, 4, 0, -1, [](uchar val) { return val; });
+	uint8_t* pixels = convertPixels<uint8_t>(data, w, h, (uint8_t)n, 4, 0, (uint8_t)-1, [](uint8_t val) { return val; });
 	// float* pixels = convertPixels<float>(data, w, h, n, 4, 0.0f, 1.0f, [](uchar val) { return (float)val / (float)(uchar)(-1); }); <--- for VK_FORMAT_R32G32B32A32_SFLOAT
 	free(data);
 	WError err = CreateFromPixelsArray(pixels, w, h, VK_FORMAT_R8G8B8A8_UNORM, flags);
@@ -255,7 +255,7 @@ WError WImage::CopyFrom(WImage* const image, W_IMAGE_CREATE_FLAGS flags) {
 	return res;
 }
 
-void WImage::_PerformPendingMap(uint bufferIndex) {
+void WImage::_PerformPendingMap(uint32_t bufferIndex) {
 	if (m_pendingBufferedMaps.size() > 0 && m_pendingBufferedMaps[bufferIndex]) {
 		void* data = m_pendingBufferedMaps[bufferIndex];
 		void* pImagePixels;
@@ -263,7 +263,7 @@ void WImage::_PerformPendingMap(uint bufferIndex) {
 			memcpy(pImagePixels, data, m_bufferedImage.GetMemorySize());
 			m_bufferedImage.Unmap(m_app, bufferIndex);
 			m_pendingBufferedMaps[bufferIndex] = nullptr;
-			uint numRemainingPointers = 0;
+			uint32_t numRemainingPointers = 0;
 			for (auto bufIt = m_pendingBufferedMaps.begin(); bufIt != m_pendingBufferedMaps.end(); bufIt++)
 				numRemainingPointers += (*bufIt == nullptr) ? 0 : 1;
 			if (numRemainingPointers == 0)
@@ -272,7 +272,7 @@ void WImage::_PerformPendingMap(uint bufferIndex) {
 	}
 }
 
-void WImage::_UpdatePendingMap(void* mappedData, uint bufferIndex, W_MAP_FLAGS mapFlags) {
+void WImage::_UpdatePendingMap(void* mappedData, uint32_t bufferIndex, W_MAP_FLAGS mapFlags) {
 	if (m_pendingBufferedMaps.size() > 0) {
 		if (mapFlags & W_MAP_READ && m_pendingBufferedMaps[bufferIndex]) {
 			// the user intends to read and there is a pending write to this image, perform the write
@@ -292,13 +292,13 @@ void WImage::_UpdatePendingMap(void* mappedData, uint bufferIndex, W_MAP_FLAGS m
 	}
 }
 
-void WImage::_UpdatePendingUnmap(uint bufferIndex) {
+void WImage::_UpdatePendingUnmap(uint32_t bufferIndex) {
 	if (m_pendingBufferedMaps.size() > 0) {
 		// we stored the mapped pixels in m_pendingBufferedMaps[bufferIndex]
 		// create a copy of it and add it as pending for the other 
 		void* bufferedMaps = W_SAFE_ALLOC(m_bufferedImage.GetMemorySize());
 		memcpy(bufferedMaps, m_pendingBufferedMaps[bufferIndex], m_bufferedImage.GetMemorySize());
-		for (uint i = 0; i < m_pendingBufferedMaps.size(); i++) {
+		for (uint32_t i = 0; i < m_pendingBufferedMaps.size(); i++) {
 			if (i == bufferIndex)
 				m_pendingBufferedMaps[i] = nullptr;
 			else
@@ -308,7 +308,7 @@ void WImage::_UpdatePendingUnmap(uint bufferIndex) {
 }
 
 WError WImage::MapPixels(void** const pixels, W_MAP_FLAGS flags) {
-	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	uint32_t bufferIndex = m_app->GetCurrentBufferingIndex();
 	VkResult result = m_bufferedImage.Map(m_app, bufferIndex, pixels, flags);
 	if (result != VK_SUCCESS)
 		return WError(W_OUTOFMEMORY);
@@ -319,23 +319,23 @@ WError WImage::MapPixels(void** const pixels, W_MAP_FLAGS flags) {
 }
 
 void WImage::UnmapPixels() {
-	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	uint32_t bufferIndex = m_app->GetCurrentBufferingIndex();
 	_UpdatePendingUnmap(bufferIndex);
 	m_bufferedImage.Unmap(m_app, bufferIndex);
 }
 
 VkImageView WImage::GetView() const {
-	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	uint32_t bufferIndex = m_app->GetCurrentBufferingIndex();
 	return m_bufferedImage.GetView(m_app, bufferIndex);
 }
 
 void WImage::TransitionLayoutTo(VkCommandBuffer cmdBuf, VkImageLayout newLayout) {
-	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	uint32_t bufferIndex = m_app->GetCurrentBufferingIndex();
 	return m_bufferedImage.TransitionLayoutTo(cmdBuf, newLayout, bufferIndex);
 }
 
 VkImageLayout WImage::GetViewLayout() const {
-	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	uint32_t bufferIndex = m_app->GetCurrentBufferingIndex();
 	return m_bufferedImage.GetLayout(bufferIndex);
 }
 
@@ -343,40 +343,42 @@ VkFormat WImage::GetFormat() const {
 	return m_format;
 }
 
-unsigned int WImage::GetWidth() const {
+uint32_t WImage::GetWidth() const {
 	return m_bufferedImage.GetWidth();
 }
 
-unsigned int WImage::GetHeight() const {
+uint32_t WImage::GetHeight() const {
 	return m_bufferedImage.GetHeight();
 }
 
-unsigned int WImage::GetDepth() const {
+uint32_t WImage::GetDepth() const {
 	return m_bufferedImage.GetDepth();
 }
 
-unsigned int WImage::GetArraySize() const {
+uint32_t WImage::GetArraySize() const {
 	return m_bufferedImage.GetArraySize();
 }
 
-unsigned int WImage::GetPixelSize() const {
-	return m_bufferedImage.GetMemorySize() / (GetWidth() * GetHeight() * GetDepth() * GetArraySize());
+size_t WImage::GetPixelSize() const {
+	return m_bufferedImage.GetMemorySize() / (size_t)(GetWidth() * GetHeight() * GetDepth() * GetArraySize());
 }
 
 WError WImage::SaveToStream(WFile* file, std::ostream& outputStream) {
+	UNREFERENCED_PARAMETER(file);
+
 	if (!Valid())
 		return WError(W_NOTVALID);
 
-	uint width = GetWidth();
-	uint height = GetHeight();
-	uint depth = GetDepth();
-	uint arraySize = GetArraySize();
+	uint32_t width = GetWidth();
+	uint32_t height = GetHeight();
+	uint32_t depth = GetDepth();
+	uint32_t arraySize = GetArraySize();
 	outputStream.write((char*)&width, sizeof(width));
 	outputStream.write((char*)&height, sizeof(height));
 	outputStream.write((char*)& depth, sizeof(depth));
 	outputStream.write((char*)& arraySize, sizeof(arraySize));
 	outputStream.write((char*)&m_format, sizeof(m_format));
-	uint dataSize = m_bufferedImage.GetMemorySize();
+	uint32_t dataSize = (uint32_t)m_bufferedImage.GetMemorySize();
 	outputStream.write((char*)&dataSize, sizeof(dataSize));
 
 	void* pixels;
@@ -396,11 +398,13 @@ std::vector<void*> WImage::LoadArgs(W_IMAGE_CREATE_FLAGS flags) {
 }
 
 WError WImage::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
+	UNREFERENCED_PARAMETER(file);
+
 	if (args.size() != 1)
 		return WError(W_INVALIDPARAM);
 	W_IMAGE_CREATE_FLAGS flags = static_cast<W_IMAGE_CREATE_FLAGS>(reinterpret_cast<size_t>(args[0]));
 
-	uint width, height, depth, arraySize;
+	uint32_t width, height, depth, arraySize;
 	VkFormat format;
 
 	inputStream.read((char*)&width, sizeof(width));
@@ -408,7 +412,7 @@ WError WImage::LoadFromStream(WFile* file, std::istream& inputStream, std::vecto
 	inputStream.read((char*)&format, sizeof(format));
 	inputStream.read((char*)&depth, sizeof(depth));
 	inputStream.read((char*)&arraySize, sizeof(arraySize));
-	uint dataSize;
+	uint32_t dataSize;
 	inputStream.read((char*)&dataSize, sizeof(dataSize));
 
 	void* pixels = W_SAFE_ALLOC(dataSize);

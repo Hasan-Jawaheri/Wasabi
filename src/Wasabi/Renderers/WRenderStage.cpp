@@ -36,7 +36,7 @@ WImage* WRenderStage::GetOutputImage(std::string name) const {
 	if (name == m_stageDescription.depthOutput.name)
 		return m_depthOutput;
 
-	for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
+	for (uint32_t i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
 		if (name == m_stageDescription.colorOutputs[i].name)
 			return m_colorOutputs[i];
 	}
@@ -44,7 +44,7 @@ WImage* WRenderStage::GetOutputImage(std::string name) const {
 	return nullptr;
 }
 
-WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
 	Cleanup();
 
 	if (m_stageDescription.target == RENDER_STAGE_TARGET_BUFFER) {
@@ -54,14 +54,14 @@ WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint
 		m_renderTarget = m_app->RenderTargetManager->CreateRenderTarget();
 		m_renderTarget->SetName("RenderTarget-" + m_stageDescription.name);
 
-		for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
+		for (uint32_t i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
 			if (m_stageDescription.colorOutputs[i].name == "")
 				return WError(W_NOTVALID);
 
 			if (m_stageDescription.colorOutputs[i].isFromPreviousStage) {
 				WImage* previousImg = nullptr;
-				for (int i = previousStages.size() - 2; i >= 0 && !previousImg; i--)
-					previousImg = previousStages[i]->GetOutputImage(m_stageDescription.colorOutputs[i].name);
+				for (int j = (int)previousStages.size() - 2; j >= 0 && !previousImg; j--)
+					previousImg = previousStages[j]->GetOutputImage(m_stageDescription.colorOutputs[i].name);
 				if (!previousImg)
 					return WError(W_NOTVALID);
 				previousImg->AddReference();
@@ -74,8 +74,8 @@ WError WRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint
 		if (m_stageDescription.depthOutput.name != "") {
 			if (m_stageDescription.depthOutput.isFromPreviousStage) {
 				WImage* previousImg = nullptr;
-				for (int i = previousStages.size() - 2; i >= 0 && !previousImg; i--)
-					previousImg = previousStages[i]->GetOutputImage(m_stageDescription.depthOutput.name);
+				for (int j = (int)previousStages.size() - 2; j >= 0 && !previousImg; j--)
+					previousImg = previousStages[j]->GetOutputImage(m_stageDescription.depthOutput.name);
 				if (!previousImg)
 					return WError(W_NOTVALID);
 				previousImg->AddReference();
@@ -102,10 +102,10 @@ void WRenderStage::Cleanup() {
 	W_SAFE_REMOVEREF(m_depthOutput);
 }
 
-WError WRenderStage::Resize(uint width, uint height) {
+WError WRenderStage::Resize(uint32_t width, uint32_t height) {
 	if (m_stageDescription.target == RENDER_STAGE_TARGET_BUFFER) {
 		OUTPUT_IMAGE desc;
-		for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
+		for (uint32_t i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
 			desc = m_stageDescription.colorOutputs[i];
 			if (!desc.isFromPreviousStage) {
 				WImage* output = m_colorOutputs[i];
@@ -144,14 +144,14 @@ WError WRenderStage::Resize(uint width, uint height) {
 			return WError(W_HARDWARENOTSUPPORTED);
 
 		vector<VkImageView> swapchainViews;
-		for (int i = 0; i < m_app->Renderer->GetSwapchain()->imageCount; i++)
+		for (uint32_t i = 0; i < m_app->Renderer->GetSwapchain()->imageCount; i++)
 			swapchainViews.push_back(m_app->Renderer->GetSwapchain()->buffers[i].view);
-		WError status = m_renderTarget->Create(width, height, swapchainViews.data(), swapchainViews.size(), colorFormat, depthFormat);
+		WError status = m_renderTarget->Create(width, height, swapchainViews.data(), (uint32_t)swapchainViews.size(), colorFormat, depthFormat);
 		if (!status)
 			return status;
 	}
 
-	for (uint i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
+	for (uint32_t i = 0; i < m_stageDescription.colorOutputs.size(); i++) {
 		if (abs(-1000000.0f - m_stageDescription.colorOutputs[i].clearColor.r) > W_EPSILON && !m_stageDescription.colorOutputs[i].isFromPreviousStage)
 			m_renderTarget->SetClearColor(m_stageDescription.colorOutputs[i].clearColor, i);
 	}

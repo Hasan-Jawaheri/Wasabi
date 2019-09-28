@@ -23,15 +23,15 @@ bindMatrixArray[index] = skin;
 3. Then i build the hierarchy with the node transforms
 absoluteNodeMatrix[i] = localSpaceMatrix[i] * parentMatrix;
 4. Apply the inverse bind pose matrix
-for (unsigned int i = 0; i < bones; ++i)
+for (uint32_t i = 0; i < bones; ++i)
 {
 ShaderReadyBoneMatrix[i] = bindMatrixArray[i] * absoluteNodeMatrix[i];
 }
 */
 
 vector<BONEIDTABLEENTITY> boneIDTable;
-unordered_map<UINT, UINT> g_boneID_to_boneIndex;
-unordered_map<FbxNode*, UINT> g_node_to_boneIndex;
+unordered_map<UINT, uint32_t> g_boneID_to_boneIndex;
+unordered_map<FbxNode*, uint32_t> g_node_to_boneIndex;
 
 void ClearBoneTable() {
 	boneIDTable.clear();
@@ -45,17 +45,17 @@ bool NodeExists(FbxNode* pNode) {
 
 void CreateNewNode(BONEIDTABLEENTITY entity) {
 	boneIDTable.push_back(entity);
-	g_boneID_to_boneIndex.insert(pair<UINT, UINT>(entity.mapsTo, (UINT)boneIDTable.size() - 1));
-	g_node_to_boneIndex.insert(pair<FbxNode*, UINT>(entity.node, (UINT)boneIDTable.size() - 1));
+	g_boneID_to_boneIndex.insert(pair<UINT, uint32_t>(entity.mapsTo, (UINT)boneIDTable.size() - 1));
+	g_node_to_boneIndex.insert(pair<FbxNode*, uint32_t>(entity.node, (UINT)boneIDTable.size() - 1));
 }
 
-UINT GetNodeID(FbxNode* pNode) {
+uint32_t GetNodeID(FbxNode* pNode) {
 	auto iter = g_node_to_boneIndex.find(pNode);
 	if (iter != g_node_to_boneIndex.end())
 		return boneIDTable[iter->second].mapsTo;
 
 	//create a new mapping for it, it doesnt have one
-	UINT newID = 0;
+	uint32_t newID = 0;
 	while (g_boneID_to_boneIndex.find(++newID) != g_boneID_to_boneIndex.end()); //find the least unused id
 
 	BONEIDTABLEENTITY e;
@@ -67,7 +67,7 @@ UINT GetNodeID(FbxNode* pNode) {
 	return newID;
 }
 
-FbxNode* GetNodeByID(UINT ID) {
+FbxNode* GetNodeByID(uint32_t ID) {
 	auto iter = g_boneID_to_boneIndex.find(ID);
 	if (iter != g_boneID_to_boneIndex.end())
 		return boneIDTable[iter->second].node;
@@ -102,7 +102,7 @@ class FBXLoader : public Wasabi {
 		obj->SetGeometry(g);
 		g->RemoveReference();
 
-		for (uint i = 0; i < m.textures.size(); i++) {
+		for (uint32_t i = 0; i < m.textures.size(); i++) {
 			char drive[64];
 			char ext[64];
 			char dir[512];
@@ -157,7 +157,7 @@ public:
 
 	WWindowAndInputComponent* CreateWindowAndInputComponent() {
 		WWindowAndInputComponent* component = Wasabi::CreateWindowAndInputComponent();
-		SetEngineParam<uint>("windowStyle", GetEngineParam<uint>("windowStyle") & (~WS_VISIBLE));
+		SetEngineParam<uint32_t>("windowStyle", GetEngineParam<uint32_t>("windowStyle") & (~WS_VISIBLE));
 		return component;
 	}
 

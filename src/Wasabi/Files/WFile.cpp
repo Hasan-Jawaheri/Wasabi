@@ -11,7 +11,7 @@
 
 const short FILE_MAGIC = 0x3DE0;
 
-WFileAsset::WFileAsset(Wasabi* app, unsigned int ID) : WBase(app, ID) {
+WFileAsset::WFileAsset(Wasabi* app, uint32_t ID) : WBase(app, ID) {
 	m_file = nullptr;
 }
 
@@ -21,6 +21,7 @@ WFileAsset::~WFileAsset() {
 }
 
 WFileManager::WFileManager(class Wasabi* const app) {
+	UNREFERENCED_PARAMETER(app);
 }
 
 WFileManager::~WFileManager() {
@@ -79,7 +80,7 @@ void WFile::Close() {
 	m_assetsMap.clear();
 	m_loadedAssetsMap.clear();
 	for (auto iter : m_headers)
-		for (uint i = 0; i < iter.assets.size(); i++)
+		for (uint32_t i = 0; i < iter.assets.size(); i++)
 			delete iter.assets[i];
 	m_headers.clear();
 	m_fileSize = 0;
@@ -163,19 +164,19 @@ WError WFile::LoadGenericAsset(std::string name, WFileAsset** assetOut, std::fun
 	return err;
 }
 
-uint WFile::GetAssetsCount() const {
-	uint count = 0;
+uint32_t WFile::GetAssetsCount() const {
+	uint32_t count = 0;
 	for (auto it : m_headers) {
-		count += it.assets.size();
+		count += (uint32_t)it.assets.size();
 	}
 	return count;
 }
 
-std::pair<std::string, std::string> WFile::GetAssetInfo(uint index) {
+std::pair<std::string, std::string> WFile::GetAssetInfo(uint32_t index) {
 	for (auto it : m_headers) {
 		if (index < it.assets.size())
 			return std::make_pair(std::string(it.assets[index]->name), std::string(it.assets[index]->type));
-		index -= it.assets.size();
+		index -= (uint32_t)it.assets.size();
 	}
 	return std::make_pair(std::string(), std::string());
 }
@@ -198,8 +199,8 @@ void WFile::ReleaseAsset(WFileAsset* asset) {
 WError WFile::LoadHeaders(std::streamsize maxFileSize) {
 	std::streamoff curOffset = 0;
 
-	while (curOffset != -1) {
-		if (maxFileSize < curOffset + sizeof(FILE_MAGIC) + sizeof(FILE_HEADER::dataSize) + sizeof(FILE_HEADER::nextHeader))
+	while (curOffset != (std::streamoff)-1) {
+		if (maxFileSize < (std::streamoff)(curOffset + sizeof(FILE_MAGIC) + sizeof(FILE_HEADER::dataSize) + sizeof(FILE_HEADER::nextHeader)))
 			return WError(W_INVALIDFILEFORMAT);
 
 		short magic;
@@ -219,7 +220,7 @@ WError WFile::LoadHeaders(std::streamsize maxFileSize) {
 		std::streamoff curDataOffset = header.dataStart;
 		FILE_ASSET curAsset(0, 0, "", "");
 		while (curDataOffset < header.dataStart + header.dataSize) {
-			if (maxFileSize < curDataOffset + FILE_ASSET::GetSize())
+			if (maxFileSize < (std::streamsize)(curDataOffset + FILE_ASSET::GetSize()))
 				return WError(W_INVALIDFILEFORMAT);
 
 			m_file.read((char*)&curAsset, FILE_ASSET::GetSize());
@@ -251,7 +252,7 @@ void WFile::CreateNewHeader() {
 	m_file.write((char*)&FILE_MAGIC, sizeof(FILE_MAGIC));
 	m_file.write((char*)&header.dataSize, sizeof(header.dataSize));
 	m_file.write((char*)&header.nextHeader, sizeof(header.nextHeader));
-	for (uint i = 0; i < header.dataSize; i++)
+	for (uint32_t i = 0; i < header.dataSize; i++)
 		m_file.put(0);
 	m_fileSize = std::max(m_fileSize, header.dataStart + header.dataSize);
 
@@ -271,7 +272,7 @@ void WFile::WriteAssetToHeader(FILE_ASSET asset) {
 
 	m_fileSize = std::max(m_fileSize, asset.start + asset.size);
 
-	if (curHeader->assets.size() * FILE_ASSET::GetSize() >= curHeader->dataSize) {
+	if ((std::streamsize)(curHeader->assets.size() * FILE_ASSET::GetSize()) >= curHeader->dataSize) {
 		CreateNewHeader();
 	}
 }

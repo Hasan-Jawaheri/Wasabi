@@ -58,7 +58,7 @@ void PhysicsDemo::Update(float fDeltaTime) {
 	WVector3 direction = WVec3TransformNormal(WVector3(0, 0, 1), WRotationMatrixY(W_DEGTORAD(app->GetYawAngle())));
 	WVector3 right = WVec3TransformNormal(WVector3(1, 0, 0), WRotationMatrixY(W_DEGTORAD(app->GetYawAngle())));
 
-	bool isGrounded = m_app->PhysicsComponent->RayCast(rbPos + WVector3(0, -0.98, 0), rbPos + WVector3(0, -1.2, 0));
+	bool isGrounded = m_app->PhysicsComponent->RayCast(rbPos + WVector3(0.0f, -0.98f, 0.0f), rbPos + WVector3(0.0f, -1.2f, 0.0f));
 
 	WVector3 inputDirection(0, 0, 0);
 	if (m_app->WindowAndInputComponent->KeyDown('W'))
@@ -94,13 +94,13 @@ void PhysicsDemo::Update(float fDeltaTime) {
 
 	if (isDirection && isGrounded) {
 		inputDirection = WVec3Normalize(inputDirection);
-		m_ballRB->ApplyForce(inputDirection * 500.0f , WVector3(0, 0.3, 0));
+		m_ballRB->ApplyForce(inputDirection * 500.0f , WVector3(0.0f, 0.3f, 0.0f));
 	}
 
 	if (m_app->WindowAndInputComponent->KeyDown('R')) {
-		m_ballRB->SetPosition(m_ground->GetGeometry()->GetMaxPoint().x - 20, m_ground->GetGeometry()->GetMaxPoint().y + 10, 0);
-		m_ballRB->SetLinearVelocity(WVector3(0, 0, 0));
-		//m_ballRB->SetAngularVelocity(WVector3(0, 0, 0));
+		m_ballRB->SetPosition(m_ground->GetGeometry()->GetMaxPoint().x - 20.0f, m_ground->GetGeometry()->GetMaxPoint().y + 10.0f, 0.0f);
+		m_ballRB->SetLinearVelocity(WVector3(0.0f, 0.0f, 0.0f));
+		//m_ballRB->SetAngularVelocity(WVector3(0.0f, 0.0f, 0.0f));
 	}
 }
 

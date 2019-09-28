@@ -7,13 +7,13 @@ class WBufferedBuffer {
 public:
 	WBufferedBuffer();
 
-	VkResult Create(class Wasabi* app, uint numBuffers, size_t size, VkBufferUsageFlags usage, void* data = nullptr, W_MEMORY_STORAGE memory = W_MEMORY_DEVICE_LOCAL);
+	VkResult Create(class Wasabi* app, uint32_t numBuffers, size_t size, VkBufferUsageFlags usage, void* data = nullptr, W_MEMORY_STORAGE memory = W_MEMORY_DEVICE_LOCAL);
 	void Destroy(class Wasabi* app);
 
-	VkResult Map(class Wasabi* app, uint bufferIndex, void** data, W_MAP_FLAGS flags);
-	void Unmap(class Wasabi* app, uint bufferIndex);
+	VkResult Map(class Wasabi* app, uint32_t bufferIndex, void** data, W_MAP_FLAGS flags);
+	void Unmap(class Wasabi* app, uint32_t bufferIndex);
 
-	VkBuffer GetBuffer(class Wasabi* app, uint bufferIndex);
+	VkBuffer GetBuffer(class Wasabi* app, uint32_t bufferIndex);
 
 	bool Valid() const;
 	size_t GetMemorySize() const;

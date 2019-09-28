@@ -23,7 +23,7 @@ public:
 
 	virtual WError Initialize();
 	virtual void Cleanup();
-	virtual WSound* CreateSound(unsigned int ID = 0) const;
+	virtual WSound* CreateSound(uint32_t ID = 0) const;
 
 	void* GetALSoundDevice() const;
 	void* GetALSoundDeviceContext() const;
@@ -61,26 +61,26 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 	
-	WOpenALSound(class Wasabi* const app, uint ID = 0);
+	WOpenALSound(class Wasabi* const app, uint32_t ID = 0);
 
 	virtual bool Valid() const;
-	virtual WError LoadWAV(std::string Filename, uint buffer, bool bSaveData = false);
-	WError LoadFromMemory(uint buffer, void* data, size_t dataSize, int format, uint frequency, bool bSaveData = false);
+	virtual WError LoadWAV(std::string Filename, uint32_t buffer, bool bSaveData = false);
+	WError LoadFromMemory(uint32_t buffer, void* data, size_t dataSize, int format, uint32_t frequency, bool bSaveData = false);
 	virtual void Play();
 	virtual void Loop();
 	virtual void Pause();
 	virtual void Reset();
-	virtual void SetTime(uint time);
+	virtual void SetTime(uint32_t time);
 	virtual bool Playing() const;
 	virtual bool Looping() const;
 	virtual void SetVolume(float volume);
-	virtual void SetPitch(float fPitch);
+	virtual void SetPitch(int pitch);
 
-	virtual void SetFrequency(uint buffer, uint frequency);
-	virtual uint GetNumChannels(uint buffer) const;
-	virtual uint GetBitDepth(uint buffer) const;
-	uint GetALBuffer(uint buffer) const;
-	uint GetALSource() const;
+	virtual void SetFrequency(uint32_t buffer, uint32_t frequency);
+	virtual uint32_t GetNumChannels(uint32_t buffer) const;
+	virtual uint32_t GetBitDepth(uint32_t buffer) const;
+	uint32_t GetALBuffer(uint32_t buffer) const;
+	uint32_t GetALSource() const;
 
 	virtual void SetPosition(float x, float y, float z);
 	virtual void SetPosition(WVector3 pos);
@@ -98,11 +98,11 @@ public:
 private:
 	bool m_valid;
 	uint* m_buffers;
-	uint m_source;
-	uint m_numBuffers;
+	uint32_t m_source;
+	uint32_t m_numBuffers;
 
 	struct __SAVEDATA {
-		uint buffer;
+		uint32_t buffer;
 		int format;
 		size_t dataSize;
 		void* data;

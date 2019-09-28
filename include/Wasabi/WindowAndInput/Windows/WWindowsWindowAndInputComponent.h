@@ -26,7 +26,7 @@
  */
 class WWindowsWindowAndInputComponent : public WWindowAndInputComponent {
 	friend LRESULT CALLBACK hMainWndProc(
-		HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);
+		HWND hWnd, uint32_t msg, WPARAM wParam, LPARAM lParam);
 
 public:
 	WWindowsWindowAndInputComponent(class Wasabi* const app);
@@ -69,10 +69,10 @@ public:
 	virtual void SetWindowSize(int width, int height);
 	virtual void MaximizeWindow();
 	virtual void MinimizeWindow();
-	virtual uint RestoreWindow();
+	virtual uint32_t RestoreWindow();
 
-	virtual uint GetWindowWidth() const;
-	virtual uint GetWindowHeight() const;
+	virtual uint32_t GetWindowWidth() const;
+	virtual uint32_t GetWindowHeight() const;
 	virtual int GetWindowPositionX() const;
 	virtual int GetWindowPositionY() const;
 
@@ -83,23 +83,23 @@ public:
 
 	virtual bool MouseClick(W_MOUSEBUTTON button) const;
 	virtual int MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-		uint vpID = 0) const;
+		uint32_t vpID = 0) const;
 	virtual int MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-		uint vpID = 0) const;
+		uint32_t vpID = 0) const;
 	virtual int MouseZ() const;
 	virtual bool MouseInScreen(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-		uint vpID = 0) const;
+		uint32_t vpID = 0) const;
 
-	virtual void SetMousePosition(uint x, uint y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT);
+	virtual void SetMousePosition(uint32_t x, uint32_t y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT);
 	virtual void SetMouseZ(int value);
 	virtual void ShowCursor(bool bShow);
 
 	virtual void EnableEscapeKeyQuit();
 	virtual void DisableEscapeKeyQuit();
 
-	virtual bool KeyDown(unsigned int key) const;
+	virtual bool KeyDown(uint32_t key) const;
 
-	virtual void InsertRawInput(unsigned int key, bool state);
+	virtual void InsertRawInput(uint32_t key, bool state);
 
 private:
 	/** Window handle */

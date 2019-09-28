@@ -33,7 +33,7 @@ class WRenderTarget : public WBase {
 
 protected:
 	virtual ~WRenderTarget();
-	WRenderTarget(Wasabi* const app, unsigned int ID = 0);
+	WRenderTarget(Wasabi* const app, uint32_t ID = 0);
 
 public:
 	/**
@@ -66,7 +66,7 @@ public:
 	 * @param  depth       A WImage backing the created depth attachment (can be null)
 	 * @return             Error code, see WError.h
 	 */
-	WError Create(unsigned int width, unsigned int height,
+	WError Create(uint32_t width, uint32_t height,
 				  class WImage* target,
 				  class WImage* depth = nullptr);
 
@@ -82,7 +82,7 @@ public:
 	 * @param  depth       A WImage backing the created depth attachment (can be null)
 	 * @return             Error code, see WError.h
 	 */
-	WError Create(unsigned int width, unsigned int height,
+	WError Create(uint32_t width, uint32_t height,
 				  vector<class WImage*> targets,
 				  class WImage* depth = nullptr);
 
@@ -98,8 +98,8 @@ public:
 	 * @param  depthFormat Depth format for the render target
 	 * @return             Error code, see WError.h
 	 */
-	WError Create(unsigned int width, unsigned int height,
-				  VkImageView* views, unsigned int numViews,
+	WError Create(uint32_t width, uint32_t height,
+				  VkImageView* views, uint32_t numViews,
 				  VkFormat colorFormat, VkFormat depthFormat);
 
 	/**
@@ -139,7 +139,7 @@ public:
 	 *              the clear value of the depth attachment will only use the red component of
 	 *              the supplied WColor (the stencil will be green component)
 	 */
-	void SetClearColor(WColor col, unsigned int index = 0);
+	void SetClearColor(WColor col, uint32_t index = 0);
 
 	/**
 	 * Sets the camera that will be used when things are rendered using this
@@ -210,9 +210,9 @@ private:
 	/** Clear values to be used by Vulkan */
 	vector<VkClearValue> m_clearValues;
 	/** Width of the render target */
-	unsigned int m_width;
+	uint32_t m_width;
 	/** Height of the render target */
-	unsigned int m_height;
+	uint32_t m_height;
 	/** The camera of this render target */
 	class WCamera* m_camera;
 
@@ -244,7 +244,7 @@ public:
 	 * targets must only be rendered to (i.e. calling WRenderTarget::Begin()
 	 * and WRenderTarget::End()) within a WRenderStage.
 	 */
-	WRenderTarget* CreateRenderTarget(unsigned int ID = 0);
+	WRenderTarget* CreateRenderTarget(uint32_t ID = 0);
 
 	/**
 	 * Allocates and initializes an "immediate" render target. An immediate
@@ -258,6 +258,6 @@ public:
 	 * block on GPU operations before WRenderTarget::Begin() and after
 	 * WRenderTarget::End().
 	 */
-	WRenderTarget* CreateImmediateRenderTarget(unsigned int ID = 0);
+	WRenderTarget* CreateImmediateRenderTarget(uint32_t ID = 0);
 };
 

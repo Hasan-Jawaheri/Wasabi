@@ -29,7 +29,7 @@ using std::string;
  */
 class WBase {
 public:
-	WBase(class Wasabi* const app, unsigned int ID = 0);
+	WBase(class Wasabi* const app, uint32_t ID = 0);
 	virtual ~WBase();
 
 	/**
@@ -43,13 +43,13 @@ public:
 	 * Sets the ID of this object and notifies its manager.
 	 * @param newID New ID
 	 */
-	void SetID(unsigned int newID);
+	void SetID(uint32_t newID);
 
 	/**
 	 * Retrieves the ID of this object.
 	 * @return The ID of this object
 	 */
-	unsigned int GetID() const;
+	uint32_t GetID() const;
 
 	/**
 	 * Retrieves a pointer to the Wasabi class used to create this object.
@@ -102,7 +102,7 @@ private:
 	/** The reference count, starting at 1 */
 	int m_refCount;
 	/** ID of this object */
-	unsigned int m_ID;
+	uint32_t m_ID;
 	/** Name of this object */
 	std::string m_name;
 	/** The manager of the object */

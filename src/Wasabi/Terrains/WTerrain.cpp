@@ -7,11 +7,11 @@
 #include "Wasabi/Materials/WEffect.h"
 /*
 struct TerrainProperties {
-	uint N, M, LOD;
+	uint32_t N, M, LOD;
 	float size;
 
 	TerrainProperties() {}
-	TerrainProperties(uint n, float _size, float lod) {
+	TerrainProperties(uint32_t n, float _size, float lod) {
 		N = n;
 		M = (n + 1) / 4;
 		size = _size;
@@ -23,7 +23,7 @@ template<typename PixelType, VkFormat ImageFormat>
 class TerrainClipmap {
 protected:
 	WImage* m_texture;
-	uint m_textureDimension;
+	uint32_t m_textureDimension;
 	TerrainProperties m_terrainProps;
 
 public:
@@ -50,7 +50,7 @@ public:
 		W_SAFE_REMOVEREF(m_texture);
 	}
 
-	virtual PixelType ComputePixelValueAt(WVector2 terrainTexC, uint fineLevel, WVector2 coarserLevelTexC, std::function<PixelType(int, int)> getCoarserPixel) = 0;
+	virtual PixelType ComputePixelValueAt(WVector2 terrainTexC, uint32_t fineLevel, WVector2 coarserLevelTexC, std::function<PixelType(int, int)> getCoarserPixel) = 0;
 
 	void Update(TerrainRings* rings) {
 		PixelType* pixels;
@@ -58,8 +58,8 @@ public:
 		for (int i = m_terrainProps.N - 1; i > 0; i--) {
 			float unitSize = max(pow(2, i - 1), 1) * m_terrainProps.size;
 			float levelSize = unitSize * (m_terrainProps.N - 1);
-			for (uint y = 0; y < m_terrainProps.N; y++) {
-				for (uint x = 0; x < m_terrainProps.N; x++) {
+			for (uint32_t y = 0; y < m_terrainProps.N; y++) {
+				for (uint32_t x = 0; x < m_terrainProps.N; x++) {
 					WVector2 terrainTexC = WVector2(
 						rings->m_rings[i]->center.x - levelSize / 2.0f + x * unitSize,
 						rings->m_rings[i]->center.y - levelSize / 2.0f + y * unitSize
@@ -72,7 +72,7 @@ public:
 							x / 2.0f + (m_terrainProps.M - 1) + (rings->m_rings[i]->center.x > rings->m_rings[i + 1]->center.x ? 1 : 0),
 							y / 2.0f + (m_terrainProps.M - 1) + (rings->m_rings[i]->center.y > rings->m_rings[i + 1]->center.y ? 0 : 1)
 						);
-						uint textureDimension = m_textureDimension;
+						uint32_t textureDimension = m_textureDimension;
 						PixelType* coarserPixels = &pixels[m_textureDimension * m_textureDimension * i];
 						getCoarserPixel = [coarserPixels, textureDimension](int x, int y) { return coarserPixels[textureDimension * y + x]; };
 					}
@@ -84,21 +84,21 @@ public:
 	}
 };
 
-class TerrainHeightClipmap : public TerrainClipmap<uint, VK_FORMAT_R32_UINT> {
+class TerrainHeightClipmap : public TerrainClipmap<uint, VK_FORMAT_R32_uint32_t> {
 	const int m_differenceBits = 13;
 	const int m_differenceMask = ~(0xFFFFFFFF << m_differenceBits);
 	const int m_halfHeightRange = 2 << (32 - m_differenceBits - 1);
 	const int m_halfDifferenceRange = 2 << (m_differenceBits - 1);
 
-	inline int GetHeightFromPackedPixel(uint packedPixel) {
+	inline int GetHeightFromPackedPixel(uint32_t packedPixel) {
 		return int(packedPixel >> m_differenceBits) - m_halfHeightRange;
 	}
-	inline uint PackPixelValue(int height, float coarserHeightDiff) {
+	inline uint32_t PackPixelValue(int height, float coarserHeightDiff) {
 		int coarserDiff = m_halfDifferenceRange + (int)(coarserHeightDiff * 100.0f);
 		return ((uint)(int)(height + m_halfHeightRange)) << m_differenceBits | (coarserDiff & m_differenceMask);
 	}
 
-	virtual uint ComputePixelValueAt(WVector2 terrainTexC, uint fineLevel, WVector2 coarserLevelTexC, std::function<uint(int, int)> getCoarserPixel) {
+	virtual uint32_t ComputePixelValueAt(WVector2 terrainTexC, uint32_t fineLevel, WVector2 coarserLevelTexC, std::function<uint(int, int)> getCoarserPixel) {
 		auto F1 = [](float x) {return -0.143 * sinf(1.75f * (x + 1.73)) - 0.180 * sinf(2.96 * (x + 4.98)) - 0.012 * sinf(6.23 * (x + 3.17)) + 0.088 * sinf(8.07 * (x + 4.63)); };
 		auto F2 = [](float x) {return sinf(x / 100.0f) * sqrtf(abs(x)) * 5.0f; };
 		float h1 = F1(sqrtf(abs(terrainTexC.x))) * sqrtf(abs(terrainTexC.x + terrainTexC.y) * 5.0f) + F2(terrainTexC.x);
@@ -125,7 +125,7 @@ class TerrainHeightClipmap : public TerrainClipmap<uint, VK_FORMAT_R32_UINT> {
 };
 
 class TerrainDiffuseClipmap : public TerrainClipmap<WVector4, VK_FORMAT_R32G32B32A32_SFLOAT> {
-	WVector4 ComputePixelValueAt(WVector2 terrainTexC, uint fineLevel, WVector4* coarserPixels, WVector2 coarserLevelTexC) {
+	WVector4 ComputePixelValueAt(WVector2 terrainTexC, uint32_t fineLevel, WVector4* coarserPixels, WVector2 coarserLevelTexC) {
 		return WVector4();
 	}
 };
@@ -179,7 +179,7 @@ WError WTerrainManager::Load() {
 	return WError(W_SUCCEEDED);
 }
 
-WTerrain* WTerrainManager::CreateTerrain(unsigned int N, float size, unsigned int numRings, unsigned int ID) {
+WTerrain* WTerrainManager::CreateTerrain(uint32_t N, float size, uint32_t numRings, uint32_t ID) {
 	WTerrain* terrain = new WTerrain(m_app, ID);
 	WError err = terrain->Create(N, size, numRings);
 	if (!err)
@@ -187,7 +187,7 @@ WTerrain* WTerrainManager::CreateTerrain(unsigned int N, float size, unsigned in
 	return terrain;
 }
 
-WTerrain::WTerrain(class Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WTerrain::WTerrain(class Wasabi* const app, uint32_t ID) : WBase(app, ID) {
 	m_hidden = false;
 	m_bAltered = true;
 
@@ -252,7 +252,7 @@ bool WTerrain::Hidden() const {
 	return m_hidden;
 }
 
-WError WTerrain::Create(unsigned int N, float size, unsigned int numRings) {
+WError WTerrain::Create(uint32_t N, float size, uint32_t numRings) {
 	if (N > 1 && ((N+1) & N) == 0) // check (power of 2) - 1
 		return WError(W_INVALIDPARAM);
 	if (size <= 0)
@@ -296,7 +296,7 @@ WError WTerrain::Create(unsigned int N, float size, unsigned int numRings) {
 						for (int i = 0; i < images.size(); i++)
 							memcpy(mem + i * imgMemSize, images[i].second, imgMemSize);
 						m_textures = new WImage(m_app);
-						err = m_textures->CreateFromPixelsArray(mem, images[0].first->GetWidth(), images[0].first->GetHeight(), 1, VK_FORMAT_R8G8B8A8_UNORM, images.size(), W_IMAGE_CREATE_TEXTURE);
+						err = m_textures->CreateFromPixelsArray(mem, images[0].first->GetWidth(), images[0].first->GetHeight(), 1, VK_FORMAT_R8G8B8A8_UNORM, (uint32_t)images.size(), W_IMAGE_CREATE_TEXTURE);
 						delete[] mem;
 						for (auto it : images) {
 							it.first->UnmapPixels();
@@ -393,6 +393,8 @@ void WTerrain::SetViewpoint(WVector3 point) {
 }
 
 bool WTerrain::WillRender(WRenderTarget* rt) {
+	UNREFERENCED_PARAMETER(rt);
+
 	if (Valid() && !m_hidden) {
 		/*WCamera* cam = rt->GetCamera();
 		WMatrix worldM = GetWorldMatrix();
@@ -420,7 +422,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		LODRing* ring = m_rings[i];
 		float unitSize = std::max((int)pow(2, i - 1), 1) * m_size;
 		float levelSize = unitSize * (m_N - 1);
-		float Msize = unitSize * (m_M - 1);
+		// float Msize = unitSize * (m_M - 1);
 		if (i == m_LOD - 1) {
 			// when there is more than a unit size difference, align to half unit size
 			float halfUnitSize = unitSize / 2.0f;
@@ -430,8 +432,8 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 				ring->center.y = (float)(int)(m_viewpoint.z / halfUnitSize) * halfUnitSize;
 		} else {
 			WVector2 bias = i == 0 ? WVector2(0.0f, 0.0f) : WVector2(
-				m_rings[i + 1]->center.x > m_viewpoint.x ? -1 : 1,
-				m_rings[i + 1]->center.y > m_viewpoint.z ? -1 : 1
+				m_rings[i + 1]->center.x > m_viewpoint.x ? -1.0f : 1.0f,
+				m_rings[i + 1]->center.y > m_viewpoint.z ? -1.0f : 1.0f
 			);
 			ring->center = m_rings[i + 1]->center + bias * unitSize;
 
@@ -448,8 +450,6 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		}
 	}
 
-	uint numGeometryTypes = m_pieces.size();
-
 	static bool bDone = false;
 
 	if (!bDone) {
@@ -461,7 +461,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 			WColor levelData = WColor(
 				m_rings[i]->center.x, // level center x
 				m_rings[i]->center.y, // level center y
-				m_N, // N
+				(float)m_N, // N
 				m_size // terrain scale
 			);
 			pixels[i] = levelData;
@@ -469,7 +469,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 
 		pixels += m_LOD;
 		for (auto it : m_pieces) {
-			for (uint i = 0; i < it.second.size(); i++) {
+			for (uint32_t i = 0; i < it.second.size(); i++) {
 				RingPiece* piece = it.second[i];
 				WColor instanceData = WColor(
 					piece->offsetFromCenter.x + piece->ring->center.x,
@@ -484,18 +484,18 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		m_instanceTexture->UnmapPixels();
 
 		uint* heights;
-		uint textureDimension = m_N + 1;
+		uint32_t textureDimension = (uint32_t)m_N + 1;
 		m_heightTexture->MapPixels((void**)& heights, W_MAP_WRITE);
 		for (int i = m_LOD - 1; i > 0; i--) {
 			float unitSize = std::max((int)pow(2, i - 1), 1) * m_size;
 			float levelSize = unitSize * (m_N - 1);
-			for (uint y = 0; y < m_N; y++) {
-				for (uint x = 0; x < m_N; x++) {
+			for (uint32_t y = 0; y < (uint32_t)m_N; y++) {
+				for (uint32_t x = 0; x < (uint32_t)m_N; x++) {
 					WVector2 terrainTexC = WVector2(
 						m_rings[i]->center.x - levelSize / 2.0f + x * unitSize,
 						m_rings[i]->center.y - levelSize / 2.0f + y * unitSize
 					) / m_size;
-					auto F1 = [](float x) {return -0.143 * sinf(1.75f * (x + 1.73)) - 0.180 * sinf(2.96 * (x + 4.98)) - 0.012 * sinf(6.23 * (x + 3.17)) + 0.088 * sinf(8.07 * (x + 4.63)); };
+					auto F1 = [](float x) {return -0.143f * sinf(1.75f * (x + 1.73f)) - 0.180f * sinf(2.96f * (x + 4.98f)) - 0.012f * sinf(6.23f * (x + 3.17f)) + 0.088f * sinf(8.07f * (x + 4.63f)); };
 					auto F2 = [](float x) {return sinf(x / 100.0f) * sqrtf(abs(x)) * 5.0f; };
 					float h1 = F1(sqrtf(abs(terrainTexC.x))) * sqrtf(abs(terrainTexC.x + terrainTexC.y) * 5.0f) + F2(terrainTexC.x);
 					float h2 = F1(sqrtf(abs(terrainTexC.y))) * sqrtf(abs(terrainTexC.x + terrainTexC.y) * 5.0f) + F2(terrainTexC.y);
@@ -508,22 +508,22 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 							x / 2.0f + (m_M - 1) + (m_rings[i]->center.x > m_rings[i + 1]->center.x ? 1 : 0),
 							y / 2.0f + (m_M - 1) + (m_rings[i]->center.y > m_rings[i + 1]->center.y ? 0 : 1)
 						);
-						int x0 = coarserLevelTexC.x;
-						int y0 = coarserLevelTexC.y;
+						int x0 = (int)coarserLevelTexC.x;
+						int y0 = (int)coarserLevelTexC.y;
 						WVector2 lerpValues = WVector2(coarserLevelTexC.x - (float)x0, coarserLevelTexC.y - (float)y0);
 						uint* coarserHeights = &heights[textureDimension * textureDimension * i];
 						auto coarseHeight = [coarserHeights, textureDimension](int x, int y) { return int(coarserHeights[textureDimension * y + x] >> 13) - 262144; };
 						auto lerp = [](float x, float y, float alpha) { return x * (1.0f - alpha) + y * alpha; };
 						float coarserHeight = lerp(
-							lerp(coarseHeight(x0, y0), coarseHeight(x0 + 1, y0), lerpValues.x),
-							lerp(coarseHeight(x0, y0 + 1), coarseHeight(x0 + 1, y0 + 1), lerpValues.x),
+							lerp((float)coarseHeight(x0, y0), (float)coarseHeight(x0 + 1, y0), lerpValues.x),
+							lerp((float)coarseHeight(x0, y0 + 1), (float)coarseHeight(x0 + 1, y0 + 1), lerpValues.x),
 							lerpValues.y
 						);
 						coarserHeightDiff = (coarserHeight - height) / 100.0f;
 					}
 
 					int coarserDiff = 4096 + (int)(coarserHeightDiff * 100.0f);
-					uint H = ((uint)(int)(height + 262144)) << 13 | (coarserDiff & 0x1FFF);
+					uint32_t H = ((uint)(int)(height + 262144)) << 13 | (coarserDiff & 0x1FFF);
 					heights[textureDimension * textureDimension * (i - 1) + textureDimension * y + x] = H;
 				}
 			}
@@ -531,18 +531,19 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		m_heightTexture->UnmapPixels();
 	}
 
-	uint totalNumPieces = m_LOD; // start from m_LOD since the first <m_LOD> pixels are for level data
+	uint32_t totalNumPieces = m_LOD; // start from m_LOD since the first <m_LOD> pixels are for level data
 	for (auto it : m_pieces) {
 		WGeometry* geometry = it.first;
-		uint numPieces = it.second.size();
+		uint32_t numPieces = (uint32_t)it.second.size();
 		material->SetVariableInt("geometryOffsetInTexture", totalNumPieces); // <-- push constant
 		material->Bind(rt, false, true);
-		geometry->Draw(rt, -1, numPieces, false);
+		geometry->Draw(rt, (uint32_t)-1, numPieces, false);
 		totalNumPieces += numPieces;
 	}
 }
 
 float WTerrain::GetHeight(WVector2 pos2D) {
+	UNREFERENCED_PARAMETER(pos2D);
 	return 0.0f;
 }
 

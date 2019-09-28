@@ -13,7 +13,7 @@
 
 #include "Wasabi/Core/WCore.h"
 
-enum W_IMAGE_CREATE_FLAGS {
+enum W_IMAGE_CREATE_FLAGS: uint32_t {
 	W_IMAGE_CREATE_TEXTURE = 1,
 	W_IMAGE_CREATE_DYNAMIC = 2,
 	W_IMAGE_CREATE_REWRITE_EVERY_FRAME = 4,
@@ -60,7 +60,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WImage(class Wasabi* const app, unsigned int ID = 0);
+	WImage(class Wasabi* const app, uint32_t ID = 0);
 
 	/**
 	 * Creates the image from an array of pixels. The array of pixels need to be
@@ -129,8 +129,8 @@ public:
 	 */
 	WError CreateFromPixelsArray(
 		void*					pixels,
-		uint					width,
-		uint					height,
+		uint32_t					width,
+		uint32_t					height,
 		VkFormat				format,
 		W_IMAGE_CREATE_FLAGS	flags = W_IMAGE_CREATE_TEXTURE
 	);
@@ -142,11 +142,11 @@ public:
 	 */
 	WError CreateFromPixelsArray(
 		void*					pixels,
-		uint					width,
-		uint					height,
-		uint					depth,
+		uint32_t					width,
+		uint32_t					height,
+		uint32_t					depth,
 		VkFormat				format,
-		uint					arraySize = 1,
+		uint32_t					arraySize = 1,
 		W_IMAGE_CREATE_FLAGS	flags = W_IMAGE_CREATE_TEXTURE
 	);
 
@@ -223,25 +223,25 @@ public:
 	 * Retrieves the width of the image.
 	 * @return Width of the image, in pixels
 	 */
-	unsigned int GetWidth() const;
+	uint32_t GetWidth() const;
 
 	/**
 	 * Retrieves the height of the image.
 	 * @return Height of the image, in pixels
 	 */
-	unsigned int GetHeight() const;
+	uint32_t GetHeight() const;
 
 	/**
 	 * Retrieves the depth of the image.
 	 * @return Depth of the image, in pixels
 	 */
-	unsigned int GetDepth() const;
+	uint32_t GetDepth() const;
 
 	/**
 	 * Retrieves the size of the array of images (if used, default is 1).
 	 * @return Size of the image array
 	 */
-	unsigned int GetArraySize() const;
+	uint32_t GetArraySize() const;
 
 	/**
 	 * Returns true if the image is valid. The image is valid if it has a usable
@@ -254,7 +254,7 @@ public:
 	 * Retrieves the size of a pixel in this image.
 	 * @return Size of a pixel, in bytes
 	 */
-	unsigned int GetPixelSize() const;
+	size_t GetPixelSize() const;
 
 	static std::vector<void*> LoadArgs(W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE);
 	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
@@ -276,17 +276,17 @@ private:
 	/**
 	 * Performs the pending map for the given buffer index
 	 */
-	void _PerformPendingMap(uint bufferIndex);
+	void _PerformPendingMap(uint32_t bufferIndex);
 
 	/**
 	 * Performs an update necessary to the buffered image at a given index after it gets mapped
 	 */
-	void _UpdatePendingMap(void* mappedData, uint bufferIndex, W_MAP_FLAGS mapFlags);
+	void _UpdatePendingMap(void* mappedData, uint32_t bufferIndex, W_MAP_FLAGS mapFlags);
 
 	/**
 	 * Performs an update necessary to the buffered image at a given index before it gets unmapped
 	 */
-	void _UpdatePendingUnmap(uint bufferIndex);
+	void _UpdatePendingUnmap(uint32_t bufferIndex);
 };
 
 /**
@@ -322,25 +322,25 @@ public:
 	/**
 	 * Allocates an image.
 	 */
-	WImage* CreateImage(unsigned int ID = 0);
+	WImage* CreateImage(uint32_t ID = 0);
 
 	/**
 	 * Allocates and builds a new image from supplied pixels. See
 	 * WImage::CreateFromPixelsArray().
 	 */
-	WImage* CreateImage(void* pixels, uint width, uint height, VkFormat format, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE, unsigned int ID = 0);
+	WImage* CreateImage(void* pixels, uint32_t width, uint32_t height, VkFormat format, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE, uint32_t ID = 0);
 
 	/**
 	 * Allocates and builds a new image from a file. See
 	 * WImage::Load().
 	 */
-	WImage* CreateImage(std::string filename, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE, unsigned int ID = 0);
+	WImage* CreateImage(std::string filename, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE, uint32_t ID = 0);
 
 	/**
 	 * Allocates and builds a new image that is a copy of another. See
 	 * WImage::CopyFrom().
 	 */
-	WImage* CreateImage(WImage* const image, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE, unsigned int ID = 0);
+	WImage* CreateImage(WImage* const image, W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE, uint32_t ID = 0);
 
 	/**
 	 * Retrieves the default (checkers) image.
@@ -352,5 +352,5 @@ public:
 	 * Makes sure all Map call results are propagated to the buffered images at
 	 * the given buffer index.
 	 */
-	void UpdateDynamicImages(uint bufferIndex) const;
+	void UpdateDynamicImages(uint32_t bufferIndex) const;
 };

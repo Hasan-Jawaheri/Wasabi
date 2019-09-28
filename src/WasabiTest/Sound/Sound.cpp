@@ -10,6 +10,8 @@ void SoundDemo::Load() {
 }
 
 void SoundDemo::Update(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
+
 	if (m_sound->Playing()) {
 		m_app->TextComponent->RenderText("Playing...", 5, 5, 16);
 	} else {

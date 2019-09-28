@@ -4,7 +4,7 @@ struct RAWBONE {
 	float vals[9];
 	bool bIsKeyFrame[9];
 	char name[64];
-	UINT id;
+	uint32_t id;
 	EFbxRotationOrder lRotationOrder;
 	FbxAMatrix matrix;
 	RAWBONE* parent;

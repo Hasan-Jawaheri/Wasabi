@@ -41,20 +41,20 @@ public:
 	 * Retrieves the index of this bone.
 	 * @return Index of this bone
 	 */
-	unsigned int GetIndex() const;
+	uint32_t GetIndex() const;
 
 	/**
 	 * Sets the index of this bone.
 	 * @param Index new index
 	 */
-	void SetIndex(unsigned int index);
+	void SetIndex(uint32_t index);
 
 	/**
 	 * Retrieves the name of this bone.
 	 * @param name     A character array to be filled with the name
 	 * @param maxChars Maximum number of characters to fill in name
 	 */
-	void GetName(char* name, unsigned int maxChars) const;
+	void GetName(char* name, uint32_t maxChars) const;
 
 	/**
 	 * Sets the name of this bone.
@@ -78,14 +78,14 @@ public:
 	 * Retrieves the number of children this bone has.
 	 * @return Number of children for this bone
 	 */
-	unsigned int GetNumChildren() const;
+	uint32_t GetNumChildren() const;
 
 	/**
 	 * Retrieve a pointer to the child with the given index.
 	 * @param  index Index of the child
 	 * @return       The child at index, or nullptr if index is invalid
 	 */
-	WBone* GetChild(unsigned int index) const;
+	WBone* GetChild(uint32_t index) const;
 
 	/**
 	 * Retrieves a child by name.
@@ -186,7 +186,7 @@ private:
 	/** Inverse binding pose */
 	WMatrix m_invBindingPose;
 	/** Bone index */
-	unsigned int m_index;
+	uint32_t m_index;
 	/** Bone name */
 	char m_name[64];
 	/** Bone scale */
@@ -205,15 +205,15 @@ private:
  */
 struct W_SKELETAL_SUB_ANIMATION : public W_SUB_ANIMATION {
 	/** List of bone indices that are affected by this subanimation */
-	vector<unsigned int> boneIndices;
+	vector<uint32_t> boneIndices;
 	/** Index of the parent bone of this subanimation, -1 if none */
-	unsigned int parentIndex;
+	uint32_t parentIndex;
 	/** Index of the parent subanimation, -1 if none */
-	unsigned int parentSubAnimation;
+	uint32_t parentSubAnimation;
 
 	W_SKELETAL_SUB_ANIMATION() {
-		parentIndex = -1;
-		parentSubAnimation = -1;
+		parentIndex = (uint32_t)-1;
+		parentSubAnimation = (uint32_t)-1;
 		boneIndices.clear();
 	}
 
@@ -226,8 +226,8 @@ struct W_SKELETAL_SUB_ANIMATION : public W_SUB_ANIMATION {
 		boneIndices.push_back(curBone->GetIndex());
 
 		WBone* curChild = nullptr;
-		unsigned int i = -1;
-		while (curChild = curBone->GetChild(++i))
+		uint32_t i = (uint32_t)-1;
+		while ((curChild = curBone->GetChild(++i)) != nullptr)
 			BuildIndices(curBone->GetChild(i));
 	}
 };
@@ -243,7 +243,7 @@ protected:
 
 public:
 
-	WSkeleton(Wasabi* const app, unsigned int ID = 0);
+	WSkeleton(Wasabi* const app, uint32_t ID = 0);
 
 	/**
 	 * Appends a keyframe to the frames of this animation.
@@ -258,14 +258,14 @@ public:
 	 * @param  frame Index of the keyframe to delete
 	 * @return       Error code, see WError.h
 	 */
-	WError DeleteKeyFrame(unsigned int frame);
+	WError DeleteKeyFrame(uint32_t frame);
 
 	/**
 	 * Retrieves an existing keyframe.
 	 * @param  frame Index of the keyframe to retrieve
 	 * @return       The root of the bone structure of thi keyframe
 	 */
-	WBone* GetKeyFrame(unsigned int frame);
+	WBone* GetKeyFrame(uint32_t frame);
 
 	/**
 	 * Appends a subanimation to this animation. This is inherited from
@@ -282,9 +282,9 @@ public:
 	 * @param boneIndex          The index of the bone to be set as base
 	 * @param parentSubAnimation The parent subanimation, -1 if none
 	 */
-	void SetSubAnimationBaseBone(unsigned int subAnimation,
-								 unsigned int boneIndex,
-								 unsigned int parentSubAnimation = -1);
+	void SetSubAnimationBaseBone(uint32_t subAnimation,
+								 uint32_t boneIndex,
+								 uint32_t parentSubAnimation = -1);
 
 	/**
 	 * Steps the state of the playing (or looping) subanimations forward. This is
@@ -306,7 +306,7 @@ public:
 	 * @param  index Index of the bone to retrieve
 	 * @return       A pointer to the retrieved bone, nullptr if it doesnt exist
 	 */
-	virtual WBone* GetBone(unsigned int frame, unsigned int index) const;
+	virtual WBone* GetBone(uint32_t frame, uint32_t index) const;
 
 	/**
 	 * Retrieves a pointer to a bone from a frame. Changing the returned bone
@@ -315,7 +315,7 @@ public:
 	 * @param  index Name of the bone to retrieve
 	 * @return       A pointer to the retrieved bone, nullptr if it doesnt exist
 	 */
-	virtual WBone* GetBone(unsigned int frame, std::string name) const;
+	virtual WBone* GetBone(uint32_t frame, std::string name) const;
 
 	/**
 	 * Sets the scale of the the skeleton.
@@ -344,20 +344,20 @@ public:
 	 * @param obj    Pointer to the object to bind
 	 * @param boneID Index of the bone to bind obj to
 	 */
-	void BindToBone(WOrientation* obj, unsigned int boneID);
+	void BindToBone(WOrientation* obj, uint32_t boneID);
 
 	/**
 	 * Unbind an object from a bone.
 	 * @param obj    Pointer to the object to unbind
 	 * @param boneID Index of the bone to unbind obj from
 	 */
-	void UnbindFromBone(WOrientation* obj, unsigned int boneID);
+	void UnbindFromBone(WOrientation* obj, uint32_t boneID);
 
 	/**
 	 * Unbind all objects from a bone.
 	 * @param boneID Index of the bone to unbind objects from
 	 */
-	void UnbindFromBone(unsigned int boneID);
+	void UnbindFromBone(uint32_t boneID);
 
 	/**
 	 * Set the binding scale, which is applied to the binding matrix before it
@@ -423,8 +423,8 @@ private:
 		/** Bound orientation object */
 		WOrientation* obj;
 		/** Bone index that obj is bound to */
-		unsigned int boneID;
-		BONEBIND(WOrientation* o, unsigned int id) : obj(o), boneID(id) {}
+		uint32_t boneID;
+		BONEBIND(WOrientation* o, uint32_t id) : obj(o), boneID(id) {}
 	};
 
 	/** The animation texture */
@@ -446,12 +446,12 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WSkeletalAnimationData(Wasabi* const app, unsigned int ID = 0);
+	WSkeletalAnimationData(Wasabi* const app, uint32_t ID = 0);
 	~WSkeletalAnimationData();
 
 	WError SetSkeleton(WBone* base);
-	WError CreateAnimation(std::string name, WBone** frames, uint numFrames);
-	WError CreateAnimation(std::string name, WMatrix* matrices, uint numFrames);
+	WError CreateAnimation(std::string name, WBone** frames, uint32_t numFrames);
+	WError CreateAnimation(std::string name, WMatrix* matrices, uint32_t numFrames);
 
 	/**
 	 * Returns whether or not this skeletal animation is valid. A valid animation is one

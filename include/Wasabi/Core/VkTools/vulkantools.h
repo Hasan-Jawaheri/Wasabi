@@ -29,7 +29,7 @@
 #include <android/asset_manager.h>
 #endif
 
-typedef unsigned int uint;
+typedef uint32_t uint;
 
 // Custom define for better code readability
 #define VK_FLAGS_NONE 0
@@ -103,7 +103,7 @@ namespace vkTools
 		VkBuffer buffer;
 		VkDeviceMemory memory;
 		VkDescriptorBufferInfo descriptor;
-		uint allocSize;
+		uint32_t allocSize;
 		void* mapped = nullptr;
 	};
 
@@ -120,7 +120,7 @@ namespace vkTools
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo(
 			VkCommandPool commandPool,
 			VkCommandBufferLevel level,
-			uint bufferCount);
+			uint32_t bufferCount);
 
 		VkCommandPoolCreateInfo commandPoolCreateInfo();
 		VkCommandBufferBeginInfo commandBufferBeginInfo();
@@ -163,31 +163,31 @@ namespace vkTools
 			VkDeviceSize size);
 
 		VkDescriptorPoolCreateInfo descriptorPoolCreateInfo(
-			uint poolSizeCount,
+			uint32_t poolSizeCount,
 			VkDescriptorPoolSize* pPoolSizes,
-			uint maxSets);
+			uint32_t maxSets);
 
 		VkDescriptorPoolSize descriptorPoolSize(
 			VkDescriptorType type,
-			uint descriptorCount);
+			uint32_t descriptorCount);
 
 		VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(
 			VkDescriptorType type, 
 			VkShaderStageFlags stageFlags, 
-			uint binding);
+			uint32_t binding);
 
 		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo(
 			const VkDescriptorSetLayoutBinding* pBindings,
-			uint bindingCount);
+			uint32_t bindingCount);
 
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo(
 			const VkDescriptorSetLayout* pSetLayouts,
-			uint setLayoutCount	);
+			uint32_t setLayoutCount	);
 
 		VkDescriptorSetAllocateInfo descriptorSetAllocateInfo(
 			VkDescriptorPool descriptorPool,
 			const VkDescriptorSetLayout* pSetLayouts,
-			uint descriptorSetCount);
+			uint32_t descriptorSetCount);
 
 		VkDescriptorImageInfo descriptorImageInfo(
 			VkSampler sampler,
@@ -197,25 +197,25 @@ namespace vkTools
 		VkWriteDescriptorSet writeDescriptorSet(
 			VkDescriptorSet dstSet, 
 			VkDescriptorType type, 
-			uint binding, 
+			uint32_t binding, 
 			VkDescriptorBufferInfo* bufferInfo);
 
 		VkWriteDescriptorSet writeDescriptorSet(
 			VkDescriptorSet dstSet, 
 			VkDescriptorType type, 
-			uint binding, 
+			uint32_t binding, 
 			VkDescriptorImageInfo* imageInfo);
 
 		VkVertexInputBindingDescription vertexInputBindingDescription(
-			uint binding, 
-			uint stride, 
+			uint32_t binding, 
+			uint32_t stride, 
 			VkVertexInputRate inputRate);
 
 		VkVertexInputAttributeDescription vertexInputAttributeDescription(
-			uint binding,
-			uint location,
+			uint32_t binding,
+			uint32_t location,
 			VkFormat format,
-			uint offset);
+			uint32_t offset);
 
 		VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo();
 
@@ -235,7 +235,7 @@ namespace vkTools
 			VkBool32 blendEnable);
 
 		VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo(
-			uint attachmentCount,
+			uint32_t attachmentCount,
 			const VkPipelineColorBlendAttachmentState* pAttachments);
 
 		VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo(
@@ -244,8 +244,8 @@ namespace vkTools
 			VkCompareOp depthCompareOp);
 
 		VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo(
-			uint viewportCount,
-			uint scissorCount,
+			uint32_t viewportCount,
+			uint32_t scissorCount,
 			VkPipelineViewportStateCreateFlags flags);
 
 		VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo(
@@ -254,11 +254,11 @@ namespace vkTools
 
 		VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo(
 			const VkDynamicState *pDynamicStates,
-			uint dynamicStateCount,
+			uint32_t dynamicStateCount,
 			VkPipelineDynamicStateCreateFlags flags);
 
 		VkPipelineTessellationStateCreateInfo pipelineTessellationStateCreateInfo(
-			uint patchControlPoints);
+			uint32_t patchControlPoints);
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo(
 			VkPipelineLayout layout,
@@ -271,8 +271,8 @@ namespace vkTools
 
 		VkPushConstantRange pushConstantRange(
 			VkShaderStageFlags stageFlags,
-			uint size,
-			uint offset);
+			uint32_t size,
+			uint32_t offset);
 	}
 
 }

@@ -70,7 +70,7 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 			int lControlPointIndex = pMesh->GetPolygonVertex(i, j);
 			FbxVector4 pos, norm, tang;
 			FbxVector2 uv;
-			uint textureIndex = 0;
+			uint32_t textureIndex = 0;
 			bool dummy;
 			pos = allControlPointPositions[lControlPointIndex];
 			pMesh->GetPolygonVertexNormal(i, j, norm);
@@ -163,7 +163,7 @@ MESHDATA ParseMesh(FbxMesh* pMesh)
 
 			const char* name = lCluster->GetLink()->GetName();
 
-			UINT boneID = j;
+			uint32_t boneID = j;
 			bool bAlreadyHasID = NodeExists(lCluster->GetLink());
 			if (bAlreadyHasID)
 				boneID = GetNodeID(lCluster->GetLink());

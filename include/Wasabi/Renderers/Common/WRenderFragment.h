@@ -26,7 +26,7 @@ protected:
 	std::string m_name;
 	class WManager<EntityT>* m_manager;
 	class WEffect* m_renderEffect;
-	uint m_currentMatId;
+	uint32_t m_currentMatId;
 
 	/** Sorted container for all the entities to be rendered by this fragment */
 	std::map<SortingKeyT, EntityT*> m_allEntities;
@@ -64,16 +64,16 @@ public:
 		m_renderEffect = fx;
 		m_currentMatId = 0;
 
-		unsigned int numEntities = m_manager->GetEntitiesCount();
-		for (unsigned int i = 0; i < numEntities; i++)
+		uint32_t numEntities = m_manager->GetEntitiesCount();
+		for (uint32_t i = 0; i < numEntities; i++)
 			OnEntityChange(m_manager->GetEntityByIndex(i), true);
 		m_manager->RegisterChangeCallback(m_name, [this](EntityT* o, bool a) {this->OnEntityChange(o, a); });
 	}
 	virtual ~WRenderFragment() {
 		W_SAFE_REMOVEREF(m_renderEffect);
 		m_manager->RemoveChangeCallback(m_name);
-		unsigned int numEntities = m_manager->GetEntitiesCount();
-		for (unsigned int i = 0; i < numEntities; i++) {
+		uint32_t numEntities = m_manager->GetEntitiesCount();
+		for (uint32_t i = 0; i < numEntities; i++) {
 			EntityT* entity = m_manager->GetEntityByIndex(i);
 			entity->RemoveEffect(m_renderEffect);
 		}
@@ -84,9 +84,7 @@ public:
 	}
 
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt) {
-		WCamera* cam = rt->GetCamera();
-
-		uint numEntities = m_manager->GetEntitiesCount();
+		UNREFERENCED_PARAMETER(renderer);
 
 		WEffect* boundFX = nullptr;
 		bool isBoundFXAnimated = false;
@@ -204,10 +202,12 @@ public:
 	}
 
 	virtual bool KeyChanged(WTerrain* terrain, class WEffect* effect, WTerrainSortingKey key) {
+		UNREFERENCED_PARAMETER(terrain);
 		return effect != key.fx;
 	}
 
 	virtual bool IsEntityAnimated(WTerrain* terrain) {
+		UNREFERENCED_PARAMETER(terrain);
 		return false;
 	}
 };
@@ -216,7 +216,7 @@ public:
 struct WSpriteSortingKey {
 	class WEffect* fx;
 	class WSprite* sprite;
-	uint priority;
+	uint32_t priority;
 
 	WSpriteSortingKey(class WSprite* spr) {
 		sprite = spr;
@@ -248,6 +248,7 @@ public:
 	}
 
 	virtual bool IsEntityAnimated(WSprite* sprite) {
+		UNREFERENCED_PARAMETER(sprite);
 		return false;
 	}
 };
@@ -256,7 +257,7 @@ public:
 struct WParticlesSortingKey {
 	class WEffect* fx;
 	class WParticles* particles;
-	uint priority;
+	uint32_t priority;
 
 	WParticlesSortingKey(class WParticles* par) {
 		particles = par;
@@ -291,6 +292,7 @@ public:
 	}
 
 	virtual bool IsEntityAnimated(WParticles* sprite) {
+		UNREFERENCED_PARAMETER(sprite);
 		return false;
 	}
 

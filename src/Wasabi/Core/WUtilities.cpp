@@ -7,8 +7,8 @@
 
 bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, int* _x, int* _y) {
 	WCamera* cam = app->Renderer->GetRenderTarget(app->Renderer->GetPickingRenderStageName())->GetCamera();
-	float width = app->WindowAndInputComponent->GetWindowWidth();
-	float height = app->WindowAndInputComponent->GetWindowHeight();
+	float width = (float)app->WindowAndInputComponent->GetWindowWidth();
+	float height = (float)app->WindowAndInputComponent->GetWindowHeight();
 	WVector3 pos = WVec3TransformCoord(point, cam->GetViewMatrix());
 
 	float fX = pos.x * cam->GetMinRange() / pos.z;
@@ -75,8 +75,8 @@ bool WUtil::RayIntersectCube(float cubeHalfSize, WVector3 rayPos, WVector3 rayDi
 		verts[i] += cubePos;
 	}
 
-	//allocate 36 unsigned ints for the indices of the cube
-	unsigned int _indices[36];
+	//allocate 36 uint32_ts for the indices of the cube
+	uint32_t _indices[36];
 
 	//fill cube's index data
 	_indices[0] = 0; _indices[1] = 1; _indices[2] = 2;
@@ -92,7 +92,7 @@ bool WUtil::RayIntersectCube(float cubeHalfSize, WVector3 rayPos, WVector3 rayDi
 	_indices[30] = 20; _indices[31] = 21; _indices[32] = 22;
 	_indices[33] = 20; _indices[34] = 22; _indices[35] = 23;
 
-	for (unsigned int i = 0; i < 12; i++) {
+	for (uint32_t i = 0; i < 12; i++) {
 		WVector3 v0 = verts[_indices[i * 3 + 0]];
 		WVector3 v1 = verts[_indices[i * 3 + 1]];
 		WVector3 v2 = verts[_indices[i * 3 + 2]];
@@ -171,8 +171,8 @@ bool WUtil::RayIntersectBox(WVector3 boxDimensions, WVector3 rayPos, WVector3 ra
 		verts[i] += boxPos;
 	}
 
-	//allocate 36 unsigned ints for the indices of the cube
-	unsigned int _indices[36];
+	//allocate 36 uint32_ts for the indices of the cube
+	uint32_t _indices[36];
 
 	//fill cube's index data
 	_indices[0] = 0; _indices[1] = 1; _indices[2] = 2;
@@ -188,7 +188,7 @@ bool WUtil::RayIntersectBox(WVector3 boxDimensions, WVector3 rayPos, WVector3 ra
 	_indices[30] = 20; _indices[31] = 21; _indices[32] = 22;
 	_indices[33] = 20; _indices[34] = 22; _indices[35] = 23;
 
-	for (unsigned int i = 0; i < 12; i++) {
+	for (uint32_t i = 0; i < 12; i++) {
 		WVector3 v0 = verts[_indices[i * 3 + 0]];
 		WVector3 v1 = verts[_indices[i * 3 + 1]];
 		WVector3 v2 = verts[_indices[i * 3 + 2]];

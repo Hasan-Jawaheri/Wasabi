@@ -9,6 +9,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
 
 #define W_EPSILON 0.0001f
 #define W_PI (3.14159265358979323846f)
@@ -32,8 +33,8 @@ public:
 	float a;
 
 	WColor() : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {}
-	WColor(unsigned int hex) : r((float)((hex >> 24) & 0xFF) / 255.0f), g((float)((hex >> 16) & 0xFF) / 255.0f), b((float)((hex >> 8) & 0xFF) / 255.0f), a((float)((hex) & 0xFF) / 255.0f) {}
-	WColor(int hex) : r((float)(((unsigned int)hex >> 24) & 0xFF) / 255.0f), g((float)(((unsigned int)hex >> 16) & 0xFF) / 255.0f), b((float)(((unsigned int)hex >> 8) & 0xFF) / 255.0f), a((float)(((unsigned int)hex) & 0xFF) / 255.0f) {}
+	WColor(uint32_t hex) : r((float)((hex >> 24) & 0xFF) / 255.0f), g((float)((hex >> 16) & 0xFF) / 255.0f), b((float)((hex >> 8) & 0xFF) / 255.0f), a((float)((hex) & 0xFF) / 255.0f) {}
+	WColor(int hex) : r((float)(((uint32_t)hex >> 24) & 0xFF) / 255.0f), g((float)(((uint32_t)hex >> 16) & 0xFF) / 255.0f), b((float)(((uint32_t)hex >> 8) & 0xFF) / 255.0f), a((float)(((uint32_t)hex) & 0xFF) / 255.0f) {}
 	WColor(float fRGB) : r(fRGB), g(fRGB), b(fRGB), a(1.0f) {}
 	WColor(float fR, float fG, float fB) : r(fR), g(fG), b(fB), a(1.0f) {}
 	WColor(float fR, float fG, float fB, float fA) : r(fR), g(fG), b(fB), a(fA){}
@@ -114,10 +115,10 @@ public:
 		a /= f;
 	}
 
-	float& operator[] (const unsigned int index) {
+	float& operator[] (const uint32_t index) {
 		return *((float*)(this) + index);
 	}
-	const float operator[] (const unsigned int index) const {
+	const float operator[] (const uint32_t index) const {
 		return *((float*)(this) + index);
 	}
 	float& operator[] (const int index) {
@@ -126,10 +127,10 @@ public:
 	const float operator[] (const int index) const {
 		return *((float*)(this) + index);
 	}
-	float& operator() (const unsigned int index) {
+	float& operator() (const uint32_t index) {
 		return *((float*)(this) + index);
 	}
-	const float operator() (const unsigned int index) const {
+	const float operator() (const uint32_t index) const {
 		return *((float*)(this) + index);
 	}
 	float& operator() (const int index) {
@@ -228,10 +229,10 @@ public:
 		y /= f;
 	}
 
-	float& operator[] (const unsigned int index) {
+	float& operator[] (const uint32_t index) {
 		return *((float*)(this) + index);
 	}
-	const float operator[] (const unsigned int index) const {
+	const float operator[] (const uint32_t index) const {
 		return *((float*)(this) + index);
 	}
 	float& operator[] (const int index) {
@@ -240,10 +241,10 @@ public:
 	const float operator[] (const int index) const {
 		return *((float*)(this) + index);
 	}
-	float& operator() (const unsigned int index) {
+	float& operator() (const uint32_t index) {
 		return *((float*)(this) + index);
 	}
-	const float operator() (const unsigned int index) const {
+	const float operator() (const uint32_t index) const {
 		return *((float*)(this) + index);
 	}
 	float& operator() (const int index) {
@@ -348,10 +349,10 @@ public:
 		z /= f;
 	}
 
-	float& operator[] (const unsigned int index) {
+	float& operator[] (const uint32_t index) {
 		return *((float*)(this) + index);
 	}
-	const float operator[] (const unsigned int index) const {
+	const float operator[] (const uint32_t index) const {
 		return *((float*)(this) + index);
 	}
 	float& operator[] (const int index) {
@@ -360,10 +361,10 @@ public:
 	const float operator[] (const int index) const {
 		return *((float*)(this) + index);
 	}
-	float& operator() (const unsigned int index) {
+	float& operator() (const uint32_t index) {
 		return *((float*)(this) + index);
 	}
-	const float operator() (const unsigned int index) const {
+	const float operator() (const uint32_t index) const {
 		return *((float*)(this) + index);
 	}
 	float& operator() (const int index) {
@@ -480,10 +481,10 @@ public:
 		w /= f;
 	}
 
-	float& operator[] (const unsigned int index) {
+	float& operator[] (const uint32_t index) {
 		return *((float*)(this) + index);
 	}
-	const float operator[] (const unsigned int index) const {
+	const float operator[] (const uint32_t index) const {
 		return *((float*)(this) + index);
 	}
 	float& operator[] (const int index) {
@@ -492,10 +493,10 @@ public:
 	const float operator[] (const int index) const {
 		return *((float*)(this) + index);
 	}
-	float& operator() (const unsigned int index) {
+	float& operator() (const uint32_t index) {
 		return *((float*)(this) + index);
 	}
-	const float operator() (const unsigned int index) const {
+	const float operator() (const uint32_t index) const {
 		return *((float*)(this) + index);
 	}
 	float& operator() (const int index) {
@@ -587,10 +588,10 @@ public:
 	void operator*= (const float f);
 	void operator/= (const float f);
 
-	float& operator() (const unsigned int row, const unsigned int col);
-	const float operator() (const unsigned int row,const unsigned int col) const;
-	float& operator[] (const unsigned int index);
-	const float operator[] (const unsigned int index) const;
+	float& operator() (const uint32_t row, const uint32_t col);
+	const float operator() (const uint32_t row,const uint32_t col) const;
+	float& operator[] (const uint32_t index);
+	const float operator[] (const uint32_t index) const;
 };
 
 /**

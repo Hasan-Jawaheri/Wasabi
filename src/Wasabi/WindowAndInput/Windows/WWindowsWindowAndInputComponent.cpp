@@ -8,7 +8,7 @@
 #include "Wasabi/WindowAndInput/Windows/WWindowsWindowAndInputComponent.h"
 #include <windows.h>
 
-LRESULT CALLBACK hMainWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK hMainWndProc(HWND hWnd, uint32_t msg, WPARAM wParam, LPARAM lParam);
 
 WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent(Wasabi* const app) : WWindowAndInputComponent(app) {
 	m_mainWindow = nullptr;
@@ -24,10 +24,10 @@ WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent(Wasabi* const a
 	m_rightClick = m_leftClick = m_middleClick = false;
 	m_mouseZ = 0;
 	m_escapeE = true;
-	for (uint i = 0; i < 256; i++)
+	for (uint32_t i = 0; i < 256; i++)
 		m_keyDown[i] = false;
 
-	app->SetEngineParam<uint>("classStyle", CS_HREDRAW | CS_VREDRAW);
+	app->SetEngineParam<uint32_t>("classStyle", CS_HREDRAW | CS_VREDRAW);
 	app->SetEngineParam<HICON>("classIcon", NULL);
 	app->SetEngineParam<HCURSOR>("classCursor", LoadCursorA(NULL, MAKEINTRESOURCEA(32512)));
 	app->SetEngineParam<LPCSTR>("menuName", NULL);
@@ -35,8 +35,8 @@ WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent(Wasabi* const a
 	app->SetEngineParam<HICON>("classIcon_sm", NULL);
 	app->SetEngineParam<HMENU>("windowMenu", NULL);
 	app->SetEngineParam<HWND>("windowParent", NULL);
-	app->SetEngineParam<uint>("windowStyle", WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_VISIBLE);
-	app->SetEngineParam<uint>("windowStyleEx", WS_EX_OVERLAPPEDWINDOW);
+	app->SetEngineParam<uint32_t>("windowStyle", WS_CAPTION | WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+	app->SetEngineParam<uint32_t>("windowStyleEx", WS_EX_OVERLAPPEDWINDOW);
 	app->SetEngineParam<int>("defWndX", -1);
 	app->SetEngineParam<int>("defWndY", -1);
 }
@@ -50,9 +50,9 @@ WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
 		rc.top = 0;
 		rc.right = width;
 		rc.bottom = height;
-		AdjustWindowRectEx(&rc, m_app->GetEngineParam<uint>("windowStyle"),
+		AdjustWindowRectEx(&rc, m_app->GetEngineParam<uint32_t>("windowStyle"),
 			(m_app->GetEngineParam<HMENU>("windowMenu") == nullptr) ? FALSE : TRUE,
-			m_app->GetEngineParam<uint>("windowStyleEx"));
+			m_app->GetEngineParam<uint32_t>("windowStyleEx"));
 
 		//adjust window position (no window re-creation)
 		SetWindowPos(m_mainWindow, nullptr, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE);
@@ -64,7 +64,7 @@ WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
 	WNDCLASSEXA wcex;
 	std::string classname = "WNDCLASS " + std::to_string((size_t)this);
 	wcex.cbSize = sizeof(WNDCLASSEXA);
-	wcex.style = m_app->GetEngineParam<uint>("classStyle");
+	wcex.style = m_app->GetEngineParam<uint32_t>("classStyle");
 	wcex.lpfnWndProc = hMainWndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
@@ -86,9 +86,9 @@ WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
 	rc.top = 0;
 	rc.right = width;
 	rc.bottom = height;
-	AdjustWindowRectEx(&rc, m_app->GetEngineParam<uint>("windowStyle"),
+	AdjustWindowRectEx(&rc, m_app->GetEngineParam<uint32_t>("windowStyle"),
 		(m_app->GetEngineParam<HMENU>("windowMenu") == nullptr) ? FALSE : TRUE,
-		m_app->GetEngineParam<uint>("windowStyleEx"));
+		m_app->GetEngineParam<uint32_t>("windowStyleEx"));
 
 	//set to default positions if specified
 	int x, y;
@@ -103,9 +103,9 @@ WError WWindowsWindowAndInputComponent::Initialize(int width, int height) {
 	//
 	//Create the main window
 	//
-	m_mainWindow = CreateWindowExA(m_app->GetEngineParam<uint>("windowStyleEx"), wcex.lpszClassName,
+	m_mainWindow = CreateWindowExA(m_app->GetEngineParam<uint32_t>("windowStyleEx"), wcex.lpszClassName,
 		m_app->GetEngineParam<const char*>("appName"),
-		m_app->GetEngineParam<uint>("windowStyle"),
+		m_app->GetEngineParam<uint32_t>("windowStyle"),
 		x, y, rc.right - rc.left, rc.bottom - rc.top,
 		m_app->GetEngineParam<HWND>("windowParent"), m_app->GetEngineParam<HMENU>("windowMenu"), m_hInstance, nullptr);
 
@@ -196,20 +196,20 @@ void WWindowsWindowAndInputComponent::MinimizeWindow() {
 	m_isMinimized = true; //mark minimized
 }
 
-uint WWindowsWindowAndInputComponent::RestoreWindow() {
+uint32_t WWindowsWindowAndInputComponent::RestoreWindow() {
 	//restore window
 	int result = ShowWindow(m_mainWindow, SW_RESTORE);
 	m_isMinimized = false; //mark not minimized
 	return result;
 }
 
-uint WWindowsWindowAndInputComponent::GetWindowWidth() const {
+uint32_t WWindowsWindowAndInputComponent::GetWindowWidth() const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.right;
 }
 
-uint WWindowsWindowAndInputComponent::GetWindowHeight() const {
+uint32_t WWindowsWindowAndInputComponent::GetWindowHeight() const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.bottom;
@@ -269,8 +269,8 @@ void WWindowsWindowAndInputComponent::SetFullScreenState(bool bFullScreen) {
 	} else {
 		RECT rc;
 		GetClientRect(m_mainWindow, &rc);
-		DWORD newStyle = m_app->GetEngineParam<uint>("windowStyle") | WS_BORDER | WS_VISIBLE;
-		DWORD newExStyle = m_app->GetEngineParam<uint>("windowStyleEx");
+		DWORD newStyle = m_app->GetEngineParam<uint32_t>("windowStyle") | WS_BORDER | WS_VISIBLE;
+		DWORD newExStyle = m_app->GetEngineParam<uint32_t>("windowStyleEx");
 		AdjustWindowRectEx(&rc, newStyle, FALSE, newExStyle);
 		SetWindowLongPtr(m_mainWindow, GWL_STYLE, newStyle);
 		SetWindowLongPtr(m_mainWindow, GWL_EXSTYLE, newExStyle);
@@ -280,7 +280,7 @@ void WWindowsWindowAndInputComponent::SetFullScreenState(bool bFullScreen) {
 }
 
 bool WWindowsWindowAndInputComponent::GetFullScreenState() const {
-	DWORD dwStyle = GetWindowLongPtr(m_mainWindow, GWL_STYLE);
+	DWORD dwStyle = (DWORD)GetWindowLongPtr(m_mainWindow, GWL_STYLE);
 	return dwStyle & WS_POPUP && !(dwStyle & WS_BORDER);
 }
 
@@ -311,7 +311,9 @@ bool WWindowsWindowAndInputComponent::MouseClick(W_MOUSEBUTTON button) const {
 	return false;
 }
 
-int WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint vpID) const {
+int WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
+	UNREFERENCED_PARAMETER(vpID);
+
 	//get mouse position and convert it to the desired type
 	RECT rc;
 	POINT pt, __pt;
@@ -332,11 +334,11 @@ int WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent::MouseX(W_M
 		return __pt.x; //return desktop space position
 	else
 		return 0;
-
-	return 0;
 }
 
-int WWindowsWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint vpID) const {
+int WWindowsWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
+	UNREFERENCED_PARAMETER(vpID);
+	
 	//get mouse position and convert it to the desired type
 	RECT rc;
 	POINT pt, __pt;
@@ -357,8 +359,6 @@ int WWindowsWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint vpID) cons
 		return __pt.y; //return desktop space position
 	else
 		return 0;
-
-	return 0;
 }
 
 int WWindowsWindowAndInputComponent::MouseZ() const {
@@ -366,13 +366,15 @@ int WWindowsWindowAndInputComponent::MouseZ() const {
 	return m_mouseZ;
 }
 
-bool WWindowsWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint vpID) const {
+bool WWindowsWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
+	UNREFERENCED_PARAMETER(vpID);
+	
 	if (posT == MOUSEPOS_WINDOW) { //check if mouse is in the window
 		POINT pt;
 		GetCursorPos(&pt);
 		RECT rc;
 		GetWindowRect(m_mainWindow, &rc);
-		uint style = GetWindowLong(m_mainWindow, GWL_STYLE);
+		uint32_t style = GetWindowLong(m_mainWindow, GWL_STYLE);
 		rc.left += (style & WS_BORDER ? 10 : 0);
 		rc.top += (style & WS_CAPTION ? 30 : 0);
 		rc.right -= (style & WS_BORDER ? 10 : 0);
@@ -389,7 +391,7 @@ bool WWindowsWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint vp
 		GetCursorPos(&pt);
 		RECT rc;
 		GetWindowRect(((WWC_Win32*)m_app->WindowAndInputComponent)->GetWindow(), &rc);
-		uint style = GetWindowLong(((WWC_Win32*)m_app->WindowAndInputComponent)->GetWindow(), GWL_STYLE);
+		uint32_t style = GetWindowLong(((WWC_Win32*)m_app->WindowAndInputComponent)->GetWindow(), GWL_STYLE);
 		rc.left += (style & WS_BORDER ? 10 : 0);
 		rc.top += (style & WS_CAPTION ? 30 : 0);
 		rc.top += (GetMenu(((WWC_Win32*)m_app->WindowAndInputComponent)->GetWindow()) == NULL ? 0 : 20);
@@ -408,7 +410,7 @@ bool WWindowsWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint vp
 	return false;
 }
 
-void WWindowsWindowAndInputComponent::SetMousePosition(uint x, uint y, W_MOUSEPOSTYPE posT) {
+void WWindowsWindowAndInputComponent::SetMousePosition(uint32_t x, uint32_t y, W_MOUSEPOSTYPE posT) {
 	if (posT == MOUSEPOS_VIEWPORT) {
 		POINT pos = { (long)x, (long)y };
 		//convert to screen space
@@ -436,19 +438,19 @@ void WWindowsWindowAndInputComponent::DisableEscapeKeyQuit() {
 	m_escapeE = false;
 }
 
-bool WWindowsWindowAndInputComponent::KeyDown(unsigned int key) const {
+bool WWindowsWindowAndInputComponent::KeyDown(uint32_t key) const {
 	if (key >= 256)
 		return false;
 	return m_keyDown[key];
 }
 
-void WWindowsWindowAndInputComponent::InsertRawInput(unsigned int key, bool state) {
+void WWindowsWindowAndInputComponent::InsertRawInput(uint32_t key, bool state) {
 	if (key < 256)
 		m_keyDown[key] = state;
 }
 
 //window procedure
-LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK hMainWndProc(HWND hWnd, uint32_t msg, WPARAM wParam, LPARAM lParam) {
 	//get an inctance of the core
 	Wasabi* appInst = (Wasabi*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	WWindowsWindowAndInputComponent* Component = nullptr;
@@ -487,21 +489,21 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//ESCAPE KEY will close the application if m_escapeE is true
 		if (wParam == VK_ESCAPE && Component->m_escapeE)
 			appInst->__EXIT = true;
-		Component->InsertRawInput(wParam, true);
+		Component->InsertRawInput((uint32_t)wParam, true);
 		if (appInst->curState)
-			appInst->curState->OnKeyDown(wParam);
+			appInst->curState->OnKeyDown((char)wParam);
 		break;
 	case WM_KEYUP:
 		if (!Component)
 			break;
-		Component->InsertRawInput(wParam, false);
+		Component->InsertRawInput((uint32_t)wParam, false);
 		if (appInst->curState)
-			appInst->curState->OnKeyUp(wParam);
+			appInst->curState->OnKeyUp((char)wParam);
 		break;
 	case WM_CHAR:
 		if (appInst->curState) {
-			for (UINT i = 0; i < LOWORD(lParam); i++)
-				appInst->curState->OnInput(wParam);
+			for (uint32_t i = 0; i < LOWORD(lParam); i++)
+				appInst->curState->OnInput((char)wParam);
 		}
 		break;
 	case WM_GETMINMAXINFO:

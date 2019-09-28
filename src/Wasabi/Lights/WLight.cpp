@@ -24,7 +24,7 @@ WLight* WLightManager::GetDefaultLight() const {
 	return m_defaultLight;
 }
 
-WLight::WLight(Wasabi* const app, W_LIGHT_TYPE type, unsigned int ID) : WFileAsset(app, ID) {
+WLight::WLight(Wasabi* const app, W_LIGHT_TYPE type, uint32_t ID) : WFileAsset(app, ID) {
 	m_hidden = false;
 	m_type = type;
 	m_range = 50.0f;
@@ -128,6 +128,8 @@ void WLight::OnStateChange(STATE_CHANGE_TYPE type) {
 }
 
 WError WLight::SaveToStream(WFile* file, std::ostream& outputStream) {
+	UNREFERENCED_PARAMETER(file);
+
 	if (!Valid())
 		return WError(W_NOTVALID);
 
@@ -150,6 +152,9 @@ std::vector<void*> WLight::LoadArgs() {
 }
 
 WError WLight::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
+	UNREFERENCED_PARAMETER(file);
+	UNREFERENCED_PARAMETER(args);
+
 	WVector3 pos;
 	WQuaternion rot;
 	inputStream.read((char*)&m_type, sizeof(m_type));

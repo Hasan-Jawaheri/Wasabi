@@ -12,7 +12,9 @@ WTextsRenderStage::WTextsRenderStage(Wasabi* const app, bool backbuffer) : WRend
 	m_stageDescription.flags = RENDER_STAGE_FLAG_TEXTS_RENDER_STAGE;
 }
 
-WError WTextsRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
+WError WTextsRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
+	UNREFERENCED_PARAMETER(renderer);
+
 	if (filter & RENDER_FILTER_TEXT) {
 		m_app->TextComponent->Render(rt);
 	}

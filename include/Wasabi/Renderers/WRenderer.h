@@ -15,7 +15,7 @@
 /** Specifies which components are to be rendered. The fields can be bitwise
 		OR'ed (e.g. RENDER_FILTER_OBJECTS | RENDER_FILTER_PARTICLES) to add
 		multiple filters. */
-enum W_RENDER_FILTER {
+enum W_RENDER_FILTER: uint32_t {
 	/** Render objects */
 	RENDER_FILTER_OBJECTS = 1,
 	/** Render sprites */
@@ -29,7 +29,7 @@ enum W_RENDER_FILTER {
 };
 
 /** Specifies the type of a texture sampler */
-enum W_TEXTURE_SAMPLER_TYPE {
+enum W_TEXTURE_SAMPLER_TYPE: uint8_t {
 	/** Default renderer's sampler */
 	TEXTURE_SAMPLER_DEFAULT = 0,
 };
@@ -82,7 +82,7 @@ public:
 	 * @param  height New screen (window) height
 	 * @return        Error code, see WError
 	 */
-	WError Resize(uint width, uint height);
+	WError Resize(uint32_t width, uint32_t height);
 
 	/**
 	 * Destroys the previously set render stages and assigns the new ones. This
@@ -162,7 +162,7 @@ public:
 	 * assume GPU access to it is done). All memory access to those buffers have
 	 * to use a memory barriers to ensure no races happen.
 	 */
-	uint GetCurrentBufferingIndex() const;
+	uint32_t GetCurrentBufferingIndex() const;
 
 	/**
 	 * Retrieves the currently used Vulkan graphics queue.
@@ -215,15 +215,15 @@ private:
 		std::vector<VkFence> memoryFences;
 		/** Index currently used, this is not the same as the framebuffer returned
 		    by VkAcquireNExtImageKHR, it is independent and round-robin'd */
-		uint curIndex;
+		uint32_t curIndex;
 
-		VkResult Create(class Wasabi* app, uint numBuffers);
+		VkResult Create(class Wasabi* app, uint32_t numBuffers);
 		void Destroy(class Wasabi* app);
 	} m_perBufferResources;
 
 	/** Current width of the screen (window client) */
-	uint m_width;
+	uint32_t m_width;
 	/** Current height of the screen (window client) */
-	uint m_height;
+	uint32_t m_height;
 };
 

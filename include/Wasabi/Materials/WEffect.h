@@ -18,7 +18,7 @@
  * @ingroup engineclass
  * Type of a shader.
  */
-enum W_SHADER_TYPE {
+enum W_SHADER_TYPE: uint32_t {
 	/** Vertex shader */
 	W_VERTEX_SHADER = VK_SHADER_STAGE_VERTEX_BIT,
 	/** Pixel (or fragment) shader */
@@ -33,12 +33,12 @@ enum W_SHADER_TYPE {
  * @ingroup engineclass
  * Type of a shader variable (or attribute).
  */
-enum W_SHADER_VARIABLE_TYPE {
+enum W_SHADER_VARIABLE_TYPE: uint8_t {
 	/** A floating-point type */
 	W_TYPE_FLOAT = 0,
 	/** An integer type */
 	W_TYPE_INT = 1,
-	/** An unsigned int type */
+	/** An uint32_t type */
 	W_TYPE_UINT = 2,
 	/** A half float */
 	W_TYPE_HALF = 3,
@@ -58,7 +58,7 @@ enum W_SHADER_VARIABLE_TYPE {
  * @ingroup engineclass
  * Type of a bound resource to a shader.
  */
-enum W_SHADER_BOUND_RESOURCE_TYPE {
+enum W_SHADER_BOUND_RESOURCE_TYPE: uint8_t {
 	/** Bound resource is a UBO */
 	W_TYPE_UBO = 0,
 	/** Bound resource is a combined sampler (texture) */
@@ -71,7 +71,7 @@ enum W_SHADER_BOUND_RESOURCE_TYPE {
  * @ingroup engineclass
  * Rate at which a vertex buffer is passed to the vertex shader
  */
-enum W_VERTEX_INPUT_RATE {
+enum W_VERTEX_INPUT_RATE: uint8_t {
 	/** A unit of the buffer (of a size provided by the stride given to the draw
 			call) will be passed to the vertex shader for every vertex passed. */
 	W_INPUT_RATE_PER_VERTEX = 0,
@@ -166,28 +166,28 @@ typedef struct W_BOUND_RESOURCE {
 	W_BOUND_RESOURCE() {}
 	W_BOUND_RESOURCE(
 		W_SHADER_BOUND_RESOURCE_TYPE t,
-		uint index,
+		uint32_t index,
 		std::string name,
 		std::vector<W_SHADER_VARIABLE_INFO> v =
 			std::vector<W_SHADER_VARIABLE_INFO>(),
-		uint textureArraySize = 1
+		uint32_t textureArraySize = 1
 	);
 	W_BOUND_RESOURCE(
 		W_SHADER_BOUND_RESOURCE_TYPE t,
-		uint index,
-		uint set,
+		uint32_t index,
+		uint32_t set,
 		std::string name,
 		std::vector<W_SHADER_VARIABLE_INFO> v =
 			std::vector<W_SHADER_VARIABLE_INFO>(),
-		uint textureArraySize = 1
+		uint32_t textureArraySize = 1
 	);
 
 	/** Type of this resource */
 	W_SHADER_BOUND_RESOURCE_TYPE type;
 	/** Index in the shader at which the resource is bound */
-	uint binding_index;
+	uint32_t binding_index;
 	/** The set at which the resource is bound */
-	uint binding_set;
+	uint32_t binding_set;
 	/** Name of this bound resource */
 	std::string name;
 	/** Variables of this resource (in case of a UBO), which is empty for
@@ -213,7 +213,7 @@ typedef struct W_BOUND_RESOURCE {
 	 *                        the offset
 	 * @return                Aligned offset of the given variable in the UBO
 	 */
-	size_t OffsetAtVariable(unsigned int variable_index) const;
+	size_t OffsetAtVariable(uint32_t variable_index) const;
 
 	/**
 	 * Checks if this resource has the same layout as another resource.
@@ -234,9 +234,9 @@ typedef struct W_BOUND_RESOURCE {
 typedef struct W_INPUT_LAYOUT {
 	W_INPUT_LAYOUT(std::vector<W_SHADER_VARIABLE_INFO> a,
 				   W_VERTEX_INPUT_RATE r = W_INPUT_RATE_PER_VERTEX)
-		: attributes(a), input_rate(r), _size(-1) {
+		: attributes(a), input_rate(r), _size((size_t)-1) {
 	}
-	W_INPUT_LAYOUT() : attributes({}), _size(-1) {}
+	W_INPUT_LAYOUT() : attributes({}), _size((size_t)-1) {}
 
 	/** Attributes of a single "vertex" (or instance, depending on input_rate) */
 	std::vector<W_SHADER_VARIABLE_INFO> attributes;
@@ -435,7 +435,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WShader(class Wasabi* const app, unsigned int ID = 0);
+	WShader(class Wasabi* const app, uint32_t ID = 0);
 	~WShader();
 
 	/**
@@ -446,7 +446,9 @@ public:
 	 * @param bSaveData  Whether or not to save the code data to be able to write
 	 *                   it to a file later
 	 */
-	virtual void Load(bool bSaveData = false) {}
+	virtual void Load(bool bSaveData = false) {
+		UNREFERENCED_PARAMETER(bSaveData);
+	}
 
 	/**
 	 * Checks the validity of the shader. A shader is valid if m_module is
@@ -512,7 +514,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WEffect(class Wasabi* const app, unsigned int ID = 0);
+	WEffect(class Wasabi* const app, uint32_t ID = 0);
 
 	/**
 	 * Binds a shader to this effect.
@@ -595,14 +597,14 @@ public:
 	 *                            if no input layouts are present)
 	 * @return                    Error code, see WError.h
 	 */
-	WError Bind(class WRenderTarget* rt, uint num_vertex_buffers = -1);
+	WError Bind(class WRenderTarget* rt, uint32_t num_vertex_buffers = -1);
 
 	/**
 	 * Allocates a new material for this effect.
 	 * @param bindingSet  The binding set to use from this effect
 	 * @return            Newly allocated and initialized material
 	 */
-	class WMaterial* CreateMaterial(uint bindingSet = 0);
+	class WMaterial* CreateMaterial(uint32_t bindingSet = 0);
 	
 	/**
 	 * Retrieves the layout of the pipelines created by this effect.
@@ -615,7 +617,7 @@ public:
 	 * @param  Index of the specified set
 	 * @return The Vulkan descriptor set layout
 	 */
-	VkDescriptorSetLayout GetDescriptorSetLayout(uint setIndex = 0) const;
+	VkDescriptorSetLayout GetDescriptorSetLayout(uint32_t setIndex = 0) const;
 
 	/**
 	 * Retrieves an input layout supplied by one of the bound shaders.
@@ -623,14 +625,14 @@ public:
 	 * @return              The input layout at layout_index supplied by bound
 	 *                      shaders
 	 */
-	W_INPUT_LAYOUT GetInputLayout(unsigned int layout_index = 0) const;
+	W_INPUT_LAYOUT GetInputLayout(uint32_t layout_index = 0) const;
 
 	/**
 	 * Retrieves the size of the input layout at the given index.
 	 * @param  layout_index Index of the layout requested
 	 * @return              The size of the input layout at the given index
 	 */
-	size_t GetInputLayoutSize(unsigned int layout_index = 0) const;
+	size_t GetInputLayoutSize(uint32_t layout_index = 0) const;
 
 	/**
 	 * Checks the validity of the effect. An effect is valid if it has at least
@@ -650,7 +652,7 @@ private:
 	/** List of bound shaders */
 	std::vector<WShader*> m_shaders;
 	/** Index of the bound vertex shader (-1 if none is bound) */
-	unsigned int m_vertexShaderIndex;
+	uint32_t m_vertexShaderIndex;
 	/** Vulkan pipeline layout used for the pipelines creation */
 	VkPipelineLayout m_pipelineLayout;
 	/** Descriptor set layout that can be used to make descriptor sets */

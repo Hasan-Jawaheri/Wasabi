@@ -20,7 +20,7 @@ public:
 	WMaterialsStore();
 	virtual ~WMaterialsStore();
 
-	void AddEffect(class WEffect* effect, unsigned int bindingSet = 0, bool set_default = true);
+	void AddEffect(class WEffect* effect, uint32_t bindingSet = 0, bool set_default = true);
 
 	void RemoveEffect(class WEffect* effect);
 

@@ -12,8 +12,8 @@ class WSceneCompositionRenderStage : public WRenderStage {
 public:
 	WSceneCompositionRenderStage(class Wasabi* const app);
 
-	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height);
-	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter);
+	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height);
+	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint32_t filter);
 	virtual void Cleanup();
-	virtual WError Resize(uint width, uint height);
+	virtual WError Resize(uint32_t width, uint32_t height);
 };

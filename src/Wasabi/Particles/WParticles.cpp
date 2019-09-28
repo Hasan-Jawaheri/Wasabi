@@ -15,15 +15,17 @@ class WParticlesGeometry : public WGeometry {
 	});
 
 public:
-	WParticlesGeometry(Wasabi* const app, unsigned int ID = 0) : WGeometry(app, ID) {}
+	WParticlesGeometry(Wasabi* const app, uint32_t ID = 0) : WGeometry(app, ID) {}
 
-	virtual unsigned int GetVertexBufferCount() const {
+	virtual uint32_t GetVertexBufferCount() const {
 		return 1;
 	}
-	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int layout_index = 0) const {
+	virtual W_VERTEX_DESCRIPTION GetVertexDescription(uint32_t layoutIndex = 0) const {
+		UNREFERENCED_PARAMETER(layoutIndex);
 		return m_desc;
 	}
-	virtual size_t GetVertexDescriptionSize(unsigned int layout_index = 0) const {
+	virtual size_t GetVertexDescriptionSize(uint32_t layoutIndex = 0) const {
+		UNREFERENCED_PARAMETER(layoutIndex);
 		return m_desc.GetSize();
 	}
 };
@@ -54,7 +56,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/particles.vert.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -74,7 +76,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/particles.geom.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -90,11 +92,11 @@ public:
 		vector<byte> code = {
 			#include "Shaders/particles.frag.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
-WParticlesBehavior::WParticlesBehavior(unsigned int max_particles, unsigned int particle_size) {
+WParticlesBehavior::WParticlesBehavior(uint32_t max_particles, uint32_t particle_size) {
 	m_maxParticles = max_particles;
 	m_particleSize = particle_size;
 	m_numParticles = 0;
@@ -112,10 +114,12 @@ void WParticlesBehavior::Emit(void* particle) {
 	}
 }
 
-unsigned int WParticlesBehavior::UpdateAndCopyToVB(float cur_time, void* vb, unsigned int max_particles) {
+uint32_t WParticlesBehavior::UpdateAndCopyToVB(float cur_time, void* vb, uint32_t max_particles) {
+	UNREFERENCED_PARAMETER(max_particles);
+
 	UpdateSystem(cur_time);
 
-	for (unsigned int i = 0; i < m_numParticles; i++) {
+	for (uint32_t i = 0; i < m_numParticles; i++) {
 		void* cur_particle = (char*)m_buffer + (m_particleSize * i);
 		if (!UpdateParticle(cur_time, cur_particle)) {
 			if (m_numParticles > 1)
@@ -126,13 +130,13 @@ unsigned int WParticlesBehavior::UpdateAndCopyToVB(float cur_time, void* vb, uns
 	}
 
 	// particles in vb have a different size than those in m_buffer
-	for (unsigned int i = 0; i < m_numParticles; i++)
+	for (uint32_t i = 0; i < m_numParticles; i++)
 		memcpy((char*)vb + i * sizeof(WParticlesVertex), (char*)m_buffer + i * m_particleSize, sizeof(WParticlesVertex));
 
 	return m_numParticles;
 }
 
-WDefaultParticleBehavior::WDefaultParticleBehavior(unsigned int max_particles)
+WDefaultParticleBehavior::WDefaultParticleBehavior(uint32_t max_particles)
 	: WParticlesBehavior(max_particles, sizeof(WDefaultParticleBehavior::Particle)) {
 	m_lastEmit = 0.0f;
 	m_emissionPosition = WVector3(0.0f, 0.0f, 0.0f);
@@ -154,7 +158,7 @@ WDefaultParticleBehavior::WDefaultParticleBehavior(unsigned int max_particles)
 }
 
 void WDefaultParticleBehavior::UpdateSystem(float cur_time) {
-	uint numTilesRows = (uint)(ceilf((float)m_numTiles / (float)m_numTilesColumns) + 0.01f);
+	uint32_t numTilesRows = (uint)(ceilf((float)m_numTiles / (float)m_numTilesColumns) + 0.01f);
 	int num_emitted = 0;
 	while (cur_time > m_lastEmit + 1.0f / m_emissionFrequency && num_emitted++ < 10) {
 		m_lastEmit += 1.0f / m_emissionFrequency;
@@ -166,8 +170,8 @@ void WDefaultParticleBehavior::UpdateSystem(float cur_time) {
 			p.velocity = WVec3Normalize(p.initialPos - m_emissionPosition) * WVec3Length(m_particleSpawnVelocity);
 
 		// calculate tiling
-		uint x = rand() % m_numTilesColumns;
-		uint y = rand() % numTilesRows;
+		uint32_t x = rand() % m_numTilesColumns;
+		uint32_t y = rand() % numTilesRows;
 		p.vtx.UVs = WVector4((float)x / m_numTilesColumns, (float)y / m_numTilesColumns, (float)(x+1) / m_numTilesColumns, (float)(y + 1) / m_numTilesColumns);
 		Emit((void*)&p);
 	}
@@ -184,7 +188,7 @@ inline bool WDefaultParticleBehavior::UpdateParticle(float cur_time, void* parti
 	p->vtx.size = m_type == BILLBOARD ? WVector3(0, size, 0) : WVector3(size, 0, 0);
 
 	float curColorPos = 0.0f;
-	for (uint i = 0; i < m_colorGradient.size() - 1; i++) {
+	for (uint32_t i = 0; i < m_colorGradient.size() - 1; i++) {
 		if (lifePercentage < curColorPos + m_colorGradient[i].second) {
 			p->vtx.color = WColorLerp(m_colorGradient[i].first, m_colorGradient[i + 1].first, (lifePercentage - curColorPos) / m_colorGradient[i].second);
 			break;
@@ -307,7 +311,7 @@ class WEffect* WParticlesManager::CreateParticlesEffect(W_DEFAULT_PARTICLE_EFFEC
 	return fx;
 }
 
-WParticles* WParticlesManager::CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE type, unsigned int maxParticles, WParticlesBehavior* behavior, unsigned int ID) const {
+WParticles* WParticlesManager::CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE type, uint32_t maxParticles, WParticlesBehavior* behavior, uint32_t ID) const {
 	WParticles* particles = new WParticles(m_app, type, ID);
 	WError werr = particles->Create(maxParticles, behavior);
 	if (!werr)
@@ -315,7 +319,7 @@ WParticles* WParticlesManager::CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE ty
 	return particles;
 }
 
-WParticles::WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE type, unsigned int ID) : WBase(app, ID) {
+WParticles::WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE type, uint32_t ID) : WBase(app, ID) {
 	m_type = type;
 	m_hidden = false;
 	m_bAltered = true;
@@ -390,7 +394,7 @@ bool WParticles::InCameraView(class WCamera* cam) {
 	return cam->CheckBoxInFrustum(pos, size);
 }
 
-WError WParticles::Create(unsigned int maxParticles, WParticlesBehavior* behavior) {
+WError WParticles::Create(uint32_t maxParticles, WParticlesBehavior* behavior) {
 	_DestroyResources();
 	if (maxParticles == 0)
 		return WError(W_INVALIDPARAM);
@@ -427,18 +431,18 @@ void WParticles::Render(WRenderTarget* const rt, WMaterial* material) {
 	WParticlesVertex* vb;
 	m_geometry->MapVertexBuffer((void**)& vb, W_MAP_WRITE);
 	float cur_time = m_app->Timer.GetElapsedTime();
-	unsigned int num_particles = m_behavior->UpdateAndCopyToVB(cur_time, vb, m_maxParticles);
+	uint32_t num_particles = m_behavior->UpdateAndCopyToVB(cur_time, vb, m_maxParticles);
 	m_geometry->UnmapVertexBuffer(false);
 
 	if (num_particles > 0)
 		m_geometry->Draw(rt, num_particles, 1, false);
 }
 
-void WParticles::SetPriority(unsigned int priority) {
+void WParticles::SetPriority(uint32_t priority) {
 	m_priority = priority;
 }
 
-unsigned int WParticles::GetPriority() const {
+uint32_t WParticles::GetPriority() const {
 	return m_priority;
 }
 

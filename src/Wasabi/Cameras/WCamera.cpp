@@ -23,7 +23,7 @@ std::string WCameraManager::GetTypeName() const {
 	return "Camera";
 }
 
-WCamera::WCamera(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WCamera::WCamera(Wasabi* const app, uint32_t ID) : WBase(app, ID) {
 	//initialize default values
 	m_lastWidth = m_app->WindowAndInputComponent->GetWindowWidth();
 	m_lastHeight = m_app->WindowAndInputComponent->GetWindowHeight();
@@ -109,7 +109,7 @@ float WCamera::GetAspect() const {
 	return m_fAspect;
 }
 
-void WCamera::Render(unsigned int width, unsigned int height) {
+void WCamera::Render(uint32_t width, uint32_t height) {
 	if (m_lastWidth != width || m_lastHeight != height) {
 		m_bAltered = true;
 		m_lastWidth = width;
@@ -123,7 +123,7 @@ void WCamera::Render(unsigned int width, unsigned int height) {
 
 bool WCamera::CheckPointInFrustum(float x, float y, float z) const {
 	// Check if the point is inside all six planes of the view m_frustum.
-	for (uint i = 0; i < 6; i++)
+	for (uint32_t i = 0; i < 6; i++)
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3(x, y, z)) < 0.0f)
 			return false;
 
@@ -136,7 +136,7 @@ bool WCamera::CheckPointInFrustum(WVector3 point) const {
 
 bool WCamera::CheckCubeInFrustum(float xCenter, float yCenter, float zCenter, float radius) const {
 	// Check if any one point of the cube is in the view m_frustum.
-	for (uint i = 0; i < 6; i++) {
+	for (uint32_t i = 0; i < 6; i++) {
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3((xCenter - radius), (yCenter - radius), (zCenter - radius))) >= 0.0f)
 			continue;
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3((xCenter + radius), (yCenter - radius), (zCenter - radius))) >= 0.0f)
@@ -166,7 +166,7 @@ bool WCamera::CheckCubeInFrustum(WVector3 center, float radius) const {
 
 bool WCamera::CheckSphereInFrustum(float xCenter, float yCenter, float zCenter, float radius) const {
 	// Check if the radius of the sphere is inside the view m_frustum.
-	for (uint i = 0; i < 6; i++)
+	for (uint32_t i = 0; i < 6; i++)
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3(xCenter, yCenter, zCenter)) < -radius)
 			return false;
 
@@ -179,7 +179,7 @@ bool WCamera::CheckSphereInFrustum(WVector3 center, float radius) const {
 
 bool WCamera::CheckBoxInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize) const {
 	// Check if any of the 6 planes of the rectangle are inside the view m_frustum.
-	for (uint i = 0; i < 6; i++) {
+	for (uint32_t i = 0; i < 6; i++) {
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3((xCenter - xSize), (yCenter - ySize), (zCenter - zSize))) >= 0.0f)
 			continue;
 		if (WPlaneDotCoord(m_frustumPlanes[i], WVector3((xCenter + xSize), (yCenter - ySize), (zCenter - zSize))) >= 0.0f)
@@ -222,7 +222,7 @@ void WCamera::UpdateInternals() {
 			m_ViewM *= GetBindingMatrix();
 
 		//build projection matrix
-		m_orthoMatrix = WOrthogonalProjMatrix(m_lastWidth, m_lastHeight, m_minRange, m_maxRange);
+		m_orthoMatrix = WOrthogonalProjMatrix((float)m_lastWidth, (float)m_lastHeight, m_minRange, m_maxRange);
 		if (m_projType == PROJECTION_PERSPECTIVE)
 			m_ProjM = WPerspectiveProjMatrixFOV(W_RADTODEG(m_fFOV), m_fAspect, m_minRange, m_maxRange);
 		else if (m_projType == PROJECTION_ORTHOGONAL)
