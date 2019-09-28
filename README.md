@@ -49,6 +49,8 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Mac Support
 
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Assimp integration (and getting rid of FBX SDK!)
+
 # Building
 ## Vulkan Requirements
 - Install the Vulkan driver for your graphics card
@@ -60,6 +62,7 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 ## Windows
 - Install CMake (make sure to select the option to add it to `PATH`)
 - Install Visual Studio (make sure to add the feature `Visual C++ tools for CMake`)
+- (Optional) Install [FBX SDK](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2019-0). If you do, add this flag to `cmake`: `-DFBXSDK_ROOT="C:/Program Files/Autodesk/FBX/FBX SDK/2019.0"` (use your installation path)
 - Run cmake
 ```bash
 mkdir build && cd build
