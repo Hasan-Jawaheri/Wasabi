@@ -50,8 +50,8 @@ include_directories("include/")
 
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${LIB_HEADERS})
-add_compile_definitions(COMPILING_WASABI)
 add_library(wasabi STATIC ${LIB_SOURCES} ${LIB_HEADERS})
+target_compile_definitions(wasabi PRIVATE COMPILING_WASABI)
 target_include_directories(wasabi PRIVATE SYSTEM "${OPENAL_DIR}/include/")
 target_include_directories(wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/")
 target_include_directories(wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
@@ -60,7 +60,7 @@ target_link_libraries(wasabi common ex-common OpenAL)
 target_link_libraries(wasabi glfw)
 target_link_libraries(wasabi Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
 add_custom_command(TARGET wasabi PRE_BUILD
-    COMMAND cd ${CMAKE_SOURCE_DIR}/src/ && python compile-glsl-code.py
+    COMMAND cd ${CMAKE_SOURCE_DIR}/src/ && python3 compile-glsl-code.py
 )
 
 # Bundle the libraries together
@@ -82,9 +82,9 @@ endif()
 add_custom_command(TARGET wasabi POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/include/Wasabi/" "${CMAKE_CURRENT_BINARY_DIR}/dist/include/Wasabi/"
 )
-add_custom_command(TARGET wasabi POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:wasabi> "$<$<CONFIG:Debug>:${CMAKE_CURRENT_BINARY_DIR}/dist/lib/debug/$<TARGET_FILE_NAME:wasabi>>$<$<CONFIG:Release>:${CMAKE_CURRENT_BINARY_DIR}/dist/lib/release/$<TARGET_FILE_NAME:wasabi>>"
-)
+# add_custom_command(TARGET wasabi POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:wasabi> "$<$<CONFIG:Debug>:${CMAKE_CURRENT_BINARY_DIR}/dist/lib/debug/$<TARGET_FILE_NAME:wasabi>>$<$<CONFIG:Release>:${CMAKE_CURRENT_BINARY_DIR}/dist/lib/release/$<TARGET_FILE_NAME:wasabi>>"
+# )
 
 # Wasabi test application(s)
 assign_source_group(${TEST_SOURCES} ${TEST_HEADERS})
@@ -122,4 +122,12 @@ if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
     target_compile_options(wasabi_test PRIVATE /external:I${STB_DIR})
     target_compile_options(wasabi PRIVATE /external:I${BULLET_DIR}/src)
     target_compile_options(wasabi_test PRIVATE /external:I${BULLET_DIR}/src)
+endif()
+
+# ignore "object has no symbol" linker errors
+if (MACOSX)
+    set(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
 endif()

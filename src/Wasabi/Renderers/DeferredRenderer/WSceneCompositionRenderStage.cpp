@@ -34,7 +34,7 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 6, 1, "backfaceDepthTexture"),
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 7, 1, "randomTexture"),
 		};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/scene_composition.frag.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);

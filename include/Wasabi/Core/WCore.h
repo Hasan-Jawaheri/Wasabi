@@ -13,6 +13,8 @@
 
 #pragma once
 
+#include "Wasabi/WCompatibility.h"
+
 #include "Wasabi/Core/WCommon.h"
 #include "Wasabi/Core/WManager.h"
 #include "Wasabi/Core/WBase.h"
@@ -32,12 +34,6 @@
 #define W_SAFE_DELETE_ARRAY(x) { if ( x ) { delete[] x; x = NULL; } }
 #define W_SAFE_ALLOC(x) malloc(x)
 #define W_SAFE_FREE(x) { if ( x ) { free(x); x = NULL; } }
-
-#ifndef _WIN32
-#define fopen_s(a,b,c) *a = fopen(b, c)
-#define strcpy_s(a,b,c) strcpy(a,c)
-#define ZeroMemory(x,y) memset(x, 0, y)
-#endif
 
 enum W_MOUSEBUTTON: uint8_t;
 

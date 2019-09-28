@@ -64,7 +64,7 @@ public:
 	virtual ~WManager() {
 		__bDbgDestructing = true;
 		for (uint32_t j = 0; j < W_HASHTABLESIZE; j++)
-			for (uint32_t i = 0; i < m_entities[j].size(); i)
+			for (uint32_t i = 0; i < m_entities[j].size();)
 				m_entities[j][i]->RemoveReference();
 	}
 

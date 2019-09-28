@@ -12,7 +12,7 @@ WForwardRenderStageObjectVS::WForwardRenderStageObjectVS(Wasabi* const app) : WS
 void WForwardRenderStageObjectVS::Load(bool bSaveData) {
 	int maxLights = m_app->GetEngineParam<int>("maxLights", 0);
 	m_desc = GetDesc(maxLights);
-	vector<byte> code = {
+	vector<uint8_t> code {
 		#include "Shaders/forward.vert.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -59,7 +59,7 @@ WForwardRenderStageObjectPS::WForwardRenderStageObjectPS(Wasabi* const app) : WS
 void WForwardRenderStageObjectPS::Load(bool bSaveData) {
 	int maxLights = m_app->GetEngineParam<int>("maxLights", 0);
 	m_desc = GetDesc(maxLights);
-	vector<byte> code = {
+	vector<uint8_t> code {
 		#include "Shaders/forward.frag.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -81,7 +81,7 @@ WForwardRenderStageTerrainVS::WForwardRenderStageTerrainVS(Wasabi* const app) : 
 void WForwardRenderStageTerrainVS::Load(bool bSaveData) {
 	int maxLights = m_app->GetEngineParam<int>("maxLights", 0);
 	m_desc = GetDesc(maxLights);
-	vector<byte> code = {
+	vector<uint8_t> code {
 		#include "Shaders/terrain.vert.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -122,7 +122,7 @@ WForwardRenderStageTerrainPS::WForwardRenderStageTerrainPS(Wasabi* const app) : 
 void WForwardRenderStageTerrainPS::Load(bool bSaveData) {
 	int maxLights = m_app->GetEngineParam<int>("maxLights", 0);
 	m_desc = GetDesc(maxLights);
-	vector<byte> code = {
+	vector<uint8_t> code {
 		#include "Shaders/terrain.frag.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);

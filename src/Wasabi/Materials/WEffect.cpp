@@ -187,7 +187,7 @@ bool W_BOUND_RESOURCE::IsSimilarTo(W_BOUND_RESOURCE resource) {
 }
 
 size_t W_INPUT_LAYOUT::GetSize() const {
-	if (_size == -1) {
+	if (_size == (size_t)-1) {
 		_size = 0;
 		for (int i = 0; i < attributes.size(); i++)
 			_size += attributes[i].GetSize();

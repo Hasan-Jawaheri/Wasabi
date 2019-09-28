@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Wasabi/WCompatibility.h"
 #include "vulkan/vulkan.h"
 
 #include <math.h>

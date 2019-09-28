@@ -1,5 +1,9 @@
 include(ExternalProject)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(MACOSX TRUE)
+endif()
+
 # Helper function for VS filters
 function(assign_source_group)
     foreach(_source IN ITEMS ${ARGN})
