@@ -107,7 +107,7 @@ WError WFile::SaveAsset(WFileAsset* asset) {
 	}
 
 	std::streampos originalStart = m_file.tellp();
-	m_fileSize = max(m_fileSize, originalStart);
+	m_fileSize = std::max((size_t)m_fileSize, (size_t)originalStart);
 	m_file.seekp(m_fileSize); // write it at the end
 	std::streampos start = m_file.tellp();
 	WError status = asset->SaveToStream(this, m_file);
@@ -214,7 +214,7 @@ WError WFile::LoadHeaders(std::streamsize maxFileSize) {
 		if (magic != FILE_MAGIC)
 			return WError(W_INVALIDFILEFORMAT);
 
-		m_fileSize = max(m_fileSize, header.dataStart + header.dataSize);
+		m_fileSize = std::max(m_fileSize, header.dataStart + header.dataSize);
 
 		std::streamoff curDataOffset = header.dataStart;
 		FILE_ASSET curAsset(0, 0, "", "");
@@ -230,7 +230,7 @@ WError WFile::LoadHeaders(std::streamsize maxFileSize) {
 				break;
 			header.assets.push_back(new FILE_ASSET(curAsset));
 			m_assetsMap.insert(std::pair<std::string, FILE_ASSET*>(curAsset.name, header.assets[header.assets.size() - 1]));
-			m_fileSize = max(m_fileSize, curAsset.start + curAsset.size);
+			m_fileSize = std::max(m_fileSize, curAsset.start + curAsset.size);
 		}
 
 		m_headers.push_back(header);
@@ -253,7 +253,7 @@ void WFile::CreateNewHeader() {
 	m_file.write((char*)&header.nextHeader, sizeof(header.nextHeader));
 	for (uint i = 0; i < header.dataSize; i++)
 		m_file.put(0);
-	m_fileSize = max(m_fileSize, header.dataStart + header.dataSize);
+	m_fileSize = std::max(m_fileSize, header.dataStart + header.dataSize);
 
 	if (m_headers.size() > 0) {
 		m_file.seekp(m_headers[m_headers.size()-1].start + sizeof(FILE_MAGIC) + sizeof(FILE_HEADER::dataSize));
@@ -269,7 +269,7 @@ void WFile::WriteAssetToHeader(FILE_ASSET asset) {
 	curHeader->assets.push_back(new FILE_ASSET(asset));
 	m_assetsMap.insert(std::make_pair(asset.name, curHeader->assets[curHeader->assets.size()-1]));
 
-	m_fileSize = max(m_fileSize, asset.start + asset.size);
+	m_fileSize = std::max(m_fileSize, asset.start + asset.size);
 
 	if (curHeader->assets.size() * FILE_ASSET::GetSize() >= curHeader->dataSize) {
 		CreateNewHeader();

@@ -45,7 +45,7 @@ void LightsDemo::Load() {
 	// hide default light
 	m_app->LightManager->GetDefaultLight()->Hide();
 
-	int maxLights = min(m_app->GetEngineParam<int>("maxLights", INT_MAX), 8);
+	int maxLights = std::min(m_app->GetEngineParam<int>("maxLights", INT_MAX), 8);
 	WColor colors[] = {
 		WColor(1, 0, 0),
 		WColor(0, 1, 0),

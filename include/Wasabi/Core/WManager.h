@@ -199,7 +199,7 @@ public:
 	unsigned int GetEntitiesCount(void) const {
 		unsigned int size = 0;
 		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-			size += m_entities[j].size();
+			size += (unsigned int)m_entities[j].size();
 		return size;
 	}
 
