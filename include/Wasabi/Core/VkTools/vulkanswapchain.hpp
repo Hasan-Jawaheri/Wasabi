@@ -191,11 +191,11 @@ public:
 	}
 
 	// Connect to the instance und device and get all required function pointers
-	void connect(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device)
+	void connect(VkInstance inst, VkPhysicalDevice physDev, VkDevice dev)
 	{
-		this->instance = instance;
-		this->physicalDevice = physicalDevice;
-		this->device = device;
+		this->instance = inst;
+		this->physicalDevice = physDev;
+		this->device = dev;
 		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceSupportKHR);
 		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
 		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceFormatsKHR);

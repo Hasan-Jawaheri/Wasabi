@@ -320,7 +320,7 @@ WError WTerrain::Create(unsigned int N, float size, unsigned int numRings) {
 			LODRing* ring = new LODRing();
 			ring->level = i;
 
-			float unitSize = max(pow(2, i - 1), 1) * m_size;
+			float unitSize = std::max((int)pow(2, i - 1), 1) * m_size;
 			float levelSize = unitSize * (m_N - 1);
 			float Msize = unitSize * (m_M - 1);
 			float halfM = Msize / 2.0f;
@@ -418,7 +418,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 
 	for (int i = m_LOD - 1; i >= 0; i--) {
 		LODRing* ring = m_rings[i];
-		float unitSize = max(pow(2, i - 1), 1) * m_size;
+		float unitSize = std::max((int)pow(2, i - 1), 1) * m_size;
 		float levelSize = unitSize * (m_N - 1);
 		float Msize = unitSize * (m_M - 1);
 		if (i == m_LOD - 1) {
@@ -487,7 +487,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		uint textureDimension = m_N + 1;
 		m_heightTexture->MapPixels((void**)& heights, W_MAP_WRITE);
 		for (int i = m_LOD - 1; i > 0; i--) {
-			float unitSize = max(pow(2, i - 1), 1) * m_size;
+			float unitSize = std::max((int)pow(2, i - 1), 1) * m_size;
 			float levelSize = unitSize * (m_N - 1);
 			for (uint y = 0; y < m_N; y++) {
 				for (uint x = 0; x < m_N; x++) {

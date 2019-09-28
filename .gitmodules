@@ -1,0 +1,12 @@
+[submodule "dependencies/openal"]
+	path = dependencies/openal
+	url = https://github.com/kcat/openal-soft
+[submodule "dependencies/bullet3"]
+	path = dependencies/bullet3
+	url = git@github.com:bulletphysics/bullet3.git
+[submodule "dependencies/glfw"]
+	path = dependencies/glfw
+	url = git@github.com:glfw/glfw.git
+[submodule "dependencies/stb"]
+	path = dependencies/stb
+	url = git@github.com:nothings/stb.git

@@ -184,7 +184,7 @@ void BulletDebugger::ApplyMousePivot() {
 	float fMouseZ = (float)WindowAndInputComponent->MouseZ();
 	fDist += fMouseZ * (abs(fDist) / 10.0f);
 	WindowAndInputComponent->SetMouseZ(0);
-	fDist = min(-1, fDist);
+	fDist = std::min(-1.0f, fDist);
 
 	cam->SetPosition(vPos);
 	cam->SetAngle(WQuaternion());

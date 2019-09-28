@@ -191,7 +191,7 @@ void WAnimation::SetPlayingBounds(unsigned int startFrame, unsigned int endFrame
 	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
 		return;
 	if (endFrame >= m_frames.size())
-		endFrame = m_frames.size() - 1;
+		endFrame = (unsigned int)m_frames.size() - 1;
 	if (startFrame > endFrame)
 		return;
 

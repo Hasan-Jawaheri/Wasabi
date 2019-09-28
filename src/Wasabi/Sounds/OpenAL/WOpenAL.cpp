@@ -1,7 +1,7 @@
 #include "Wasabi/Sounds/OpenAL/WOpenAL.h"
 
-#include <al.h>
-#include <alc.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 
 template<typename T>
 T BytesTo(char* bytes, bool bLittleEndian = false) {

@@ -8,7 +8,7 @@
 #include "Wasabi/WindowAndInput/WWindowAndInputComponent.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
-#include "stb/stb_truetype.h"
+#include "stb_truetype.h"
 
 struct TextVertex {
 	WVector2 pos, uv;

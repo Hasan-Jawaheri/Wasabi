@@ -18,30 +18,12 @@ link_libraries(${Vulkan_LIBRARY})
 include_directories(SYSTEM ${Vulkan_INCLUDE_DIRS})
 #####################################
 
-############# OpenAL ################
-find_package(OpenAL)
-if (NOT OPENAL_FOUND)
-	message(FATAL_ERROR "Could not find OpenAL library!")
-else()
-	message(STATUS "OpenAL library: " ${OPENAL_LIBRARY})
-	message(STATUS "OpenAL include: " ${OPENAL_INCLUDE_DIR})
-endif()
-#####################################
-
-############# Bullet ################
-find_package(Bullet)
-if (NOT Bullet_FOUND)
-	message(FATAL_ERROR "Could not find Bullet physics library!")
-else()
-    execute_process(OUTPUT_VARIABLE BULLET_LIBRARIES_LIST COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/CMake/tokenize_bullet_libraries.py" ${BULLET_LIBRARIES})
-    list(GET BULLET_LIBRARIES_LIST 0 BULLET_LIBRARIES_DEBUG)
-    list(GET BULLET_LIBRARIES_LIST 1 BULLET_LIBRARIES_RELEASE)
-    message(STATUS "====> " ${BULLET_LIBRARIES_DEBUG})
-    message(STATUS "====> " ${BULLET_LIBRARIES_RELEASE})
-	message(STATUS "Bullet libraries: " ${BULLET_LIBRARIES})
-    message(STATUS "Bullet include: " ${BULLET_INCLUDE_DIRS})
-endif()
-#####################################
+set(DEPENDENCIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
+initialize_submodules()
+build_open_al("OPENAL_DIR" "${DEPENDENCIES_DIR}")
+build_bullet("BULLET_DIR" "${DEPENDENCIES_DIR}")
+build_glfw("GLFW_DIR" "${DEPENDENCIES_DIR}")
+build_stb("STB_DIR" "${DEPENDENCIES_DIR}")
 
 ############# FBX SDK ###############
 if (NOT FBXSDK_ROOT)
@@ -56,13 +38,6 @@ else()
 endif()
 #####################################
 
-# GLFW3
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_GENERATED_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/lib/glfw-3.3/src/Debug/glfw3.lib")
-add_subdirectory("lib/glfw-3.3")
-
 # Source files
 file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp")
 file(GLOB_RECURSE LIB_HEADERS "include/Wasabi/*")
@@ -71,41 +46,45 @@ file(GLOB_RECURSE TEST_HEADERS "include/WasabiTest/*")
 file(GLOB_RECURSE FBX_LOADER_SOURCES "src/FBXLoader/*.cpp")
 file(GLOB_RECURSE FBX_LOADER_HEADERS "include/FBXLoader/*")
 
-# put the Wasabi include files in the build directory
-file(COPY "include/Wasabi/" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/include/Wasabi/")
-
-# External libraries
-include_directories(SYSTEM "lib/glfw-3.3/include/")
-include_directories(SYSTEM "lib/stb/include/")
-
 include_directories("include/")
 
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${LIB_HEADERS})
 add_compile_definitions(COMPILING_WASABI)
 add_library(wasabi STATIC ${LIB_SOURCES} ${LIB_HEADERS})
-target_link_libraries(wasabi ${OPENAL_LIBRARY})
-target_link_libraries(wasabi ${BULLET_LIBRARIES})
-target_include_directories(wasabi PRIVATE SYSTEM ${OPENAL_INCLUDE_DIR})
-target_include_directories(wasabi PRIVATE SYSTEM ${BULLET_INCLUDE_DIRS})
+target_include_directories(wasabi PRIVATE SYSTEM "${OPENAL_DIR}/include/")
+target_include_directories(wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/")
+target_include_directories(wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
+target_include_directories(wasabi PRIVATE SYSTEM "${STB_DIR}/")
+target_link_libraries(wasabi common ex-common OpenAL)
+target_link_libraries(wasabi glfw)
+target_link_libraries(wasabi Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
 add_custom_command(TARGET wasabi PRE_BUILD
     COMMAND cd ${CMAKE_SOURCE_DIR}/src/ && python compile-glsl-code.py
-)
-add_custom_command(TARGET wasabi POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/include/Wasabi/" "${CMAKE_CURRENT_BINARY_DIR}/include/Wasabi/"
 )
 
 # Bundle the libraries together
 if (MSVC)
     set(MSVC_LIBTOOL "${CMAKE_CXX_COMPILER}/../lib.exe")
+    add_custom_command(TARGET wasabi PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE:wasabi>
+    )
     add_custom_command(TARGET wasabi POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E rename $<TARGET_FILE:wasabi> $<TARGET_FILE_DIR:wasabi>/wasabi-standalone.lib
     )
     add_custom_command(TARGET wasabi POST_BUILD
-        COMMAND ${MSVC_LIBTOOL} "/OUT:$<TARGET_FILE:wasabi>" $<TARGET_FILE_DIR:wasabi>/wasabi-standalone.lib ${GLFW_GENERATED_LIBRARY} ${OPENAL_LIBRARY} $<$<CONFIG:Debug>:${BULLET_LIBRARIES_DEBUG}>$<$<CONFIG:Release>:${BULLET_LIBRARIES_RELEASE}>
+        COMMAND ${MSVC_LIBTOOL} "/OUT:$<TARGET_FILE:wasabi>" $<TARGET_FILE_DIR:wasabi>/wasabi-standalone.lib $<TARGET_FILE:glfw> $<TARGET_FILE:OpenAL> $<TARGET_FILE:Bullet3Collision> $<TARGET_FILE:Bullet3Common> $<TARGET_FILE:Bullet3Dynamics> $<TARGET_FILE:Bullet3Geometry> $<TARGET_FILE:BulletCollision> $<TARGET_FILE:BulletDynamics> $<TARGET_FILE:LinearMath>
     )
 else()
 endif()
+
+# Create the dist/ folder in the build/
+add_custom_command(TARGET wasabi POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/include/Wasabi/" "${CMAKE_CURRENT_BINARY_DIR}/dist/include/Wasabi/"
+)
+add_custom_command(TARGET wasabi POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:wasabi> "$<$<CONFIG:Debug>:${CMAKE_CURRENT_BINARY_DIR}/dist/lib/debug/$<TARGET_FILE_NAME:wasabi>>$<$<CONFIG:Release>:${CMAKE_CURRENT_BINARY_DIR}/dist/lib/release/$<TARGET_FILE_NAME:wasabi>>"
+)
 
 # Wasabi test application(s)
 assign_source_group(${TEST_SOURCES} ${TEST_HEADERS})
@@ -139,9 +118,8 @@ if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0")
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
     
-    get_filename_component(STB_INCLUDE_PATH "lib/stb/include/" ABSOLUTE)
-    target_compile_options(wasabi PRIVATE /external:I${STB_INCLUDE_PATH})
-    target_compile_options(wasabi_test PRIVATE /external:I${STB_INCLUDE_PATH})
-    target_compile_options(wasabi PRIVATE /external:I${BULLET_INCLUDE_DIRS})
-    target_compile_options(wasabi_test PRIVATE /external:I${BULLET_INCLUDE_DIRS})
+    target_compile_options(wasabi PRIVATE /external:I${STB_DIR})
+    target_compile_options(wasabi_test PRIVATE /external:I${STB_DIR})
+    target_compile_options(wasabi PRIVATE /external:I${BULLET_DIR}/src)
+    target_compile_options(wasabi_test PRIVATE /external:I${BULLET_DIR}/src)
 endif()
