@@ -6,7 +6,7 @@ WBufferedBuffer::WBufferedBuffer() {
 	m_readOnlyMemory = nullptr;
 }
 
-VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBufferUsageFlags usage, void* data, W_MEMORY_STORAGE memory) {
+VkResult WBufferedBuffer::Create(Wasabi* app, uint32_t numBuffers, size_t size, VkBufferUsageFlags usage, void* data, W_MEMORY_STORAGE memory) {
 	VkDevice device = app->GetVulkanDevice();
 	Destroy(app);
 
@@ -18,7 +18,7 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 	m_bufferSize = size;
 
 	WVulkanBuffer stagingBuffer;
-	for (uint i = 0; i < numBuffers; i++) {
+	for (uint32_t i = 0; i < numBuffers; i++) {
 		VkMemoryPropertyFlags bufferMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // device local means only GPU can access it, more efficient
 		if (data && (memory == W_MEMORY_DEVICE_LOCAL || memory == W_MEMORY_DEVICE_LOCAL_HOST_COPY)) {
 			// the buffer usage is now also a transfer destination
@@ -137,7 +137,6 @@ VkResult WBufferedBuffer::Create(Wasabi* app, uint numBuffers, size_t size, VkBu
 }
 
 void WBufferedBuffer::Destroy(Wasabi* app) {
-	VkDevice device = app->GetVulkanDevice();
 	for (auto it = m_buffers.begin(); it != m_buffers.end(); it++)
 		it->Destroy(app);
 	m_buffers.clear();
@@ -145,7 +144,7 @@ void WBufferedBuffer::Destroy(Wasabi* app) {
 	W_SAFE_FREE(m_readOnlyMemory);
 }
 
-VkResult WBufferedBuffer::Map(Wasabi* app, uint bufferIndex, void** data, W_MAP_FLAGS flags) {
+VkResult WBufferedBuffer::Map(Wasabi* app, uint32_t bufferIndex, void** data, W_MAP_FLAGS flags) {
 	VkResult result = VK_RESULT_MAX_ENUM;
 	if (m_lastMapFlags == W_MAP_UNDEFINED && flags != W_MAP_UNDEFINED) {
 		if (m_readOnlyMemory) {
@@ -163,7 +162,7 @@ VkResult WBufferedBuffer::Map(Wasabi* app, uint bufferIndex, void** data, W_MAP_
 	return result;
 }
 
-void WBufferedBuffer::Unmap(Wasabi* app, uint bufferIndex) {
+void WBufferedBuffer::Unmap(Wasabi* app, uint32_t bufferIndex) {
 	if (m_lastMapFlags != W_MAP_UNDEFINED) {
 		if (!m_readOnlyMemory) {
 			VkDevice device = app->GetVulkanDevice();
@@ -174,7 +173,9 @@ void WBufferedBuffer::Unmap(Wasabi* app, uint bufferIndex) {
 	}
 }
 
-VkBuffer WBufferedBuffer::GetBuffer(Wasabi* app, uint bufferIndex) {
+VkBuffer WBufferedBuffer::GetBuffer(Wasabi* app, uint32_t bufferIndex) {
+	UNREFERENCED_PARAMETER(app);
+
 	bufferIndex = bufferIndex % m_buffers.size();
 	return m_buffers[bufferIndex].buf;
 }

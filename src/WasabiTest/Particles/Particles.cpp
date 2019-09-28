@@ -100,7 +100,7 @@ void ParticlesDemo::Update(float fDeltaTime) {
 			else
 				m_goingLeft = true;
 		}
-		for (uint i = 1; i < m_particles.size(); i++)
+		for (uint32_t i = 1; i < m_particles.size(); i++)
 			((WDefaultParticleBehavior*)m_particles[i]->GetBehavior())->m_emissionPosition.x = behavior->m_emissionPosition.x;
 	}
 }

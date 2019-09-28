@@ -72,7 +72,7 @@ void WasabiTester::ApplyMousePivot() {
 	float fMouseZ = (float)WindowAndInputComponent->MouseZ();
 	fDist += (fMouseZ) * (abs(fDist) / 10.0f);
 	WindowAndInputComponent->SetMouseZ(0);
-	fDist = fmin(-1, fDist);
+	fDist = std::min(-1.0f, fDist);
 
 	cam->SetPosition(vPos);
 	cam->SetAngle(WQuaternion());
@@ -109,6 +109,8 @@ WError WasabiTester::Setup() {
 }
 
 bool WasabiTester::Loop(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
+
 	ApplyMousePivot();
 
 	if (!WindowAndInputComponent->KeyDown(W_KEY_F1)) {

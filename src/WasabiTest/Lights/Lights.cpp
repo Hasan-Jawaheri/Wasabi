@@ -23,7 +23,7 @@ void LightsDemo::Load() {
 	plainGeometry->CreatePlain(50.0f, 0, 0);
 	m_plain->SetGeometry(plainGeometry);
 	plainGeometry->RemoveReference();
-	m_plain->GetMaterial()->SetVariableColor("color", WColor(0.4, 0.4, 0.4));
+	m_plain->GetMaterial()->SetVariableColor("color", WColor(0.4f, 0.4f, 0.4f));
 	m_plain->GetMaterial()->SetVariableInt("isTextured", 0);
 
 	// Create the boxes
@@ -37,7 +37,7 @@ void LightsDemo::Load() {
 		box->SetGeometry(boxGeometry);
 		box->SetPosition(x, y, z);
 		m_boxes.push_back(box);
-		box->GetMaterial()->SetVariableColor("color", WColor(0.7, 0.7, 0.7));
+		box->GetMaterial()->SetVariableColor("color", WColor(0.7f, 0.7f, 0.7f));
 		box->GetMaterial()->SetVariableInt("isTextured", 0);
 	}
 	boxGeometry->RemoveReference();
@@ -62,26 +62,28 @@ void LightsDemo::Load() {
 
 		WLight* l = new WPointLight(m_app);
 		l->SetRange(5.0f);
-		l->SetPosition(x, 3.0, z);
+		l->SetPosition(x, 3.0f, z);
 		l->SetColor(colors[rand() % (sizeof(colors)/sizeof(WColor))]);
 		m_lights.push_back(l);
 	}
 
 	for (int i = 0; i < maxLights / 2; i++) {
 		float x = 20.0f * (float)(rand() % 10000) / 10000.0f + 10.0f;
-		float z = (10.0f + 15.0f * (float)(rand() % 10000) / 10000.0f) * (rand() % 2 == 0 ? 1 : -1);
+		float z = (10.0f + 15.0f * (float)(rand() % 10000) / 10000.0f) * (rand() % 2 == 0 ? 1.0f : -1.0f);
 
 		WLight* l = new WSpotLight(m_app);
 		l->SetIntensity(5.0f);
 		l->SetRange(30.0f);
-		l->SetPosition(x, 4.0, z);
-		l->Point(WVector3(x, 0.0, z) * 0.5f);
+		l->SetPosition(x, 4.0f, z);
+		l->Point(WVector3(x, 0.0f, z) * 0.5f);
 		l->SetColor(colors[rand() % (sizeof(colors) / sizeof(WColor))]);
 		m_lights.push_back(l);
 	}
 }
 
 void LightsDemo::Update(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
+
 	if (m_app->WindowAndInputComponent->KeyDown('1') && !m_isDeferred) {
 		m_isDeferred = true;
 		SetupRenderer();
@@ -91,8 +93,8 @@ void LightsDemo::Update(float fDeltaTime) {
 	}
 
 	for (auto it = m_boxes.begin(); it != m_boxes.end(); it++) {
-		WObject* box = *it;
-		//box->Yaw(10.0f * fDeltaTime);
+		// WObject* box = *it;
+		// box->Yaw(10.0f * fDeltaTime);
 	}
 }
 

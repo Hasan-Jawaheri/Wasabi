@@ -7,10 +7,10 @@ mat4x4 LoadMatrixFromTexture(
 	in sampler2D matrixTexture,
 	in int textureWidth
 ) {
-	uint baseIndex = 4 * index;
+	uint32_t baseIndex = 4 * index;
 
-	uint baseU = baseIndex % textureWidth;
-	uint baseV = baseIndex / textureWidth;
+	uint32_t baseU = baseIndex % textureWidth;
+	uint32_t baseV = baseIndex / textureWidth;
 
 	vec4 m1 = texelFetch(matrixTexture, ivec2(baseU + 0, baseV), 0);
 	vec4 m2 = texelFetch(matrixTexture, ivec2(baseU + 1, baseV), 0);
@@ -32,8 +32,8 @@ vec4 LoadVector4FromTexture(
 	in sampler2D matrixTexture,
 	in int textureWidth
 ) {
-	uint baseU = index % textureWidth;
-	uint baseV = index / textureWidth;
+	uint32_t baseU = index % textureWidth;
+	uint32_t baseV = index / textureWidth;
 
 	return texelFetch(matrixTexture, ivec2(baseU, baseV), 0);
 }

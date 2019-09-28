@@ -11,7 +11,7 @@ layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inTang;
 layout(location = 2) in vec3 inNorm;
 layout(location = 3) in vec2 inUV;
-layout(location = 4) in uint inTexIndex;
+layout(location = 4) in uint32_t inTexIndex;
 
 struct Light {
 	vec4 color;
@@ -62,7 +62,7 @@ void main() {
 	vec2 _uvHeightmap = vec2(1,-1) * (posScaled.xz - levelCenter) / (instanceScale * localScale) + N / 2;
 	ivec2 uvHeightmap = ivec2(int(_uvHeightmap.x), int(_uvHeightmap.y));
 
-	uint heights = texelFetch(heightTexture, ivec3(uvHeightmap.xy, max(0, level - 1)), 0).x;
+	uint32_t heights = texelFetch(heightTexture, ivec3(uvHeightmap.xy, max(0, level - 1)), 0).x;
 	float height = float(int(heights >> 13) - 262144) / 100.0f;
 	float coarserHeight = height + float(int(heights & 0x1FFF) - 4096) / 100.0f;
 	//float height = floor(heights) / 100.0f;

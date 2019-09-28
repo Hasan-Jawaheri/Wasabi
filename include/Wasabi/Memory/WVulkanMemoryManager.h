@@ -3,7 +3,7 @@
 #include "Wasabi/Core/WCommon.h"
 
 /** A bitfield specifying the intention for a map operation */
-enum W_MAP_FLAGS {
+enum W_MAP_FLAGS: uint32_t {
 	/** Unspecified */
 	W_MAP_UNDEFINED = 0,
 	/** Mapping for read */
@@ -23,7 +23,7 @@ inline W_MAP_FLAGS& operator |= (W_MAP_FLAGS& lhs, W_MAP_FLAGS rhs) {
 }
 
 /** Specifies where memory is  */
-enum W_MEMORY_STORAGE {
+enum W_MEMORY_STORAGE: uint8_t {
 	/** Unspecified */
 	W_MEMORY_UNDEFINED = 0,
 	/** Memory is stored on GPU-only memory. Most efficient, but cannot be read/written on CPU */
@@ -97,7 +97,7 @@ public:
 	WVulkanMemoryManager();
 	~WVulkanMemoryManager();
 
-	WError Initialize(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue, uint graphicsQueueIndex);
+	WError Initialize(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue, uint32_t graphicsQueueIndex);
 
 	/**
 	 * Retrieves a Vulkan command pool to be used to initialize command buffers.
@@ -113,7 +113,7 @@ public:
 	 * @param properties The requested memory properties to be found
 	 * @param typeIndex  Pointer to an index to be filled
 	 */
-	void GetMemoryType(uint typeBits, VkFlags properties, uint* typeIndex) const;
+	void GetMemoryType(uint32_t typeBits, VkFlags properties, uint* typeIndex) const;
 
 	/**
 	 * Starts recording commands on the copy command buffer, which can be
@@ -138,26 +138,26 @@ public:
 	 */
 	VkCommandBuffer GetCopyCommandBuffer() const;
 
-	void ReleaseAllResources(uint setBufferingCount = -1);
-	void ReleaseFrameResources(uint bufferIndex);
+	void ReleaseAllResources(uint32_t setBufferingCount = -1);
+	void ReleaseFrameResources(uint32_t bufferIndex);
 
-	void ReleaseRenderPass(VkRenderPass& renderPass, uint bufferIndex);
-	void ReleaseShaderModule(VkShaderModule& shaderModule, uint bufferIndex);
-	void ReleaseDescriptorSet(VkDescriptorSet& descriptorSet, VkDescriptorPool& descriptorPool, uint bufferIndex);
-	void ReleaseDescriptorSetLayout(VkDescriptorSetLayout& descriptorSetLayout, uint bufferIndex);
-	void ReleasePipeline(VkPipeline& pipeline, uint bufferIndex);
-	void ReleasePipelineCache(VkPipelineCache& pipelineCache, uint bufferIndex);
-	void ReleasePipelineLayout(VkPipelineLayout& pipelineLayout, uint bufferIndex);
-	void ReleaseDescriptorPool(VkDescriptorPool& descriptorPool, uint bufferIndex);
-	void ReleaseFramebuffer(VkFramebuffer& framebuffer, uint bufferIndex);
-	void ReleaseBuffer(VkBuffer& buffer, uint bufferIndex);
-	void ReleaseImage(VkImage& image, uint bufferIndex);
-	void ReleaseImageView(VkImageView& imageView, uint bufferIndex);
-	void ReleaseDeviceMemory(VkDeviceMemory& deviceMemory, uint bufferIndex);
-	void ReleaseSampler(VkSampler& sampler, uint bufferIndex);
-	void ReleaseCommandBuffer(VkCommandBuffer& commandBuffer, uint bufferIndex);
-	void ReleaseSemaphore(VkSemaphore& semaphore, uint bufferIndex);
-	void ReleaseFence(VkFence& fence, uint bufferIndex);
+	void ReleaseRenderPass(VkRenderPass& renderPass, uint32_t bufferIndex);
+	void ReleaseShaderModule(VkShaderModule& shaderModule, uint32_t bufferIndex);
+	void ReleaseDescriptorSet(VkDescriptorSet& descriptorSet, VkDescriptorPool& descriptorPool, uint32_t bufferIndex);
+	void ReleaseDescriptorSetLayout(VkDescriptorSetLayout& descriptorSetLayout, uint32_t bufferIndex);
+	void ReleasePipeline(VkPipeline& pipeline, uint32_t bufferIndex);
+	void ReleasePipelineCache(VkPipelineCache& pipelineCache, uint32_t bufferIndex);
+	void ReleasePipelineLayout(VkPipelineLayout& pipelineLayout, uint32_t bufferIndex);
+	void ReleaseDescriptorPool(VkDescriptorPool& descriptorPool, uint32_t bufferIndex);
+	void ReleaseFramebuffer(VkFramebuffer& framebuffer, uint32_t bufferIndex);
+	void ReleaseBuffer(VkBuffer& buffer, uint32_t bufferIndex);
+	void ReleaseImage(VkImage& image, uint32_t bufferIndex);
+	void ReleaseImageView(VkImageView& imageView, uint32_t bufferIndex);
+	void ReleaseDeviceMemory(VkDeviceMemory& deviceMemory, uint32_t bufferIndex);
+	void ReleaseSampler(VkSampler& sampler, uint32_t bufferIndex);
+	void ReleaseCommandBuffer(VkCommandBuffer& commandBuffer, uint32_t bufferIndex);
+	void ReleaseSemaphore(VkSemaphore& semaphore, uint32_t bufferIndex);
+	void ReleaseFence(VkFence& fence, uint32_t bufferIndex);
 
 private:
 	/** A resource pending to be freed */

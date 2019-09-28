@@ -37,7 +37,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/scene_composition.frag.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -51,7 +51,7 @@ WSceneCompositionRenderStage::WSceneCompositionRenderStage(Wasabi* const app) : 
 	m_constantsMaterial = nullptr;
 }
 
-WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
 	WError err = WRenderStage::Initialize(previousStages, width, height);
 	if (!err)
 		return err;
@@ -59,9 +59,9 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	m_fullscreenSprite = m_app->SpriteManager->CreateSprite();
 	if (!m_fullscreenSprite)
 		return WError(W_OUTOFMEMORY);
-	uint windowWidth = m_app->WindowAndInputComponent->GetWindowWidth();
-	uint windowHeight = m_app->WindowAndInputComponent->GetWindowHeight();
-	m_fullscreenSprite->SetSize(WVector2(windowWidth, windowHeight));
+	uint32_t windowWidth = m_app->WindowAndInputComponent->GetWindowWidth();
+	uint32_t windowHeight = m_app->WindowAndInputComponent->GetWindowHeight();
+	m_fullscreenSprite->SetSize(WVector2((float)windowWidth, (float)windowHeight));
 
 	VkPipelineColorBlendAttachmentState bs = {};
 	bs.blendEnable = VK_FALSE;
@@ -106,7 +106,10 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	return WError(W_SUCCEEDED);
 }
 
-WError WSceneCompositionRenderStage::Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter) {
+WError WSceneCompositionRenderStage::Render(class WRenderer* renderer, class WRenderTarget* rt, uint32_t filter) {
+	UNREFERENCED_PARAMETER(renderer);
+	UNREFERENCED_PARAMETER(filter);
+
 	WCamera* cam = rt->GetCamera();
 	if (abs(m_currentCameraFarPlane - cam->GetMaxRange()) >= W_EPSILON) {
 		m_currentCameraFarPlane = cam->GetMaxRange();
@@ -129,8 +132,8 @@ void WSceneCompositionRenderStage::Cleanup() {
 	W_SAFE_REMOVEREF(m_constantsMaterial);
 }
 
-WError WSceneCompositionRenderStage::Resize(uint width, uint height) {
+WError WSceneCompositionRenderStage::Resize(uint32_t width, uint32_t height) {
 	if (m_fullscreenSprite)
-		m_fullscreenSprite->SetSize(WVector2(width, height));
+		m_fullscreenSprite->SetSize(WVector2((float)width, (float)height));
 	return WRenderStage::Resize(width, height);
 }

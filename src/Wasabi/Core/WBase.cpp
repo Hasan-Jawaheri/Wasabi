@@ -4,8 +4,8 @@
 /********************************************************************************
 ***********************************WBase class**********************************
 ********************************************************************************/
-WBase::WBase(Wasabi* const app, unsigned int ID) {
-	static unsigned int generatedId = 1;
+WBase::WBase(Wasabi* const app, uint32_t ID) {
+	static uint32_t generatedId = 1;
 	m_ID = ID;
 	m_name = "object" + std::to_string(generatedId++);
 	m_app = app;
@@ -20,7 +20,7 @@ void WBase::SetManager(void* mgr) {
 	m_mgr = mgr;
 }
 
-void WBase::SetID(unsigned int newID) {
+void WBase::SetID(uint32_t newID) {
 	//set the ID of the object
 	if (m_mgr)
 		((WManager<WBase>*)m_mgr)->RemoveEntity(this);
@@ -29,7 +29,7 @@ void WBase::SetID(unsigned int newID) {
 		((WManager<WBase>*)m_mgr)->AddEntity(this);
 }
 
-unsigned int WBase::GetID() const {
+uint32_t WBase::GetID() const {
 	return m_ID;
 }
 

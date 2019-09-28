@@ -1,7 +1,7 @@
 #include "Wasabi/Animations/WSkeletalAnimation.h"
 #include "Wasabi/Images/WImage.h"
 
-const unsigned int sizeofBoneNoPtrs = 4 + 64 + sizeof(bool) + sizeof(WVector3) + 2 * sizeof(WMatrix);
+const uint32_t sizeofBoneNoPtrs = 4 + 64 + sizeof(bool) + sizeof(WVector3) + 2 * sizeof(WMatrix);
 
 WBone::WBone() {
 	m_scale = WVector3(1.0f, 1.0f, 1.0f);
@@ -13,20 +13,20 @@ WBone::WBone() {
 
 WBone::~WBone() {
 	//every bone destructs it's children, thus, only base bones should be deleteded and the rest will be deleted with it
-	for (unsigned int i = 0; i < m_children.size(); i++)
+	for (uint32_t i = 0; i < m_children.size(); i++)
 		delete m_children[i];
 }
 
-unsigned int WBone::GetIndex() const {
+uint32_t WBone::GetIndex() const {
 	return m_index;
 }
 
-void WBone::SetIndex(unsigned int index) {
+void WBone::SetIndex(uint32_t index) {
 	m_index = index;
 }
 
-void WBone::GetName(char* name, unsigned int maxChars) const {
-	strcpy_s(name, fmin(maxChars, 64), m_name);
+void WBone::GetName(char* name, uint32_t maxChars) const {
+	strcpy_s(name, std::min(maxChars, (uint32_t)64), m_name);
 }
 
 void WBone::SetName(std::string name) {
@@ -41,18 +41,18 @@ void WBone::SetParent(WBone* parent) {
 	m_parent = parent;
 }
 
-unsigned int WBone::GetNumChildren() const {
-	return m_children.size();
+uint32_t WBone::GetNumChildren() const {
+	return (uint32_t)m_children.size();
 }
 
-WBone* WBone::GetChild(unsigned int index) const {
+WBone* WBone::GetChild(uint32_t index) const {
 	if (index >= m_children.size())
 		return nullptr;
 	return m_children[index];
 }
 
 WBone* WBone::GetChild(std::string name) const {
-	for (unsigned int i = 0; i < m_children.size(); i++)
+	for (uint32_t i = 0; i < m_children.size(); i++)
 		if (strcmp(m_children[i]->m_name, name.c_str()) == 0)
 			return m_children[i];
 
@@ -149,9 +149,9 @@ WError WBone::Load(std::istream& inputStream) {
 	inputStream.read((char*)posULR, sizeof(WVector3) * 4);
 	SetPosition(posULR[0]);
 	SetULRVectors(posULR[1], posULR[2], posULR[3]);
-	unsigned int numChildren = 0;
+	uint32_t numChildren = 0;
 	inputStream.read((char*)&numChildren, 4);
-	for (unsigned int i = 0; i < numChildren; i++) {
+	for (uint32_t i = 0; i < numChildren; i++) {
 		WBone* child = new WBone();
 		child->SetParent(this);
 		AddChild(child);
@@ -165,9 +165,9 @@ WError WBone::Save(std::ostream& outputStream) const {
 	WVector3 posULR[4] = { GetPosition(), GetUVector(), GetLVector(), GetRVector() };
 	outputStream.write((char*)&m_worldM, sizeofBoneNoPtrs);
 	outputStream.write((char*)posULR, sizeof(WVector3) * 4);
-	unsigned int numChildren = GetNumChildren();
+	uint32_t numChildren = GetNumChildren();
 	outputStream.write((char*)&numChildren, 4);
-	for (unsigned int i = 0; i < numChildren; i++)
+	for (uint32_t i = 0; i < numChildren; i++)
 		m_children[i]->Save(outputStream);
 
 	return WError(W_SUCCEEDED);
@@ -184,7 +184,7 @@ struct _WSkeletalFrame : public W_FRAME {
 		W_SAFE_DELETE(baseBone);
 	}
 
-	void ConstructHierarchyFromBase(WBone* base, WBone* currentBone, unsigned int* index) {
+	void ConstructHierarchyFromBase(WBone* base, WBone* currentBone, uint32_t* index) {
 		base->UpdateLocals();
 		boneV.push_back(currentBone);
 		currentBone->SetIndex(base->GetIndex());
@@ -198,8 +198,8 @@ struct _WSkeletalFrame : public W_FRAME {
 		if (index)
 			currentBone->SetIndex(*index);
 		WBone* curChild = nullptr;
-		unsigned int i = -1;
-		while (curChild = base->GetChild(++i)) {
+		uint32_t i = (uint32_t)-1;
+		while ((curChild = base->GetChild(++i)) != nullptr) {
 			WBone* newBone = new WBone();
 			newBone->SetParent(currentBone);
 			currentBone->AddChild(newBone);
@@ -210,9 +210,9 @@ struct _WSkeletalFrame : public W_FRAME {
 	}
 };
 
-WSkeleton::WSkeleton(Wasabi* const app, unsigned int ID) : WAnimation(app, ID) {
+WSkeleton::WSkeleton(Wasabi* const app, uint32_t ID) : WAnimation(app, ID) {
 	//delete what the base had created, a skeleton has its unique subanimation structure
-	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
+	for (uint32_t i = 0; i < m_subAnimations.size(); i++)
 		delete m_subAnimations[i];
 	m_subAnimations.clear();
 	//add that new structure as a subanimation. casting these should be safe now
@@ -224,7 +224,7 @@ WSkeleton::WSkeleton(Wasabi* const app, unsigned int ID) : WAnimation(app, ID) {
 }
 
 WSkeleton::~WSkeleton() {
-	for (unsigned int i = 0; i < m_bindings.size(); i++)
+	for (uint32_t i = 0; i < m_bindings.size(); i++)
 		m_bindings[i].obj->RemoveBinding();
 	W_SAFE_REMOVEREF(m_boneTex);
 }
@@ -245,19 +245,19 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 	m_totalTime += fTime;
 
 	f->baseBone = new WBone();
-	unsigned int index = 0;
+	uint32_t index = 0;
 	f->ConstructHierarchyFromBase(baseBone, f->baseBone, baseBone->GetIndex() == -1 ? &index : nullptr);
 
 	WError err = WError(W_SUCCEEDED);
 
 	if (!m_boneTex) { //first frame will create the texture
-		float fExactWidth = sqrtf(f->boneV.size() * 4);
-		unsigned int texWidth = 2;
+		float fExactWidth = sqrtf((float)f->boneV.size() * 4.0f);
+		uint32_t texWidth = 2;
 		while (fExactWidth > texWidth)
 			texWidth *= 2;
 
 		float* texData = new float[texWidth * texWidth * 4];
-		for (unsigned int i = 0; i < f->boneV.size(); i++) {
+		for (uint32_t i = 0; i < f->boneV.size(); i++) {
 			WMatrix mtx = f->boneV[i]->GetInvBindingPose() * f->boneV[i]->GetRelativeMatrix();
 			memcpy(&((char*)texData)[i * sizeof(WMatrix)], &mtx, sizeof(WMatrix) - 4 * sizeof(float));
 		}
@@ -274,7 +274,7 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 	return err;
 }
 
-WError WSkeleton::DeleteKeyFrame(unsigned int frame) {
+WError WSkeleton::DeleteKeyFrame(uint32_t frame) {
 	if (frame >= WAnimation::m_frames.size())
 		return WError(W_INVALIDPARAM);
 
@@ -285,7 +285,7 @@ WError WSkeleton::DeleteKeyFrame(unsigned int frame) {
 	return WError(W_SUCCEEDED);
 }
 
-WBone* WSkeleton::GetKeyFrame(unsigned int frame) {
+WBone* WSkeleton::GetKeyFrame(uint32_t frame) {
 	if (frame >= WAnimation::m_frames.size())
 		return nullptr;
 
@@ -296,15 +296,15 @@ void WSkeleton::AddSubAnimation() {
 	WAnimation::m_subAnimations.push_back(new W_SKELETAL_SUB_ANIMATION);
 }
 
-void WSkeleton::SetSubAnimationBaseBone(unsigned int subAnimation, unsigned int boneIndex, unsigned int parentSubAnimation) {
+void WSkeleton::SetSubAnimationBaseBone(uint32_t subAnimation, uint32_t boneIndex, uint32_t parentSubAnimation) {
 	if (!WAnimation::m_frames.size())
 		return;
 	if (subAnimation >= WAnimation::m_subAnimations.size())
 		return;
 
 	if (boneIndex != -1) {
-		unsigned int indexInVector = -1;
-		for (unsigned int i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[0])->boneV.size() && indexInVector == -1; i++)
+		uint32_t indexInVector = (uint32_t)-1;
+		for (uint32_t i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[0])->boneV.size() && indexInVector == -1; i++)
 			if (((_WSkeletalFrame*)WAnimation::m_frames[0])->boneV[i]->GetIndex() == boneIndex)
 				indexInVector = i;
 		if (indexInVector == -1)
@@ -315,7 +315,7 @@ void WSkeleton::SetSubAnimationBaseBone(unsigned int subAnimation, unsigned int 
 		((W_SKELETAL_SUB_ANIMATION*)WAnimation::m_subAnimations[subAnimation])->BuildIndices(baseBone);
 		if (parentSubAnimation != -1) {
 			if (baseBone->GetParent()) {
-				unsigned int parentIndex = baseBone->GetParent()->GetIndex();
+				uint32_t parentIndex = baseBone->GetParent()->GetIndex();
 				((W_SKELETAL_SUB_ANIMATION*)WAnimation::m_subAnimations[subAnimation])->parentIndex = parentIndex;
 				((W_SKELETAL_SUB_ANIMATION*)WAnimation::m_subAnimations[subAnimation])->parentSubAnimation = parentSubAnimation;
 			}
@@ -328,16 +328,15 @@ void WSkeleton::Update(float fDeltaTime) {
 	WAnimation::Update(fDeltaTime);
 
 	if (WAnimation::m_frames.size()) {
-		unsigned int texWidth = m_boneTex->GetWidth();
 		float* texData = nullptr;
 		m_boneTex->MapPixels((void**)&texData, W_MAP_WRITE);
 		if (!texData)
 			return;
 
-		for (unsigned int anim = 0; anim < WAnimation::m_subAnimations.size(); anim++) {
+		for (uint32_t anim = 0; anim < WAnimation::m_subAnimations.size(); anim++) {
 			W_SKELETAL_SUB_ANIMATION* curSubAnim = ((W_SKELETAL_SUB_ANIMATION*)WAnimation::m_subAnimations[anim]);
-			unsigned int curFrameIndex = curSubAnim->curFrame;
-			unsigned int nextFrameIndex = curSubAnim->nextFrame;
+			uint32_t curFrameIndex = curSubAnim->curFrame;
+			uint32_t nextFrameIndex = curSubAnim->nextFrame;
 			_WSkeletalFrame* curFrame = (_WSkeletalFrame*)(WAnimation::m_frames[curFrameIndex]);
 			_WSkeletalFrame* nextFrame = (_WSkeletalFrame*)(WAnimation::m_frames[nextFrameIndex]);
 
@@ -347,7 +346,7 @@ void WSkeleton::Update(float fDeltaTime) {
 			nextFrame = (_WSkeletalFrame*)(WAnimation::m_frames[curSubAnim->firstFrame]);*/
 
 			float fTimeBeforeFrame = 0.0f;
-			for (unsigned int i = 0; i < curFrameIndex; i++)
+			for (uint32_t i = 0; i < curFrameIndex; i++)
 				fTimeBeforeFrame += ((_WSkeletalFrame*)WAnimation::m_frames[i])->fTime;
 
 			float fLerpValue = (curSubAnim->fCurrentTime - fTimeBeforeFrame) / curFrame->fTime;
@@ -360,9 +359,9 @@ void WSkeleton::Update(float fDeltaTime) {
 				WBone* curFrameOldParent = nullptr;
 				WBone* nextFrameOldParent = nullptr;
 				if (curSubAnim->parentSubAnimation != -1) {
-					unsigned int boneIndex = curSubAnim->boneIndices[0];
-					unsigned int boneInVector = -1;
-					for (unsigned int k = 0; k < curFrame->boneV.size() && boneInVector == -1; k++)
+					uint32_t boneIndex = curSubAnim->boneIndices[0];
+					uint32_t boneInVector = (uint32_t)-1;
+					for (uint32_t k = 0; k < curFrame->boneV.size() && boneInVector == -1; k++)
 						if (curFrame->boneV[k]->GetIndex() == boneIndex)
 							boneInVector = k;
 					WBone* curFrameBone = curFrame->boneV[boneInVector];
@@ -373,17 +372,17 @@ void WSkeleton::Update(float fDeltaTime) {
 						((W_SKELETAL_SUB_ANIMATION*)WAnimation::m_subAnimations[curSubAnim->parentSubAnimation]);
 					_WSkeletalFrame* parentFrame =
 						(_WSkeletalFrame*)(WAnimation::m_frames[parentSubAnim->curFrame]);
-					for (unsigned int k = 0; k < parentFrame->boneV.size(); k++)
+					for (uint32_t k = 0; k < parentFrame->boneV.size(); k++)
 						if (parentFrame->boneV[k]->GetIndex() == curSubAnim->parentIndex) {
 							curFrameBone->SetParent(parentFrame->boneV[k]);
 							nextFrameBone->SetParent(parentFrame->boneV[k]);
 						}
 				}
 
-				for (unsigned int i = 0; i < curSubAnim->boneIndices.size(); i++) {
-					unsigned int boneIndex = curSubAnim->boneIndices[i];
-					unsigned int boneInVector = -1;
-					for (unsigned int k = 0; k < curFrame->boneV.size() && boneInVector == -1; k++)
+				for (uint32_t i = 0; i < curSubAnim->boneIndices.size(); i++) {
+					uint32_t boneIndex = curSubAnim->boneIndices[i];
+					uint32_t boneInVector = (uint32_t)-1;
+					for (uint32_t k = 0; k < curFrame->boneV.size() && boneInVector == -1; k++)
 						if (curFrame->boneV[k]->GetIndex() == boneIndex)
 							boneInVector = k;
 
@@ -404,7 +403,7 @@ void WSkeleton::Update(float fDeltaTime) {
 						WMatrix bindMtx = curFrameMtx * (1.0f - fLerpValue) + nextFrameMtx * fLerpValue;
 						for (int j = 0; j < 4; j++)
 							bindMtx(2, j) = -bindMtx(2, j);
-						for (unsigned int j = 0; j < m_bindings.size(); j++)
+						for (uint32_t j = 0; j < m_bindings.size(); j++)
 							if (m_bindings[j].boneID == boneIndex)
 								m_bindings[j].obj->SetBindingMatrix(bindMtx * WScalingMatrix(m_bindingScale));
 					}
@@ -418,9 +417,9 @@ void WSkeleton::Update(float fDeltaTime) {
 
 				//set parents back to normal
 				if (curSubAnim->parentSubAnimation != -1) {
-					unsigned int boneIndex = curSubAnim->boneIndices[0];
-					unsigned int boneInVector = -1;
-					for (unsigned int k = 0; k < curFrame->boneV.size() && boneInVector == -1; k++)
+					uint32_t boneIndex = curSubAnim->boneIndices[0];
+					uint32_t boneInVector = (uint32_t)-1;
+					for (uint32_t k = 0; k < curFrame->boneV.size() && boneInVector == -1; k++)
 						if (curFrame->boneV[k]->GetIndex() == boneIndex)
 							boneInVector = k;
 					curFrame->boneV[boneInVector]->SetParent(curFrameOldParent);
@@ -428,12 +427,12 @@ void WSkeleton::Update(float fDeltaTime) {
 				}
 			} else //no indices means all bones
 			{
-				for (unsigned int i = 0; i < curFrame->boneV.size(); i++) {
+				for (uint32_t i = 0; i < curFrame->boneV.size(); i++) {
 					//update parent position
 					if (curFrame->boneV[i]->GetParent() == nullptr)
 						m_parentBonePos = curFrame->boneV[i]->GetPosition();
 
-					unsigned int boneIndex = curFrame->boneV[i]->GetIndex();
+					uint32_t boneIndex = curFrame->boneV[i]->GetIndex();
 
 					WBone* curFrameBone = curFrame->boneV[i];
 					WBone* nextFrameBone = nextFrame->boneV[i];
@@ -451,7 +450,7 @@ void WSkeleton::Update(float fDeltaTime) {
 						WMatrix bindMtx = curFrameMtx * (1.0f - fLerpValue) + nextFrameMtx * fLerpValue;
 						for (int j = 0; j < 4; j++)
 							bindMtx(2, j) = -bindMtx(2, j);
-						for (unsigned int j = 0; j < m_bindings.size(); j++)
+						for (uint32_t j = 0; j < m_bindings.size(); j++)
 							if (m_bindings[j].boneID == boneIndex)
 								m_bindings[j].obj->SetBindingMatrix(bindMtx * WScalingMatrix(m_bindingScale));
 					}
@@ -473,18 +472,18 @@ WImage* WSkeleton::GetTexture() const {
 	return m_boneTex;
 }
 
-WBone* WSkeleton::GetBone(unsigned int frame, unsigned int index) const {
+WBone* WSkeleton::GetBone(uint32_t frame, uint32_t index) const {
 	if (frame < WAnimation::m_frames.size()) {
-		for (unsigned int i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[frame])->boneV.size(); i++)
+		for (uint32_t i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[frame])->boneV.size(); i++)
 			if (((_WSkeletalFrame*)WAnimation::m_frames[frame])->boneV[i]->GetIndex() == index)
 				return ((_WSkeletalFrame*)WAnimation::m_frames[frame])->boneV[i];
 	}
 	return nullptr;
 }
 
-WBone* WSkeleton::GetBone(unsigned int frame, std::string name) const {
+WBone* WSkeleton::GetBone(uint32_t frame, std::string name) const {
 	if (frame < WAnimation::m_frames.size()) {
-		for (unsigned int i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[frame])->boneV.size(); i++) {
+		for (uint32_t i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[frame])->boneV.size(); i++) {
 			char curName[64];
 			((_WSkeletalFrame*)WAnimation::m_frames[frame])->boneV[i]->GetName(curName, 64);
 			if (strcmp(curName, name.c_str()) == 0)
@@ -509,19 +508,19 @@ void WSkeleton::Scale(WVector3 scale) {
 		((_WSkeletalFrame*)WAnimation::m_frames[i])->baseBone->Scale(scale);
 }
 
-void WSkeleton::BindToBone(WOrientation* obj, unsigned int boneID) {
+void WSkeleton::BindToBone(WOrientation* obj, uint32_t boneID) {
 	m_bindings.push_back(WSkeleton::BONEBIND(obj, boneID));
 }
 
-void WSkeleton::UnbindFromBone(WOrientation* obj, unsigned int boneID) {
-	for (unsigned int i = 0; i < m_bindings.size(); i++)
+void WSkeleton::UnbindFromBone(WOrientation* obj, uint32_t boneID) {
+	for (uint32_t i = 0; i < m_bindings.size(); i++)
 		if (m_bindings[i].obj == obj && m_bindings[i].boneID == boneID)
 			m_bindings.erase(m_bindings.begin() + i);
 	obj->RemoveBinding();
 }
 
-void WSkeleton::UnbindFromBone(unsigned int boneID) {
-	for (unsigned int i = 0; i < m_bindings.size(); i++)
+void WSkeleton::UnbindFromBone(uint32_t boneID) {
+	for (uint32_t i = 0; i < m_bindings.size(); i++)
 		if (m_bindings[i].boneID == boneID) {
 			m_bindings[i].obj->RemoveBinding();
 			m_bindings.erase(m_bindings.begin() + i);
@@ -553,12 +552,12 @@ WError	WSkeleton::CopyFrom(const WAnimation* const from) {
 	//delete the bone texture and any existing frames
 	W_SAFE_REMOVEREF(m_boneTex);
 	if (WAnimation::m_bFramesOwner)
-		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
+		for (uint32_t i = 0; i < WAnimation::m_frames.size(); i++)
 			W_SAFE_DELETE(WAnimation::m_frames[i]);
 	m_frames.clear();
 	m_totalTime = 0.0f;
 	//delete all subanimations - start a fresh object with only 1
-	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
+	for (uint32_t i = 0; i < m_subAnimations.size(); i++)
 		delete m_subAnimations[i];
 	m_subAnimations.clear();
 	//add that new structure as a subanimation. casting these should be safe now
@@ -567,7 +566,7 @@ WError	WSkeleton::CopyFrom(const WAnimation* const from) {
 
 	WSkeleton* fromS = (WSkeleton*)from;
 	m_bindingScale = fromS->m_bindingScale;
-	for (unsigned int i = 0; i < fromS->WAnimation::m_frames.size(); i++) {
+	for (uint32_t i = 0; i < fromS->WAnimation::m_frames.size(); i++) {
 		_WSkeletalFrame* frame = (_WSkeletalFrame*)fromS->WAnimation::m_frames[i];
 		WError err = CreateKeyFrame(frame->baseBone, frame->fTime);
 		if (!err)
@@ -586,12 +585,12 @@ WError WSkeleton::UseAnimationFrames(const WAnimation* const anim) {
 	//delete the bone texture and any existing frames
 	W_SAFE_REMOVEREF(m_boneTex);
 	if (WAnimation::m_bFramesOwner)
-		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
+		for (uint32_t i = 0; i < WAnimation::m_frames.size(); i++)
 			W_SAFE_DELETE(WAnimation::m_frames[i]);
 	m_frames.clear();
 	m_totalTime = 0.0f;
 	//delete all subanimations - start a fresh object with only 1
-	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
+	for (uint32_t i = 0; i < m_subAnimations.size(); i++)
 		delete m_subAnimations[i];
 	m_subAnimations.clear();
 	//add that new structure as a subanimation. casting these should be safe now
@@ -600,7 +599,7 @@ WError WSkeleton::UseAnimationFrames(const WAnimation* const anim) {
 
 	WSkeleton* fromS = (WSkeleton*)anim;
 	m_bindingScale = fromS->m_bindingScale;
-	for (unsigned int i = 0; i < fromS->WAnimation::m_frames.size(); i++) {
+	for (uint32_t i = 0; i < fromS->WAnimation::m_frames.size(); i++) {
 		WAnimation::m_frames.push_back(fromS->WAnimation::m_frames[i]);
 		m_totalTime += fromS->WAnimation::m_frames[i]->fTime;
 	}
@@ -619,14 +618,16 @@ bool WSkeleton::Valid() const {
 }
 
 WError WSkeleton::SaveToStream(WFile* file, std::ostream& outputStream) {
+	UNREFERENCED_PARAMETER(file);
+
 	if (!Valid())
 		return WError(W_NOTVALID);
 
 	//Format: <NUMFRAMES><FRAME 1><FRAME 2>...<FRAME NUMFRAMES-1>
 	//Format: where <FRAME n>: <fTime><BASICBONE:sizeofBoneNoPtrs><NUMCHILDREN><BASICBONE><NUMCHILDREN> (recursize)
-	unsigned int numFrames = WAnimation::m_frames.size();
+	uint32_t numFrames = (uint32_t)WAnimation::m_frames.size();
 	outputStream.write((char*)&numFrames, 4);
-	for (unsigned int i = 0; i < numFrames; i++) {
+	for (uint32_t i = 0; i < numFrames; i++) {
 		_WSkeletalFrame* curFrame = (_WSkeletalFrame*)WAnimation::m_frames[i];
 		float fTime = curFrame->fTime;
 		outputStream.write((char*)&fTime, 4);
@@ -637,8 +638,8 @@ WError WSkeleton::SaveToStream(WFile* file, std::ostream& outputStream) {
 			WBone* b = boneStack[boneStack.size() - 1];
 			boneStack.pop_back();
 			b->UpdateLocals();
-			for (unsigned int i = 0; i < b->GetNumChildren(); i++)
-				boneStack.push_back(b->GetChild(i));
+			for (uint32_t j = 0; j < b->GetNumChildren(); j++)
+				boneStack.push_back(b->GetChild(j));
 		}
 		WError err = curFrame->baseBone->Save(outputStream);
 		if (!err)
@@ -653,15 +654,18 @@ std::vector<void*> WSkeleton::LoadArgs() {
 }
 
 WError WSkeleton::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
+	UNREFERENCED_PARAMETER(file);
+	UNREFERENCED_PARAMETER(args);
+
 	//delete the bone texture and any existing frames
 	W_SAFE_REMOVEREF(m_boneTex);
 	if (WAnimation::m_bFramesOwner)
-		for (unsigned int i = 0; i < WAnimation::m_frames.size(); i++)
+		for (uint32_t i = 0; i < WAnimation::m_frames.size(); i++)
 			W_SAFE_DELETE(WAnimation::m_frames[i]);
 	m_frames.clear();
 	m_totalTime = 0.0f;
 	//delete all subanimations - start a fresh object with only 1
-	for (unsigned int i = 0; i < m_subAnimations.size(); i++)
+	for (uint32_t i = 0; i < m_subAnimations.size(); i++)
 		delete m_subAnimations[i];
 	m_subAnimations.clear();
 	//add that new structure as a subanimation. casting these should be safe now
@@ -672,9 +676,9 @@ WError WSkeleton::LoadFromStream(WFile* file, std::istream& inputStream, std::ve
 
 	//Format: <NUMFRAMES><FRAME 1><FRAME 2>...<FRAME NUMFRAMES-1>
 	//Format: where <FRAME n>: <fTime><BASICBONE:sizeofBoneNoPtrs><NUMCHILDREN><BASICBONE><NUMCHILDREN> (recursize)
-	unsigned int numFrames = 0;
+	uint32_t numFrames = 0;
 	inputStream.read((char*)&numFrames, 4);
-	for (unsigned int i = 0; i < numFrames; i++) {
+	for (uint32_t i = 0; i < numFrames; i++) {
 		float fTime = 0.0f;
 		inputStream.read((char*)&fTime, 4);
 

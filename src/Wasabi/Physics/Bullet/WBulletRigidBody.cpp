@@ -26,7 +26,7 @@ void WBulletRigidBodyManager::Update(float deltaTime) {
 	}
 }
 
-WBulletRigidBody::WBulletRigidBody(Wasabi* const app, unsigned int ID) : WRigidBody(app, ID) {
+WBulletRigidBody::WBulletRigidBody(Wasabi* const app, uint32_t ID) : WRigidBody(app, ID) {
 	m_isUpdating = false;
 	m_boundObject = nullptr;
 	m_boundObjectBase = nullptr;
@@ -105,15 +105,15 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 	case RIGID_BODY_SHAPE_CONVEX:
 	{
 		W_VERTEX_DESCRIPTION vertexDesc = createInfo.geometry->GetVertexDescription();
-		int stride = vertexDesc.GetSize();
-		int numVerts = createInfo.geometry->GetNumVertices();
-		unsigned int posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
-		if (posOffset < 0)
+		size_t stride = vertexDesc.GetSize();
+		uint32_t numVerts = createInfo.geometry->GetNumVertices();
+		size_t posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
+		if (posOffset == (size_t)-1)
 			return WError(W_INVALIDPARAM);
 		float* vb = nullptr;
 		createInfo.geometry->MapVertexBuffer((void**)&vb, W_MAP_READ);
 		btScalar* points = new btScalar[numVerts*3];
-		for (int i = 0; i < numVerts; i++) {
+		for (uint32_t i = 0; i < numVerts; i++) {
 			points[i*3 + 0] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 0);
 			points[i*3 + 1] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 4);
 			points[i*3 + 2] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 8);
@@ -126,19 +126,19 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 	case RIGID_BODY_SHAPE_MESH:
 	{
 		W_VERTEX_DESCRIPTION vertexDesc = createInfo.geometry->GetVertexDescription();
-		int stride = vertexDesc.GetSize();
-		unsigned int posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
-		if (posOffset < 0)
+		size_t stride = vertexDesc.GetSize();
+		size_t posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
+		if (posOffset == (size_t)-1)
 			return WError(W_INVALIDPARAM);
 		btScalar* points = nullptr;
-		unsigned int* indices = nullptr;
+		uint32_t* indices = nullptr;
 		createInfo.geometry->MapVertexBuffer((void**)&points, W_MAP_READ);
 		if (createInfo.isTriangleList)
 			createInfo.geometry->MapIndexBuffer((void**)&indices, W_MAP_READ);
 
-		int num_triangles = createInfo.isTriangleList ? createInfo.geometry->GetNumIndices() / 3 : createInfo.geometry->GetNumVertices() - 2;
+		uint32_t num_triangles = createInfo.isTriangleList ? createInfo.geometry->GetNumIndices() / 3 : createInfo.geometry->GetNumVertices() - 2;
 		btTriangleMesh* mesh = new btTriangleMesh(true, false);
-		for (int tri = 0; tri < num_triangles; tri++) {
+		for (uint32_t tri = 0; tri < num_triangles; tri++) {
 			int i0 = tri, i1 = tri + 1, i2 = tri + 2;
 			if (createInfo.isTriangleList) {
 				i0 = indices[tri * 3 + 0], i1 = indices[tri * 3 + 1], i2 = indices[tri * 3 + 2];
@@ -197,6 +197,8 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 }
 
 void WBulletRigidBody::Update(float deltaTime) {
+	UNREFERENCED_PARAMETER(deltaTime);
+
 	m_isUpdating = true;
 	if (m_boundObject && m_rigidBody) {
 		btQuaternion rotation = ((btRigidBody*)m_rigidBody)->getOrientation();
@@ -332,6 +334,8 @@ WMatrix WBulletRigidBody::GetWorldMatrix() {
 }
 
 void WBulletRigidBody::OnStateChange(STATE_CHANGE_TYPE type) {
+	UNREFERENCED_PARAMETER(type);
+
 	if (!m_isUpdating && m_rigidBody) {
 		btTransform mtx = WBTConverMatrix(GetWorldMatrix());
 		((btRigidBody*)m_rigidBody)->setWorldTransform(mtx);

@@ -36,7 +36,7 @@ typedef struct W_RENDERING_TEXT {
  */
 typedef struct W_FONT_OBJECT {
 	/** ID of the font */
-	unsigned int ID;
+	uint32_t ID;
 	/** Name of the font, as loaded */
 	std::string name;
 	/** stb library data */
@@ -85,14 +85,14 @@ public:
 	 *                  AddFontDirectory())
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateTextFont(unsigned int ID, std::string fontName);
+	WError CreateTextFont(uint32_t ID, std::string fontName);
 
 	/**
 	 * Destroys a font.
 	 * @param  ID ID of the font to destroy
 	 * @return    Error code, see WError.h
 	 */
-	WError DestroyFont(unsigned int ID);
+	WError DestroyFont(uint32_t ID);
 
 	/**
 	 * Sets the default color for the following text renders (if not specified in
@@ -108,7 +108,7 @@ public:
 	 * @param  ID ID of the font to set default
 	 * @return    Error code, see WError.h
 	 */
-	WError SetFont(unsigned int ID);
+	WError SetFont(uint32_t ID);
 
 	/**
 	 * Adds text to be rendered on the next frame.
@@ -129,7 +129,7 @@ public:
 	 * @param  fontID  ID of the font to use
 	 * @return         Error code, see WError.h
 	 */
-	WError RenderText(std::string text, float x, float y, float fHeight, unsigned int fontID);
+	WError RenderText(std::string text, float x, float y, float fHeight, uint32_t fontID);
 
 	/**
 	 * Adds text to be rendered on the next frame.
@@ -141,7 +141,7 @@ public:
 	 * @param  col     Color to use for rendering
 	 * @return         Error code, see WError.h
 	 */
-	WError RenderText(std::string text, float x, float y, float fHeight, unsigned int fontID, WColor col);
+	WError RenderText(std::string text, float x, float y, float fHeight, uint32_t fontID, WColor col);
 
 	/**
 	 * Renders all text onto the render target.
@@ -157,7 +157,7 @@ public:
 	 * @return         Width, in pixels, of the text if it was to render using
 	 *                 the specified parameters
 	 */
-	float GetTextWidth(std::string text, float fHeight, unsigned int fontID = 0);
+	float GetTextWidth(std::string text, float fHeight, uint32_t fontID = 0);
 
 protected:
 	/** Pointer to the Wasabi class */
@@ -165,9 +165,9 @@ protected:
 	/** List of directories in which fonts could be found */
 	std::vector<std::string> m_directories;
 	/** A hashtable for the fonts, mapping ID -> font */
-	std::map<unsigned int, W_FONT_OBJECT> m_fonts;
+	std::map<uint32_t, W_FONT_OBJECT> m_fonts;
 	/** Current (default) font ID */
-	unsigned int m_curFont;
+	uint32_t m_curFont;
 	/** Current (Default) color */
 	WColor m_curColor;
 	/** Effect to use for rendering texts */

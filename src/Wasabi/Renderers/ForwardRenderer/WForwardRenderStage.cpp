@@ -15,7 +15,7 @@ void WForwardRenderStageObjectVS::Load(bool bSaveData) {
 	vector<byte> code = {
 		#include "Shaders/forward.vert.glsl.spv"
 	};
-	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 }
 
 W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
@@ -62,7 +62,7 @@ void WForwardRenderStageObjectPS::Load(bool bSaveData) {
 	vector<byte> code = {
 		#include "Shaders/forward.frag.glsl.spv"
 	};
-	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 }
 
 W_SHADER_DESC WForwardRenderStageObjectPS::GetDesc(int maxLights) {
@@ -84,7 +84,7 @@ void WForwardRenderStageTerrainVS::Load(bool bSaveData) {
 	vector<byte> code = {
 		#include "Shaders/terrain.vert.glsl.spv"
 	};
-	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 }
 
 W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
@@ -125,7 +125,7 @@ void WForwardRenderStageTerrainPS::Load(bool bSaveData) {
 	vector<byte> code = {
 		#include "Shaders/terrain.frag.glsl.spv"
 	};
-	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 }
 
 W_SHADER_DESC WForwardRenderStageTerrainPS::GetDesc(int maxLights) {
@@ -154,7 +154,7 @@ WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_perFrameTerrainsMaterial = nullptr;
 }
 
-WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
 	WError err = WRenderStage::Initialize(previousStages, width, height);
 	if (!err)
 		return err;
@@ -250,7 +250,7 @@ void WForwardRenderStage::Cleanup() {
 	W_SAFE_DELETE(m_terrainsFragment);
 }
 
-WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
+WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
 	WCamera* cam = rt->GetCamera();
 
 	int numLights = 0;
@@ -297,6 +297,6 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 	return WError(W_SUCCEEDED);
 }
 
-WError WForwardRenderStage::Resize(uint width, uint height) {
+WError WForwardRenderStage::Resize(uint32_t width, uint32_t height) {
 	return WRenderStage::Resize(width, height);
 }

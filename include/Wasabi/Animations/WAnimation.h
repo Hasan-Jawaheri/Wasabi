@@ -31,11 +31,11 @@ struct W_FRAME {
  */
 struct W_SUB_ANIMATION {
 	/** The frame this subanimation is currently in. */
-	unsigned int curFrame;
+	uint32_t curFrame;
 	/** The next frame this subanimation is merging to. */
-	unsigned int nextFrame;
+	uint32_t nextFrame;
 	/** The first frame within the play boundaries. */
-	unsigned int firstFrame;
+	uint32_t firstFrame;
 	/** true if the subanimation is playing (or looping). */
 	bool bPlaying;
 	/** true if the animation is looping. */
@@ -80,7 +80,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WAnimation(class Wasabi* const app, unsigned int ID = 0);
+	WAnimation(class Wasabi* const app, uint32_t ID = 0);
 
 	/**
 	 * Steps the state of the playing (or looping) subanimations forward. This is
@@ -107,7 +107,7 @@ public:
 	 * be removed.
 	 * @param index The index of the subanimation to remove
 	 */
-	virtual void RemoveSubAnimation(unsigned int index);
+	virtual void RemoveSubAnimation(uint32_t index);
 
 	/**
 	 * Sets the time interval for a keyframe in the animation frames.
@@ -115,7 +115,7 @@ public:
 	 * @param  fTime Time to set for the frame
 	 * @return       Error code, see WError.h
 	 */
-	WError SetKeyFrameTime(unsigned int frame, float fTime);
+	WError SetKeyFrameTime(uint32_t frame, float fTime);
 
 	/**
 	 * Sets the play speed multiplier for the selected subanimation.
@@ -123,7 +123,7 @@ public:
 	 * @param subAnimation     subanimation index, -1 will set the speed for all
 	 *                         subanimations
 	 */
-	void SetPlaySpeed(float fSpeedMultiplier, unsigned int subAnimation = -1);
+	void SetPlaySpeed(float fSpeedMultiplier, uint32_t subAnimation = -1);
 
 	/**
 	 * Immediately sets the current frame in the subanimation.
@@ -131,7 +131,7 @@ public:
 	 * @param subAnimation The subanimation to set its frame, -1 for all
 	 *                     subanimations
 	 */
-	void SetCurrentFrame(unsigned int frame, unsigned int subAnimation = 0);
+	void SetCurrentFrame(uint32_t frame, uint32_t subAnimation = 0);
 
 	/**
 	 * Immediately sets the current time in the subanimation.
@@ -139,7 +139,7 @@ public:
 	 * @param subAnimation The subanimation to set its time, -1 for all
 	 *                     subanimations
 	 */
-	void SetCurrentTime(float fTime, unsigned int subAnimation = 0);
+	void SetCurrentTime(float fTime, uint32_t subAnimation = 0);
 
 	/**
 	 * Sets the range in which the subanimation can loop.
@@ -148,8 +148,8 @@ public:
 	 * @param subAnimation The subanimation to set its boundaries, -1 for all
 	 *                     subanimations
 	 */
-	void SetPlayingBounds(unsigned int startFrame, unsigned int endFrame,
-						  unsigned int subAnimation = 0);
+	void SetPlayingBounds(uint32_t startFrame, uint32_t endFrame,
+						  uint32_t subAnimation = 0);
 
 	/**
 	 * Sets the range in which the subanimation can loop.
@@ -159,25 +159,25 @@ public:
 	 *                     subanimations
 	 */
 	void SetPlayingBounds_Time(float fStartTime, float fEndTime,
-							   unsigned int subAnimation = 0);
+							   uint32_t subAnimation = 0);
 
 	/**
 	 * Starts playing the subanimation.
 	 * @param subAnimation subanimation to play, -1 for all subanimations
 	 */
-	void Play(unsigned int subAnimation = -1);
+	void Play(uint32_t subAnimation = -1);
 
 	/**
 	 * Starts looping the subanimation.
 	 * @param subAnimation subanimation to loop, -1 for all subanimations
 	 */
-	void Loop(unsigned int subAnimation = -1);
+	void Loop(uint32_t subAnimation = -1);
 
 	/**
 	 * Stops playing (and looping) the subanimation.
 	 * @param subAnimation subanimation to stop, -1 for all subanimations
 	 */
-	void Stop(unsigned int subAnimation = -1);
+	void Stop(uint32_t subAnimation = -1);
 
 	/**
 	 * Resets the subanimation by setting its current time and frame to the
@@ -185,7 +185,7 @@ public:
 	 * SetPlayingBounds and SetPlayingBounds_Time).
 	 * @param subAnimation subanimation to reset, -1 for all subanimations
 	 */
-	void Reset(unsigned int subAnimation = -1);
+	void Reset(uint32_t subAnimation = -1);
 
 	/**
 	 * Whether or not the subanimation is playing (or looping).
@@ -193,21 +193,21 @@ public:
 	 * @return             true if the subanimation is playing (or looping),
 	 *                     false otherwise
 	 */
-	bool Playing(unsigned int subAnimation = 0) const;
+	bool Playing(uint32_t subAnimation = 0) const;
 
 	/**
 	 * Whether or not the subanimation is looping.
 	 * @param subAnimation subanimation to check
 	 * @return             true if the subanimation is looping, false otherwise
 	 */
-	bool Looping(unsigned int subAnimation = 0) const;
+	bool Looping(uint32_t subAnimation = 0) const;
 
 	/**
 	 * Retrieves the current time in the subanimation.
 	 * @param subAnimation subanimation to check
 	 * @return             The current time of the subanimation
 	 */
-	float GetTime(unsigned int subAnimation = 0) const;
+	float GetTime(uint32_t subAnimation = 0) const;
 
 	/**
 	 * Copies another WAnimation. This function is specific to the
@@ -235,7 +235,7 @@ protected:
 	 * its' W_SUB_ANIMATION::fPlayStartTime.
 	 * @param subAnimation subanimation to update, -1 to update all subanimations
 	 */
-	void m_UpdateFirstFrame(unsigned int subAnimation = -1);
+	void m_UpdateFirstFrame(uint32_t subAnimation = -1);
 
 	/**
 	 * true if this object owns the frames in m_frames, and can thus free them.

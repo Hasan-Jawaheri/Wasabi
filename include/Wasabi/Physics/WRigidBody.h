@@ -15,7 +15,7 @@
 #include "Wasabi/Core/WCore.h"
 
 /** Shape of a rigid body in the physics simulation */
-enum W_RIGID_BODY_SHAPE {
+enum W_RIGID_BODY_SHAPE: uint8_t {
 	/** A convex shape is an outer-shape of a geometry (no inner cavities) */
 	RIGID_BODY_SHAPE_CONVEX = 0,
 	/** A mesh shape is a complex geometry, can only be used for static RBs */
@@ -77,7 +77,7 @@ protected:
 
 public:
 
-	WRigidBody(class Wasabi* const app, unsigned int ID = 0) : WFileAsset(app, ID) {}
+	WRigidBody(class Wasabi* const app, uint32_t ID = 0) : WFileAsset(app, ID) {}
 
 	/**
 	 * Must be implemented to initialize the rigid body.

@@ -36,6 +36,7 @@ void AnimationDemo::Load() {
 }
 
 void AnimationDemo::Update(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
 }
 
 void AnimationDemo::Cleanup() {

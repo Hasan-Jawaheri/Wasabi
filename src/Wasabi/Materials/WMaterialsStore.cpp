@@ -11,7 +11,7 @@ WMaterialsStore::~WMaterialsStore() {
 	ClearEffects();
 }
 
-void WMaterialsStore::AddEffect(WEffect* effect, unsigned int bindingSet, bool set_default) {
+void WMaterialsStore::AddEffect(WEffect* effect, uint32_t bindingSet, bool set_default) {
 	effect->AddReference();
 	RemoveEffect(effect);
 	WMaterial* material = effect->CreateMaterial(bindingSet);

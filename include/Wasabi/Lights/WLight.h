@@ -14,7 +14,7 @@
 #include "Wasabi/Core/WCore.h"
 
 /** Describes a light type */
-enum W_LIGHT_TYPE {
+enum W_LIGHT_TYPE: uint8_t {
 	W_LIGHT_DIRECTIONAL = 0,
 	W_LIGHT_POINT = 1,
 	W_LIGHT_SPOT = 2,
@@ -49,7 +49,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WLight(class Wasabi* const app, W_LIGHT_TYPE type = W_LIGHT_DIRECTIONAL, unsigned int ID = 0);
+	WLight(class Wasabi* const app, W_LIGHT_TYPE type = W_LIGHT_DIRECTIONAL, uint32_t ID = 0);
 
 	/**
 	 * Sets the color of this light
@@ -177,19 +177,19 @@ private:
 
 class WDirectionalLight : public WLight {
 public:
-	WDirectionalLight(class Wasabi* const app, unsigned int ID = 0)
+	WDirectionalLight(class Wasabi* const app, uint32_t ID = 0)
 		: WLight(app, W_LIGHT_DIRECTIONAL, ID) {}
 };
 
 class WPointLight : public WLight {
 public:
-	WPointLight(class Wasabi* const app, unsigned int ID = 0)
+	WPointLight(class Wasabi* const app, uint32_t ID = 0)
 		: WLight(app, W_LIGHT_POINT, ID) {}
 };
 
 class WSpotLight : public WLight {
 public:
-	WSpotLight(class Wasabi* const app, unsigned int ID = 0)
+	WSpotLight(class Wasabi* const app, uint32_t ID = 0)
 		: WLight(app, W_LIGHT_SPOT, ID) {}
 };
 

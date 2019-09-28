@@ -57,6 +57,7 @@ void SpritesDemo::Load() {
 }
 
 void SpritesDemo::Update(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
 }
 
 void SpritesDemo::Cleanup() {

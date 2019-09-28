@@ -1,7 +1,7 @@
 #include "Wasabi/Memory/WVulkanMemoryManager.h"
 #include "Wasabi/Core/WCore.h"
 
-enum VULKAN_RESOURCE_TYPE {
+enum VULKAN_RESOURCE_TYPE: uint8_t {
 	VULKAN_RESOURCE_RENDERPASS = 0,
 	VULKAN_RESOURCE_SHADERMODULE = 1,
 	VULKAN_RESOURCE_DESCRIPTORSET = 2,
@@ -111,7 +111,7 @@ WVulkanMemoryManager::~WVulkanMemoryManager() {
 	m_cmdPool = VK_NULL_HANDLE;
 }
 
-WError WVulkanMemoryManager::Initialize(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue, uint graphicsQueueIndex) {
+WError WVulkanMemoryManager::Initialize(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue, uint32_t graphicsQueueIndex) {
 	m_physicalDevice = physicalDevice;
 	m_device = device;
 	m_graphicsQueue = queue;
@@ -144,8 +144,8 @@ WError WVulkanMemoryManager::Initialize(VkPhysicalDevice physicalDevice, VkDevic
 	return WError(W_SUCCEEDED);
 }
 
-void WVulkanMemoryManager::GetMemoryType(uint typeBits, VkFlags properties, uint * typeIndex) const {
-	for (uint i = 0; i < 32; i++) {
+void WVulkanMemoryManager::GetMemoryType(uint32_t typeBits, VkFlags properties, uint32_t * typeIndex) const {
+	for (uint32_t i = 0; i < 32; i++) {
 		if ((typeBits & 1) == 1) {
 			if ((m_deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
 				*typeIndex = i;
@@ -200,7 +200,7 @@ VkCommandBuffer WVulkanMemoryManager::GetCopyCommandBuffer() const {
 	return m_copyCommandBuffer;
 }
 
-void WVulkanMemoryManager::ReleaseAllResources(uint setBufferingCount) {
+void WVulkanMemoryManager::ReleaseAllResources(uint32_t setBufferingCount) {
 	for (auto it = m_resourcesToBeFreed.begin(); it != m_resourcesToBeFreed.end(); it++) {
 		for (auto it2 = it->begin(); it2 != it->end(); it2++) {
 			_ReleaseResource(it2->type, it2->resource, it2->aux);
@@ -211,7 +211,7 @@ void WVulkanMemoryManager::ReleaseAllResources(uint setBufferingCount) {
 		m_resourcesToBeFreed.resize(setBufferingCount * 2);
 }
 
-void WVulkanMemoryManager::ReleaseFrameResources(uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseFrameResources(uint32_t bufferIndex) {
 	for (auto it = m_resourcesToBeFreed[bufferIndex].begin(); it != m_resourcesToBeFreed[bufferIndex].end(); it++)
 		_ReleaseResource(it->type, it->resource, it->aux);
 	m_resourcesToBeFreed[bufferIndex].clear();
@@ -277,103 +277,103 @@ void WVulkanMemoryManager::_ReleaseResource(int type, void* resource, void* aux)
 	}
 }
 
-void WVulkanMemoryManager::ReleaseRenderPass(VkRenderPass& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseRenderPass(VkRenderPass& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_RENDERPASS, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseShaderModule(VkShaderModule& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseShaderModule(VkShaderModule& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_SHADERMODULE, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseDescriptorSet(VkDescriptorSet& obj, VkDescriptorPool& descriptorPool, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseDescriptorSet(VkDescriptorSet& obj, VkDescriptorPool& descriptorPool, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_DESCRIPTORSET, (void*)obj, (void*)descriptorPool });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseDescriptorSetLayout(VkDescriptorSetLayout& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseDescriptorSetLayout(VkDescriptorSetLayout& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_DESCRIPTORSETLAYOUT, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleasePipeline(VkPipeline& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleasePipeline(VkPipeline& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_PIPELINE, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleasePipelineCache(VkPipelineCache& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleasePipelineCache(VkPipelineCache& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_PIPELINECACHE, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleasePipelineLayout(VkPipelineLayout& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleasePipelineLayout(VkPipelineLayout& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_PIPELINELAYOUT, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseDescriptorPool(VkDescriptorPool& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseDescriptorPool(VkDescriptorPool& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_DESCRIPTORPOOL, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseFramebuffer(VkFramebuffer& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseFramebuffer(VkFramebuffer& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_FRAMEBUFFER, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseBuffer(VkBuffer& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseBuffer(VkBuffer& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_BUFFER, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseImage(VkImage& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseImage(VkImage& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_IMAGE, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseImageView(VkImageView& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseImageView(VkImageView& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_IMAGEVIEW, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseDeviceMemory(VkDeviceMemory& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseDeviceMemory(VkDeviceMemory& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_DEVICEMEMORY, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseSampler(VkSampler& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseSampler(VkSampler& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_SAMPLER, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseCommandBuffer(VkCommandBuffer& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseCommandBuffer(VkCommandBuffer& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_COMMANDBUFFER, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseSemaphore(VkSemaphore& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseSemaphore(VkSemaphore& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_SEMAPHORE, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
 
-void WVulkanMemoryManager::ReleaseFence(VkFence& obj, uint bufferIndex) {
+void WVulkanMemoryManager::ReleaseFence(VkFence& obj, uint32_t bufferIndex) {
 	if (obj)
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_FENCE, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;

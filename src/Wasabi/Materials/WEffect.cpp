@@ -131,26 +131,26 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
 
 W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 	W_SHADER_BOUND_RESOURCE_TYPE t,
-	uint index,
+	uint32_t index,
 	std::string _name,
 	std::vector<W_SHADER_VARIABLE_INFO> v,
-	uint textureArraySize
+	uint32_t textureArraySize
 ) : W_BOUND_RESOURCE(t, index, 0, _name, v, textureArraySize) {}
 
 W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 	W_SHADER_BOUND_RESOURCE_TYPE t,
-	uint index,
-	uint set,
+	uint32_t index,
+	uint32_t set,
 	std::string _name,
 	std::vector<W_SHADER_VARIABLE_INFO> v,
-	uint textureArraySize
+	uint32_t textureArraySize
 ) : variables(v), type(t), binding_index(index), binding_set(set), name(_name) {
 	if (t == W_TYPE_UBO || t == W_TYPE_PUSH_CONSTANT) {
 		size_t curOffset = 0;
 		_offsets.resize(variables.size());
 		for (int i = 0; i < variables.size(); i++) {
-			int varSize = variables[i].GetSize();
-			int varAlignment = variables[i].GetAlignment();
+			size_t varSize = variables[i].GetSize();
+			size_t varAlignment = variables[i].GetAlignment();
 			if (curOffset % varAlignment > 0)
 				curOffset += varAlignment - (curOffset % varAlignment); // apply alignment
 			_offsets[i] = curOffset;
@@ -161,7 +161,7 @@ W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 		if (t == W_TYPE_PUSH_CONSTANT) {
 			for (int i = 0; i < _offsets.size(); i++)
 				_offsets[i] += binding_index;
-			binding_index = -1;
+			binding_index = (uint32_t)-1;
 		}
 	} else if (t == W_TYPE_TEXTURE) {
 		_size = textureArraySize;
@@ -172,7 +172,7 @@ size_t W_BOUND_RESOURCE::GetSize() const {
 	return _size;
 }
 
-size_t W_BOUND_RESOURCE::OffsetAtVariable(unsigned int variable_index) const {
+size_t W_BOUND_RESOURCE::OffsetAtVariable(uint32_t variable_index) const {
 	return _offsets[variable_index];
 }
 
@@ -210,7 +210,7 @@ std::string WShader::GetTypeName() const {
 	return _GetTypeName();
 }
 
-WShader::WShader(class Wasabi* const app, unsigned int ID) : WFileAsset(app, ID) {
+WShader::WShader(class Wasabi* const app, uint32_t ID) : WFileAsset(app, ID) {
 	m_module = VK_NULL_HANDLE;
 	m_code = nullptr;
 	m_codeLen = 0;
@@ -269,7 +269,7 @@ void WShader::LoadCodeSPIRVFromFile(std::string filename, bool bSaveData) {
 		file.seekg(0, std::ios::beg);
 		vector<char> buf;
 		if (file.read(buf.data(), size))
-			LoadCodeSPIRV(buf.data(), buf.size(), bSaveData);
+			LoadCodeSPIRV(buf.data(), (int)buf.size(), bSaveData);
 		file.close();
 	}
 }
@@ -293,6 +293,8 @@ bool WShader::Valid() const {
 }
 
 WError WShader::SaveToStream(class WFile* file, std::ostream& outputStream) {
+	UNREFERENCED_PARAMETER(file);
+
 	if (!Valid() || !m_code)
 		return WError(W_NOTVALID);
 
@@ -303,21 +305,21 @@ WError WShader::SaveToStream(class WFile* file, std::ostream& outputStream) {
 	outputStream.write((char*)&m_desc.type, sizeof(m_desc.type));
 
 	// save the input layout
-	uint tmp;
-	tmp = m_desc.input_layouts.size();
+	uint32_t tmp;
+	tmp = (uint32_t)m_desc.input_layouts.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
-	for (uint i = 0; i < m_desc.input_layouts.size(); i++) {
+	for (uint32_t i = 0; i < m_desc.input_layouts.size(); i++) {
 		W_INPUT_LAYOUT* IL = &m_desc.input_layouts[i];
 		outputStream.write((char*)&IL->input_rate, sizeof(IL->input_rate));
-		tmp = IL->attributes.size();
+		tmp = (uint32_t)IL->attributes.size();
 		outputStream.write((char*)&tmp, sizeof(tmp));
-		for (uint j = 0; j < IL->attributes.size(); j++) {
+		for (uint32_t j = 0; j < (uint32_t)IL->attributes.size(); j++) {
 			W_SHADER_VARIABLE_INFO* attr = &IL->attributes[j];
 			outputStream.write((char*)&attr->type, sizeof(attr->type));
 			outputStream.write((char*)&attr->num_elems, sizeof(attr->num_elems));
 			outputStream.write((char*)&attr->struct_size, sizeof(attr->struct_size));
 			outputStream.write((char*)&attr->struct_largest_base_alignment, sizeof(attr->struct_largest_base_alignment));
-			tmp = attr->name.length();
+			tmp = (uint32_t)attr->name.length();
 			outputStream.write((char*)&tmp, sizeof(tmp));
 			if (tmp > 0)
 				outputStream.write((char*)attr->name.c_str(), attr->name.length());
@@ -325,24 +327,24 @@ WError WShader::SaveToStream(class WFile* file, std::ostream& outputStream) {
 	}
 
 	// save the bound resources
-	tmp = m_desc.bound_resources.size();
+	tmp = (uint32_t)m_desc.bound_resources.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
-	for (uint i = 0; i < m_desc.bound_resources.size(); i++) {
+	for (uint32_t i = 0; i < (uint32_t)m_desc.bound_resources.size(); i++) {
 		W_BOUND_RESOURCE* resource = &m_desc.bound_resources[i];
 		outputStream.write((char*)&resource->type, sizeof(resource->type));
 		outputStream.write((char*)&resource->binding_index, sizeof(resource->binding_index));
-		tmp = resource->name.size();
+		tmp = (uint32_t)resource->name.size();
 		outputStream.write((char*)&tmp, sizeof(tmp));
 		outputStream.write(resource->name.c_str(), tmp);
-		tmp = resource->variables.size();
+		tmp = (uint32_t)resource->variables.size();
 		outputStream.write((char*)&tmp, sizeof(tmp));
-		for (uint j = 0; j < resource->variables.size(); j++) {
+		for (uint32_t j = 0; j < (uint32_t)resource->variables.size(); j++) {
 			W_SHADER_VARIABLE_INFO* attr = &resource->variables[j];
 			outputStream.write((char*)&attr->type, sizeof(attr->type));
 			outputStream.write((char*)&attr->num_elems, sizeof(attr->num_elems));
 			outputStream.write((char*)&attr->struct_size, sizeof(attr->struct_size));
 			outputStream.write((char*)&attr->struct_largest_base_alignment, sizeof(attr->struct_largest_base_alignment));
-			tmp = attr->name.length();
+			tmp = (uint32_t)attr->name.length();
 			outputStream.write((char*)&tmp, sizeof(tmp));
 			if (tmp > 0)
 				outputStream.write((char*)attr->name.c_str(), attr->name.length());
@@ -359,6 +361,8 @@ std::vector<void*> WShader::LoadArgs(bool bSaveData) {
 }
 
 WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
+	UNREFERENCED_PARAMETER(file);
+
 	if (args.size() != 1)
 		return WError(W_INVALIDPARAM);
 	bool bSaveData = (bool)args[0];
@@ -382,21 +386,21 @@ WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream, std
 	inputStream.read((char*)&m_desc.type, sizeof(m_desc.type));
 
 	// load the input layout
-	uint tmp;
+	uint32_t tmp;
 	inputStream.read((char*)&tmp, sizeof(tmp));
 	m_desc.input_layouts.resize(tmp);
-	for (uint i = 0; i < m_desc.input_layouts.size(); i++) {
+	for (uint32_t i = 0; i < m_desc.input_layouts.size(); i++) {
 		W_INPUT_LAYOUT* IL = &m_desc.input_layouts[i];
 		inputStream.read((char*)&IL->input_rate, sizeof(IL->input_rate));
 		inputStream.read((char*)&tmp, sizeof(tmp));
 		IL->attributes.resize(tmp);
-		for (uint j = 0; j < IL->attributes.size(); j++) {
+		for (uint32_t j = 0; j < IL->attributes.size(); j++) {
 			W_SHADER_VARIABLE_INFO* attr = &IL->attributes[j];
 			inputStream.read((char*)&attr->type, sizeof(attr->type));
 			inputStream.read((char*)&attr->num_elems, sizeof(attr->num_elems));
 			inputStream.read((char*)&attr->struct_size, sizeof(attr->struct_size));
 			inputStream.read((char*)&attr->struct_largest_base_alignment, sizeof(attr->struct_largest_base_alignment));
-			tmp = attr->name.length();
+			tmp = (uint32_t)attr->name.length();
 			inputStream.read((char*)&tmp, sizeof(tmp));
 			if (tmp > 0) {
 				char* name = new char[tmp];
@@ -413,10 +417,10 @@ WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream, std
 	}
 
 	// load the bound resources
-	tmp = m_desc.bound_resources.size();
+	tmp = (uint32_t)m_desc.bound_resources.size();
 	inputStream.read((char*)&tmp, sizeof(tmp));
 	m_desc.bound_resources.resize(tmp);
-	for (uint i = 0; i < m_desc.bound_resources.size(); i++) {
+	for (uint32_t i = 0; i < m_desc.bound_resources.size(); i++) {
 		W_BOUND_RESOURCE* resource = &m_desc.bound_resources[i];
 		inputStream.read((char*)&resource->type, sizeof(resource->type));
 		inputStream.read((char*)&resource->binding_index, sizeof(resource->binding_index));
@@ -429,13 +433,13 @@ WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream, std
 		}
 		inputStream.read((char*)&tmp, sizeof(tmp));
 		resource->variables.resize(tmp);
-		for (uint j = 0; j < resource->variables.size(); j++) {
+		for (uint32_t j = 0; j < resource->variables.size(); j++) {
 			W_SHADER_VARIABLE_INFO* attr = &resource->variables[j];
 			inputStream.read((char*)&attr->type, sizeof(attr->type));
 			inputStream.read((char*)&attr->num_elems, sizeof(attr->num_elems));
 			inputStream.read((char*)&attr->struct_size, sizeof(attr->struct_size));
 			inputStream.read((char*)&attr->struct_largest_base_alignment, sizeof(attr->struct_largest_base_alignment));
-			tmp = attr->name.length();
+			tmp = (uint32_t)attr->name.length();
 			inputStream.read((char*)&tmp, sizeof(tmp));
 			if (tmp > 0) {
 				char* name = new char[tmp];
@@ -461,8 +465,8 @@ std::string WEffectManager::GetTypeName(void) const {
 WEffectManager::WEffectManager(class Wasabi* const app) : WManager<WEffect>(app) {
 }
 
-WEffect::WEffect(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID), m_depthStencilState({}) {
-	m_vertexShaderIndex = -1;
+WEffect::WEffect(Wasabi* const app, uint32_t ID) : WFileAsset(app, ID), m_depthStencilState({}) {
+	m_vertexShaderIndex = (uint32_t)-1;
 
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
@@ -503,7 +507,7 @@ WEffect::~WEffect() {
 		m_shaders[i]->RemoveReference();
 	}
 	m_shaders.clear();
-	m_vertexShaderIndex = -1;
+	m_vertexShaderIndex = (uint32_t)-1;
 
 	_DestroyPipeline();
 
@@ -549,20 +553,20 @@ WError WEffect::BindShader(WShader* shader) {
 	shader->AddReference();
 
 	if (shader->m_desc.type == W_VERTEX_SHADER)
-		m_vertexShaderIndex = m_shaders.size() - 1;
+		m_vertexShaderIndex = (uint32_t)m_shaders.size() - 1;
 
 	return WError(W_SUCCEEDED);
 }
 
 WError WEffect::UnbindShader(W_SHADER_TYPE type) {
-	for (int i = 0; i < m_shaders.size(); i++) {
+	for (uint32_t i = 0; i < m_shaders.size(); i++) {
 		if (m_shaders[i]->m_desc.type == type) {
 			m_shaders[i]->RemoveReference();
 			m_shaders.erase(m_shaders.begin() + i);
 
 			// if vertex shader was removed, make sure to remove its cached index
 			if (i == m_vertexShaderIndex)
-				m_vertexShaderIndex = -1;
+				m_vertexShaderIndex = (uint32_t)-1;
 
 			return WError(W_SUCCEEDED);
 		}
@@ -646,7 +650,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 				} else if (boundResource->type == W_TYPE_TEXTURE) {
 					layoutBinding.binding = boundResource->binding_index;
 					layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					layoutBinding.descriptorCount = boundResource->GetSize();
+					layoutBinding.descriptorCount = (uint32_t)boundResource->GetSize();
 				}
 				auto iter = layoutBindingsMap.find(boundResource->binding_set);
 				if (iter == layoutBindingsMap.end()) {
@@ -656,8 +660,8 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 			} else if (boundResource->type == W_TYPE_PUSH_CONSTANT) {
 				VkPushConstantRange range = {};
 				range.stageFlags = (VkShaderStageFlagBits)m_shaders[i]->m_desc.type;
-				range.offset = boundResource->OffsetAtVariable(0);
-				range.size = boundResource->GetSize();
+				range.offset = (uint32_t)boundResource->OffsetAtVariable(0);
+				range.size = (uint32_t)boundResource->GetSize();
 				pushConstantRanges.push_back(range);
 			}
 		}
@@ -670,7 +674,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
 		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		descriptorLayout.pNext = NULL;
-		descriptorLayout.bindingCount = it->second.size();
+		descriptorLayout.bindingCount = (uint32_t)it->second.size();
 		descriptorLayout.pBindings = it->second.data();
 
 		VkDescriptorSetLayout descriptorSetLayout;
@@ -686,9 +690,9 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
 	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pPipelineLayoutCreateInfo.pNext = NULL;
-	pPipelineLayoutCreateInfo.setLayoutCount = descriptorSetLayoutVector.size();
+	pPipelineLayoutCreateInfo.setLayoutCount = (uint32_t)descriptorSetLayoutVector.size();
 	pPipelineLayoutCreateInfo.pSetLayouts = descriptorSetLayoutVector.data();
-	pPipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRanges.size();
+	pPipelineLayoutCreateInfo.pushConstantRangeCount = (uint32_t)pushConstantRanges.size();
 	pPipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
 
 	err = vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &m_pipelineLayout);
@@ -708,7 +712,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	if (m_blendStates.size()) {
 		for (int i = 0; i < rt->GetNumColorOutputs(); i++)
 			blendAttachmentStates.push_back(i < m_blendStates.size() ? m_blendStates[i] : m_blendStates[0]);
-		colorBlendState.attachmentCount = blendAttachmentStates.size();
+		colorBlendState.attachmentCount = (uint32_t)blendAttachmentStates.size();
 		colorBlendState.pAttachments = blendAttachmentStates.data();
 	}
 
@@ -724,7 +728,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.pDynamicStates = dynamicStateEnables.data();
-	dynamicState.dynamicStateCount = dynamicStateEnables.size();
+	dynamicState.dynamicStateCount = (uint32_t)dynamicStateEnables.size();
 
 	// Multi sampling state
 	VkPipelineMultisampleStateCreateInfo multisampleState = {};
@@ -748,7 +752,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	// Load shaders
 	// Shaders are loaded from the SPIR-V format, which can be generated from glsl
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-	for (int i = 0; i < m_shaders.size(); i++) {
+	for (uint32_t i = 0; i < m_shaders.size(); i++) {
 		VkPipelineShaderStageCreateInfo stage = {};
 		stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		stage.pName = "main";
@@ -759,7 +763,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 
 	pipelineCreateInfo.layout = m_pipelineLayout;
 	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
-	pipelineCreateInfo.stageCount = shaderStages.size();
+	pipelineCreateInfo.stageCount = (uint32_t)shaderStages.size();
 	pipelineCreateInfo.pStages = shaderStages.data();
 	pipelineCreateInfo.pRasterizationState = &m_rasterizationState;
 	pipelineCreateInfo.pColorBlendState = &colorBlendState;
@@ -773,12 +777,12 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	std::vector<VkGraphicsPipelineCreateInfo> pipelineCreateInfos;
 
 	vector<W_INPUT_LAYOUT*> ILs; // all ILs for this effect
-	unsigned int num_attributes = 0;
-	for (int i = 0; i < m_shaders.size(); i++) {
+	uint32_t num_attributes = 0;
+	for (uint32_t i = 0; i < m_shaders.size(); i++) {
 		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER) {
 			for (int j = 0; j < m_shaders[i]->m_desc.input_layouts.size(); j++) {
 				ILs.push_back(&m_shaders[i]->m_desc.input_layouts[j]);
-				num_attributes += m_shaders[i]->m_desc.input_layouts[j].attributes.size();
+				num_attributes += (uint32_t)m_shaders[i]->m_desc.input_layouts[j].attributes.size();
 			}
 		}
 	}
@@ -786,11 +790,11 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	std::vector<VkVertexInputBindingDescription> bindingDesc(ILs.size());
 	std::vector<VkVertexInputAttributeDescription> attribDesc(num_attributes);
 
-	unsigned int cur_attrib = 0;
+	uint32_t cur_attrib = 0;
 	// Binding description
-	for (int i = 0; i < ILs.size(); i++) {
+	for (uint32_t i = 0; i < ILs.size(); i++) {
 		bindingDesc[i].binding = i; // VERTEX_BUFFER_BIND_ID;
-		bindingDesc[i].stride = ILs[i]->GetSize();
+		bindingDesc[i].stride = (uint32_t)ILs[i]->GetSize();
 		if (ILs[i]->input_rate == W_INPUT_RATE_PER_VERTEX)
 			bindingDesc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 		else if (ILs[i]->input_rate == W_INPUT_RATE_PER_INSTANCE)
@@ -798,15 +802,15 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 
 		// Attribute descriptions
 		// Describes memory layout and shader attribute locations
-		unsigned int prev_size = 0;
-		for (int j = 0; j < ILs[i]->attributes.size(); j++) {
+		uint32_t prev_size = 0;
+		for (uint32_t j = 0; j < ILs[i]->attributes.size(); j++) {
 			attribDesc[cur_attrib].binding = i;
 			attribDesc[cur_attrib].location = cur_attrib;
 			attribDesc[cur_attrib].format = ILs[i]->attributes[j].GetFormat();
 			attribDesc[cur_attrib].offset = 0;
 			if (j > 0)
 				attribDesc[cur_attrib].offset = attribDesc[cur_attrib - 1].offset + prev_size;
-			prev_size = ILs[i]->attributes[j].GetSize();
+			prev_size = (uint32_t)ILs[i]->attributes[j].GetSize();
 			cur_attrib++;
 		}
 	}
@@ -822,10 +826,10 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	inputState.vertexAttributeDescriptionCount = 0;
 	inputState.pVertexAttributeDescriptions = attribDesc.data();
 	inputStates[0] = inputState;
-	for (int i = 1; i < ILs.size() + 1; i++) {
+	for (uint32_t i = 1; i < ILs.size() + 1; i++) {
 		VkPipelineVertexInputStateCreateInfo newstate = inputStates[i - 1];
 		newstate.vertexBindingDescriptionCount++;
-		newstate.vertexAttributeDescriptionCount += ILs[i-1]->attributes.size();
+		newstate.vertexAttributeDescriptionCount += (uint32_t)ILs[i-1]->attributes.size();
 		inputStates[i] = newstate;
 	}
 
@@ -852,7 +856,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	}
 
 	m_pipelines.resize(pipelineCreateInfos.size()); // one with 0 VBs, 1 VB, 2 VBs, ..., ILs.size() VBs
-	err = vkCreateGraphicsPipelines(device, rt->GetPipelineCache(), m_pipelines.size(),
+	err = vkCreateGraphicsPipelines(device, rt->GetPipelineCache(), (uint32_t)m_pipelines.size(),
 									pipelineCreateInfos.data(), nullptr, m_pipelines.data());
 	if (err)
 		return WError(W_FAILEDTOCREATEPIPELINE);
@@ -860,7 +864,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WEffect::Bind(WRenderTarget* rt, uint num_vertex_buffers) {
+WError WEffect::Bind(WRenderTarget* rt, uint32_t num_vertex_buffers) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
@@ -868,13 +872,13 @@ WError WEffect::Bind(WRenderTarget* rt, uint num_vertex_buffers) {
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	unsigned int pipeline = fmin(num_vertex_buffers == 0 ? 0 : num_vertex_buffers - 1, m_pipelines.size() - 1);
+	uint32_t pipeline = std::min(num_vertex_buffers == 0 ? 0 : num_vertex_buffers - 1, (uint32_t)m_pipelines.size() - 1);
 	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[pipeline]);
 
 	return WError(W_SUCCEEDED);
 }
 
-WMaterial* WEffect::CreateMaterial(uint bindingSet) {
+WMaterial* WEffect::CreateMaterial(uint32_t bindingSet) {
 	WMaterial* material = new WMaterial(m_app);
 	if (!material->CreateForEffect(this, bindingSet))
 		W_SAFE_REMOVEREF(material);
@@ -885,20 +889,20 @@ VkPipelineLayout WEffect::GetPipelineLayout() const {
 	return m_pipelineLayout;
 }
 
-VkDescriptorSetLayout WEffect::GetDescriptorSetLayout(uint setIndex) const {
+VkDescriptorSetLayout WEffect::GetDescriptorSetLayout(uint32_t setIndex) const {
 	auto it = m_descriptorSetLayouts.find(setIndex);
 	if (it == m_descriptorSetLayouts.end())
 		return VK_NULL_HANDLE;
 	return it->second;
 }
 
-W_INPUT_LAYOUT WEffect::GetInputLayout(unsigned int layout_index) const {
+W_INPUT_LAYOUT WEffect::GetInputLayout(uint32_t layout_index) const {
 	if (m_vertexShaderIndex >= 0 && layout_index < m_shaders[m_vertexShaderIndex]->m_desc.input_layouts.size())
 		return m_shaders[m_vertexShaderIndex]->m_desc.input_layouts[layout_index];
 	return W_INPUT_LAYOUT();
 }
 
-size_t WEffect::GetInputLayoutSize(unsigned int layout_index) const {
+size_t WEffect::GetInputLayoutSize(uint32_t layout_index) const {
 	if (m_vertexShaderIndex >= 0 && layout_index < m_shaders[m_vertexShaderIndex]->m_desc.input_layouts.size())
 		return m_shaders[m_vertexShaderIndex]->m_desc.input_layouts[layout_index].GetSize();
 	return 0;
@@ -908,24 +912,24 @@ WError WEffect::SaveToStream(WFile* file, std::ostream& outputStream) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
-	uint tmp;
+	uint32_t tmp;
 
 	outputStream.write((char*)&m_topology, sizeof(m_topology));
 	outputStream.write((char*)&m_depthStencilState, sizeof(m_depthStencilState));
 	outputStream.write((char*)&m_rasterizationState, sizeof(m_rasterizationState));
-	tmp = m_blendStates.size();
+	tmp = (uint32_t)m_blendStates.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	outputStream.write((char*)m_blendStates.data(), m_blendStates.size() * sizeof(VkPipelineColorBlendAttachmentState));
 
-	tmp = m_shaders.size();
+	tmp = (uint32_t)m_shaders.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	char tmpName[W_MAX_ASSET_NAME_SIZE];
-	for (uint i = 0; i < m_shaders.size(); i++) {
+	for (uint32_t i = 0; i < m_shaders.size(); i++) {
 		strcpy(tmpName, m_shaders[i]->GetName().c_str());
 		outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
 	}
 
-	for (uint i = 0; i < m_shaders.size(); i++) {
+	for (uint32_t i = 0; i < m_shaders.size(); i++) {
 		WError err = file->SaveAsset(m_shaders[i]);
 		if (!err)
 			return err;
@@ -949,7 +953,7 @@ WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 
 	_DestroyPipeline();
 
-	uint tmp;
+	uint32_t tmp;
 	inputStream.read((char*)&m_topology, sizeof(m_topology));
 	inputStream.read((char*)&m_depthStencilState, sizeof(m_depthStencilState));
 	inputStream.read((char*)&m_rasterizationState, sizeof(m_rasterizationState));
@@ -960,14 +964,14 @@ WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 	inputStream.read((char*)&tmp, sizeof(tmp));
 
 	std::vector<std::string> dependencyNames(tmp);
-	for (uint i = 0; i < tmp; i++) {
+	for (uint32_t i = 0; i < tmp; i++) {
 		char tmpName[W_MAX_ASSET_NAME_SIZE];
 		inputStream.read(tmpName, W_MAX_ASSET_NAME_SIZE);
 		dependencyNames[i] = std::string(tmpName);
 	}
 
 	WError err;
-	for (uint i = 0; i < dependencyNames.size(); i++) {
+	for (uint32_t i = 0; i < dependencyNames.size(); i++) {
 		WShader* shader;
 		err = file->LoadAsset<WShader>(dependencyNames[i], &shader, WShader::LoadArgs(bSaveData), ""); // never copy shaders, always share
 		if (!err)

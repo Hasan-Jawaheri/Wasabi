@@ -54,13 +54,14 @@ void InstancingDemo::Load() {
 }
 
 void InstancingDemo::Update(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
 }
 
 void InstancingDemo::Cleanup() {
 	W_SAFE_REMOVEREF(character);
 	W_SAFE_REMOVEREF(geometry);
 	W_SAFE_REMOVEREF(texture);
-	for (unsigned int i = 0; i < objectsV.size(); i++)
+	for (uint32_t i = 0; i < objectsV.size(); i++)
 		objectsV[i]->RemoveReference();
 	objectsV.clear();
 }

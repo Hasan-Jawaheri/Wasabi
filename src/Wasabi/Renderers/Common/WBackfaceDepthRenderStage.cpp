@@ -18,7 +18,7 @@ void WBackfaceDepthRenderStageObjectPS::Load(bool bSaveData) {
 	vector<byte> code = {
 		#include "Shaders/depth.frag.glsl.spv"
 	};
-	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 }
 
 WBackfaceDepthRenderStage::WBackfaceDepthRenderStage(Wasabi* const app) : WRenderStage(app) {
@@ -30,7 +30,7 @@ WBackfaceDepthRenderStage::WBackfaceDepthRenderStage(Wasabi* const app) : WRende
 	m_objectsFragment = nullptr;
 }
 
-WError WBackfaceDepthRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+WError WBackfaceDepthRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
 	WError err = WRenderStage::Initialize(previousStages, width, height);
 	if (!err)
 		return err;
@@ -89,7 +89,7 @@ void WBackfaceDepthRenderStage::Cleanup() {
 	W_SAFE_DELETE(m_objectsFragment);
 }
 
-WError WBackfaceDepthRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
+WError WBackfaceDepthRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
 	if (filter & RENDER_FILTER_OBJECTS) {
 		WCamera* cam = rt->GetCamera();
 
@@ -105,6 +105,6 @@ WError WBackfaceDepthRenderStage::Render(WRenderer* renderer, WRenderTarget* rt,
 	return WError(W_SUCCEEDED);
 }
 
-WError WBackfaceDepthRenderStage::Resize(uint width, uint height) {
+WError WBackfaceDepthRenderStage::Resize(uint32_t width, uint32_t height) {
 	return WRenderStage::Resize(width, height);
 }

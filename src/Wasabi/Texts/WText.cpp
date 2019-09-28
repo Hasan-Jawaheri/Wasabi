@@ -19,10 +19,11 @@ class TextGeometry : public WGeometry {
 public:
 	TextGeometry(Wasabi* const app) : WGeometry(app) {}
 
-	virtual unsigned int GetVertexBufferCount() const {
+	virtual uint32_t GetVertexBufferCount() const {
 		return 1;
 	}
-	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int index) const {
+	virtual W_VERTEX_DESCRIPTION GetVertexDescription(uint32_t index) const {
+		UNREFERENCED_PARAMETER(index);
 		return W_VERTEX_DESCRIPTION({
 			W_VERTEX_ATTRIBUTE("pos2", 2),
 			W_ATTRIBUTE_UV,
@@ -45,7 +46,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/text.vert.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -61,19 +62,19 @@ public:
 		vector<byte> code = {
 			#include "Shaders/text.frag.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
 WTextComponent::WTextComponent(Wasabi* app) : m_app(app) {
-	m_curFont = -1;
+	m_curFont = (uint32_t)-1;
 	m_curColor = WColor(0.1f, 0.6f, 0.2f, 1.0f);
 
 	m_textEffect = nullptr;
 }
 
 WTextComponent::~WTextComponent() {
-	for (std::map<unsigned int, W_FONT_OBJECT>::iterator i = m_fonts.begin(); i != m_fonts.end(); i++) {
+	for (std::map<uint32_t, W_FONT_OBJECT>::iterator i = m_fonts.begin(); i != m_fonts.end(); i++) {
 		delete[] (stbtt_bakedchar*)i->second.cdata;
 		i->second.img->RemoveReference();
 		W_SAFE_REMOVEREF(i->second.textGeometry);
@@ -143,8 +144,8 @@ void WTextComponent::AddFontDirectory(std::string dir) {
 	}
 }
 
-WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
-	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(ID);
+WError WTextComponent::CreateTextFont(uint32_t ID, std::string fontName) {
+	std::map<uint32_t, W_FONT_OBJECT>::iterator obj = m_fonts.find(ID);
 	if (obj != m_fonts.end())
 		return WError(W_INVALIDPARAM);
 
@@ -161,16 +162,16 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 		return WError(W_FILENOTFOUND);
 
 	fseek(fp, 0, SEEK_END);
-	uint fsize = ftell(fp);
+	uint32_t fsize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
 	unsigned char* buffer = new unsigned char[fsize+1];
 	fread(buffer, 1, fsize+1, fp);
 	fclose(fp);
 
-	unsigned int bmp_size = m_app->GetEngineParam<uint>("fontBmpSize");
-	unsigned int char_height = m_app->GetEngineParam<uint>("fontBmpCharHeight");
-	unsigned int num_chars = m_app->GetEngineParam<uint>("fontBmpNumChars");
+	uint32_t bmp_size = m_app->GetEngineParam<uint32_t>("fontBmpSize");
+	uint32_t char_height = m_app->GetEngineParam<uint32_t>("fontBmpCharHeight");
+	uint32_t num_chars = m_app->GetEngineParam<uint32_t>("fontBmpNumChars");
 	W_FONT_OBJECT f;
 	unsigned char* temp_bitmap = new unsigned char[bmp_size*bmp_size];
 	f.cdata = new stbtt_bakedchar[num_chars];
@@ -179,8 +180,7 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 	f.num_chars = num_chars;
 	f.char_height = char_height;
 
-	int res = stbtt_BakeFontBitmap(buffer, 0, char_height, temp_bitmap, bmp_size, bmp_size,
-		32, num_chars, (stbtt_bakedchar*)f.cdata);
+	int res = stbtt_BakeFontBitmap(buffer, 0, (float)char_height, temp_bitmap, (int)bmp_size, (int)bmp_size, 32, (int)num_chars, (stbtt_bakedchar*)f.cdata);
 	delete[] buffer;
 
 	if (res <= 0) {
@@ -214,12 +214,12 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 		return err;
 	}
 
-	unsigned int num_verts = m_app->GetEngineParam<uint>("textBatchSize") * 4;
-	unsigned int num_indices = m_app->GetEngineParam<uint>("textBatchSize") * 6;
+	uint32_t num_verts = m_app->GetEngineParam<uint32_t>("textBatchSize") * 4;
+	uint32_t num_indices = m_app->GetEngineParam<uint32_t>("textBatchSize") * 6;
 	TextVertex* vb = new TextVertex[num_verts];
 	uint* ib = new uint[num_indices];
 
-	for (int i = 0; i < num_indices / 6; i++) {
+	for (uint32_t i = 0; i < num_indices / 6; i++) {
 		// tri 1
 		ib[i * 6 + 0] = i * 4 + 0;
 		ib[i * 6 + 1] = i * 4 + 1;
@@ -243,13 +243,13 @@ WError WTextComponent::CreateTextFont(unsigned int ID, std::string fontName) {
 		return err;
 	}
 
-	m_fonts.insert(std::pair<unsigned int, W_FONT_OBJECT>(ID, f));
+	m_fonts.insert(std::pair<uint32_t, W_FONT_OBJECT>(ID, f));
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WTextComponent::DestroyFont(unsigned int ID) {
-	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(ID);
+WError WTextComponent::DestroyFont(uint32_t ID) {
+	std::map<uint32_t, W_FONT_OBJECT>::iterator obj = m_fonts.find(ID);
 	if (obj != m_fonts.end()) {
 		delete[] (stbtt_bakedchar*)obj->second.cdata;
 		obj->second.img->RemoveReference();
@@ -267,8 +267,8 @@ WError WTextComponent::SetTextColor(WColor col) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WTextComponent::SetFont(unsigned int ID) {
-	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(ID);
+WError WTextComponent::SetFont(uint32_t ID) {
+	std::map<uint32_t, W_FONT_OBJECT>::iterator obj = m_fonts.find(ID);
 	if (obj != m_fonts.end()) {
 		m_curFont = ID;
 		return WError(W_SUCCEEDED);
@@ -281,15 +281,15 @@ WError WTextComponent::RenderText(std::string text, float x, float y, float fHei
 	return RenderText(text, x, y, fHeight, m_curFont, m_curColor);
 }
 
-WError WTextComponent::RenderText(std::string text, float x, float y, float fHeight, unsigned int fontID) {
+WError WTextComponent::RenderText(std::string text, float x, float y, float fHeight, uint32_t fontID) {
 	return RenderText(text, x, y, fHeight, fontID, m_curColor);
 }
 
-WError WTextComponent::RenderText(std::string text, float x, float y, float fHeight, unsigned int fontID, WColor col) {
-	if (text.length() > m_app->GetEngineParam<uint>("textBatchSize"))
+WError WTextComponent::RenderText(std::string text, float x, float y, float fHeight, uint32_t fontID, WColor col) {
+	if (text.length() > m_app->GetEngineParam<uint32_t>("textBatchSize"))
 		return WError(W_INVALIDPARAM);
 
-	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(fontID);
+	std::map<uint32_t, W_FONT_OBJECT>::iterator obj = m_fonts.find(fontID);
 	if (obj != m_fonts.end()) {
 		W_RENDERING_TEXT t;
 		t.str = text;
@@ -305,11 +305,11 @@ WError WTextComponent::RenderText(std::string text, float x, float y, float fHei
 }
 
 void WTextComponent::Render(WRenderTarget* rt) {
-	float scrWidth = m_app->WindowAndInputComponent->GetWindowWidth();
-	float scrHeight = m_app->WindowAndInputComponent->GetWindowHeight();
+	float scrWidth = (float)m_app->WindowAndInputComponent->GetWindowWidth();
+	float scrHeight = (float)m_app->WindowAndInputComponent->GetWindowHeight();
 
 	bool isEffectBound = false;
-	for (int f = 0; f < m_fonts.size(); f++) {
+	for (uint32_t f = 0; f < m_fonts.size(); f++) {
 		W_FONT_OBJECT* font = &m_fonts[f];
 		TextVertex* vb = nullptr;
 		int curvert = 0;
@@ -324,7 +324,7 @@ void WTextComponent::Render(WRenderTarget* rt) {
 			float x = text.x * 2.0f / scrWidth - 1.0f;
 			float y = text.y * 2.0f / scrHeight - 1.0f;
 			float fScale = text.fHeight / (float)font->char_height;
-			float fMapSize = font->img->GetWidth();
+			float fMapSize = (float)font->img->GetWidth();
 			float maxCharHeight = 0.0f;
 			float maxyoff = -FLT_MAX, minyoff = FLT_MAX;
 			for (int i = 0; i < text.str.length(); i++) {
@@ -373,8 +373,8 @@ void WTextComponent::Render(WRenderTarget* rt) {
 	}
 }
 
-float WTextComponent::GetTextWidth(std::string text, float fHeight, unsigned int fontID) {
-	std::map<unsigned int, W_FONT_OBJECT>::iterator obj = m_fonts.find(fontID);
+float WTextComponent::GetTextWidth(std::string text, float fHeight, uint32_t fontID) {
+	std::map<uint32_t, W_FONT_OBJECT>::iterator obj = m_fonts.find(fontID);
 	if (obj != m_fonts.end()) {
 		float fScale = fHeight / (float)obj->second.char_height;
 		float curWidth = 0;

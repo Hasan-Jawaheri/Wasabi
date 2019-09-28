@@ -14,23 +14,25 @@ class OnlyPositionGeometry : public WGeometry {
 	const W_VERTEX_DESCRIPTION m_desc = W_VERTEX_DESCRIPTION({ W_ATTRIBUTE_POSITION });
 
 public:
-	OnlyPositionGeometry(Wasabi* const app, unsigned int ID = 0) : WGeometry(app, ID) {}
+	OnlyPositionGeometry(Wasabi* const app, uint32_t ID = 0) : WGeometry(app, ID) {}
 
-	virtual unsigned int GetVertexBufferCount() const {
+	virtual uint32_t GetVertexBufferCount() const {
 		return 1;
 	}
-	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int layout_index = 0) const {
+	virtual W_VERTEX_DESCRIPTION GetVertexDescription(uint32_t layout_index = 0) const {
+		UNREFERENCED_PARAMETER(layout_index);
 		return m_desc;
 	}
-	virtual size_t GetVertexDescriptionSize(unsigned int layout_index = 0) const {
+	virtual size_t GetVertexDescriptionSize(uint32_t layout_index = 0) const {
+		UNREFERENCED_PARAMETER(layout_index);
 		return m_desc.GetSize();
 	}
 
-	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint>& indices, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE) {
+	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint32_t>& indices, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE) {
 		vector<WVector3> custom_verts(default_vertices.size());
-		for (unsigned int i = 0; i < default_vertices.size(); i++)
+		for (uint32_t i = 0; i < default_vertices.size(); i++)
 			custom_verts[i] = default_vertices[i].pos;
-		return CreateFromData(custom_verts.data(), custom_verts.size(), indices.data(), indices.size(), flags);
+		return CreateFromData(custom_verts.data(), (uint32_t)custom_verts.size(), indices.data(), (uint32_t)indices.size(), flags);
 	}
 };
 
@@ -63,7 +65,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/spotlight.vert.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -84,7 +86,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/spotlight.frag.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -115,7 +117,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/pointlight.vert.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -136,7 +138,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/pointlight.frag.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -166,7 +168,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/dirlight.frag.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -178,7 +180,7 @@ WLightBufferRenderStage::WLightBufferRenderStage(Wasabi* const app) : WRenderSta
 	});
 }
 
-WError WLightBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+WError WLightBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
 	WError err = WRenderStage::Initialize(previousStages, width, height);
 	if (!err)
 		return err;
@@ -216,15 +218,17 @@ WError WLightBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousS
 		return werr;
 
 	// Call OnLightsChange for all current lights and register a callback to catch all future changes
-	unsigned int numEntities = m_app->LightManager->GetEntitiesCount();
-	for (unsigned int i = 0; i < numEntities; i++)
+	uint32_t numEntities = m_app->LightManager->GetEntitiesCount();
+	for (uint32_t i = 0; i < numEntities; i++)
 		OnLightsChange(m_app->LightManager->GetEntityByIndex(i), true);
 	m_app->LightManager->RegisterChangeCallback(m_stageDescription.name, [this](WLight* l, bool add) { this->OnLightsChange(l, add); });
 
 	return werr;
 }
 
-WError WLightBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
+WError WLightBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
+	UNREFERENCED_PARAMETER(renderer);
+
 	if (filter & RENDER_FILTER_OBJECTS) {
 		WCamera* cam = rt->GetCamera();
 
@@ -284,10 +288,10 @@ void WLightBufferRenderStage::Cleanup() {
 	m_lightRenderingAssets.clear();
 }
 
-WError WLightBufferRenderStage::Resize(uint width, uint height) {
+WError WLightBufferRenderStage::Resize(uint32_t width, uint32_t height) {
 	for (auto iter = m_lightRenderingAssets.begin(); iter != m_lightRenderingAssets.end(); iter++)
 		if (iter->second.fullscreen_sprite)
-			iter->second.fullscreen_sprite->SetSize(WVector2(width, height));
+			iter->second.fullscreen_sprite->SetSize(WVector2((float)width, (float)height));
 	return WRenderStage::Resize(width, height);
 }
 
@@ -407,10 +411,10 @@ WError WLightBufferRenderStage::LoadDirectionalLightsAssets() {
 	assets.perFrameMaterial->SetTexture(1, m_app->Renderer->GetRenderTargetImage("GBufferViewSpaceNormal"));
 	assets.perFrameMaterial->SetTexture(2, m_app->Renderer->GetRenderTargetImage("GBufferDepth"));
 
-	uint windowWidth = m_app->WindowAndInputComponent->GetWindowWidth();
-	uint windowHeight = m_app->WindowAndInputComponent->GetWindowHeight();
+	uint32_t windowWidth = m_app->WindowAndInputComponent->GetWindowWidth();
+	uint32_t windowHeight = m_app->WindowAndInputComponent->GetWindowHeight();
 	assets.fullscreen_sprite = m_app->SpriteManager->CreateSprite();
-	assets.fullscreen_sprite->SetSize(WVector2(windowWidth, windowHeight));
+	assets.fullscreen_sprite->SetSize(WVector2((float)windowWidth, (float)windowHeight));
 	assets.fullscreen_sprite->Hide();
 
 	m_lightRenderingAssets.insert(std::pair<int, LightTypeAssets>((int)W_LIGHT_DIRECTIONAL, assets));

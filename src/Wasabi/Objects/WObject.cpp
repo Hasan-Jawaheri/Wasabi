@@ -23,7 +23,7 @@ WError WObjectManager::Load() {
 	return WError(W_SUCCEEDED);
 }
 
-WObject* WObjectManager::CreateObject(unsigned int ID) const {
+WObject* WObjectManager::CreateObject(uint32_t ID) const {
 	WObject* object = new WObject(m_app, ID);
 	WMaterial* mat = object->GetMaterial();
 	if (mat) {
@@ -33,13 +33,13 @@ WObject* WObjectManager::CreateObject(unsigned int ID) const {
 	return object;
 }
 
-WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iObjStartID, unsigned int iObjEndID,
-									WVector3* _pt, WVector2* uv, unsigned int* faceIndex) const {
+WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, uint32_t iObjStartID, uint32_t iObjEndID,
+									WVector3* _pt, WVector2* uv, uint32_t* faceIndex) const {
 	struct pickStruct {
 		WObject* obj;
 		WVector3 pos;
 		WVector2 uv;
-		unsigned int face;
+		uint32_t face;
 	};
 	vector<pickStruct> pickedObjects;
 
@@ -65,15 +65,14 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 	pos = WVec3TransformCoord(pos, inverseV);
 	dir = WVec3TransformNormal(dir, inverseV);
 
-	for (unsigned int j = 0; j < W_HASHTABLESIZE; j++) {
-		for (unsigned int i = m_entities[j].size() - 1; i >= 0 && i != UINT_MAX; i--) {
+	for (uint32_t j = 0; j < W_HASHTABLESIZE; j++) {
+		for (uint32_t i = (uint32_t)m_entities[j].size() - 1; i >= 0 && i != UINT_MAX; i--) {
 			if (((m_entities[j][i]->GetID() >= iObjStartID && m_entities[j][i]->GetID() <= iObjEndID) ||
 				(!iObjStartID && !iObjEndID)) && m_entities[j][i]->Valid()) {
 				WObject* object = (WObject*)m_entities[j][i];
 				if (object->Hidden())
 					continue;
 
-				unsigned int hit = 0;
 				WGeometry* temp = object->GetGeometry();
 				if (temp) {
 					//these calculations are per-subset
@@ -113,9 +112,9 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, unsigned int iOb
 	if (!pickedObjects.size())
 		return 0;
 
-	unsigned int nearest = 0;
+	uint32_t nearest = 0;
 	float distance = FLT_MAX;
-	for (unsigned int i = 0; i < pickedObjects.size(); i++) {
+	for (uint32_t i = 0; i < pickedObjects.size(); i++) {
 		float fCurDist = WVec3Length(pickedObjects[i].pos - cam->GetPosition());
 		if (fCurDist < distance) {
 			nearest = i;
@@ -186,7 +185,7 @@ void WInstance::OnStateChange(STATE_CHANGE_TYPE type) {
 	m_bAltered = true;
 }
 
-WObject::WObject(Wasabi* const app, unsigned int ID) : WFileAsset(app, ID), m_instanceV(0) {
+WObject::WObject(Wasabi* const app, uint32_t ID) : WFileAsset(app, ID), m_instanceV(0) {
 	m_geometry = nullptr;
 	m_animation = nullptr;
 
@@ -262,7 +261,7 @@ void WObject::Render(WRenderTarget* rt, WMaterial* material, bool updateInstance
 		material->Bind(rt);
 	}
 
-	WError err = m_geometry->Draw(rt, -1, fmax(m_instanceV.size(), 1), is_animated);
+	WError err = m_geometry->Draw(rt, (uint32_t)-1, std::max((uint32_t)m_instanceV.size(), (uint32_t)1), is_animated);
 }
 
 WError WObject::SetGeometry(class WGeometry* geometry) {
@@ -289,11 +288,11 @@ WError WObject::SetAnimation(class WAnimation* animation) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WObject::InitInstancing(unsigned int maxInstances) {
+WError WObject::InitInstancing(uint32_t maxInstances) {
 	DestroyInstancingResources();
 
-	float fExactWidth = sqrtf(maxInstances * 4);
-	unsigned int texWidth = 2;
+	float fExactWidth = sqrtf((float)maxInstances * 4.0f);
+	uint32_t texWidth = 2;
 	while (fExactWidth > texWidth)
 		texWidth *= 2;
 
@@ -328,14 +327,14 @@ WInstance* WObject::CreateInstance() {
 	return inst;
 }
 
-WInstance* WObject::GetInstance(unsigned int index) const {
+WInstance* WObject::GetInstance(uint32_t index) const {
 	if (index < m_instanceV.size())
 		return m_instanceV[index];
 	return nullptr;
 }
 
 void WObject::DeleteInstance(WInstance* instance) {
-	for (uint i = 0; i < m_instanceV.size(); i++) {
+	for (uint32_t i = 0; i < m_instanceV.size(); i++) {
 		if (m_instanceV[i] == instance) {
 			delete m_instanceV[i];
 			m_instanceV.erase(m_instanceV.begin() + i);
@@ -344,7 +343,7 @@ void WObject::DeleteInstance(WInstance* instance) {
 	}
 }
 
-void WObject::DeleteInstance(unsigned int index) {
+void WObject::DeleteInstance(uint32_t index) {
 	if (index < m_instanceV.size()) {
 		delete m_instanceV[index];
 		m_instanceV.erase(m_instanceV.begin() + index);
@@ -352,21 +351,21 @@ void WObject::DeleteInstance(unsigned int index) {
 	}
 }
 
-unsigned int WObject::GetInstancesCount() const {
-	return m_instanceV.size();
+uint32_t WObject::GetInstancesCount() const {
+	return (uint32_t)m_instanceV.size();
 }
 
 void WObject::_UpdateInstanceBuffer() {
 	if (m_instanceTexture && m_instanceV.size()) { //update the instance buffer
 		bool bReconstruct = m_instancesDirty;
-		for (unsigned int i = 0; i < m_instanceV.size(); i++)
+		for (uint32_t i = 0; i < m_instanceV.size(); i++)
 			if (m_instanceV[i]->UpdateLocals())
 				bReconstruct = true;
 		if (bReconstruct) {
 			void* pData;
 			WError ret = m_instanceTexture->MapPixels(&pData, W_MAP_WRITE);
 			if (ret) {
-				for (unsigned int i = 0; i < m_instanceV.size(); i++) {
+				for (uint32_t i = 0; i < m_instanceV.size(); i++) {
 					WMatrix m = m_instanceV[i]->m_worldM;
 					memcpy(&((char*)pData)[i * sizeof(WMatrix)], &m, sizeof(WMatrix) - sizeof(float));
 				}
@@ -460,9 +459,9 @@ WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
 	outputStream.write((char*)&rot, sizeof(rot));
 	m_maxInstances = m_instanceTexture ? m_maxInstances : 0;
 	outputStream.write((char*)&m_maxInstances, sizeof(m_maxInstances));
-	uint numInstances = m_instanceV.size();
+	uint32_t numInstances = (uint32_t)m_instanceV.size();
 	outputStream.write((char*)&numInstances, sizeof(numInstances));
-	for (uint i = 0; i < m_instanceV.size(); i++) {
+	for (uint32_t i = 0; i < (uint32_t)m_instanceV.size(); i++) {
 		outputStream.write((char*)&m_instanceV[i]->m_scale, sizeof(m_instanceV[i]->m_scale));
 		pos = m_instanceV[i]->GetPosition();
 		outputStream.write((char*)&pos, sizeof(pos));
@@ -470,7 +469,7 @@ WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
 		outputStream.write((char*)&rot, sizeof(rot));
 	}
 
-	uint numMaterials = m_materialMap.size();
+	uint32_t numMaterials = (uint32_t)m_materialMap.size();
 	outputStream.write((char*)&numMaterials, sizeof(uint));
 
 	char tmpName[W_MAX_ASSET_NAME_SIZE];
@@ -482,7 +481,7 @@ WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
 			dependencies.push_back(it->second);
 	}
 
-	for (uint i = 0; i < dependencies.size(); i++) {
+	for (uint32_t i = 0; i < dependencies.size(); i++) {
 		if (dependencies[i])
 			strcpy(tmpName, dependencies[i]->GetName().c_str());
 		else
@@ -491,7 +490,7 @@ WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
 	}
 
 
-	for (uint i = 0; i < dependencies.size(); i++) {
+	for (uint32_t i = 0; i < dependencies.size(); i++) {
 		if (dependencies[i]) {
 			WError err = file->SaveAsset(dependencies[i]);
 			if (!err)
@@ -507,6 +506,8 @@ std::vector<void*> WObject::LoadArgs() {
 }
 
 WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) {
+	UNREFERENCED_PARAMETER(args);
+
 	DestroyInstancingResources();
 
 	inputStream.read((char*)&m_hidden, sizeof(m_hidden));
@@ -518,16 +519,16 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 	WQuaternion rot;
 	inputStream.read((char*)&rot, sizeof(rot));
 	SetAngle(rot);
-	uint maxInstances;
+	uint32_t maxInstances;
 	inputStream.read((char*)&maxInstances, sizeof(maxInstances));
-	uint numInstances;
+	uint32_t numInstances;
 	inputStream.read((char*)&numInstances, sizeof(numInstances));
 
 	if (maxInstances > 0) {
 		WError err = InitInstancing(maxInstances);
 		if (!err)
 			return err;
-		for (uint i = 0; i < numInstances; i++) {
+		for (uint32_t i = 0; i < numInstances; i++) {
 			WInstance* inst = CreateInstance();
 			inputStream.read((char*)&inst->m_scale, sizeof(inst->m_scale));
 			inputStream.read((char*)&pos, sizeof(pos));
@@ -537,12 +538,12 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 		}
 	}
 
-	uint numMaterials;
+	uint32_t numMaterials;
 	inputStream.read((char*)&numMaterials, sizeof(uint));
 
 	WError status(W_SUCCEEDED);
 	std::vector<std::string> dependencies;
-	for (uint i = 0; i < numMaterials + 2; i++) {
+	for (uint32_t i = 0; i < numMaterials + 2; i++) {
 		char dependencyName[W_MAX_ASSET_NAME_SIZE];
 		inputStream.read(dependencyName, W_MAX_ASSET_NAME_SIZE);
 		dependencies.push_back(std::string(dependencyName));
@@ -565,7 +566,7 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 
 	if (status) {
 		ClearEffects();
-		for (uint i = 2; i < dependencies.size() && status; i++) {
+		for (uint32_t i = 2; i < dependencies.size() && status; i++) {
 			WMaterial* mat;
 			status = file->LoadAsset<WMaterial>(dependencies[i], &mat, WMaterial::LoadArgs(), nameSuffix); // copy the materials (if required)
 			if (status) {

@@ -30,6 +30,11 @@ static std::vector<std::function<void()>> g_cleanupCalls;
 #include <Windows.h>
 int main();
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow) {
+	UNREFERENCED_PARAMETER(hInstance);
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(cmdLine);
+	UNREFERENCED_PARAMETER(cmdShow);
+
 	return main();
 }
 #endif
@@ -51,7 +56,7 @@ int RunWasabi(Wasabi* app) {
 	if (app) {
 		app->Timer.Start();
 		if (app->Setup()) {
-			unsigned int numFrames = 0;
+			uint32_t numFrames = 0;
 			auto fpsTimer = std::chrono::high_resolution_clock::now();
 			float maxFPSReached = app->maxFPS > 0.001f ? app->maxFPS : 60.0f;
 			float deltaTime = 1.0f / maxFPSReached;
@@ -123,6 +128,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(
 	const char*                 pLayerPrefix,
 	const char*                 pMessage,
 	void*                       pUserData) {
+	UNREFERENCED_PARAMETER(objectType);
+	UNREFERENCED_PARAMETER(object);
+	UNREFERENCED_PARAMETER(location);
+	UNREFERENCED_PARAMETER(messageCode);
+	UNREFERENCED_PARAMETER(pLayerPrefix);
+
 	((Wasabi*)pUserData)->WindowAndInputComponent->ShowErrorMessage(std::string(pMessage), !(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT));
 	return VK_FALSE;
 }
@@ -271,7 +282,7 @@ VkInstance Wasabi::CreateVKInstance() {
 		instanceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
 	}
 	if (enabledLayers.size() > 0) {
-		instanceCreateInfo.enabledLayerCount = enabledLayers.size();
+		instanceCreateInfo.enabledLayerCount = (uint32_t)enabledLayers.size();
 		instanceCreateInfo.ppEnabledLayerNames = enabledLayers.data();
 	}
 
@@ -297,7 +308,11 @@ VkInstance Wasabi::CreateVKInstance() {
 	callbackCreateInfo.pUserData = this;
 
 	/* Register the callback */
-	VkResult result = vkCreateDebugReportCallbackEXT(inst, &callbackCreateInfo, nullptr, &m_debugCallback);
+	r = vkCreateDebugReportCallbackEXT(inst, &callbackCreateInfo, nullptr, &m_debugCallback);
+	if (r != VK_SUCCESS) {
+		vkDestroyInstance(inst, nullptr);
+		return nullptr;
+	}
 #endif
 
 	return inst;
@@ -318,7 +333,7 @@ WError Wasabi::StartEngine(int width, int height) {
 		return WError(W_FAILEDTOCREATEINSTANCE);
 
 	// Physical device
-	uint gpuCount = 0;
+	uint32_t gpuCount = 0;
 	// Get number of available physical devices
 	VkResult err = vkEnumeratePhysicalDevices(m_vkInstance, &gpuCount, nullptr);
 	if (err != VK_SUCCESS || gpuCount == 0) {
@@ -338,8 +353,8 @@ WError Wasabi::StartEngine(int width, int height) {
 	m_vkPhysDev = physicalDevices[index];
 
 	// Find a queue that supports graphics operations
-	uint graphicsQueueIndex = 0;
-	uint queueCount;
+	uint32_t graphicsQueueIndex = 0;
+	uint32_t queueCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysDev, &queueCount, NULL);
 	if (queueCount == 0)
 		return WError(W_FAILEDTOLISTDEVICES);
@@ -453,7 +468,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	return WError(W_SUCCEEDED);
 }
 
-WError Wasabi::Resize(unsigned int width, unsigned int height) {
+WError Wasabi::Resize(uint32_t width, uint32_t height) {
 	WError err = SpriteManager->Resize(width, height);
 	if (!err)
 		return err;
@@ -481,7 +496,7 @@ int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {
 	return 0;
 }
 
-uint Wasabi::GetCurrentBufferingIndex() {
+uint32_t Wasabi::GetCurrentBufferingIndex() {
 	return Renderer ? Renderer->GetCurrentBufferingIndex() : 0;
 }
 

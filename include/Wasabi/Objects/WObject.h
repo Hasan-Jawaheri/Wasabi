@@ -96,7 +96,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WObject(Wasabi* const app, unsigned int ID = 0);
+	WObject(Wasabi* const app, uint32_t ID = 0);
 
 	/**
 	 * Checks whether a call to Render() will cause any rendering (draw call) to
@@ -170,7 +170,7 @@ public:
 	 * @param  maxInstances Maximum number of instanced allowed to be created
 	 * @return              Error code, see WError.h
 	 */
-	WError InitInstancing(unsigned int maxInstances);
+	WError InitInstancing(uint32_t maxInstances);
 
 	/**
 	 * Cleans up all instancing assets, and disables instancing.
@@ -192,7 +192,7 @@ public:
 	 * @return       Pointer to the instance at the given index, or nullptr if
 	 *               it  cannot be found
 	 */
-	WInstance* GetInstance(unsigned int index) const;
+	WInstance* GetInstance(uint32_t index) const;
 
 	/**
 	 * Destroys an instance created for this object. The memory of the instance
@@ -208,14 +208,14 @@ public:
 	 * freed</b>.
 	 * @param index Index of the instance to destroy
 	 */
-	void DeleteInstance(unsigned int index);
+	void DeleteInstance(uint32_t index);
 
 	/**
 	 * Retrieves the number of instances for this object that are currently
 	 * created.
 	 * @return Number of currently created instances of the object
 	 */
-	unsigned int GetInstancesCount() const;
+	uint32_t GetInstancesCount() const;
 
 	/**
 	 * Shows the object, allowing to render.
@@ -317,7 +317,7 @@ private:
 	/** Instancing texture */
 	class WImage* m_instanceTexture;
 	/** Maximum number of instances allowed */
-	unsigned int m_maxInstances;
+	uint32_t m_maxInstances;
 	/** true if the instance texture needs an update, false otherwise */
 	bool m_instancesDirty;
 	/** List of created instances */
@@ -356,7 +356,7 @@ public:
 	 * @param ID  Id of the new object
 	 * @return    New object
 	 */
-	WObject* CreateObject(unsigned int ID = 0) const;
+	WObject* CreateObject(uint32_t ID = 0) const;
 
 	/**
 	 * Checks if an object is in the view in the default renderer's camera and
@@ -387,8 +387,8 @@ public:
 	 *                     was picked
 	 */
 	WObject* PickObject(int x, int y, bool bAnyHit,
-		unsigned int iObjStartID = 0,
-		unsigned int iObjEndID = 0,
+		uint32_t iObjStartID = 0,
+		uint32_t iObjEndID = 0,
 		WVector3* pt = nullptr, WVector2* uv = nullptr,
-		unsigned int* faceIndex = nullptr) const;
+		uint32_t* faceIndex = nullptr) const;
 };

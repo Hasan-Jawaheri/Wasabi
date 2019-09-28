@@ -28,24 +28,24 @@ WMatrix::WMatrix(float f11, float f12, float f13, float f14,
 }
 const WMatrix WMatrix::operator+ (const WMatrix m) const {
 	WMatrix out = *this;
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++)
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++)
 			out(i, j) += m(i, j);
 	return out;
 }
 const WMatrix WMatrix::operator- (const WMatrix m) const {
 	WMatrix out = *this;
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++)
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++)
 			out(i, j) -= m(i, j);
 	return out;
 }
 const WMatrix WMatrix::operator* (const WMatrix m) const {
 	WMatrix out;
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++) {
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++) {
 			float fSum = 0.0f;
-			for (unsigned int k = 0; k < 4; k++)
+			for (uint32_t k = 0; k < 4; k++)
 				fSum += (*this)(i, k) * m(k, j);
 			out(i, j) = fSum;
 		}
@@ -53,10 +53,10 @@ const WMatrix WMatrix::operator* (const WMatrix m) const {
 }
 const WMatrix WMatrix::operator/ (const WMatrix m) const {
 	WMatrix out;
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++) {
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++) {
 			float fSum = 0.0f;
-			for (unsigned int k = 0; k < 4; k++)
+			for (uint32_t k = 0; k < 4; k++)
 				fSum += (*this)(i, k) / m(k, j);
 			out(i, j) = fSum;
 		}
@@ -64,8 +64,8 @@ const WMatrix WMatrix::operator/ (const WMatrix m) const {
 }
 const WMatrix WMatrix::operator* (const float f) const {
 	WMatrix out = *this;
-	for (unsigned int i = 0; i < 4; i++) {
-		for (unsigned int j = 0; j < 4; j++) {
+	for (uint32_t i = 0; i < 4; i++) {
+		for (uint32_t j = 0; j < 4; j++) {
 			out(i, j) *= f;
 		}
 	}
@@ -73,61 +73,61 @@ const WMatrix WMatrix::operator* (const float f) const {
 }
 const WMatrix WMatrix::operator/ (const float f) const {
 	WMatrix out = *this;
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++)
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++)
 			out(i, j) /= f;
 	return out;
 }
 void WMatrix::operator+= (const WMatrix m) {
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++)
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++)
 			(*this)(i, j) += m(i, j);
 }
 void WMatrix::operator-= (const WMatrix m) {
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++)
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++)
 			(*this)(i, j) -= m(i, j);
 }
 void WMatrix::operator*= (const WMatrix m) {
 	WMatrix old = (*this);
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++) {
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++) {
 			float fSum = 0.0f;
-			for (unsigned int k = 0; k < 4; k++)
+			for (uint32_t k = 0; k < 4; k++)
 				fSum += old(i, k) * m(k, j);
 			(*this)(i, j) = fSum;
 		}
 }
 void WMatrix::operator/= (const WMatrix m) {
 	WMatrix old;
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++) {
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++) {
 			float fSum = 0.0f;
-			for (unsigned int k = 0; k < 4; k++)
+			for (uint32_t k = 0; k < 4; k++)
 				fSum += old(i, k) / m(k, j);
 			(*this)(i, j) = fSum;
 		}
 }
 void WMatrix::operator*= (const float f) {
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++)
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++)
 			(*this)(i, j) *= f;
 }
 void WMatrix::operator/= (const float f) {
-	for (unsigned int i = 0; i < 4; i++)
-		for (unsigned int j = 0; j < 4; j++)
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++)
 			(*this)(i, j) /= f;
 }
-float& WMatrix::operator() (const unsigned int row, const unsigned int col) {
+float& WMatrix::operator() (const uint32_t row, const uint32_t col) {
 	return mat[row * 4 + col];
 }
-const float WMatrix::operator() (const unsigned int row, const unsigned int col) const {
+const float WMatrix::operator() (const uint32_t row, const uint32_t col) const {
 	return mat[row * 4 + col];
 }
-float& WMatrix::operator[] (const unsigned int index) {
+float& WMatrix::operator[] (const uint32_t index) {
 	return mat[index];
 }
-const float WMatrix::operator[] (const unsigned int index) const {
+const float WMatrix::operator[] (const uint32_t index) const {
 	return mat[index];
 }
 

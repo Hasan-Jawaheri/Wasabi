@@ -143,7 +143,7 @@ void FilesDemo::Load() {
 
 	file.Close();
 
-	WSprite* spr = m_app->SpriteManager->CreateSprite(img);
+	m_sprite = m_app->SpriteManager->CreateSprite(img);
 
 	rb->BindObject(m_object, m_object);
 
@@ -154,10 +154,13 @@ void FilesDemo::Load() {
 }
 
 void FilesDemo::Update(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
+
 	m_material->SetVariableMatrix("projectionMatrix", m_cam->GetProjectionMatrix());
 	m_material->SetVariableMatrix("worldMatrix", m_object->GetWorldMatrix());
 	m_material->SetVariableMatrix("viewMatrix", m_cam->GetViewMatrix());
 }
 
 void FilesDemo::Cleanup() {
+	W_SAFE_REMOVEREF(m_sprite);
 }

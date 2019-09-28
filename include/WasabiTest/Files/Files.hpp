@@ -8,6 +8,7 @@ class FilesDemo : public WTestState {
 	WMaterial* m_material;
 	WObject* m_object;
 	WCamera* m_cam;
+	WSprite* m_sprite;
 
 public:
 	FilesDemo(Wasabi* const app);

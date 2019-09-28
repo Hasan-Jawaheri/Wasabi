@@ -39,6 +39,8 @@
 #define ZeroMemory(x,y) memset(x, 0, y)
 #endif
 
+enum W_MOUSEBUTTON: uint8_t;
+
 /**
  * @ingroup engineclass
  * Main application class. This class is abstract and one must implement its
@@ -173,10 +175,10 @@ public:
 	 * @return        Error code, see WError.h. Returned value's impact depends on
 	 *                the currently used window component
 	 */
-	virtual WError Resize(unsigned int width, unsigned int height);
+	virtual WError Resize(uint32_t width, uint32_t height);
 
 	/** This simply returns Renderer::GetCurrentBufferingIndex() */
-	uint GetCurrentBufferingIndex();
+	uint32_t GetCurrentBufferingIndex();
 
 	/**
 	 * Retrieves the Vulkan instance.
@@ -354,21 +356,27 @@ public:
 	 * the state is active.
 	 * @param fDeltaTime The step time for this frame (roughly 1 / FPS)
 	 */
-	virtual void Update(float fDeltaTime) {}
+	virtual void Update(float fDeltaTime) {
+		UNREFERENCED_PARAMETER(fDeltaTime);
+	}
 
 	/**
 	 * This function is called whenever a key is pushed down while this state is
 	 * active.
 	 * @param c The pushed key
 	 */
-	virtual void OnKeyDown(char c) {}
+	virtual void OnKeyDown(char c) {
+		UNREFERENCED_PARAMETER(c);
+	}
 
 	/**
 	 * This function is called whenever a key is released while this state is
 	 * active.
 	 * @param c The released key
 	 */
-	virtual void OnKeyUp(char c) {}
+	virtual void OnKeyUp(char c) {
+		UNREFERENCED_PARAMETER(c);
+	}
 
 	/**
 	 * This function is called whenever a mouse-down is captured while this
@@ -377,7 +385,11 @@ public:
 	 * @param mx      Mouse X where the event happened
 	 * @param my      Mouse Y where the event happened
 	 */
-	virtual void OnMouseDown(enum W_MOUSEBUTTON button, int mx, int my) {}
+	virtual void OnMouseDown(W_MOUSEBUTTON button, int mx, int my) {
+		UNREFERENCED_PARAMETER(button);
+		UNREFERENCED_PARAMETER(mx);
+		UNREFERENCED_PARAMETER(my);
+	}
 
 	/**
 	 * This function is called whenever a mouse-down is captured while this
@@ -386,7 +398,11 @@ public:
 	 * @param mx      Mouse X where the event happened
 	 * @param my      Mouse Y where the event happened
 	 */
-	virtual void OnMouseUp(enum W_MOUSEBUTTON button, int mx, int my) {}
+	virtual void OnMouseUp(W_MOUSEBUTTON button, int mx, int my) {
+		UNREFERENCED_PARAMETER(button);
+		UNREFERENCED_PARAMETER(mx);
+		UNREFERENCED_PARAMETER(my);
+	};
 
 	/**
 	 * This function is called whenever the mouse moves while this state is
@@ -394,7 +410,10 @@ public:
 	 * @param mx  New mouse X
 	 * @param my  New mouse Y
 	 */
-	virtual void OnMouseMove(int mx, int my) {}
+	virtual void OnMouseMove(int mx, int my) {
+		UNREFERENCED_PARAMETER(mx);
+		UNREFERENCED_PARAMETER(my);
+	}
 
 	/**
 	 * This function is called whenever character input is received while this
@@ -402,7 +421,9 @@ public:
 	 * suitable for capturing input for things like text boxes.
 	 * @param c [description]
 	 */
-	virtual void OnInput(char c) {}
+	virtual void OnInput(char c) {
+		UNREFERENCED_PARAMETER(c);
+	}
 
 	/**
 	 * This function is called before this state is switched from. This gives the
@@ -411,7 +432,7 @@ public:
 	virtual void Cleanup() {}
 };
 
-typedef unsigned int uint;
+typedef uint32_t uint;
 
 /**
  * This function is not defined by the library. It must be defined by the user.

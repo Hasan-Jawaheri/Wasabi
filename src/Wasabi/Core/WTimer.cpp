@@ -2,8 +2,6 @@
 #ifdef _WIN32
 #include <Windows.h>
 #include <time.h>
-#include <mmsystem.h>					//time functions
-#pragma comment ( lib, "winmm.lib" )	//timeGetTime function
 #elif (defined __linux__)
 #include <stdlib.h>
 #endif
@@ -19,7 +17,7 @@ W_TIMER_TYPE _GetCurrentTime() {
 
 void WInitializeTimers() {
 	//randomize timers
-	srand(_GetCurrentTime());
+	srand((uint32_t)_GetCurrentTime());
 }
 void WUnInitializeTimers() {
 }
@@ -33,14 +31,14 @@ WTimer::WTimer(float fUnit, bool bManualElapsedTime) {
 WTimer::~WTimer() {
 }
 void WTimer::Start() {
-	m_totalPauseTime += GetPauseTime();
+	m_totalPauseTime += (int64_t)GetPauseTime();
 	m_pauseStartTime = -1;
 }
 void WTimer::Pause() {
-	m_pauseStartTime = _GetCurrentTime();
+	m_pauseStartTime = (int64_t)_GetCurrentTime();
 }
 void WTimer::Reset() {
-	m_startTime = _GetCurrentTime();
+	m_startTime = (int64_t)_GetCurrentTime();
 	m_totalPauseTime = 0;
 	Pause();
 }

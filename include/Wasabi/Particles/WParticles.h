@@ -27,7 +27,7 @@ struct WParticlesVertex {
 };
 
 /** Type of default particle effects supported by WParticlesManager */
-enum W_DEFAULT_PARTICLE_EFFECT_TYPE {
+enum W_DEFAULT_PARTICLE_EFFECT_TYPE: uint8_t {
 	/** Default particles effect with a custom effect */
 	W_DEFAULT_PARTICLES_CUSTOM = 0,
 	/** Default particles effect with additive blending */
@@ -46,11 +46,11 @@ enum W_DEFAULT_PARTICLE_EFFECT_TYPE {
  */
 class WParticlesBehavior {
 	/** Maximum number of particles that the m_buffer can hold */
-	unsigned int m_maxParticles;
+	uint32_t m_maxParticles;
 	/** Size of each particle in m_buffer */
-	unsigned int m_particleSize;
+	uint32_t m_particleSize;
 	/** Number of particles currently active */
-	unsigned int m_numParticles;
+	uint32_t m_numParticles;
 	/** Buffer to store particles data */
 	void* m_buffer;
 
@@ -63,7 +63,7 @@ public:
 	 *                       can render
 	 * @param particle_size  Size of each particle structure
 	 */
-	WParticlesBehavior(unsigned int max_particles, unsigned int particle_size);
+	WParticlesBehavior(uint32_t max_particles, uint32_t particle_size);
 
 	~WParticlesBehavior();
 
@@ -75,7 +75,7 @@ public:
 	 * @param vb       Pointer to the vertex buffer to be filled
 	 * @return         Number of particles copied
 	 */
-	unsigned int UpdateAndCopyToVB(float cur_time, void* vb, unsigned int max_particles);
+	uint32_t UpdateAndCopyToVB(float cur_time, void* vb, uint32_t max_particles);
 
 	/**
 	 * Must be implemented by a derived class to define the per-frame behavior
@@ -117,7 +117,7 @@ class WDefaultParticleBehavior : public WParticlesBehavior {
 public:
 
 	/** Type of the particle */
-	enum Type {
+	enum Type: uint8_t {
 		/** Particle is rendered such that it always faces the camera */
 		BILLBOARD = 0,
 		/** Particle is rendered to be facing up */
@@ -146,16 +146,16 @@ public:
 	/** Type of the particle (default is BILLBOARD) */
 	WDefaultParticleBehavior::Type m_type;
 	/** Number of columns in the texture if it is tiled (otherwise 1, which is the default) */
-	uint m_numTilesColumns;
+	uint32_t m_numTilesColumns;
 	/** Total number of tiles in the texture (default is 1) */
-	uint m_numTiles;
+	uint32_t m_numTiles;
 	/** An array of (color, time) where color is the color of the particle (multiplied by the texture)
 	    at a given time (starting from 0) and lasting for 'time'. The sum of the time element
 		in the vector elements should be equal to 1, where 1 is the time of the particle's death.
 		(default is {<(1,1,1,0), 0.2>, <(1,1,1,1), 0.8>, <(1,1,1,0), 0.0>} */
 	std::vector<std::pair<WColor, float>> m_colorGradient;
 
-	WDefaultParticleBehavior(unsigned int max_particles);
+	WDefaultParticleBehavior(uint32_t max_particles);
 	virtual void UpdateSystem(float cur_time);
 	virtual inline bool UpdateParticle(float cur_time, void* particle);
 };
@@ -170,7 +170,7 @@ class WParticles : public WBase, public WOrientation, public WMaterialsStore {
 
 protected:
 	virtual ~WParticles();
-	WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE type, unsigned int ID = 0);
+	WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE type, uint32_t ID = 0);
 
 public:
 	/**
@@ -190,7 +190,7 @@ public:
 	 *                      use WDefaultParticleBehavior
 	 * @return Error code, see WError.h
 	 */
-	WError Create(unsigned int maxParticles = 5000, WParticlesBehavior* behavior = nullptr);
+	WError Create(uint32_t maxParticles = 5000, WParticlesBehavior* behavior = nullptr);
 
 	/**
 	 * Retrieves the behavior object for this particle system.
@@ -220,13 +220,13 @@ public:
 	 * on top of those with lower priority (i.e. renders after after).
 	 * @param priority New priority to set
 	 */
-	void SetPriority(unsigned int priority);
+	void SetPriority(uint32_t priority);
 
 	/**
 	 * Retrieves the current priority of the sprite. See SetPriority().
 	 * @return The current priority of the sprite
 	 */
-	unsigned int GetPriority() const;
+	uint32_t GetPriority() const;
 
 	/**
 	 * @return the type of this particles system
@@ -298,9 +298,9 @@ private:
 	/** true if frustum culling is enabled, false otherwise */
 	bool m_bFrustumCull;
 	/** Maximum number of particles that can be rendered by this system */
-	unsigned int m_maxParticles;
+	uint32_t m_maxParticles;
 	/** Rendering priority */
-	unsigned int m_priority;
+	uint32_t m_priority;
 	/** Local world matrix */
 	WMatrix m_WorldM;
 
@@ -355,7 +355,7 @@ public:
 	 * @param ID           ID of the new particles system
 	 * @return Newly allocated particle system
 	 */
-	WParticles* CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE type, unsigned int maxParticles = 5000, WParticlesBehavior* behavior = nullptr, unsigned int ID = 0) const;
+	WParticles* CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE type, uint32_t maxParticles = 5000, WParticlesBehavior* behavior = nullptr, uint32_t ID = 0) const;
 
 private:
 	/** Default vertex shader used by the default effect */

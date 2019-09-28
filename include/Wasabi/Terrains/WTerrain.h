@@ -32,7 +32,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WTerrain(class Wasabi* const app, unsigned int ID = 0);
+	WTerrain(class Wasabi* const app, uint32_t ID = 0);
 
 	/**
 	 * Initializes the terrain.
@@ -43,7 +43,7 @@ public:
 	 * @param numRings Number of LOD rings drawn around the origin
 	 * @return Error code, see WError.h
 	 */
-	WError Create(unsigned int N = 256, float size = 1.0f, unsigned int numRings = 6);
+	WError Create(uint32_t N = 256, float size = 1.0f, uint32_t numRings = 6);
 
 	/**
 	 * Sets the point around which the terrain is loaded. The terrain will not
@@ -195,7 +195,7 @@ public:
 	 * @param ID       ID of the newly created terrain
 	 * @return Newly allocated terrain, or nullptr on failure
 	 */
-	WTerrain* CreateTerrain(unsigned int N = 256, float size = 1.0f, unsigned int numRings = 7, unsigned int ID = 0);
+	WTerrain* CreateTerrain(uint32_t N = 256, float size = 1.0f, uint32_t numRings = 7, uint32_t ID = 0);
 
 private:
 };

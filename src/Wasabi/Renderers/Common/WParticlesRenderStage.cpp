@@ -14,7 +14,7 @@ WParticlesRenderStage::WParticlesRenderStage(Wasabi* const app, bool backbuffer)
 	m_particlesFragment = nullptr;;
 }
 
-WError WParticlesRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+WError WParticlesRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
 	WError err = WRenderStage::Initialize(previousStages, width, height);
 	if (!err)
 		return err;
@@ -42,7 +42,7 @@ void WParticlesRenderStage::Cleanup() {
 	W_SAFE_DELETE(m_particlesFragment);
 }
 
-WError WParticlesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
+WError WParticlesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
 	if (filter & RENDER_FILTER_PARTICLES) {
 		m_particlesFragment->Render(renderer, rt);
 	}

@@ -13,7 +13,7 @@ void WGBufferVS::Load(bool bSaveData) {
 	vector<byte> code = {
 		#include "Shaders/gbuffer.vert.glsl.spv"
 	};
-	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 }
 
 W_SHADER_DESC WGBufferVS::GetDesc() {
@@ -56,7 +56,7 @@ void WGBufferPS::Load(bool bSaveData) {
 	vector<byte> code = {
 		#include "Shaders/gbuffer.frag.glsl.spv"
 	};
-	LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 }
 
 W_SHADER_DESC WGBufferPS::GetDesc() {
@@ -83,7 +83,7 @@ WGBufferRenderStage::WGBufferRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_perFrameMaterial = nullptr;
 }
 
-WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
 	WError err = WRenderStage::Initialize(previousStages, width, height);
 	if (!err)
 		return err;
@@ -130,7 +130,7 @@ void WGBufferRenderStage::Cleanup() {
 	W_SAFE_DELETE(m_objectsFragment);
 }
 
-WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
+WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
 	if (filter & RENDER_FILTER_OBJECTS) {
 		WCamera* cam = rt->GetCamera();
 
@@ -144,6 +144,6 @@ WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 	return WError(W_SUCCEEDED);
 }
 
-WError WGBufferRenderStage::Resize(uint width, uint height) {
+WError WGBufferRenderStage::Resize(uint32_t width, uint32_t height) {
 	return WRenderStage::Resize(width, height);
 }

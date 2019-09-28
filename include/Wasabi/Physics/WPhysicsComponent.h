@@ -77,7 +77,7 @@ public:
 	 * @param ID  ID for the created rigid body
 	 * @return    A newly allocated rigid body instance
 	 */
-	virtual WRigidBody* CreateRigidBody(unsigned int ID = 0) const = 0;
+	virtual WRigidBody* CreateRigidBody(uint32_t ID = 0) const = 0;
 
 	/**
 	 * Performs a ray cast operation on the physics objects. A ray cast operation

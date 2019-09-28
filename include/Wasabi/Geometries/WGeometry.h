@@ -45,7 +45,7 @@ struct W_VERTEX_ATTRIBUTE {
  */
 struct W_VERTEX_DESCRIPTION {
 	W_VERTEX_DESCRIPTION(std::vector<W_VERTEX_ATTRIBUTE> attribs = {})
-		: attributes(attribs), _size(-1) {}
+		: attributes(attribs), _size((size_t)-1) {}
 
 	/** A list of attributes for the vertex */
 	std::vector<W_VERTEX_ATTRIBUTE> attributes;
@@ -64,7 +64,7 @@ struct W_VERTEX_DESCRIPTION {
 	 * @return             The offset of the attribute at attrib_indexm -1 if
 	 *                     it cannot be found
 	 */
-	size_t GetOffset(unsigned int attrib_index) const;
+	size_t GetOffset(uint32_t attrib_index) const;
 
 	/**
 	 * Retrieves the offset (in bytes) to a certain attribute.
@@ -80,7 +80,7 @@ struct W_VERTEX_DESCRIPTION {
 	 * @return             Index of the attribute whose name is attrib_name, -1
 	 *                     if it cannot be found
 	 */
-	unsigned int GetIndex(std::string attrib_name) const;
+	uint32_t GetIndex(std::string attrib_name) const;
 
 	/**
 	 * Checks if this vertex description is equal to another one
@@ -100,7 +100,7 @@ struct WDefaultVertex {
 	WDefaultVertex( float x, float y, float z,
 					float tx, float ty, float tz,
 					float nx, float ny, float nz,
-					float u, float v, uint t = 0)
+					float u, float v, uint32_t t = 0)
 					: pos(x, y, z), norm(nx, ny, nz), tang(tx, ty, tz), texC(u, v), textureIndex(t) {
 	};
 
@@ -113,7 +113,7 @@ struct WDefaultVertex {
 	/** Texture coordinate attribute (UV) */
 	WVector2 texC;
 	/** Index of the texture to be used for this vertex */
-	uint textureIndex;
+	uint32_t textureIndex;
 };
 
 /**
@@ -130,7 +130,7 @@ struct WDefaultVertex_Animation {
 	float weights[4];
 };
 
-enum W_GEOMETRY_CREATE_FLAGS {
+enum W_GEOMETRY_CREATE_FLAGS: uint32_t {
 	W_GEOMETRY_CREATE_VB_CPU_READABLE = 1,
 	W_GEOMETRY_CREATE_VB_DYNAMIC = 2,
 	W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME = 4,
@@ -199,7 +199,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WGeometry(Wasabi* const app, unsigned int ID = 0);
+	WGeometry(Wasabi* const app, uint32_t ID = 0);
 
 	/**
 	 * This function should return the number of vertex descriptions that
@@ -207,7 +207,7 @@ public:
 	 * buffers this geometry class can hold.
 	 * @return The number of vertex buffers this geometry can hold
 	 */
-	virtual unsigned int GetVertexBufferCount() const {
+	virtual uint32_t GetVertexBufferCount() const {
 		return 2; // one vertex buffer, one animation buffer
 	}
 
@@ -230,7 +230,7 @@ public:
 	 *                      </a>'th vertex buffer
 	 */
 	virtual W_VERTEX_DESCRIPTION GetVertexDescription(
-		unsigned int layoutIndex = 0) const;
+		uint32_t layoutIndex = 0) const;
 
 	/**
 	* Retrieves the size of the vertex description at the given index.
@@ -238,7 +238,7 @@ public:
 	* @param  layoutIndex  Index of the vertex buffer
 	* @return              The size of the vertex description at the given index
 	*/
-	virtual size_t GetVertexDescriptionSize(unsigned int layoutIndex = 0) const;
+	virtual size_t GetVertexDescriptionSize(uint32_t layoutIndex = 0) const;
 
 	/**
 	 * Creates a geometry from buffers in memory. The buffers must be formatted
@@ -264,7 +264,7 @@ public:
 	 *   WDefaultVertex(0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
 	 *                  0.0f, 0.0f, -1.0f, 1.0f, 0.0f)
 	 * };
-	 * uint indices[] = {0, 1, 2};
+	 * uint32_t indices[] = {0, 1, 2};
 	 * WGeomery* geometry = GeometryManager->CreateFromData(vertices, 3, indices, 3);
 	 * @endcode
 	 * 
@@ -279,14 +279,14 @@ public:
 	 * @param  flags         Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return               Error code, see WError.h
 	 */
-	WError CreateFromData(void* vb, unsigned int numVerts, void* ib, unsigned int numIndices, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
+	WError CreateFromData(void* vb, uint32_t numVerts, void* ib, uint32_t numIndices, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Called by CreateBox, CreateSphere, etc... to convert the given default vertices
 	 * (of type WDefaultVertex) to the custom type for this geometry. This can be
 	 * overrided to utilize the Create* functions while using a custom vertex format
 	 */
-	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint>& indices, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
+	virtual WError CreateFromDefaultVerticesData(vector<WDefaultVertex>& default_vertices, vector<uint32_t>& indices, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Creates a cube geometry.
@@ -350,7 +350,7 @@ public:
 	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateSphere(float radius, unsigned int vres = 12, unsigned int ures = 12, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
+	WError CreateSphere(float radius, uint32_t vres = 12, uint32_t ures = 12, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Creates a cone geometry, with csegs segments at the bottom circle and
@@ -363,7 +363,7 @@ public:
 	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateCone(float radius, float height, unsigned int hsegs, unsigned int csegs, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
+	WError CreateCone(float radius, float height, uint32_t hsegs, uint32_t csegs, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Creates a cylinder geometry, with csegs segments at the bottom and top
@@ -377,7 +377,7 @@ public:
 	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
 	 */
-	WError CreateCylinder(float radius, float height, unsigned int hsegs, unsigned int csegs, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
+	WError CreateCylinder(float radius, float height, uint32_t hsegs, uint32_t csegs, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 
 	/**
 	 * Copy another (non-immutable) geometry.
@@ -440,7 +440,7 @@ public:
 	/**
 	 * Map the index buffer of this geometry. This will fail if there is no
 	 * geometry, the geometry is dynamic or if the geometry is immutable. Indices
-	 * are stored in 32-bits-per-index (unsigned int).
+	 * are stored in 32-bits-per-index (uint32_t).
 	 *
 	 * Examples:
 	 * Flip this first triangle
@@ -448,7 +448,7 @@ public:
 	 * // Assuming geometry is valid and dynamic
 	 * uint* indices;
 	 * geometry->MapIndexBuffer((void**)&indices);
-	 * uint temp = indices[0];
+	 * uint32_t temp = indices[0];
 	 * indices[0] = indices[2];
 	 * indices[2] = temp;
 	 * geometry->UnmapIndexBuffer();
@@ -577,7 +577,7 @@ public:
 	 *                       index of the triangle that was intersected, if any
 	 * @return               true if there was an intersection, false otherwise
 	 */
-	bool Intersect(WVector3 p1, WVector3 p2, WVector3* pt = nullptr, WVector2* uv = nullptr, unsigned int* triangleIndex = nullptr);
+	bool Intersect(WVector3 p1, WVector3 p2, WVector3* pt = nullptr, WVector2* uv = nullptr, uint32_t* triangleIndex = nullptr);
 
 	/**
 	 * Draw the geometry to the render target. This function will bind the
@@ -595,7 +595,7 @@ public:
 	 *                        twice), false otherwise
 	 * @return                [description]
 	 */
-	WError Draw(class WRenderTarget* rt, unsigned int numIndices = -1, unsigned int numInstances = 1, bool bindAnimation = true);
+	WError Draw(class WRenderTarget* rt, uint32_t numIndices = -1, uint32_t numInstances = 1, bool bindAnimation = true);
 
 	/**
 	 * Retrieves the point that represents the minimum boundary of the geometry.
@@ -613,13 +613,13 @@ public:
 	 * Retrieves the number of vertices in the geometry.
 	 * @return Number of vertices
 	 */
-	unsigned int GetNumVertices() const;
+	uint32_t GetNumVertices() const;
 
 	/**
 	 * Retrieves the number of indices in the geometry.
 	 * @return Number of indices
 	 */
-	unsigned int GetNumIndices() const;
+	uint32_t GetNumIndices() const;
 
 	/**
 	 * Checks if the geometry has an animation vertex buffer.
@@ -646,9 +646,9 @@ private:
 	/** Animation vertex buffer */
 	WBufferedBuffer m_animationbuf;
 	/** Number of vertices */
-	uint m_numVertices;
+	uint32_t m_numVertices;
 	/** Number of indices */
-	uint m_numIndices;
+	uint32_t m_numIndices;
 	/** Currently mapped vertex buffer (only valid if mapped for writing), used to recalculate min/max points */
 	void* m_mappedVertexBufferForWrite;
 	/** An array of buffered maps to perform, one per buffered buffer */
@@ -669,7 +669,7 @@ private:
 	 * @param vb       Vertex buffer to calculate from
 	 * @param numVerts Number of vertices in vb
 	 */
-	void _CalcMinMax(void* vb, unsigned int numVerts);
+	void _CalcMinMax(void* vb, uint32_t numVerts);
 
 	/**
 	 * Calculates the vertex normals in vb and stores them in vb (if possible).
@@ -678,29 +678,29 @@ private:
 	 * @param ib          Index buffer for vb
 	 * @param numIndices  Number of indices in ib
 	 */
-	void _CalcNormals(void* vb, unsigned int numVerts, void* ib, unsigned int numIndices);
+	void _CalcNormals(void* vb, uint32_t numVerts, void* ib, uint32_t numIndices);
 
 	/**
 	 * Calculates the vertex tangents in vb and stores them in vb (if possible).
 	 * @param vb        Vertex buffer to calculate tangents for
 	 * @param numVerts  Number of vertices in vb
 	 */
-	void _CalcTangents(void* vb, unsigned int numVerts);
+	void _CalcTangents(void* vb, uint32_t numVerts);
 
 	/**
 	 * Performs all pending maps for the given buffer index
 	 */
-	void _PerformPendingMaps(uint bufferIndex);
+	void _PerformPendingMaps(uint32_t bufferIndex);
 
 	/**
 	 * Performs an update necessary to a buffered buffer at a given index after it gets mapped
 	 */
-	void _UpdatePendingMap(WBufferedBuffer* buffer, void* mappedData, uint bufferIndex, W_MAP_FLAGS mapFlags);
+	void _UpdatePendingMap(WBufferedBuffer* buffer, void* mappedData, uint32_t bufferIndex, W_MAP_FLAGS mapFlags);
 
 	/**
 	 * Performs an update necessary to a buffered buffer at a given index before it gets unmapped
 	 */
-	void _UpdatePendingUnmap(WBufferedBuffer* buffer, uint bufferIndex);
+	void _UpdatePendingUnmap(WBufferedBuffer* buffer, uint32_t bufferIndex);
 };
 
 /**
@@ -728,6 +728,6 @@ public:
 	 * Makes sure all Map call results are propagated to the buffered geometries at
 	 * the given buffer index.
 	 */
-	void UpdateDynamicGeometries(uint bufferIndex) const;
+	void UpdateDynamicGeometries(uint32_t bufferIndex) const;
 };
 

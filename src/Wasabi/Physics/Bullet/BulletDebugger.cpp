@@ -34,7 +34,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/lines.vert.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -47,7 +47,7 @@ public:
 		vector<byte> code = {
 			#include "Shaders/lines.frag.glsl.spv"
 		};
-		LoadCodeSPIRV((char*)code.data(), code.size(), bSaveData);
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -55,16 +55,18 @@ class WLinesGeometry : public WGeometry {
 public:
 	WLinesGeometry(Wasabi* const app) : WGeometry(app) {}
 
-	virtual unsigned int GetVertexBufferCount() const {
+	virtual uint32_t GetVertexBufferCount() const {
 		return 1;
 	}
-	virtual W_VERTEX_DESCRIPTION GetVertexDescription(unsigned int index) const {
+	virtual W_VERTEX_DESCRIPTION GetVertexDescription(uint32_t index) const {
+		UNREFERENCED_PARAMETER(index);
 		return W_VERTEX_DESCRIPTION({
 			W_ATTRIBUTE_POSITION,
 			W_VERTEX_ATTRIBUTE("color", 4),
-			});
+		});
 	}
-	virtual size_t GetVertexDescriptionSize(unsigned int layout_index = 0) const {
+	virtual size_t GetVertexDescriptionSize(uint32_t layout_index = 0) const {
+		UNREFERENCED_PARAMETER(layout_index);
 		return sizeof(LineVertex);
 	}
 };
@@ -80,7 +82,7 @@ public:
 		m_linesFX = nullptr;
 	}
 
-	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+	virtual WError Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
 		WError err = WRenderStage::Initialize(previousStages, width, height);
 		if (!err)
 			return err;
@@ -100,13 +102,16 @@ public:
 		return WError(W_SUCCEEDED);
 	}
 
-	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint filter) {
+	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint32_t filter) {
+		UNREFERENCED_PARAMETER(renderer);
+		UNREFERENCED_PARAMETER(filter);
+
 		WCamera* cam = rt->GetCamera();
 
 		m_linesFX->Bind(rt);
 
-		uint numObjects = m_app->ObjectManager->GetEntitiesCount();
-		for (uint i = 0; i < numObjects; i++) {
+		uint32_t numObjects = m_app->ObjectManager->GetEntitiesCount();
+		for (uint32_t i = 0; i < numObjects; i++) {
 			WObject* obj = m_app->ObjectManager->GetEntityByIndex(i);
 			WMaterial* material = obj->GetMaterial(m_linesFX);
 			if (!material) {
@@ -124,12 +129,12 @@ public:
 		W_SAFE_REMOVEREF(m_linesFX);
 	}
 
-	virtual WError Resize(uint width, uint height) {
+	virtual WError Resize(uint32_t width, uint32_t height) {
 		return WRenderStage::Resize(width, height);
 	}
 };
 
-BulletDebugger::BulletDebugger(WBulletPhysics* physics, uint maxLines, std::string appName) : Wasabi(), btIDebugDraw() {
+BulletDebugger::BulletDebugger(WBulletPhysics* physics, uint32_t maxLines, std::string appName) : Wasabi(), btIDebugDraw() {
 	m_appName = appName + "-bullet-debugger";
 	m_physics = physics;
 	m_keepRunning = true;
@@ -217,6 +222,8 @@ WError BulletDebugger::Setup() {
 }
 
 bool BulletDebugger::Loop(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
+
 	ApplyMousePivot();
 
 	char title[128];
@@ -230,8 +237,8 @@ bool BulletDebugger::Loop(float fDeltaTime) {
 
 	LineVertex* vb;
 	m_linesDrawer->GetGeometry()->MapVertexBuffer((void**)&vb, W_MAP_WRITE);
-	for (unsigned int i = 0; i < m_maxLines*2; i += 2) {
-		unsigned int lineIndex = i / 2;
+	for (uint32_t i = 0; i < m_maxLines*2; i += 2) {
+		uint32_t lineIndex = i / 2;
 		if (lineIndex < curLines.size()) {
 			vb[i+0] = LineVertex({ curLines[lineIndex].from, curLines[lineIndex].color });
 			vb[i+1] = LineVertex({ curLines[lineIndex].to,   curLines[lineIndex].color });
@@ -256,15 +263,20 @@ void BulletDebugger::drawLine(const btVector3 &from, const btVector3 &to, const 
 }
 
 void BulletDebugger::drawContactPoint(const btVector3 &PointOnB, const btVector3 &normalOnB, btScalar distance, int lifeTime, const btVector3 &color) {
-
+	UNREFERENCED_PARAMETER(PointOnB);
+	UNREFERENCED_PARAMETER(normalOnB);
+	UNREFERENCED_PARAMETER(distance);
+	UNREFERENCED_PARAMETER(lifeTime);
+	UNREFERENCED_PARAMETER(color);
 }
 
 void BulletDebugger::reportErrorWarning(const char *warningString) {
-
+	UNREFERENCED_PARAMETER(warningString);
 }
 
 void BulletDebugger::draw3dText(const btVector3 &location, const char *textString) {
-
+	UNREFERENCED_PARAMETER(location);
+	UNREFERENCED_PARAMETER(textString);
 }
 
 void BulletDebugger::setDebugMode(int debugMode) {

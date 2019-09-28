@@ -63,8 +63,8 @@ public:
 	WManager(class Wasabi* const a) : m_app(a) { __bDbgDestructing = false; }
 	virtual ~WManager() {
 		__bDbgDestructing = true;
-		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-			for (unsigned int i = 0; i < m_entities[j].size(); i)
+		for (uint32_t j = 0; j < W_HASHTABLESIZE; j++)
+			for (uint32_t i = 0; i < m_entities[j].size(); i)
 				m_entities[j][i]->RemoveReference();
 	}
 
@@ -115,8 +115,8 @@ public:
 	 *                otherwise
 	 */
 	bool RemoveEntity(T* entity) {
-		unsigned int tableIndex = W_HASH(entity->GetID());
-		for (unsigned int i = 0; i < m_entities[tableIndex].size(); i++) {
+		uint32_t tableIndex = W_HASH(entity->GetID());
+		for (uint32_t i = 0; i < m_entities[tableIndex].size(); i++) {
 			if (m_entities[tableIndex][i] == entity)
 			{
 				if (!__bDbgDestructing)
@@ -124,9 +124,9 @@ public:
 
 				m_entities[tableIndex].erase(m_entities[tableIndex].begin() + i);
 
-				auto it = m_entitiesByName.find(entity->GetName());
-				if (it != m_entitiesByName.end())
-					m_entitiesByName.erase(it);
+				auto entityIt = m_entitiesByName.find(entity->GetName());
+				if (entityIt != m_entitiesByName.end())
+					m_entitiesByName.erase(entityIt);
 
 				for (auto it = m_changeCallbacks.begin(); it != m_changeCallbacks.end(); it++)
 					it->second(entity, false);
@@ -156,10 +156,10 @@ public:
 	 * @param  ID ID of the registered object
 	 * @return    The registered object, nullptr if its not found
 	 */
-	T* GetEntity(unsigned int ID) const {
-		unsigned int tableIndex = W_HASH(ID);
+	T* GetEntity(uint32_t ID) const {
+		uint32_t tableIndex = W_HASH(ID);
 		if (tableIndex) //ID 0 is not searched for
-			for (unsigned int i = 0; i < m_entities[tableIndex].size(); i++)
+			for (uint32_t i = 0; i < m_entities[tableIndex].size(); i++)
 				if (m_entities[tableIndex][i]->GetID() == ID)
 					return m_entities[tableIndex][i];
 		return nullptr;
@@ -182,12 +182,11 @@ public:
 	 * @param  index Index of the object to retrieve
 	 * @return       The registered object, nullptr if its not found
 	 */
-	T* GetEntityByIndex(unsigned int index) const {
-		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-		{
+	T* GetEntityByIndex(uint32_t index) const {
+		for (uint32_t j = 0; j < W_HASHTABLESIZE; j++) {
 			if (index < m_entities[j].size())
 				return (T*)m_entities[j][index];
-			index -= m_entities[j].size();
+			index -= (uint32_t)m_entities[j].size();
 		}
 		return nullptr;
 	}
@@ -196,10 +195,10 @@ public:
 	 * Retrieves the number of registered entities.
 	 * @return  Number of registered entities
 	 */
-	unsigned int GetEntitiesCount(void) const {
-		unsigned int size = 0;
-		for (unsigned int j = 0; j < W_HASHTABLESIZE; j++)
-			size += (unsigned int)m_entities[j].size();
+	uint32_t GetEntitiesCount(void) const {
+		uint32_t size = 0;
+		for (uint32_t j = 0; j < W_HASHTABLESIZE; j++)
+			size += (uint32_t)m_entities[j].size();
 		return size;
 	}
 

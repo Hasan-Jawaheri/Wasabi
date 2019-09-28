@@ -21,7 +21,7 @@
 #include "Wasabi/Core/WCore.h"
 
 /** Type of the projection method used by the camera */
-enum W_PROJECTIONTYPE {
+enum W_PROJECTIONTYPE: uint8_t {
 	PROJECTION_PERSPECTIVE = 0,
 	PROJECTION_ORTHOGONAL = 1,
 };
@@ -42,7 +42,7 @@ public:
 	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
 
-	WCamera(Wasabi* const app, unsigned int ID = 0);
+	WCamera(Wasabi* const app, uint32_t ID = 0);
 
 	/**
 	 * This is a callback (inherited from WOrientation) to inform this object of
@@ -104,7 +104,7 @@ public:
 	 * @param width  Width of the rendering viewport
 	 * @param height Height of the rendering viewport
 	 */
-	void Render(unsigned int width, unsigned int height);
+	void Render(uint32_t width, uint32_t height);
 
 	/**
 	 * Retrieves the current view matrix
@@ -256,9 +256,9 @@ private:
 	/** Frustum planes used for determining if objects are within view frustum */
 	WPlane m_frustumPlanes[6];
 	/** Saved previous viewport width */
-	unsigned int m_lastWidth;
+	uint32_t m_lastWidth;
 	/** Saved previous viewport height */
-	unsigned int m_lastHeight;
+	uint32_t m_lastHeight;
 };
 
 /**

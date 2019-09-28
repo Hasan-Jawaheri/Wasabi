@@ -27,11 +27,11 @@ struct VERTEX {
 	VEC3 tang;
 	VEC3 norm;
 	VEC2 uv;
-	uint texIndex;
+	uint32_t texIndex;
 };
 
 struct ANIMVERTEX {
-	UINT bones[4];
+	uint32_t bones[4];
 	float weights[4];
 	ANIMVERTEX() { ZeroMemory(this, sizeof ANIMVERTEX); }
 };
@@ -55,13 +55,13 @@ struct ANIMDATA {
 struct BONEIDTABLEENTITY {
 	FbxNode* node;
 	FbxAMatrix bindingPose;
-	UINT mapsTo;
+	uint32_t mapsTo;
 };
 
 bool NodeExists(FbxNode* pNode);
-UINT GetNodeID(FbxNode* pNode);
+uint32_t GetNodeID(FbxNode* pNode);
 void CreateNewNode(BONEIDTABLEENTITY entity);
-FbxNode* GetNodeByID(UINT ID);
+FbxNode* GetNodeByID(uint32_t ID);
 FbxAMatrix GetNodeBindingPose(FbxNode* node);
 
 MESHDATA ParseMesh(FbxMesh* pMesh);

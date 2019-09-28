@@ -14,7 +14,7 @@ WSpritesRenderStage::WSpritesRenderStage(Wasabi* const app, bool backbuffer) : W
 	m_spritesFragment = nullptr;
 }
 
-WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint width, uint height) {
+WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
 	WError err = WRenderStage::Initialize(previousStages, width, height);
 	if (!err)
 		return err;
@@ -33,7 +33,7 @@ void WSpritesRenderStage::Cleanup() {
 	W_SAFE_DELETE(m_spritesFragment);
 }
 
-WError WSpritesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint filter) {
+WError WSpritesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
 	if (filter & RENDER_FILTER_SPRITES) {
 		m_spritesFragment->Render(renderer, rt);
 	}
@@ -41,7 +41,7 @@ WError WSpritesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint 
 	return WError(W_SUCCEEDED);
 }
 
-WError WSpritesRenderStage::Resize(uint width, uint height) {
+WError WSpritesRenderStage::Resize(uint32_t width, uint32_t height) {
 	return WRenderStage::Resize(width, height);
 }
 

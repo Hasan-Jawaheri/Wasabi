@@ -10,13 +10,13 @@ WRenderTargetManager::~WRenderTargetManager() {
 
 }
 
-WRenderTarget* WRenderTargetManager::CreateRenderTarget(unsigned int ID) {
+WRenderTarget* WRenderTargetManager::CreateRenderTarget(uint32_t ID) {
 	WRenderTarget* rt = new WRenderTarget(m_app, ID);
 	rt->m_haveCommandBuffer = false;
 	return rt;
 }
 
-WRenderTarget* WRenderTargetManager::CreateImmediateRenderTarget(unsigned int ID) {
+WRenderTarget* WRenderTargetManager::CreateImmediateRenderTarget(uint32_t ID) {
 	WRenderTarget* rt = new WRenderTarget(m_app, ID);
 	rt->m_haveCommandBuffer = true;
 	return rt;
@@ -26,7 +26,7 @@ std::string WRenderTargetManager::GetTypeName(void) const {
 	return "RenderTarget";
 }
 
-WRenderTarget::WRenderTarget(Wasabi* const app, unsigned int ID) : WBase(app, ID) {
+WRenderTarget::WRenderTarget(Wasabi* const app, uint32_t ID) : WBase(app, ID) {
 	m_camera = m_app->CameraManager->GetDefaultCamera();
 	if (m_camera)
 		m_camera->AddReference();
@@ -70,11 +70,11 @@ void WRenderTarget::_DestroyResources() {
 	m_targets.clear();
 }
 
-WError WRenderTarget::Create(unsigned int width, unsigned int height, WImage* target, WImage* depth) {
+WError WRenderTarget::Create(uint32_t width, uint32_t height, WImage* target, WImage* depth) {
 	return Create(width, height, vector<WImage*>({ target }), depth);
 }
 
-WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<class WImage*> targets, WImage* depth) {
+WError WRenderTarget::Create(uint32_t width, uint32_t height, vector<class WImage*> targets, WImage* depth) {
 	if ((!targets.size() && (!depth || !depth->Valid())) || (depth && !depth->Valid()))
 		return WError(W_INVALIDPARAM);
 	for (auto it = targets.begin(); it != targets.end(); it++)
@@ -139,14 +139,14 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 	vector<VkAttachmentReference> colorReferences;
 	for (auto it = targets.begin(); it != targets.end(); it++) {
 		VkAttachmentReference attachmentRef = {};
-		attachmentRef.attachment = colorReferences.size();
+		attachmentRef.attachment = (uint32_t)colorReferences.size();
 		attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colorReferences.push_back(attachmentRef);
 	}
 
 	VkAttachmentReference depthReference = {};
 	if (depth) {
-		depthReference.attachment = targets.size();
+		depthReference.attachment = (uint32_t)targets.size();
 		depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 	}
 
@@ -155,7 +155,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 	subpass.flags = 0;
 	subpass.inputAttachmentCount = 0;
 	subpass.pInputAttachments = NULL;
-	subpass.colorAttachmentCount = colorReferences.size();
+	subpass.colorAttachmentCount = (uint32_t)colorReferences.size();
 	subpass.pColorAttachments = colorReferences.data();
 	subpass.pResolveAttachments = NULL;
 	subpass.pDepthStencilAttachment = depth ? &depthReference : NULL;
@@ -165,7 +165,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.pNext = NULL;
-	renderPassInfo.attachmentCount = attachmentDescs.size();
+	renderPassInfo.attachmentCount = (uint32_t)attachmentDescs.size();
 	renderPassInfo.pAttachments = attachmentDescs.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
@@ -187,7 +187,7 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 		colorImages.push_back((*it)->m_bufferedImage);
 	if (depth)
 		depthImage = depth->m_bufferedImage;
-	uint numBuffers = m_app->GetEngineParam<uint>("bufferingCount");
+	uint32_t numBuffers = m_app->GetEngineParam<uint32_t>("bufferingCount");
 	m_bufferedFrameBuffer.Create(m_app, numBuffers, width, height, m_renderPass, colorImages, depthImage);
 
 
@@ -203,17 +203,17 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, vector<cla
 	}
 
 	m_clearValues.resize(colorImages.size() + (depth ? 1 : 0));
-	for (unsigned int i = 0; i < colorImages.size(); i++) {
+	for (uint32_t i = 0; i < colorImages.size(); i++) {
 		SetClearColor(WColor(0.425f, 0.425f, 0.425f), i);
 	}
 	if (depth)
-		SetClearColor(WColor(1, 0, 0), colorImages.size());
+		SetClearColor(WColor(1, 0, 0), (uint32_t)colorImages.size());
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageView* views,
-							 unsigned int numViews, VkFormat colorFormat, VkFormat depthFormat) {
+WError WRenderTarget::Create(uint32_t width, uint32_t height, VkImageView* views,
+							 uint32_t numViews, VkFormat colorFormat, VkFormat depthFormat) {
 	_DestroyResources();
 
 	VkDevice device = m_app->GetVulkanDevice();
@@ -304,9 +304,9 @@ WError WRenderTarget::Create(unsigned int width, unsigned int height, VkImageVie
 	}
 
 	std::vector<VkImageView> swapchainViewsVector(numViews);
-	for (uint i = 0; i < numViews; i++)
+	for (uint32_t i = 0; i < numViews; i++)
 		swapchainViewsVector[i] = views[i];
-	uint numBuffers = m_app->GetEngineParam<uint>("bufferingCount");
+	uint32_t numBuffers = m_app->GetEngineParam<uint32_t>("bufferingCount");
 	m_bufferedFrameBuffer.CreateForSwapchain(m_app, numBuffers, width, height, m_renderPass, swapchainViewsVector, depthFormat);
 
 	m_width = width;
@@ -344,11 +344,11 @@ WError WRenderTarget::Begin() {
 	renderPassBeginInfo.renderArea.offset.y = 0;
 	renderPassBeginInfo.renderArea.extent.width = m_width;
 	renderPassBeginInfo.renderArea.extent.height = m_height;
-	renderPassBeginInfo.clearValueCount = m_clearValues.size();
+	renderPassBeginInfo.clearValueCount = (uint32_t)m_clearValues.size();
 	renderPassBeginInfo.pClearValues = m_clearValues.data();
 
 	// Set target frame buffer
-	uint bufferIndex = m_app->GetCurrentBufferingIndex();
+	uint32_t bufferIndex = m_app->GetCurrentBufferingIndex();
 	renderPassBeginInfo.framebuffer = m_bufferedFrameBuffer.GetFrameBuffer(bufferIndex);
 
 	vkCmdBeginRenderPass(GetCommnadBuffer(), &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -418,12 +418,12 @@ WError WRenderTarget::Submit(VkSubmitInfo custom_info) {
 	return WError(W_SUCCEEDED);
 }
 
-void WRenderTarget::SetClearColor(WColor col, unsigned int index) {
+void WRenderTarget::SetClearColor(WColor col, uint32_t index) {
 	if (index >= m_clearValues.size())
 		return;
 
 	if (HasDepthOutput() && index == m_clearValues.size() - 1)
-		m_clearValues[index].depthStencil = { col.r, (unsigned int)col.g };
+		m_clearValues[index].depthStencil = { col.r, (uint32_t)col.g };
 	else
 		m_clearValues[index].color = { { col.r, col.g, col.b, col.a } };
 }
@@ -451,7 +451,7 @@ VkCommandBuffer WRenderTarget::GetCommnadBuffer() const {
 }
 
 int WRenderTarget::GetNumColorOutputs() const {
-	return !Valid() ? 0 : (m_targets.size() == 0 ? 1 : m_targets.size());
+	return !Valid() ? 0 : (int)(m_targets.size() == 0 ? 1 : m_targets.size());
 }
 
 bool WRenderTarget::HasDepthOutput() const {

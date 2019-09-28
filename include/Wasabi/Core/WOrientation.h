@@ -14,7 +14,7 @@
 #include <type_traits>
 
 /** Type of an orientation change happening to a WOrientation */
-enum STATE_CHANGE_TYPE { CHANGE_MOTION = 1, CHANGE_ROTATION = 2 };
+enum STATE_CHANGE_TYPE: uint8_t { CHANGE_MOTION = 1, CHANGE_ROTATION = 2 };
 
 inline STATE_CHANGE_TYPE operator | (STATE_CHANGE_TYPE lhs, STATE_CHANGE_TYPE rhs) {
 	using T = std::underlying_type_t <STATE_CHANGE_TYPE>;

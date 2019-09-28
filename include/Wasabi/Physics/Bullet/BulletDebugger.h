@@ -19,7 +19,7 @@ public:
 	std::thread m_thread;
 
 	int m_debugMode;
-	uint m_maxLines;
+	uint32_t m_maxLines;
 
 	float fYaw, fPitch, fDist;
 	WVector3 vPos;
@@ -31,7 +31,7 @@ public:
 
 	void ApplyMousePivot();
 
-	BulletDebugger(WBulletPhysics* physics, uint maxLines, std::string appName);
+	BulletDebugger(WBulletPhysics* physics, uint32_t maxLines, std::string appName);
 
 	virtual WError Setup();
 	virtual bool Loop(float fDeltaTime);

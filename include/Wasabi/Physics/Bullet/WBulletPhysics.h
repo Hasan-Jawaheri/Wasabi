@@ -21,7 +21,7 @@ public:
 	virtual void Stop();
 	virtual void Step(float deltaTime);
 	virtual bool Stepping() const;
-	virtual class WRigidBody* CreateRigidBody(unsigned int ID = 0) const;
+	virtual class WRigidBody* CreateRigidBody(uint32_t ID = 0) const;
 	virtual bool RayCast(WVector3 from, WVector3 to, W_RAYCAST_OUTPUT* out = nullptr);
 
 	virtual void SetSpeed(float fSpeed);
