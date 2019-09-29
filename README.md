@@ -84,7 +84,7 @@ cmake ..
 ## Usage
 
 ```C++
-#include "Wasabi.h"
+#include "Wasabi/Wasabi.h"
 
 class MyApplication : public Wasabi {
 public:
