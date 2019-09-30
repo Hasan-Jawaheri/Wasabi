@@ -9,12 +9,6 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(WasabiHelpers)
 
-# Make sure python is installed
-find_package(Python3 COMPONENTS Interpreter)
-if (NOT Python3_FOUND)
-    message(FATAL_ERROR "Could not find python3!")
-endif()
-
 # Find the vulkan installation
 find_package(Vulkan)
 if (NOT Vulkan_FOUND)
@@ -97,7 +91,7 @@ if (FBXSDK_ROOT)
         add_executable(fbx_loader ${FBX_LOADER_SOURCES} ${FBX_LOADER_HEADERS})
     endif()
     target_include_directories(fbx_loader PRIVATE "include/FBXLoader")
-    target_link_libraries(fbx_loader wasabi)
+    link_target_to_wasabi(fbx_loader "${CMAKE_BINARY_DIR}/dist")
     target_link_libraries(fbx_loader optimized ${FBX_LIBRARIES_RELEASE})
     target_link_libraries(fbx_loader debug ${FBX_LIBRARIES_DEBUG})
     target_include_directories(fbx_loader PRIVATE ${FBX_INCLUDE_DIR})
@@ -109,9 +103,9 @@ if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0")
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
 
-    target_compile_options(wasabi PRIVATE /external:I${STB_DIR})
+    target_compile_options(standalone-wasabi PRIVATE /external:I${STB_DIR})
     target_compile_options(wasabi_test PRIVATE /external:I${STB_DIR})
-    target_compile_options(wasabi PRIVATE /external:I${BULLET_DIR}/src)
+    target_compile_options(standalone-wasabi PRIVATE /external:I${BULLET_DIR}/src)
     target_compile_options(wasabi_test PRIVATE /external:I${BULLET_DIR}/src)
 endif()
 
