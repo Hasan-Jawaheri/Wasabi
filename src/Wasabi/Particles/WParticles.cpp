@@ -53,7 +53,7 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // UVs
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
 		})};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/particles.vert.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -73,7 +73,7 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_GEOMETRY_SHADER;
 		m_desc.bound_resources = GetBoundResources();
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/particles.geom.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -89,7 +89,7 @@ public:
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "diffuseTexture"),
 		};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/particles.frag.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);

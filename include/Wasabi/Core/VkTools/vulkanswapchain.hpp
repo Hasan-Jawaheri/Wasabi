@@ -26,6 +26,7 @@
 #include <X11/Xlib.h>
 #endif
 
+#include "Wasabi/WCompatibility.h"
 #include <vulkan/vulkan.h>
 #include "Wasabi/Core/VkTools/vulkantools.h"
 
@@ -38,7 +39,7 @@ typedef uint32_t uint;
 // Macro to get a procedure address based on a vulkan instance
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
 {                                                                       \
-    fp##entrypoint = (PFN_vk##entrypoint) vkGetInstanceProcAddr(inst, "vk"#entrypoint); \
+    fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetInstanceProcAddr(inst, "vk"#entrypoint)); \
     if (fp##entrypoint == NULL)                                         \
 	{																    \
         exit(1);                                                        \
@@ -208,7 +209,7 @@ public:
 	}
 
 	// Create the swap chain and get images with given width and height
-	void create(VkCommandBuffer cmdBuffer, uint32_t *width, uint32_t *height, uint32_t numDesiredSwapchainImages = -1)
+	void create(VkCommandBuffer cmdBuffer, uint32_t *width, uint32_t *height, uint32_t numDesiredSwapchainImages = (uint32_t)-1)
 	{
 		VkResult err;
 		VkSwapchainKHR oldSwapchain = swapChain;

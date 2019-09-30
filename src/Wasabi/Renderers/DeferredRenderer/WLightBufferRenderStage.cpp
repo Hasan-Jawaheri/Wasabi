@@ -62,7 +62,7 @@ public:
 		m_desc.input_layouts = {W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
 		})};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/spotlight.vert.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -83,7 +83,7 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projInv"), // inverse of projection
 			}),
 		};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/spotlight.frag.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -114,7 +114,7 @@ public:
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
 		}) };
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/pointlight.vert.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -135,7 +135,7 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projInv"), // inverse of projection
 			}),
 		};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/pointlight.frag.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -165,7 +165,7 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projInv"), // inverse of projection
 			}),
 		};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/dirlight.frag.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);

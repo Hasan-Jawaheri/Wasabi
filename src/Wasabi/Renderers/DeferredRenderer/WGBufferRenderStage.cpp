@@ -10,7 +10,7 @@ WGBufferVS::WGBufferVS(Wasabi* const app) : WShader(app) {}
 
 void WGBufferVS::Load(bool bSaveData) {
 	m_desc = WGBufferVS::GetDesc();
-	vector<byte> code = {
+	vector<uint8_t> code {
 		#include "Shaders/gbuffer.vert.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -53,7 +53,7 @@ WGBufferPS::WGBufferPS(Wasabi* const app) : WShader(app) {}
 
 void WGBufferPS::Load(bool bSaveData) {
 	m_desc = WGBufferPS::GetDesc();
-	vector<byte> code = {
+	vector<uint8_t> code {
 		#include "Shaders/gbuffer.frag.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);

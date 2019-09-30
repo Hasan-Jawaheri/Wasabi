@@ -15,7 +15,7 @@ WError LightsDemo::SetupRenderer() {
 }
 
 void LightsDemo::Load() {
-	srand(3);
+	std::srand(3);
 
 	// Create the plain
 	m_plain = m_app->ObjectManager->CreateObject();

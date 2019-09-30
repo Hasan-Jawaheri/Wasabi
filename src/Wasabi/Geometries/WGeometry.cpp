@@ -33,7 +33,7 @@ static void ConvertVertices(void* vbFrom, void* vbTo, uint32_t numVerts, W_VERTE
 }
 
 size_t W_VERTEX_DESCRIPTION::GetSize() const {
-	if (_size == -1) {
+	if (_size == (size_t)-1) {
 		_size = 0;
 		for (int i = 0; i < attributes.size(); i++)
 			_size += 4 * attributes[i].numComponents;
@@ -1277,13 +1277,13 @@ WError WGeometry::Draw(WRenderTarget* rt, uint32_t numIndices, uint32_t numInsta
 	vkCmdBindVertexBuffers(renderCmdBuffer, 0, bind_animation ? 2 : 1, bindings, offsets);
 
 	if (m_indices.Valid()) {
-		if (numIndices == -1 || numIndices > m_numIndices)
+		if (numIndices == (uint32_t)-1 || numIndices > m_numIndices)
 			numIndices = m_numIndices;
 		// Bind triangle indices & draw the indexed triangle
 		vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.GetBuffer(m_app, bufferIndex), 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed(renderCmdBuffer, numIndices, numInstances, 0, 0, 0);
 	} else {
-		if (numIndices == -1 || numIndices > m_numVertices)
+		if (numIndices == (uint32_t)-1 || numIndices > m_numVertices)
 			numIndices = m_numVertices;
 		// render the vertices without indices
 		vkCmdDraw(renderCmdBuffer, numIndices, numInstances, 0, 0);

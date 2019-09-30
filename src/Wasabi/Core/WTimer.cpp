@@ -1,4 +1,5 @@
 #include "Wasabi/Core/WTimer.h"
+#include <cstdlib>
 #ifdef _WIN32
 #include <Windows.h>
 #include <time.h>
@@ -17,7 +18,7 @@ W_TIMER_TYPE _GetCurrentTime() {
 
 void WInitializeTimers() {
 	//randomize timers
-	srand((uint32_t)_GetCurrentTime());
+	std::srand((uint32_t)_GetCurrentTime());
 }
 void WUnInitializeTimers() {
 }

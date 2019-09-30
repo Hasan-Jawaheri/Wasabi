@@ -43,7 +43,7 @@ std::string WAnimation::GetTypeName() const {
 }
 
 void WAnimation::m_UpdateFirstFrame(uint32_t subAnimation) {
-	if (subAnimation == -1) {
+	if (subAnimation == (uint32_t)-1) {
 		for (int i = 0; i < m_subAnimations.size(); i++) {
 			float fStartTime = ((W_SUB_ANIMATION*)m_subAnimations[i])->fPlayStartTime;
 			float fCurTime = 0.0f;
@@ -134,7 +134,7 @@ WError WAnimation::SetKeyFrameTime(uint32_t frame, float fTime) {
 void WAnimation::SetPlaySpeed(float fSpeedMultiplier, uint32_t subAnimation) {
 	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
 		return;
-	if (subAnimation == -1)
+	if (subAnimation == (uint32_t)-1)
 		for (uint32_t i = 0; i < m_subAnimations.size(); i++)
 			((W_SUB_ANIMATION*)m_subAnimations[i])->fSpeed = fSpeedMultiplier;
 	else
@@ -150,7 +150,7 @@ void WAnimation::SetCurrentFrame(uint32_t frame, uint32_t subAnimation) {
 	float fTotalTime = 0.0f;
 	for (uint32_t i = 0; i < m_frames.size(); i++) {
 		if (frame == i) {
-			if (subAnimation == -1) {
+			if (subAnimation == (uint32_t)-1) {
 				for (uint32_t n = 0; n < m_subAnimations.size(); n++) {
 					((W_SUB_ANIMATION*)m_subAnimations[n])->fCurrentTime = fTotalTime;
 					((W_SUB_ANIMATION*)m_subAnimations[n])->curFrame = i;
@@ -173,7 +173,7 @@ void WAnimation::SetCurrentTime(float fTime, uint32_t subAnimation) {
 	for (uint32_t i = 0; i < m_frames.size(); i++) {
 		fTotalTime += ((W_FRAME*)(m_frames[i]))->fTime;
 		if (fTime < fTotalTime) {
-			if (subAnimation == -1) {
+			if (subAnimation == (uint32_t)-1) {
 				for (uint32_t n = 0; n < m_subAnimations.size(); n++) {
 					((W_SUB_ANIMATION*)m_subAnimations[n])->fCurrentTime = fTime;
 					((W_SUB_ANIMATION*)m_subAnimations[n])->curFrame = i;
@@ -198,7 +198,7 @@ void WAnimation::SetPlayingBounds(uint32_t startFrame, uint32_t endFrame, uint32
 	float fTotalTime = 0.0f;
 	for (uint32_t i = 0; i < m_frames.size(); i++) {
 		if (startFrame == i) {
-			if (subAnimation == -1)
+			if (subAnimation == (uint32_t)-1)
 				for (uint32_t n = 0; n < m_subAnimations.size(); n++)
 					((W_SUB_ANIMATION*)m_subAnimations[n])->fPlayStartTime = fTotalTime;
 			else
@@ -208,7 +208,7 @@ void WAnimation::SetPlayingBounds(uint32_t startFrame, uint32_t endFrame, uint32
 		fTotalTime += ((W_FRAME*)(m_frames[i]))->fTime;
 
 		if (endFrame == i) {
-			if (subAnimation == -1)
+			if (subAnimation == (uint32_t)-1)
 				for (uint32_t n = 0; n < m_subAnimations.size(); n++)
 					((W_SUB_ANIMATION*)m_subAnimations[n])->fPlayEndTime = fTotalTime;
 			else
@@ -225,7 +225,7 @@ void WAnimation::SetPlayingBounds_Time(float fStartTime, float fEndTime, uint32_
 	if (fStartTime >= fEndTime)
 		return;
 
-	if (subAnimation == -1) {
+	if (subAnimation == (uint32_t)-1) {
 		for (uint32_t n = 0; n < m_subAnimations.size(); n++) {
 			((W_SUB_ANIMATION*)m_subAnimations[n])->fPlayStartTime = fStartTime;
 			((W_SUB_ANIMATION*)m_subAnimations[n])->fPlayEndTime = fEndTime;
@@ -242,7 +242,7 @@ void WAnimation::Play(uint32_t subAnimation) {
 	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
 		return;
 
-	if (subAnimation == -1) {
+	if (subAnimation == (uint32_t)-1) {
 		for (uint32_t n = 0; n < m_subAnimations.size(); n++) {
 			((W_SUB_ANIMATION*)m_subAnimations[n])->bPlaying = true;
 			((W_SUB_ANIMATION*)m_subAnimations[n])->bLoop = false;
@@ -257,7 +257,7 @@ void WAnimation::Loop(uint32_t subAnimation) {
 	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
 		return;
 
-	if (subAnimation == -1) {
+	if (subAnimation == (uint32_t)-1) {
 		for (uint32_t n = 0; n < m_subAnimations.size(); n++) {
 			((W_SUB_ANIMATION*)m_subAnimations[n])->bPlaying = true;
 			((W_SUB_ANIMATION*)m_subAnimations[n])->bLoop = true;
@@ -272,7 +272,7 @@ void WAnimation::Stop(uint32_t subAnimation) {
 	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
 		return;
 
-	if (subAnimation == -1) {
+	if (subAnimation == (uint32_t)-1) {
 		for (uint32_t n = 0; n < m_subAnimations.size(); n++) {
 			((W_SUB_ANIMATION*)m_subAnimations[n])->bPlaying = false;
 			((W_SUB_ANIMATION*)m_subAnimations[n])->bLoop = false;
@@ -287,7 +287,7 @@ void WAnimation::Reset(uint32_t subAnimation) {
 	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
 		return;
 
-	if (subAnimation == -1) {
+	if (subAnimation == (uint32_t)-1) {
 		for (uint32_t n = 0; n < m_subAnimations.size(); n++) {
 			((W_SUB_ANIMATION*)m_subAnimations[n])->fCurrentTime = ((W_SUB_ANIMATION*)m_subAnimations[n])->fPlayStartTime;
 			((W_SUB_ANIMATION*)m_subAnimations[n])->curFrame = ((W_SUB_ANIMATION*)m_subAnimations[n])->firstFrame;
@@ -302,7 +302,7 @@ bool WAnimation::Playing(uint32_t subAnimation) const {
 	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
 		return false;
 
-	if (subAnimation == -1) {
+	if (subAnimation == (uint32_t)-1) {
 		bool bPlaying = true;
 		for (uint32_t n = 0; n < m_subAnimations.size(); n++)
 			if (!((W_SUB_ANIMATION*)m_subAnimations[n])->bPlaying)
@@ -317,7 +317,7 @@ bool WAnimation::Looping(uint32_t subAnimation) const {
 	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
 		return false;
 
-	if (subAnimation == -1) {
+	if (subAnimation == (uint32_t)-1) {
 		bool bLooping = true;
 		for (uint32_t n = 0; n < m_subAnimations.size(); n++)
 			if (!((W_SUB_ANIMATION*)m_subAnimations[n])->bLoop)
