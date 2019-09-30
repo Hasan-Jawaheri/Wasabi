@@ -82,9 +82,6 @@ add_dependencies(wasabi_test build-dist)
 target_include_directories(wasabi_test PRIVATE "include/WasabiTest")
 link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")
 set_property(TARGET wasabi_test PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-if (MACOSX)
-    target_link_libraries(wasabi_test "-framework Cocoa" "-framework CoreAudio" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo" "-framework AudioUnit")
-endif()
 
 # FBX Loader
 if (FBXSDK_ROOT)
