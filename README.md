@@ -52,34 +52,19 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Assimp integration (and getting rid of FBX SDK!)
 
 # Building
-## Vulkan Requirements
-- Install the Vulkan driver for your graphics card
-    - nVidia graphics card: https://developer.nvidia.com/vulkan-driver
-    - Intel graphics card: https://software.intel.com/en-us/blogs/2016/03/14/new-intel-vulkan-beta-1540204404-graphics-driver-for-windows-78110-1540
-    - AMD graphics card: (???)
-- Install LunarG Vulkan SDK (https://lunarg.com/vulkan-sdk/)
+## Requirements
+- Install LunarG Vulkan SDK (https://lunarg.com/vulkan-sdk/). You may also need to install vendor/gpu specific driver for Vulkan (or maybe that's not a thing anymore...)
+- Install `cmake` 3.15.
+- (Windows) Visual Studio (make sure to add the feature `Visual C++ tools for CMake` during installation)
+- (MacOS) XCode
 
-## Windows
-- Install CMake (make sure to select the option to add it to `PATH`)
-- Install Visual Studio (make sure to add the feature `Visual C++ tools for CMake`)
-- (Optional) Install [FBX SDK](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2019-0). If you do, add this flag to `cmake`: `-DFBXSDK_ROOT="C:/Program Files/Autodesk/FBX/FBX SDK/2019.0"` (use your installation path)
-- Run cmake
+To build the repository, run:
 ```bash
 mkdir build && cd build
 cmake ..
 ```
-- Open `build/Wasabi.sln` in Visual Studio and build/run the code
 
-## Linux
-- Install dependencies
-```bash
-sudo apt-get install cmake g++-multilib libopenal-dev libx11-xcb-dev
-```
-- Run cmake:
-```bash
-mkdir build && cd build
-cmake ..
-```
+This will automatically initialize and update submodule dependencies. On Windows, this will generate a solution `build/Wasabi.sln`, which you can open to use Visual Studio on the source code to edit/compile.
 
 ## Usage
 
@@ -133,8 +118,8 @@ WIP
 
 ## Gallery
 
-<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/particles.png" /> 
-<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/ssao.png" /> 
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/particles.png" />
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/ssao.png" />
 
 ## Contact
 
@@ -149,4 +134,3 @@ Please let me know about any issues, dead links, suggestions or any comments. My
 ## License
 
 GNU Public license, feel free to go wild with this.
-
