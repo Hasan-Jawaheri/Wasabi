@@ -53,8 +53,9 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 
 # Building
 ### Requirements
-- Install LunarG Vulkan SDK (https://lunarg.com/vulkan-sdk/). You may also need to install vendor/gpu specific driver for Vulkan (or maybe that's not a thing anymore...)
+- [Vulkan SDK](https://lunarg.com/vulkan-sdk/). You may also need to install vendor/gpu specific driver for Vulkan (or maybe that's not a thing anymore...)
 - Install `cmake` 3.15.
+- Install python3.
 - (Windows) Visual Studio (make sure to add the feature `Visual C++ tools for CMake` during installation)
 - (MacOS) XCode
 
