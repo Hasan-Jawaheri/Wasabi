@@ -52,13 +52,13 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Assimp integration (and getting rid of FBX SDK!)
 
 # Building
-## Requirements
+### Requirements
 - Install LunarG Vulkan SDK (https://lunarg.com/vulkan-sdk/). You may also need to install vendor/gpu specific driver for Vulkan (or maybe that's not a thing anymore...)
 - Install `cmake` 3.15.
 - (Windows) Visual Studio (make sure to add the feature `Visual C++ tools for CMake` during installation)
 - (MacOS) XCode
 
-To build the repository, run:
+### Building Wasabi
 ```bash
 mkdir build && cd build
 cmake ..
@@ -66,9 +66,9 @@ cmake ..
 
 This will automatically initialize and update submodule dependencies. On Windows, this will generate a solution `build/Wasabi.sln`, which you can open to use Visual Studio on the source code to edit/compile.
 
-## Usage
+# Usage
 
-To link to Wasabi, you will need to link your application to Vulkan and to the wasabi library. On mac, you will need to add the following frameworks as well: Cocoa, CoreAudio, IOKit, CoreFoundation, CoreVideo, AudioUnit. You may use the CMake helper in `CMake/LinkToWasabi.cmake` (e.g. `link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")` in your cmake file).
+To link an application to Wasabi, you will need to link to Vulkan and to the wasabi library `libwasabi.a` (or `wasabi.lib` on Windows). On mac, you will need to add the following frameworks as well: Cocoa, CoreAudio, IOKit, CoreFoundation, CoreVideo, AudioUnit. You may use the CMake helper in `CMake/LinkToWasabi.cmake` (e.g. `link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")` in your cmake file) to automatically link to the engine.
 
 ```C++
 #include "Wasabi/Wasabi.h"
