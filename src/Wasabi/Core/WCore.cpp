@@ -111,9 +111,8 @@ int RunWasabi(Wasabi* app) {
 				} else
 					deltaTime = fmax(deltaTime, 1.0f / maxFPSReached); // dont let deltaTime be 0
 			}
-
-			app->Cleanup();
 		}
+		app->Cleanup();
 	}
 
 	return 0;
@@ -151,7 +150,7 @@ Wasabi::Wasabi() : Timer(W_TIMER_SECONDS, true) {
 		{ "enableVulkanValidation", (void*)(true) }, // bool
 	};
 	m_swapChainInitialized = false;
-	
+
 	MemoryManager = nullptr;
 	SoundComponent = nullptr;
 	WindowAndInputComponent = nullptr;
@@ -336,10 +335,8 @@ WError Wasabi::StartEngine(int width, int height) {
 	uint32_t gpuCount = 0;
 	// Get number of available physical devices
 	VkResult err = vkEnumeratePhysicalDevices(m_vkInstance, &gpuCount, nullptr);
-	if (err != VK_SUCCESS || gpuCount == 0) {
-		_DestroyResources();
+	if (err != VK_SUCCESS || gpuCount == 0)
 		return WError(W_FAILEDTOLISTDEVICES);
-	}
 
 	// Enumerate devices
 	std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
