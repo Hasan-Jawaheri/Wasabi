@@ -15,7 +15,7 @@ void WBackfaceDepthRenderStageObjectPS::Load(bool bSaveData) {
 	m_desc.bound_resources = {
 		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture", {}, 8),
 	};
-	vector<byte> code = {
+	vector<uint8_t> code {
 		#include "Shaders/depth.frag.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);

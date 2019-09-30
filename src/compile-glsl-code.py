@@ -2,7 +2,12 @@ import os, sys
 import traceback
 from subprocess import Popen, PIPE
 
-VULKAN_SDK = os.environ['VULKAN_SDK']
+if len(sys.argv) != 2:
+	print("Usage: {} <VULKAN_SDK_PATH>".format(sys.argv[0]))
+	exit(1)
+
+VULKAN_SDK = sys.argv[1]
+GLSLANG_VALIDATOR_PATH = "{}/Bin/glslangValidator".format(VULKAN_SDK)
 
 def formatCode(code):
 	return ", ".join(list(map(lambda c: hex(c), code))).encode('utf-8')
@@ -13,8 +18,8 @@ def compileShader(filename):
 		tmp_output_file = filename + ".tmp.spv"
 		real_output_file = filename + ".spv"
 		entry_point = "main"
-		command = ["%s/Bin/glslangValidator" % (VULKAN_SDK), "-V", "--entry-point", entry_point, filename, "-o", tmp_output_file]
-		print (command)
+		command = [GLSLANG_VALIDATOR_PATH, "-V", "--entry-point", entry_point, filename, "-o", tmp_output_file]
+		print(command)
 		p = Popen(command, stdout=PIPE, stderr=PIPE)
 		out = p.stdout.read().decode('utf-8').replace('\r', '')
 		err = p.stderr.read().decode('utf-8').replace('\r', '')
@@ -40,9 +45,17 @@ def compileShader(filename):
 		print(traceback.format_exc())
 		return 1
 
+if not os.path.isdir(VULKAN_SDK):
+	print("INVALID VULKAN_SDK environment variable (VULKAN_SDK: {})".format(VULKAN_SDK))
+	exit(1)
+
+if not os.path.isfile(GLSLANG_VALIDATOR_PATH):
+	print("CANNOT FIND glslangValidator executable (path: {})".format(GLSLANG_VALIDATOR_PATH))
+	exit(1)
+
 ret = 0
 for root, dirs, files in os.walk("./"):
     for file in files:
         if file.endswith(".vert.glsl") or file.endswith(".geom.glsl") or file.endswith(".frag.glsl") or file.endswith(".tesc.glsl") or file.endswith(".tese.glsl") or file.endswith(".comp.glsl"):
              ret += compileShader(os.path.join(root, file))
-sys.exit(ret)
+exit(0)

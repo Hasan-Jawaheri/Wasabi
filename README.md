@@ -83,8 +83,10 @@ cmake ..
 
 ## Usage
 
+To link to Wasabi, you will need to link your application to Vulkan and to the wasabi library. On mac, you will need to add the following frameworks as well: Cocoa, CoreAudio, IOKit, CoreFoundation, CoreVideo, AudioUnit. You may use the CMake helper in `CMake/LinkToWasabi.cmake` (e.g. `link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")` in your cmake file).
+
 ```C++
-#include "Wasabi.h"
+#include "Wasabi/Wasabi.h"
 
 class MyApplication : public Wasabi {
 public:

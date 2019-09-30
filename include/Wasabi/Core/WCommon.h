@@ -10,8 +10,9 @@
 #endif
 #endif
 
+#include "Wasabi/WCompatibility.h"
+
 #include <vulkan/vulkan.h>
-#pragma comment (lib, "vulkan-1.lib")
 #include "Wasabi/Core/VkTools/vulkanswapchain.hpp"
 #include "Wasabi/Core/VkTools/vulkantools.h"
 

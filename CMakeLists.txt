@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.15)
 
 project(Wasabi)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(WasabiHelpers)
@@ -13,9 +16,8 @@ if (NOT Vulkan_FOUND)
 else()
 	message(STATUS "Vulkan library: " ${Vulkan_LIBRARY})
 	message(STATUS "Vulkan include: " ${Vulkan_INCLUDE_DIRS})
+    set(VULKAN_SDK_PATH ${Vulkan_INCLUDE_DIRS}/..)
 endif()
-link_libraries(${Vulkan_LIBRARY})
-include_directories(SYSTEM ${Vulkan_INCLUDE_DIRS})
 #####################################
 
 set(DEPENDENCIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
@@ -24,6 +26,7 @@ build_open_al("OPENAL_DIR" "${DEPENDENCIES_DIR}")
 build_bullet("BULLET_DIR" "${DEPENDENCIES_DIR}")
 build_glfw("GLFW_DIR" "${DEPENDENCIES_DIR}")
 build_stb("STB_DIR" "${DEPENDENCIES_DIR}")
+build_glsl(glsl-code ${VULKAN_SDK_PATH})
 
 ############# FBX SDK ###############
 if (NOT FBXSDK_ROOT)
@@ -50,41 +53,22 @@ include_directories("include/")
 
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${LIB_HEADERS})
-add_compile_definitions(COMPILING_WASABI)
-add_library(wasabi STATIC ${LIB_SOURCES} ${LIB_HEADERS})
-target_include_directories(wasabi PRIVATE SYSTEM "${OPENAL_DIR}/include/")
-target_include_directories(wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/")
-target_include_directories(wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
-target_include_directories(wasabi PRIVATE SYSTEM "${STB_DIR}/")
-target_link_libraries(wasabi common ex-common OpenAL)
-target_link_libraries(wasabi glfw)
-target_link_libraries(wasabi Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
-add_custom_command(TARGET wasabi PRE_BUILD
-    COMMAND cd ${CMAKE_SOURCE_DIR}/src/ && python compile-glsl-code.py
-)
+add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${LIB_HEADERS})
+target_compile_definitions(standalone-wasabi PRIVATE COMPILING_WASABI)
+target_include_directories(standalone-wasabi PRIVATE SYSTEM ${Vulkan_INCLUDE_DIRS})
+target_include_directories(standalone-wasabi PRIVATE SYSTEM "${OPENAL_DIR}/include/")
+target_include_directories(standalone-wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/")
+target_include_directories(standalone-wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
+target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
+target_link_libraries(standalone-wasabi ${Vulkan_LIBRARY})
+target_link_libraries(standalone-wasabi common ex-common OpenAL)
+target_link_libraries(standalone-wasabi glfw)
+target_link_libraries(standalone-wasabi Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
 
 # Bundle the libraries together
-if (MSVC)
-    set(MSVC_LIBTOOL "${CMAKE_CXX_COMPILER}/../lib.exe")
-    add_custom_command(TARGET wasabi PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE:wasabi>
-    )
-    add_custom_command(TARGET wasabi POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E rename $<TARGET_FILE:wasabi> $<TARGET_FILE_DIR:wasabi>/wasabi-standalone.lib
-    )
-    add_custom_command(TARGET wasabi POST_BUILD
-        COMMAND ${MSVC_LIBTOOL} "/OUT:$<TARGET_FILE:wasabi>" $<TARGET_FILE_DIR:wasabi>/wasabi-standalone.lib $<TARGET_FILE:glfw> $<TARGET_FILE:OpenAL> $<TARGET_FILE:Bullet3Collision> $<TARGET_FILE:Bullet3Common> $<TARGET_FILE:Bullet3Dynamics> $<TARGET_FILE:Bullet3Geometry> $<TARGET_FILE:BulletCollision> $<TARGET_FILE:BulletDynamics> $<TARGET_FILE:LinearMath>
-    )
-else()
-endif()
-
-# Create the dist/ folder in the build/
-add_custom_command(TARGET wasabi POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/include/Wasabi/" "${CMAKE_CURRENT_BINARY_DIR}/dist/include/Wasabi/"
-)
-add_custom_command(TARGET wasabi POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:wasabi> "$<$<CONFIG:Debug>:${CMAKE_CURRENT_BINARY_DIR}/dist/lib/debug/$<TARGET_FILE_NAME:wasabi>>$<$<CONFIG:Release>:${CMAKE_CURRENT_BINARY_DIR}/dist/lib/release/$<TARGET_FILE_NAME:wasabi>>"
-)
+bundle_static_library(standalone-wasabi wasabi)
+# Build the dist folder
+build_dist(build-dist wasabi)
 
 # Wasabi test application(s)
 assign_source_group(${TEST_SOURCES} ${TEST_HEADERS})
@@ -93,9 +77,13 @@ if (WIN32)
 else()
     add_executable(wasabi_test ${TEST_SOURCES} ${TEST_HEADERS})
 endif()
+add_dependencies(wasabi_test build-dist)
 target_include_directories(wasabi_test PRIVATE "include/WasabiTest")
-target_link_libraries(wasabi_test wasabi)
+link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")
 set_property(TARGET wasabi_test PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+if (MACOSX)
+    target_link_libraries(wasabi_test "-framework Cocoa" "-framework CoreAudio" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo" "-framework AudioUnit")
+endif()
 
 # FBX Loader
 if (FBXSDK_ROOT)
@@ -122,4 +110,12 @@ if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
     target_compile_options(wasabi_test PRIVATE /external:I${STB_DIR})
     target_compile_options(wasabi PRIVATE /external:I${BULLET_DIR}/src)
     target_compile_options(wasabi_test PRIVATE /external:I${BULLET_DIR}/src)
+endif()
+
+# ignore "object has no symbol" linker errors
+if (MACOSX)
+    set(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
 endif()

@@ -31,7 +31,7 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"), // view
 			}),
 		};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/lines.vert.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -44,7 +44,7 @@ public:
 
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/lines.frag.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);

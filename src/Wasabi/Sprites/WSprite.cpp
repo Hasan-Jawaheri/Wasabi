@@ -36,7 +36,7 @@ void WSpriteVS::Load(bool bSaveData) {
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // position
 		W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
 	}) };
-	vector<byte> code = {
+	vector<uint8_t> code {
 		#include "Shaders/sprite.vert.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -51,7 +51,7 @@ void WSpritePS::Load(bool bSaveData) {
 		}),
 		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "diffuseTexture"),
 	};
-	vector<byte> code = {
+	vector<uint8_t> code {
 		#include "Shaders/sprite.frag.glsl.spv"
 	};
 	LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);

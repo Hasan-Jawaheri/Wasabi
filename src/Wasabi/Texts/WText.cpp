@@ -43,7 +43,7 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
 		})};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/text.vert.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
@@ -59,7 +59,7 @@ public:
 		m_desc.bound_resources = {
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 0, "textureFont"),
 		};
-		vector<byte> code = {
+		vector<uint8_t> code {
 			#include "Shaders/text.frag.glsl.spv"
 		};
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);

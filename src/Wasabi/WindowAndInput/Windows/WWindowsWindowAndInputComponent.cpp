@@ -5,6 +5,8 @@
  *  @bug No known bugs.
  */
 
+#ifdef _WIN32
+
 #include "Wasabi/WindowAndInput/Windows/WWindowsWindowAndInputComponent.h"
 #include <windows.h>
 
@@ -594,3 +596,5 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint32_t msg, WPARAM wParam, LPARAM lPa
 
 	return result;
 }
+
+#endif // ifdef _WIN32
