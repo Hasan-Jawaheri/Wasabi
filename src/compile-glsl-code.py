@@ -7,7 +7,17 @@ if len(sys.argv) != 2:
 	exit(1)
 
 VULKAN_SDK = sys.argv[1]
+
+if not os.path.isdir(VULKAN_SDK):
+	print("INVALID VULKAN_SDK environment variable (VULKAN_SDK: {})".format(VULKAN_SDK))
+	exit(1)
+
 GLSLANG_VALIDATOR_PATH = "{}/Bin/glslangValidator".format(VULKAN_SDK)
+if not os.path.isfile(GLSLANG_VALIDATOR_PATH):
+	GLSLANG_VALIDATOR_PATH = "{}/bin/glslangValidator".format(VULKAN_SDK)
+	if not os.path.isfile(GLSLANG_VALIDATOR_PATH):
+		print("CANNOT FIND glslangValidator executable (path: {})".format(GLSLANG_VALIDATOR_PATH))
+		exit(1)
 
 def formatCode(code):
 	return ", ".join(list(map(lambda c: hex(c), code))).encode('utf-8')
@@ -44,14 +54,6 @@ def compileShader(filename):
 	except:
 		print(traceback.format_exc())
 		return 1
-
-if not os.path.isdir(VULKAN_SDK):
-	print("INVALID VULKAN_SDK environment variable (VULKAN_SDK: {})".format(VULKAN_SDK))
-	exit(1)
-
-if not os.path.isfile(GLSLANG_VALIDATOR_PATH):
-	print("CANNOT FIND glslangValidator executable (path: {})".format(GLSLANG_VALIDATOR_PATH))
-	exit(1)
 
 ret = 0
 for root, dirs, files in os.walk("./"):

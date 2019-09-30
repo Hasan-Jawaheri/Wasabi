@@ -54,6 +54,7 @@ include_directories("include/")
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${LIB_HEADERS})
 add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${LIB_HEADERS})
+add_dependencies(standalone-wasabi glsl-code)
 target_compile_definitions(standalone-wasabi PRIVATE COMPILING_WASABI)
 target_include_directories(standalone-wasabi PRIVATE SYSTEM ${Vulkan_INCLUDE_DIRS})
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${OPENAL_DIR}/include/")
@@ -105,7 +106,7 @@ endif()
 if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0")
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
-    
+
     target_compile_options(wasabi PRIVATE /external:I${STB_DIR})
     target_compile_options(wasabi_test PRIVATE /external:I${STB_DIR})
     target_compile_options(wasabi PRIVATE /external:I${BULLET_DIR}/src)
