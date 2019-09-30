@@ -121,15 +121,10 @@ WIP
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/particles.png" />
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/ssao.png" />
 
-## Contact
-
-Please let me know about any issues, dead links, suggestions or any comments. My email is hasan.aljawaheri [at] gmail [dot] com
-
 ## Acknowledgments
 
-* [stb](https://github.com/nothings/stb) library which Wasabi uses for font rendering.
 * [Abdulrahman Fayad](https://github.com/aboudfayad)
-* [GLFW](https://github.com/glfw/glfw)
+* All the authors and contributors to the great open source libraries <3
 
 ## License
 
