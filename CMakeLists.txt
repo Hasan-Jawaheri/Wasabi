@@ -9,7 +9,13 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(WasabiHelpers)
 
-############# Vulkan ###############
+# Make sure python is installed
+find_package(Python3 COMPONENTS Interpreter)
+if (NOT Python3_FOUND)
+    message(FATAL_ERROR "Could not find python3!")
+endif()
+
+# Find the vulkan installation
 find_package(Vulkan)
 if (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Could not find Vulkan library!")
@@ -18,7 +24,6 @@ else()
 	message(STATUS "Vulkan include: " ${Vulkan_INCLUDE_DIRS})
     set(VULKAN_SDK_PATH ${Vulkan_INCLUDE_DIRS}/..)
 endif()
-#####################################
 
 set(DEPENDENCIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
 initialize_submodules()
