@@ -26,8 +26,6 @@
 #include "Wasabi/Particles/WParticles.h"
 #include "Wasabi/Terrains/WTerrain.h"
 
-#pragma comment(lib, "Wasabi.lib")
-
 /**
  * This function is not defined by the library. It must be defined by the user.
  * This function will be called at the beginning of the program, and will
