@@ -43,6 +43,7 @@ endif()
 
 # Source files
 file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp")
+file(GLOB_RECURSE LIB_GLSL "src/Wasabi/*.glsl")
 file(GLOB_RECURSE LIB_HEADERS "include/Wasabi/*")
 file(GLOB_RECURSE TEST_SOURCES "src/WasabiTest/*.cpp")
 file(GLOB_RECURSE TEST_HEADERS "include/WasabiTest/*")
@@ -52,8 +53,8 @@ file(GLOB_RECURSE FBX_LOADER_HEADERS "include/FBXLoader/*")
 include_directories("include/")
 
 # Wasabi library
-assign_source_group(${LIB_SOURCES} ${LIB_HEADERS})
-add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${LIB_HEADERS})
+assign_source_group(${LIB_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
+add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
 add_dependencies(standalone-wasabi glsl-code)
 target_compile_definitions(standalone-wasabi PRIVATE COMPILING_WASABI)
 target_include_directories(standalone-wasabi PRIVATE SYSTEM ${Vulkan_INCLUDE_DIRS})
