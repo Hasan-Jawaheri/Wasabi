@@ -103,7 +103,7 @@ WVulkanMemoryManager::WVulkanMemoryManager() {
 }
 
 WVulkanMemoryManager::~WVulkanMemoryManager() {
-	ReleaseCommandBuffer(m_copyCommandBuffer, 0);
+	vkFreeCommandBuffers(m_device, m_cmdPool, 1, &m_copyCommandBuffer); // this is independent of the multi-buffer system
 	ReleaseAllResources();
 
 	if (m_cmdPool)
