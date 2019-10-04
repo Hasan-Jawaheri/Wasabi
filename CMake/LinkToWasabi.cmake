@@ -9,8 +9,8 @@ function (link_target_to_wasabi target_name wasabi_path)
     # link to wasabi
     target_include_directories(${target_name} PRIVATE ${wasabi_path}/include)
     if (MSVC)
-        target_link_libraries(${target_name} debug ${wasabi_path}/lib/Debug/libwasabi.a)
-        target_link_libraries(${target_name} optimized ${wasabi_path}/lib/Release/libwasabi.a)
+        target_link_libraries(${target_name} debug ${wasabi_path}/lib/Debug/wasabi.lib)
+        target_link_libraries(${target_name} optimized ${wasabi_path}/lib/Release/wasabi.lib)
     else()
         target_link_libraries(${target_name} ${wasabi_path}/lib/libwasabi.a)
     endif()
@@ -21,6 +21,8 @@ function (link_target_to_wasabi target_name wasabi_path)
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
         # set Linux dependencies
         target_link_libraries(${target_name} -lpthread -lX11 -ldl)
+    elseif(MSVC)
+        target_link_libraries(${target_name} "winmm.lib")
     endif()
 
     # link to vulkan
