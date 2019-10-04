@@ -8,7 +8,8 @@ function(build_glsl TARGET_NAME VULKAN_SDK_PATH)
     endif()
 
     add_custom_target(${TARGET_NAME}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/
-        COMMAND ${Python3_EXECUTABLE} compile-glsl-code.py ${VULKAN_SDK_PATH}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/compile-glsl-code.py ${VULKAN_SDK_PATH} ${CMAKE_SOURCE_DIR}/src/
+        VERBATIM
     )
 endfunction()
