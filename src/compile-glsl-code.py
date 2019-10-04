@@ -12,12 +12,21 @@ if not os.path.isdir(VULKAN_SDK):
 	print("INVALID VULKAN_SDK environment variable (VULKAN_SDK: {})".format(VULKAN_SDK))
 	exit(1)
 
-GLSLANG_VALIDATOR_PATH = "{}/Bin/glslangValidator".format(VULKAN_SDK)
-if not os.path.isfile(GLSLANG_VALIDATOR_PATH):
-	GLSLANG_VALIDATOR_PATH = "{}/bin/glslangValidator".format(VULKAN_SDK)
-	if not os.path.isfile(GLSLANG_VALIDATOR_PATH):
-		print("CANNOT FIND glslangValidator executable (path: {})".format(GLSLANG_VALIDATOR_PATH))
-		exit(1)
+GLSLANG_VALIDATOR_PATHS = [
+	"{}/Bin/glslangValidator".format(VULKAN_SDK),
+	"{}/Bin/glslangValidator.exe".format(VULKAN_SDK),
+	"{}/bin/glslangValidator".format(VULKAN_SDK),
+	"{}/bin/glslangValidator.exe".format(VULKAN_SDK)
+]
+
+GLSLANG_VALIDATOR_PATH = None
+for validatorPath in GLSLANG_VALIDATOR_PATHS:
+	if os.path.isfile(validatorPath):
+		GLSLANG_VALIDATOR_PATH = validatorPath
+		break
+if GLSLANG_VALIDATOR_PATH is None:
+	print("CANNOT FIND glslangValidator executable (SDK path: {})".format(VULKAN_SDK))
+	exit(1)
 
 def formatCode(code):
 	return ", ".join(list(map(lambda c: hex(c), code))).encode('utf-8')
