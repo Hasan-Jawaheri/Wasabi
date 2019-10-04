@@ -2,13 +2,9 @@
 
 #include <mutex>
 
-#ifdef _WIN32
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <windows.h>
-#endif
-
 #include <GLFW/glfw3.h>
 #include "GLFW/glfw3native.h"
+#include <boxer/boxer.h>
 
 static bool g_glfwInitialized = false;
 static std::mutex g_glfwMutex;
@@ -89,10 +85,7 @@ VkSurfaceKHR WGLFWWindowAndInputComponent::GetVulkanSurface() const {
 }
 
 void WGLFWWindowAndInputComponent::ShowErrorMessage(std::string error, bool warning) {
-#ifdef _WIN32
-	HWND hWnd = glfwGetWin32Window((GLFWwindow*)m_window);
-	MessageBoxA(hWnd, error.c_str(), m_app->GetEngineParam<LPCSTR>("appName"), MB_OK | (warning ? MB_ICONWARNING : MB_ICONERROR));
-#endif
+	boxer::show(error.c_str(), m_app->GetEngineParam<LPCSTR>("appName"), warning ? boxer::Style::Warning : boxer::Style::Error, boxer::Buttons::OK);
 }
 
 void WGLFWWindowAndInputComponent::SetWindowTitle(const char* const title) {
