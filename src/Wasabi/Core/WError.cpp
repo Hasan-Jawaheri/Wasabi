@@ -42,3 +42,19 @@ std::string WError::AsString() const {
 WError::operator bool() {
 	return m_error == W_SUCCEEDED;
 }
+
+bool WError::operator == (const WError& other) const {
+	return m_error == other.m_error;
+}
+
+bool WError::operator == (const W_ERROR& other) const {
+	return m_error == other;
+}
+
+bool WError::operator != (const WError& other) const {
+	return m_error != other.m_error;
+}
+
+bool WError::operator != (const W_ERROR& other) const {
+	return m_error != other;
+}

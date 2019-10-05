@@ -93,4 +93,13 @@ public:
 	 * @return return true if m_error == W_SUCCEEDED, false otherwise
 	 */
 	operator bool();
+
+	/** Performs == on the underlying m_error */
+	bool operator == (const WError& other) const;
+	/** Performs == on the underlying m_error */
+	bool operator == (const W_ERROR& other) const;
+	/** Performs != on the underlying m_error */
+	bool operator != (const WError& other) const;
+	/** Performs != on the underlying m_error */
+	bool operator != (const W_ERROR& other) const;
 };

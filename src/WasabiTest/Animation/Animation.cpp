@@ -12,8 +12,8 @@ void AnimationDemo::Load() {
 
 	character = m_app->ObjectManager->CreateObject();
 	character->SetGeometry(geometry);
-	//character->GetMaterial()->SetVariableColor("color", WColor(1, 0, 0));
-	character->GetMaterial()->SetTexture("diffuseTexture", texture);
+	//character->GetMaterial()->SetVariable<WColor>("color", WColor(1, 0, 0));
+	character->GetMaterials().SetTexture("diffuseTexture", texture);
 
 	// don't need these anymore, character has the reference to them
 	geometry->RemoveReference();

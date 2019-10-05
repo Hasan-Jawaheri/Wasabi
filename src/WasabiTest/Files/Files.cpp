@@ -78,7 +78,6 @@ public:
 };
 
 FilesDemo::FilesDemo(Wasabi* const app) : WTestState(app) {
-	m_material = nullptr;
 	m_object = nullptr;
 	m_cam = nullptr;
 }
@@ -108,8 +107,8 @@ void FilesDemo::Load() {
 	m_object->SetGeometry(geometry);
 	m_object->ClearEffects();
 	m_object->AddEffect(fx);
-	m_object->GetMaterial()->SetVariableColor("color", WColor(0, 0, 1));
-	m_object->GetMaterial()->SetTexture("diffuseTexture", img);
+	m_object->GetMaterials().SetVariable<WColor>("color", WColor(0, 0, 1));
+	m_object->GetMaterials().SetTexture("diffuseTexture", img);
 
 	WRigidBody* rb = m_app->PhysicsComponent->CreateRigidBody();
 	rb->Create(W_RIGID_BODY_CREATE_INFO::ForGeometry(geometry, 1.0f, nullptr, WVector3(0, 10, 0)), true);
@@ -150,15 +149,15 @@ void FilesDemo::Load() {
 	m_app->PhysicsComponent->Start();
 
 	m_cam = m_app->CameraManager->GetDefaultCamera();
-	m_material = m_object->GetMaterial();
+	m_materials = m_object->GetMaterials();
 }
 
 void FilesDemo::Update(float fDeltaTime) {
 	UNREFERENCED_PARAMETER(fDeltaTime);
 
-	m_material->SetVariableMatrix("projectionMatrix", m_cam->GetProjectionMatrix());
-	m_material->SetVariableMatrix("worldMatrix", m_object->GetWorldMatrix());
-	m_material->SetVariableMatrix("viewMatrix", m_cam->GetViewMatrix());
+	m_materials.SetVariable<WMatrix>("projectionMatrix", m_cam->GetProjectionMatrix());
+	m_materials.SetVariable<WMatrix>("worldMatrix", m_object->GetWorldMatrix());
+	m_materials.SetVariable<WMatrix>("viewMatrix", m_cam->GetViewMatrix());
 }
 
 void FilesDemo::Cleanup() {

@@ -21,6 +21,13 @@ public:
 	static W_SHADER_DESC GetDesc(int maxLights);
 };
 
+class WForwardRenderStageAnimatedObjectVS : public WShader {
+public:
+	WForwardRenderStageAnimatedObjectVS(class Wasabi* const app);
+	virtual void Load(bool bSaveData = false);
+	static W_SHADER_DESC GetDesc(int maxLights);
+};
+
 class WForwardRenderStageObjectPS : public WShader {
 public:
 	WForwardRenderStageObjectPS(class Wasabi* const app);
@@ -50,6 +57,8 @@ public:
 class WForwardRenderStage : public WRenderStage {
 	WObjectsRenderFragment* m_objectsFragment;
 	class WMaterial* m_perFrameObjectsMaterial;
+	WObjectsRenderFragment* m_animatedObjectsFragment;
+	class WMaterial* m_perFrameAnimatedObjectsMaterial;
 
 	WTerrainRenderFragment* m_terrainsFragment;
 	class WMaterial* m_perFrameTerrainsMaterial;

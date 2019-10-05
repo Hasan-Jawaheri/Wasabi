@@ -19,7 +19,7 @@ void ParticlesDemo::Load() {
 
 	WImage* texture = m_app->ImageManager->CreateImage("Media/fire_particles_tiles.png");
 	texture->SetName("Fire Texture");
-	m_particles[0]->GetMaterial()->SetTexture("diffuseTexture", texture);
+	m_particles[0]->GetMaterials().SetTexture("diffuseTexture", texture);
 	
 	m_particles.push_back(m_app->ParticlesManager->CreateParticles(W_DEFAULT_PARTICLES_ADDITIVE));
 	m_particles[1]->SetName("Additive Fire Particles");
@@ -36,7 +36,7 @@ void ParticlesDemo::Load() {
 	((WDefaultParticleBehavior*)m_particles[1]->GetBehavior())->m_emissionFrequency = 40.0f;
 	m_particles[1]->SetPriority(1);
 
-	m_particles[1]->GetMaterial()->SetTexture("diffuseTexture", texture);
+	m_particles[1]->GetMaterials().SetTexture("diffuseTexture", texture);
 	W_SAFE_REMOVEREF(texture);
 
 	m_particles.push_back(m_app->ParticlesManager->CreateParticles(W_DEFAULT_PARTICLES_ADDITIVE));
@@ -56,7 +56,7 @@ void ParticlesDemo::Load() {
 
 	texture = m_app->ImageManager->CreateImage("Media/glow.png");
 	texture->SetName("Glow Texture");
-	m_particles[2]->GetMaterial()->SetTexture("diffuseTexture", texture);
+	m_particles[2]->GetMaterials().SetTexture("diffuseTexture", texture);
 	W_SAFE_REMOVEREF(texture);
 
 
@@ -80,7 +80,7 @@ void ParticlesDemo::Load() {
 
 	texture = m_app->ImageManager->CreateImage("Media/spark.png");
 	texture->SetName("Sparks Texture");
-	m_particles[3]->GetMaterial()->SetTexture("diffuseTexture", texture);
+	m_particles[3]->GetMaterials().SetTexture("diffuseTexture", texture);
 	W_SAFE_REMOVEREF(texture);
 
 	((WasabiTester*)m_app)->SetCameraPosition(WVector3(0, 3, 0));

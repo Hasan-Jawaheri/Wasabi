@@ -110,15 +110,13 @@ WSprite* WSpriteManager::CreateSprite(WImage* img, uint32_t ID) const {
 		return nullptr;
 
 	WSprite* sprite = new WSprite(m_app, ID);
+	WMaterialCollection mats = sprite->GetMaterials();
 	sprite->m_geometry = geometry;
 	if (img) {
-		sprite->GetMaterial()->SetTexture("diffuseTexture", img);
+		mats.SetTexture("diffuseTexture", img);
 		sprite->SetSize(img);
 	}
-	WMaterial* mat = sprite->GetMaterial();
-	if (mat) {
-		mat->SetVariableFloat("alpha", 1.0f);
-	}
+	mats.SetVariable<float>("alpha", 1.0f);
 	return sprite;
 }
 
