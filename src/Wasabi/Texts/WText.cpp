@@ -10,7 +10,7 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
-#include<filesystem>
+#include <filesystem>
 #include <iostream>
 namespace stdfs = std::filesystem;
 
