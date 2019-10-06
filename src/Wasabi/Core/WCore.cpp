@@ -257,15 +257,10 @@ VkInstance Wasabi::CreateVKInstance() {
 	appInfo.pEngineName = W_ENGINE_NAME;
 	appInfo.apiVersion = VK_API_VERSION_1_1;
 
-	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+	std::vector<const char*> enabledExtensions = {};
 	std::vector<const char*> enabledLayers = {};
 
-	// Enable surface extensions depending on os
-#if defined(_WIN32)
-	enabledExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(__linux__)
-	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-#endif
+	WindowAndInputComponent->GetVulkanRequiredExtensions(enabledExtensions);
 #if (defined(DEBUG) || defined(_DEBUG))
 	if ((bool)engineParams["enableVulkanValidation"])
 		enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
@@ -525,6 +520,7 @@ WTextComponent* Wasabi::CreateTextComponent() {
 		s += '/';
 	tc->AddFontDirectory(s + "fonts");
 #elif defined(__linux__)
+	tc->AddFontDirectory("/usr/share/fonts/");
 #endif
 	return tc;
 }
