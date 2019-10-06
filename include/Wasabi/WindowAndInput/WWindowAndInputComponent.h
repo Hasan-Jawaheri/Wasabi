@@ -93,6 +93,12 @@ public:
 	virtual VkSurfaceKHR GetVulkanSurface() const = 0;
 
 	/**
+	 * Retrieves the Vulkan extensions required to run this window manager.
+	 * @param extensions A vector to be populated with required extensions
+	 */
+	virtual void GetVulkanRequiredExtensions(std::vector<const char*>& extensions) = 0;
+
+	/**
 	 * Displays a platform-specific error or warning message.
 	 * @param error   Error message to display
 	 * @param warning whether or not to show a warning or error
@@ -216,8 +222,7 @@ public:
 	 * @param  vpID Unused
 	 * @return      The x coordinate of the system cursor, relative to posT
 	 */
-	virtual int MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-					   uint32_t vpID = 0) const = 0;
+	virtual int MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
 
 	/**
 	 * Retrieves the y position of the system cursor.
@@ -226,8 +231,7 @@ public:
 	 * @param  vpID Unused
 	 * @return      The y coordinate of the system cursor, relative to posT
 	 */
-	virtual int MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-					   uint32_t vpID = 0) const = 0;
+	virtual int MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
 
 	/**
 	 * Retrieves the current scroll value of the mouse wheel. When the mouse
@@ -243,8 +247,7 @@ public:
 	 * @return      true if the cursor is within the coordinate system posT,
 	 *              false otherwise
 	 */
-	virtual bool MouseInScreen(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-							   uint32_t vpID = 0) const = 0;
+	virtual bool MouseInScreen(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
 
 	/**
 	 * Sets the cursor position, relative to the rendering viewport.
@@ -296,5 +299,5 @@ public:
 
 protected:
 	/** Pointer to the owner Wasabi class */
-	class Wasabi*			m_app;
+	class Wasabi* m_app;
 };
