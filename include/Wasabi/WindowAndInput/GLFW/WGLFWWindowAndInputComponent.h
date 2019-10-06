@@ -22,6 +22,7 @@ public:
 	virtual void* GetPlatformHandle() const;
 	virtual void* GetWindowHandle() const;
 	virtual VkSurfaceKHR GetVulkanSurface() const;
+	virtual void GetVulkanRequiredExtensions(std::vector<const char*>& extensions);
 
 	virtual void ShowErrorMessage(std::string error, bool warning = false);
 

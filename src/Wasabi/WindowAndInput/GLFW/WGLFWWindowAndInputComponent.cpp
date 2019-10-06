@@ -8,6 +8,16 @@
 
 static bool g_glfwInitialized = false;
 static std::mutex g_glfwMutex;
+static void g_InitializeGLFW() {
+	std::lock_guard<std::mutex> lock(g_glfwMutex);
+
+	if (!g_glfwInitialized) {
+		if (!glfwInit())
+			return;
+		g_glfwInitialized = true;
+		WRegisterGlobalCleanup([]() { glfwTerminate(); });
+	}
+}
 
 WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : WWindowAndInputComponent(app) {
 	m_window = nullptr;
@@ -26,19 +36,12 @@ WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : 
 }
 
 WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
-	g_glfwMutex.lock();
-	if (!g_glfwInitialized) {
-		g_glfwInitialized = true;
-		if (!glfwInit()) {
-			g_glfwMutex.unlock();
-			return WError(W_ERRORUNK);
-		}
-		WRegisterGlobalCleanup([]() { glfwTerminate(); });
-	}
-	g_glfwMutex.unlock();
+	g_InitializeGLFW();
+	if (!g_glfwInitialized)
+		return WError(W_ERRORUNK);
 
 	m_monitor = (void*)glfwGetPrimaryMonitor();
-	
+
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	m_window = (void*)glfwCreateWindow(width, height, m_app->GetEngineParam<const char*>("appName", "Wasabi"), NULL, NULL);
 	if (!m_window)
@@ -82,6 +85,17 @@ void* WGLFWWindowAndInputComponent::GetWindowHandle() const {
 
 VkSurfaceKHR WGLFWWindowAndInputComponent::GetVulkanSurface() const {
 	return m_surface;
+}
+
+void WGLFWWindowAndInputComponent::GetVulkanRequiredExtensions(std::vector<const char*>& extensions) {
+	g_InitializeGLFW();
+	if (!g_glfwInitialized)
+		return;
+
+	uint32_t count = 0;
+	const char** _extensions = glfwGetRequiredInstanceExtensions(&count);
+	for (uint32_t i = 0; i < count; i++)
+		extensions.push_back(_extensions[i]);
 }
 
 void WGLFWWindowAndInputComponent::ShowErrorMessage(std::string error, bool warning) {
@@ -197,7 +211,7 @@ int WGLFWWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint32_t vpID) con
 
 int WGLFWWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
 	UNREFERENCED_PARAMETER(vpID);
-	
+
 	double mx, my;
 	glfwGetCursorPos((GLFWwindow*)m_window, &mx, &my);
 	if (posT == MOUSEPOS_VIEWPORT)
@@ -217,7 +231,7 @@ int WGLFWWindowAndInputComponent::MouseZ() const {
 bool WGLFWWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
 	UNREFERENCED_PARAMETER(vpID);
 	UNREFERENCED_PARAMETER(posT);
-	
+
 	return m_isMouseInScreen;
 }
 
@@ -271,7 +285,7 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 	glfwSetKeyCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int key, int scancode, int mode, int mods) {
 		UNREFERENCED_PARAMETER(scancode);
 		UNREFERENCED_PARAMETER(mods);
-		
+
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (mode == GLFW_RELEASE) {
 			comp->InsertRawInput(key, false);
