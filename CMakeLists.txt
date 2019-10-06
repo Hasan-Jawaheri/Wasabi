@@ -25,7 +25,7 @@ build_open_al("OPENAL_DIR" "${DEPENDENCIES_DIR}")
 build_bullet("BULLET_DIR" "${DEPENDENCIES_DIR}")
 build_glfw("GLFW_DIR" "${DEPENDENCIES_DIR}")
 build_stb("STB_DIR" "${DEPENDENCIES_DIR}")
-build_boxer("BOXER_DIR" "${DEPENDENCIES_DIR}")
+build_tinyfiledialogs("TFD_DIR" "${DEPENDENCIES_DIR}")
 build_glsl(glsl-code ${VULKAN_SDK_PATH})
 
 ############# FBX SDK ###############
@@ -42,7 +42,7 @@ endif()
 #####################################
 
 # Source files
-file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp")
+file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp" "${TFD_DIR}/tinyfiledialogs.c")
 file(GLOB_RECURSE LIB_GLSL "src/Wasabi/*.glsl")
 file(GLOB_RECURSE LIB_HEADERS "include/Wasabi/*")
 file(GLOB_RECURSE TEST_SOURCES "src/WasabiTest/*.cpp")
@@ -62,12 +62,11 @@ target_include_directories(standalone-wasabi PRIVATE SYSTEM "${OPENAL_DIR}/inclu
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
-target_include_directories(standalone-wasabi PRIVATE SYSTEM "${BOXER_DIR}/include")
+target_include_directories(standalone-wasabi PRIVATE SYSTEM "${TFD_DIR}/")
 target_link_libraries(standalone-wasabi ${Vulkan_LIBRARY})
 target_link_libraries(standalone-wasabi common ex-common OpenAL)
 target_link_libraries(standalone-wasabi glfw)
 target_link_libraries(standalone-wasabi Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
-target_link_libraries(standalone-wasabi Boxer)
 
 # Bundle the libraries together
 bundle_static_library(standalone-wasabi wasabi)

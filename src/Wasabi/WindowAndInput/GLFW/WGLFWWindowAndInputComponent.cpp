@@ -1,10 +1,10 @@
 #include "Wasabi/WindowAndInput/GLFW/WGLFWWindowAndInputComponent.h"
+#include "tinyfiledialogs.h"
 
 #include <mutex>
 
 #include <GLFW/glfw3.h>
 #include "GLFW/glfw3native.h"
-#include <boxer/boxer.h>
 
 static bool g_glfwInitialized = false;
 static std::mutex g_glfwMutex;
@@ -99,7 +99,7 @@ void WGLFWWindowAndInputComponent::GetVulkanRequiredExtensions(std::vector<const
 }
 
 void WGLFWWindowAndInputComponent::ShowErrorMessage(std::string error, bool warning) {
-	boxer::show(error.c_str(), m_app->GetEngineParam<LPCSTR>("appName"), warning ? boxer::Style::Warning : boxer::Style::Error, boxer::Buttons::OK);
+	tinyfd_messageBox(m_app->GetEngineParam<const char*>("appName"), error.c_str(), "ok", warning ? "warning" : "error", 0);
 }
 
 void WGLFWWindowAndInputComponent::SetWindowTitle(const char* const title) {
