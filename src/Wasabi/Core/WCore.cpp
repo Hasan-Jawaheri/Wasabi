@@ -520,6 +520,7 @@ WTextComponent* Wasabi::CreateTextComponent() {
 		s += '/';
 	tc->AddFontDirectory(s + "fonts");
 #elif defined(__linux__)
+	tc->AddFontDirectory("/usr/share/fonts/");
 #endif
 	return tc;
 }

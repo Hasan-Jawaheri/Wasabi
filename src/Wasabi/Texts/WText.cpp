@@ -10,6 +10,10 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
+#include<filesystem>
+#include <iostream>
+namespace stdfs = std::filesystem;
+
 struct TextVertex {
 	WVector2 pos, uv;
 	WColor col;
@@ -129,8 +133,13 @@ WError WTextComponent::Initialize() {
 	vs->RemoveReference();
 	ps->RemoveReference();
 
-	if (ret)
+	if (ret) {
+		#if defined(__linux__)
+		ret = CreateTextFont(0, "Ubuntu-M");
+		#else
 		ret = CreateTextFont(0, "Arial");
+		#endif
+	}
 	m_curFont = 0;
 
 	return ret;
@@ -149,25 +158,29 @@ WError WTextComponent::CreateTextFont(uint32_t ID, std::string fontName) {
 	if (obj != m_fonts.end())
 		return WError(W_INVALIDPARAM);
 
+
 	if (fontName.find(".ttf") == std::string::npos)
 		fontName += ".ttf";
 
-	FILE* fp = nullptr;
-	fopen_s(&fp, fontName.c_str(), "rb");
-	for (int i = 0; i < m_directories.size() && !fp; i++) {
-		std::string n = m_directories[i] + fontName;
-		fopen_s(&fp, n.c_str(), "rb");
+	std::ifstream ttfFile;
+	ttfFile.open(fontName.c_str(), ios::in | ios::binary);
+	for (int i = 0; i < m_directories.size() && !ttfFile.is_open(); i++) {
+		for (auto& dirPath : stdfs::recursive_directory_iterator(m_directories[i])) {
+			stdfs::path p = dirPath;
+			if (p.has_filename() && std::string(p.filename()) == fontName)
+				ttfFile.open(p, ios::in | ios::binary);
+		}
 	}
-	if (!fp)
+	if (!ttfFile.is_open())
 		return WError(W_FILENOTFOUND);
 
-	fseek(fp, 0, SEEK_END);
-	uint32_t fsize = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+	ttfFile.seekg(0, std::ios::end);
+	uint32_t fsize = ttfFile.tellg();
+	ttfFile.seekg(0, std::ios::beg);
 
 	unsigned char* buffer = new unsigned char[fsize+1];
-	fread(buffer, 1, fsize+1, fp);
-	fclose(fp);
+	ttfFile.read(reinterpret_cast<char*>(buffer), fsize);
+	ttfFile.close();
 
 	uint32_t bmp_size = m_app->GetEngineParam<uint32_t>("fontBmpSize");
 	uint32_t char_height = m_app->GetEngineParam<uint32_t>("fontBmpCharHeight");
