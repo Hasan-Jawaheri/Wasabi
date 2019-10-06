@@ -17,8 +17,6 @@ WError LightsDemo::SetupRenderer() {
 void LightsDemo::Load() {
 	std::srand(3);
 
-	m_app->WindowAndInputComponent->ShowErrorMessage("hello\nmy name is error\nthis is very long this is very long this is very long this is very long this is very long ");
-
 	// Create the plain
 	m_plain = m_app->ObjectManager->CreateObject();
 	WGeometry* plainGeometry = new WGeometry(m_app);
