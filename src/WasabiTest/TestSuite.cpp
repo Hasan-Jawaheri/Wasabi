@@ -99,7 +99,15 @@ WError WasabiTester::Setup() {
 		return ret;
 	}
 
-	TextComponent->CreateTextFont(1, "Calibri");
+	std::vector<std::string> fontNames = {
+		"Calibri",
+		"FreeSans",
+	};
+	for (auto fontName : fontNames) {
+		if (TextComponent->CreateTextFont(1, fontName))
+			break;
+	}
+	assert((bool)TextComponent->SetFont(1));
 
 	LightManager->GetDefaultLight()->Point(0, -1, -1);
 
