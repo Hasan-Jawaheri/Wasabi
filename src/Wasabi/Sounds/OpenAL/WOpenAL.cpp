@@ -483,7 +483,7 @@ WError WOpenALSound::SaveToStream(WFile* file, std::ostream& outputStream) {
 		alGetSource3f(m_source, AL_DIRECTION, &temp[0], &temp[1], &temp[2]);
 		outputStream.write((char*)temp, 3 * sizeof(float));
 
-		char numBuffers = (char)m_dataV.size();
+		uint8_t numBuffers = (uint8_t)m_dataV.size();
 		outputStream.write((char*)&numBuffers, 1);
 		for (uint32_t i = 0; i < (uint32_t)numBuffers; i++) {
 			outputStream.write((char*)&m_dataV[i].buffer, sizeof(uint32_t)); //buffer index
@@ -522,7 +522,7 @@ WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream, std:
 	inputStream.read((char*)temp, 3 * sizeof(float));
 	alSource3f(m_source, AL_DIRECTION, temp[0], temp[1], temp[2]);
 
-	char numBuffers = 0;
+	uint8_t numBuffers = 0;
 	inputStream.read((char*)&numBuffers, 1);
 	for (uint32_t i = 0; i < (uint32_t)numBuffers; i++) {
 		__SAVEDATA data;
@@ -537,7 +537,15 @@ WError WOpenALSound::LoadFromStream(WFile* file, std::istream& inputStream, std:
 
 		W_SAFE_FREE(data.data);
 
-		return WError(err);
+		if (err) {
+			alDeleteBuffers(m_numBuffers, m_buffers);
+			ZeroMemory(m_buffers, m_numBuffers * sizeof(ALuint));
+			for (uint32_t j = 0; j < m_dataV.size(); j++) {
+				W_SAFE_FREE(m_dataV[j].data);
+			}
+			m_dataV.clear();
+			return WError(err);
+		}
 	}
 
 	return WError(W_SUCCEEDED);
