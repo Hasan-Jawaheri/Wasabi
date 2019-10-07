@@ -16,6 +16,8 @@ protected:
 	std::unordered_map<class WEffect*, class WMaterial*> m_materialMap;
 	class WMaterialCollection* m_materialsCollection;
 
+	void _AddMaterial(class WMaterial* material);
+
 public:
 	WMaterialsStore();
 	virtual ~WMaterialsStore();

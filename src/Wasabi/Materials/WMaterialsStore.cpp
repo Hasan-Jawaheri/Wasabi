@@ -12,6 +12,12 @@ WMaterialsStore::~WMaterialsStore() {
 	W_SAFE_DELETE(m_materialsCollection);
 }
 
+void WMaterialsStore::_AddMaterial(class WMaterial* material) {
+	material->GetEffect()->AddReference();
+	m_materialMap.insert(std::make_pair(material->GetEffect(), material));
+	m_materialsCollection->m_materials.insert(std::make_pair(material, true));
+}
+
 void WMaterialsStore::AddEffect(WEffect* effect, uint32_t bindingSet) {
 	effect->AddReference();
 	RemoveEffect(effect);
