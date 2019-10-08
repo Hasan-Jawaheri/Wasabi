@@ -79,6 +79,8 @@ def compileShader(filename):
 		FILE_MODIFIED_TIMES[filename] = str(os.stat(filename).st_mtime)
 		with open("glsl-files-cache.json", "w") as F:
 			json.dump(FILE_MODIFIED_TIMES, F)
+		
+		os.remove(tmp_output_file)
 
 		return 0
 	except:
