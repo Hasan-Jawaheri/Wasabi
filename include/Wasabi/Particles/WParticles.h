@@ -1,8 +1,8 @@
 /** @file WParticles.h
  *  @brief Particle systems in Wasabi
  *
- *  Particle systems in Wasabi are point-based geometries that render into
- *  quads (in a geometry shader) 
+ *  Particle systems in Wasabi are billboard-like geometries that are updated
+ *  per frame to face the screen
  *
  *  @author Hasan Al-Jawaheri (hbj)
  *  @bug No known bugs.
@@ -15,13 +15,10 @@
 
 /** A vertex of a particle */
 struct WParticlesVertex {
-	/** local-position of the single particle */
-	WVector3 pos;
-	/** particle size */
-	WVector3 size;
-	/** Tiling in the particle texture: 4-component vector where x,y are uv at top left,
-	    z,w are uv at bottom right */
-	WVector4 UVs;
+	/** view-space position of the single particle vertex */
+	WVector3 viewPos;
+	/** UV coordinate at the particle vertex */
+	WVector2 UV;
 	/** particle color (multiplied by texture) */
 	WColor color;
 };
@@ -51,19 +48,24 @@ class WParticlesBehavior {
 	uint32_t m_particleSize;
 	/** Number of particles currently active */
 	uint32_t m_numParticles;
-	/** Buffer to store particles data */
-	void* m_buffer;
+	/** Buffer to store particles data (per-particle, not vertex) */
+	void* m_particlesData;
 
 protected:
+	/**
+	 * Emits a particle if not at the limit. Emittion means placing the
+	 * particle data in m_buffer and incrementing m_numParticles.
+	 * @param particle  Particle to emit
+	 */
 	void Emit(void* particle);
 
 public:
 	/**
-	 * @param max_particles  Maximum number of particles that the target system
-	 *                       can render
-	 * @param particle_size  Size of each particle structure
+	 * @param maxParticles  Maximum number of particles that the target system
+	 *                      can render
+	 * @param particleSize  Size of each particle structure
 	 */
-	WParticlesBehavior(uint32_t max_particles, uint32_t particle_size);
+	WParticlesBehavior(uint32_t maxParticles, uint32_t particleSize);
 
 	~WParticlesBehavior();
 
@@ -71,28 +73,40 @@ public:
 	 * Called by the WParticles implementation to update the particles and fill
 	 * in the particles vertex buffer. The size of the vertex buffer is
 	 * m_maxParticles * sizeof(WParticlesVertex)
-	 * @param curTime  The time elapsed since the beginning of the program
-	 * @param vb       Pointer to the vertex buffer to be filled
-	 * @return         Number of particles copied
+	 * @param curTime      The time elapsed since the beginning of the program
+	 * @param vb           Pointer to the vertex buffer to be filled
+	 * @param maxParticles Maximum number of particles in the vb
+	 * @param worldMatrix  The world matrix of the particles system
+	 * @param viewMatrix   The view matrix of the camera rendering the particles
+	 * @return             Number of particles copied
 	 */
-	uint32_t UpdateAndCopyToVB(float cur_time, void* vb, uint32_t max_particles);
+	uint32_t UpdateAndCopyToVB(float curTime, void* vb, uint32_t maxParticles, const WMatrix& worldMatrix, const WMatrix& viewMatrix);
 
 	/**
 	 * Must be implemented by a derived class to define the per-frame behavior
 	 * of the particle system. Typically this should control emission by
 	 * calling Emit() when a particle needs to be emitted.
-	 * @param cur_time The time elapsed since the beginning of the program
+	 * @param curTime     The time elapsed since the beginning of the program
+	 * @param worldMatrix The world matrix of the camera rendering the particles
+	 * @param viewMatrix  The view matrix of the camera rendering the particles
 	 */
-	virtual void UpdateSystem(float cur_time) = 0;
+	virtual void UpdateSystem(float curTime, const WMatrix& worldMatrix, const WMatrix& viewMatrix) = 0;
 
 	/**
 	 * Must be implemented by a derived class to define the per-frame behavior
 	 * of a single particle.
-	 * @param cur_time  The time elapsed since the beginning of the program
-	 * @param particle  The particle to update
+	 * @param curTime     The time elapsed since the beginning of the program
+	 * @param particle    The particle to update (pointer to memory of size
+	 *                    m_particleSize)
+	 * @param vertices    A pointer to the beginning of the vertices memory to
+	 *                    fill. The memory will have 4 * sizeof(WParticlesVertex)
+	 *                    bytes to be filled with the 4 vertices of the particle
+	 *                    billboard. The output vertex must be in *VIEW SPACE*
+	 * @param worldMatrix The world matrix of the particles system
+	 * @param viewMatrix  The view matrix of the camera rendering the particles
 	 * @return  True if the particle should die, false otherwise
 	 */
-	virtual inline bool UpdateParticle(float cur_time, void* particle) = 0;
+	virtual inline bool UpdateParticleVertices(float curTime, void* particle, WParticlesVertex* vertices, const WMatrix& worldMatrix, const WMatrix& viewMatrix) = 0;
 };
 
 /**
@@ -101,10 +115,12 @@ public:
  */
 class WDefaultParticleBehavior : public WParticlesBehavior {
 	struct Particle {
-		/** Required WParticleVertex at the beginning of the data structure */
-		WParticlesVertex vtx;
 		/** Spawn time of this particle */
 		float spawnTime;
+		/** UV coordinates of the top-left vertex */
+		WVector2 UVTopLeft;
+		/** UV coordinates of the bottom-right vertex */
+		WVector2 UVBottomRight;
 		/** Initial position of this particle */
 		WVector3 initialPos;
 		/** Velocity of this particle */
@@ -155,9 +171,9 @@ public:
 		(default is {<(1,1,1,0), 0.2>, <(1,1,1,1), 0.8>, <(1,1,1,0), 0.0>} */
 	std::vector<std::pair<WColor, float>> m_colorGradient;
 
-	WDefaultParticleBehavior(uint32_t max_particles);
-	virtual void UpdateSystem(float cur_time);
-	virtual inline bool UpdateParticle(float cur_time, void* particle);
+	WDefaultParticleBehavior(uint32_t maxParticles);
+	virtual void UpdateSystem(float curTime, const WMatrix& worldMatrix, const WMatrix& viewMatrix);
+	virtual inline bool UpdateParticleVertices(float curTime, void* particle, WParticlesVertex* vertices, const WMatrix& worldMatrix, const WMatrix& viewMatrix);
 };
 
 /**
@@ -306,7 +322,7 @@ private:
 
 	/** Behavior of the particle system */
 	WParticlesBehavior* m_behavior;
-	/** Geometry of points used to render the particles */
+	/** Geometry of billboards used to render the particles */
 	class WGeometry* m_geometry;
 
 	/**
@@ -360,8 +376,6 @@ public:
 private:
 	/** Default vertex shader used by the default effect */
 	class WShader* m_vertexShader;
-	/** Default geometry shader used by the default effect */
-	class WShader* m_geometryShader;
 	/** Default fragment shader used by the default effect */
 	class WShader* m_fragmentShader;
 };
