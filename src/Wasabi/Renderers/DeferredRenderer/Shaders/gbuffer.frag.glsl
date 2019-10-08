@@ -8,8 +8,8 @@ layout(set = 0, binding = 0) uniform UBOPerObject {
 	int animationTextureWidth;
 	int instanceTextureWidth;
 	int isInstanced;
-	vec4 color;
 	int isTextured;
+	vec4 color;
 } uboPerObject;
 
 layout(set = 0, binding = 4) uniform sampler2D diffuseTexture[8];
