@@ -669,20 +669,20 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 
 	VkResult err;
 
-	vector<VkDescriptorSetLayout> descriptorSetLayoutVector;
+	vector<VkDescriptorSetLayout> descriptorSetLayoutVector(layoutBindingsMap.size());
 	for (auto it = layoutBindingsMap.begin(); it != layoutBindingsMap.end(); it++) {
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorLayout.pNext = NULL;
-		descriptorLayout.bindingCount = (uint32_t)it->second.size();
-		descriptorLayout.pBindings = it->second.data();
+		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {};
+		descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorSetLayoutInfo.pNext = NULL;
+		descriptorSetLayoutInfo.bindingCount = (uint32_t)it->second.size();
+		descriptorSetLayoutInfo.pBindings = it->second.data();
 
 		VkDescriptorSetLayout descriptorSetLayout;
-		err = vkCreateDescriptorSetLayout(device, &descriptorLayout, NULL, &descriptorSetLayout);
+		err = vkCreateDescriptorSetLayout(device, &descriptorSetLayoutInfo, NULL, &descriptorSetLayout);
 		if (err)
 			return WError(W_FAILEDTOCREATEDESCRIPTORSETLAYOUT);
 		m_descriptorSetLayouts.insert(std::pair<uint, VkDescriptorSetLayout>(it->first, descriptorSetLayout));
-		descriptorSetLayoutVector.push_back(descriptorSetLayout);
+		descriptorSetLayoutVector[it->first] = descriptorSetLayout;
 	}
 
 	// Create the pipeline layout that is used to generate the rendering pipelines that
@@ -957,4 +957,3 @@ WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 		_DestroyPipeline();
 	return err;
 }
-
