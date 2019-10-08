@@ -136,6 +136,8 @@ WError WTextComponent::Initialize() {
 	if (ret) {
 		#if defined(__linux__)
 		ret = CreateTextFont(0, "Ubuntu-M");
+		#elif defined(__APPLE__)
+		ret = CreateTextFont(0, "Arial Unicode");
 		#else
 		ret = CreateTextFont(0, "Arial");
 		#endif
