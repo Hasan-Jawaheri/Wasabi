@@ -125,6 +125,7 @@ WIP
 ## Acknowledgments
 
 * [Abdulrahman Fayad](https://github.com/aboudfayad)
+* [Yazan Boshmaf](https://github.com/boshmaf)
 * All the authors and contributors to the great open source libraries <3
 
 ## License
