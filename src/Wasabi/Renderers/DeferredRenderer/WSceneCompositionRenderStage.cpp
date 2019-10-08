@@ -82,12 +82,12 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 		return WError(W_ERRORUNK);
 
 	m_currentCameraFarPlane = m_renderTarget->GetCamera()->GetMaxRange();
-	m_constantsMaterial->SetVariableColor("ambient", WColor(0.3f, 0.3f, 0.3f));
-	m_constantsMaterial->SetVariableFloat("SSAOSampleRadius", 0.1f);
-	m_constantsMaterial->SetVariableFloat("SSAOIntensity", 1.0f);
-	m_constantsMaterial->SetVariableFloat("SSAODistanceScale", 3.0f);
-	m_constantsMaterial->SetVariableFloat("SSAOAngleBias", 0.15f);
-	m_constantsMaterial->SetVariableFloat("camFarClip", m_currentCameraFarPlane);
+	m_constantsMaterial->SetVariable<WColor>("ambient", WColor(0.3f, 0.3f, 0.3f));
+	m_constantsMaterial->SetVariable<float>("SSAOSampleRadius", 0.1f);
+	m_constantsMaterial->SetVariable<float>("SSAOIntensity", 1.0f);
+	m_constantsMaterial->SetVariable<float>("SSAODistanceScale", 3.0f);
+	m_constantsMaterial->SetVariable<float>("SSAOAngleBias", 0.15f);
+	m_constantsMaterial->SetVariable<float>("camFarClip", m_currentCameraFarPlane);
 
 	m_constantsMaterial->SetTexture("diffuseTexture", m_app->Renderer->GetRenderTargetImage("GBufferDiffuse"));
 	m_constantsMaterial->SetTexture("lightTexture", m_app->Renderer->GetRenderTargetImage("LightBuffer"));
@@ -113,12 +113,12 @@ WError WSceneCompositionRenderStage::Render(class WRenderer* renderer, class WRe
 	WCamera* cam = rt->GetCamera();
 	if (abs(m_currentCameraFarPlane - cam->GetMaxRange()) >= W_EPSILON) {
 		m_currentCameraFarPlane = cam->GetMaxRange();
-		m_constantsMaterial->SetVariableFloat("camFarClip", m_currentCameraFarPlane);
+		m_constantsMaterial->SetVariable<float>("camFarClip", m_currentCameraFarPlane);
 	}
 
 	m_effect->Bind(rt);
 	m_constantsMaterial->Bind(rt);
-	m_perFrameMaterial->SetVariableMatrix("projInv", WMatrixInverse(cam->GetProjectionMatrix()));
+	m_perFrameMaterial->SetVariable<WMatrix>("projInv", WMatrixInverse(cam->GetProjectionMatrix()));
 	m_perFrameMaterial->Bind(rt);
 	m_fullscreenSprite->Render(rt);
 

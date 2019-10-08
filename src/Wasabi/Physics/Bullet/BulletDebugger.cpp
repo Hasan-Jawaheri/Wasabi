@@ -118,8 +118,8 @@ public:
 				obj->AddEffect(m_linesFX);
 				material = obj->GetMaterial(m_linesFX);
 			}
-			material->SetVariableMatrix("proj", cam->GetProjectionMatrix());
-			material->SetVariableMatrix("view", cam->GetViewMatrix());
+			material->SetVariable<WMatrix>("proj", cam->GetProjectionMatrix());
+			material->SetVariable<WMatrix>("view", cam->GetViewMatrix());
 			obj->Render(rt, material, false);
 		}
 		return WError(W_SUCCEEDED);

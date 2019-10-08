@@ -4,22 +4,28 @@
 #include "Wasabi/Renderers/WRenderer.h"
 
 WMaterialsStore::WMaterialsStore() {
-	m_defaultEffect = nullptr;
+	m_materialsCollection = new WMaterialCollection();
 }
 
 WMaterialsStore::~WMaterialsStore() {
 	ClearEffects();
+	W_SAFE_DELETE(m_materialsCollection);
 }
 
-void WMaterialsStore::AddEffect(WEffect* effect, uint32_t bindingSet, bool set_default) {
+void WMaterialsStore::_AddMaterial(class WMaterial* material) {
+	material->GetEffect()->AddReference();
+	m_materialMap.insert(std::make_pair(material->GetEffect(), material));
+	m_materialsCollection->m_materials.insert(std::make_pair(material, true));
+}
+
+void WMaterialsStore::AddEffect(WEffect* effect, uint32_t bindingSet) {
 	effect->AddReference();
 	RemoveEffect(effect);
 	WMaterial* material = effect->CreateMaterial(bindingSet);
 	material->SetName(effect->GetName() + "-" + material->GetName());
 	if (material) {
 		m_materialMap.insert(std::pair<WEffect*, WMaterial*>(effect, material));
-		if (set_default)
-			m_defaultEffect = effect;
+		m_materialsCollection->m_materials.insert(std::make_pair(material, true));
 	} else
 		effect->RemoveReference();
 }
@@ -27,8 +33,7 @@ void WMaterialsStore::AddEffect(WEffect* effect, uint32_t bindingSet, bool set_d
 void WMaterialsStore::RemoveEffect(WEffect* effect) {
 	auto it = m_materialMap.find(effect);
 	if (it != m_materialMap.end()) {
-		if (effect == m_defaultEffect)
-			m_defaultEffect = nullptr;
+		m_materialsCollection->m_materials.erase(it->second);
 		effect->RemoveReference();
 		it->second->RemoveReference();
 		m_materialMap.erase(effect);
@@ -44,11 +49,10 @@ void WMaterialsStore::RemoveEffect(WMaterial* material) {
 		}
 	}
 	for (auto it = effectsToRemove.begin(); it != effectsToRemove.end(); it++) {
-		if (*it == m_defaultEffect)
-			m_defaultEffect = nullptr;
 		(*it)->RemoveReference();
 		m_materialMap.erase(*it);
 	}
+	m_materialsCollection->m_materials.erase(material);
 }
 
 void WMaterialsStore::ClearEffects() {
@@ -57,19 +61,16 @@ void WMaterialsStore::ClearEffects() {
 		it->second->RemoveReference();
 	}
 	m_materialMap.clear();
-	m_defaultEffect = nullptr;
-}
-
-WEffect* WMaterialsStore::GetDefaultEffect() const {
-	return m_defaultEffect;
+	m_materialsCollection->m_materials.clear();
 }
 
 WMaterial* WMaterialsStore::GetMaterial(WEffect* effect) {
-	if (!effect)
-		effect = m_defaultEffect;
-
 	auto it = m_materialMap.find(effect);
 	if (it != m_materialMap.end())
 		return it->second;
 	return nullptr;
+}
+
+WMaterialCollection& WMaterialsStore::GetMaterials() {
+	return *m_materialsCollection;
 }

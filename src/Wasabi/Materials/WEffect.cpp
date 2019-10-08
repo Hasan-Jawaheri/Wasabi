@@ -470,6 +470,7 @@ WEffect::WEffect(Wasabi* const app, uint32_t ID) : WFileAsset(app, ID), m_depthS
 
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
+	m_pipeline = VK_NULL_HANDLE;
 	m_pipelineLayout = VK_NULL_HANDLE;
 
 	VkPipelineColorBlendAttachmentState blendState = {};
@@ -534,7 +535,7 @@ bool WEffect::_ValidShaders() const {
 }
 
 bool WEffect::Valid() const {
-	return _ValidShaders() && m_pipelines.size() > 0;
+	return _ValidShaders() && m_pipeline != VK_NULL_HANDLE;
 }
 
 WError WEffect::BindShader(WShader* shader) {
@@ -580,13 +581,12 @@ void WEffect::SetPrimitiveTopology(VkPrimitiveTopology topology) {
 }
 
 void WEffect::_DestroyPipeline() {
-	m_app->MemoryManager->ReleasePipelineLayout(m_pipelineLayout, m_app->GetCurrentBufferingIndex());
+	uint32_t bufferingIndex = m_app->GetCurrentBufferingIndex();
+	m_app->MemoryManager->ReleasePipelineLayout(m_pipelineLayout, bufferingIndex);
 	for (auto it = m_descriptorSetLayouts.begin(); it != m_descriptorSetLayouts.end(); it++)
-		m_app->MemoryManager->ReleaseDescriptorSetLayout(it->second, m_app->GetCurrentBufferingIndex());
+		m_app->MemoryManager->ReleaseDescriptorSetLayout(it->second, bufferingIndex);
 	m_descriptorSetLayouts.clear();
-	for (auto it = m_pipelines.begin(); it != m_pipelines.end(); it++)
-		m_app->MemoryManager->ReleasePipeline(*it, m_app->GetCurrentBufferingIndex());
-	m_pipelines.clear();
+	m_app->MemoryManager->ReleasePipeline(m_pipeline, bufferingIndex);
 }
 
 void WEffect::SetBlendingState(VkPipelineColorBlendAttachmentState state) {
@@ -605,7 +605,7 @@ void WEffect::SetRasterizationState(VkPipelineRasterizationStateCreateInfo state
 	m_rasterizationState = state;
 }
 
-WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
+WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	VkDevice device = m_app->GetVulkanDevice();
 
 	if (!_ValidShaders())
@@ -669,20 +669,20 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 
 	VkResult err;
 
-	vector<VkDescriptorSetLayout> descriptorSetLayoutVector;
+	vector<VkDescriptorSetLayout> descriptorSetLayoutVector(layoutBindingsMap.size());
 	for (auto it = layoutBindingsMap.begin(); it != layoutBindingsMap.end(); it++) {
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorLayout.pNext = NULL;
-		descriptorLayout.bindingCount = (uint32_t)it->second.size();
-		descriptorLayout.pBindings = it->second.data();
+		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {};
+		descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorSetLayoutInfo.pNext = NULL;
+		descriptorSetLayoutInfo.bindingCount = (uint32_t)it->second.size();
+		descriptorSetLayoutInfo.pBindings = it->second.data();
 
 		VkDescriptorSetLayout descriptorSetLayout;
-		err = vkCreateDescriptorSetLayout(device, &descriptorLayout, NULL, &descriptorSetLayout);
+		err = vkCreateDescriptorSetLayout(device, &descriptorSetLayoutInfo, NULL, &descriptorSetLayout);
 		if (err)
 			return WError(W_FAILEDTOCREATEDESCRIPTORSETLAYOUT);
 		m_descriptorSetLayouts.insert(std::pair<uint, VkDescriptorSetLayout>(it->first, descriptorSetLayout));
-		descriptorSetLayoutVector.push_back(descriptorSetLayout);
+		descriptorSetLayoutVector[it->first] = descriptorSetLayout;
 	}
 
 	// Create the pipeline layout that is used to generate the rendering pipelines that
@@ -816,55 +816,25 @@ WError WEffect::BuildPipeline(WRenderTarget* rt, bool buildMultiplePipelines) {
 	}
 
 	// Assign to vertex buffer
-	std::vector<VkPipelineVertexInputStateCreateInfo> inputStates(ILs.size() + 1);
 	VkPipelineVertexInputStateCreateInfo inputState;
 	inputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	inputState.pNext = NULL;
 	inputState.flags = VK_FLAGS_NONE;
-	inputState.vertexBindingDescriptionCount = 0;
+	inputState.vertexBindingDescriptionCount = (uint32_t)bindingDesc.size();
 	inputState.pVertexBindingDescriptions = bindingDesc.data();
-	inputState.vertexAttributeDescriptionCount = 0;
+	inputState.vertexAttributeDescriptionCount = (uint32_t)attribDesc.size();
 	inputState.pVertexAttributeDescriptions = attribDesc.data();
-	inputStates[0] = inputState;
-	for (uint32_t i = 1; i < ILs.size() + 1; i++) {
-		VkPipelineVertexInputStateCreateInfo newstate = inputStates[i - 1];
-		newstate.vertexBindingDescriptionCount++;
-		newstate.vertexAttributeDescriptionCount += (uint32_t)ILs[i-1]->attributes.size();
-		inputStates[i] = newstate;
-	}
 
-	if (inputStates.size() == 1) { // 0 ILs, make one pipeline without buffers
-		pipelineCreateInfo.pVertexInputState = &inputStates[0];
-		pipelineCreateInfos.push_back(pipelineCreateInfo);
-	} else { // 1 or more ILs available
-		if (buildMultiplePipelines) {
-			// make a pipeline for each and dont make a 0-buffer pipeline
-			for (int i = 1; i < inputStates.size(); i++) {
-				pipelineCreateInfo.pVertexInputState = &inputStates[i];
-				if (i > 1) {
-					pipelineCreateInfo.basePipelineIndex = 0; // 0th index in pipelineCreateInfos
-					pipelineCreateInfo.flags |= VK_PIPELINE_CREATE_DERIVATIVE_BIT;
-				} else
-					pipelineCreateInfo.flags |= VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
-				pipelineCreateInfos.push_back(pipelineCreateInfo);
-			}
-		} else {
-			// just make one pipeline for exactly as many buffers as there are input layouts
-			pipelineCreateInfo.pVertexInputState = &inputStates[inputStates.size()-1];
-			pipelineCreateInfos.push_back(pipelineCreateInfo);
-		}
-	}
+	pipelineCreateInfo.pVertexInputState = &inputState;
 
-	m_pipelines.resize(pipelineCreateInfos.size()); // one with 0 VBs, 1 VB, 2 VBs, ..., ILs.size() VBs
-	err = vkCreateGraphicsPipelines(device, rt->GetPipelineCache(), (uint32_t)m_pipelines.size(),
-									pipelineCreateInfos.data(), nullptr, m_pipelines.data());
+	err = vkCreateGraphicsPipelines(device, rt->GetPipelineCache(), 1, &pipelineCreateInfo, nullptr, &m_pipeline);
 	if (err)
 		return WError(W_FAILEDTOCREATEPIPELINE);
 
 	return WError(W_SUCCEEDED);
 }
 
-WError WEffect::Bind(WRenderTarget* rt, uint32_t num_vertex_buffers) {
+WError WEffect::Bind(WRenderTarget* rt) {
 	if (!Valid())
 		return WError(W_NOTVALID);
 
@@ -872,8 +842,7 @@ WError WEffect::Bind(WRenderTarget* rt, uint32_t num_vertex_buffers) {
 	if (!renderCmdBuffer)
 		return WError(W_NORENDERTARGET);
 
-	uint32_t pipeline = std::min(num_vertex_buffers == 0 ? 0 : num_vertex_buffers - 1, (uint32_t)m_pipelines.size() - 1);
-	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[pipeline]);
+	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
 	return WError(W_SUCCEEDED);
 }
@@ -988,4 +957,3 @@ WError WEffect::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 		_DestroyPipeline();
 	return err;
 }
-

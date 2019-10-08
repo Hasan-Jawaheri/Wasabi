@@ -14,13 +14,15 @@ class WMaterialsStore {
 protected:
 	/** Collection of materials */
 	std::unordered_map<class WEffect*, class WMaterial*> m_materialMap;
-	class WEffect* m_defaultEffect;
+	class WMaterialCollection* m_materialsCollection;
+
+	void _AddMaterial(class WMaterial* material);
 
 public:
 	WMaterialsStore();
 	virtual ~WMaterialsStore();
 
-	void AddEffect(class WEffect* effect, uint32_t bindingSet = 0, bool set_default = true);
+	void AddEffect(class WEffect* effect, uint32_t bindingSet = 0);
 
 	void RemoveEffect(class WEffect* effect);
 
@@ -28,7 +30,7 @@ public:
 
 	void ClearEffects();
 
-	class WEffect* GetDefaultEffect() const;
+	class WMaterial* GetMaterial(class WEffect* effect);
 
-	class WMaterial* GetMaterial(class WEffect* effect = nullptr);
+	class WMaterialCollection& GetMaterials();
 };

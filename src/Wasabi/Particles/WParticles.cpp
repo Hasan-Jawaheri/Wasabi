@@ -421,9 +421,9 @@ bool WParticles::WillRender(WRenderTarget* rt) {
 void WParticles::Render(WRenderTarget* const rt, WMaterial* material) {
 	if (material) {
 		WCamera* cam = rt->GetCamera();
-		material->SetVariableMatrix("worldMatrix", GetWorldMatrix());
-		material->SetVariableMatrix("viewMatrix", cam->GetViewMatrix());
-		material->SetVariableMatrix("projectionMatrix", cam->GetProjectionMatrix());
+		material->SetVariable<WMatrix>("worldMatrix", GetWorldMatrix());
+		material->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
+		material->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
 		material->Bind(rt);
 	}
 
@@ -466,4 +466,3 @@ void WParticles::OnStateChange(STATE_CHANGE_TYPE type) {
 	WOrientation::OnStateChange(type); //do the default OnStateChange first
 	m_bAltered = true;
 }
-

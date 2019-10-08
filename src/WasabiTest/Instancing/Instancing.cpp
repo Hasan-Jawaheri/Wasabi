@@ -22,7 +22,7 @@ void InstancingDemo::Load() {
 
 	character = m_app->ObjectManager->CreateObject();
 	character->SetGeometry(geometry);
-	character->GetMaterial()->SetTexture("diffuseTexture", texture);
+	character->GetMaterials().SetTexture("diffuseTexture", texture);
 
 	int instancing = 2;
 
@@ -44,7 +44,7 @@ void InstancingDemo::Load() {
 				if (instancing == 1) {
 					WObject* c = m_app->ObjectManager->CreateObject();
 					c->SetGeometry(geometry);
-					c->GetMaterial()->SetTexture("diffuseTexture", texture);
+					c->GetMaterials().SetTexture("diffuseTexture", texture);
 					c->SetPosition(px, 0, pz);
 					objectsV.push_back(c);
 				}

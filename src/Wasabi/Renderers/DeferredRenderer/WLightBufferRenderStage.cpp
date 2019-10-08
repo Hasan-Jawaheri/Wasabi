@@ -236,7 +236,7 @@ WError WLightBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, u
 			LightTypeAssets lightTypeAssets = it->second;
 			if (lightTypeAssets.material_map.size()) {
 				lightTypeAssets.effect->Bind(rt);
-				lightTypeAssets.perFrameMaterial->SetVariableMatrix("projInv", WMatrixInverse(cam->GetProjectionMatrix()));
+				lightTypeAssets.perFrameMaterial->SetVariable<WMatrix>("projInv", WMatrixInverse(cam->GetProjectionMatrix()));
 				lightTypeAssets.perFrameMaterial->Bind(rt);
 
 				for (auto materialIt = lightTypeAssets.material_map.begin(); materialIt != lightTypeAssets.material_map.end(); materialIt++) {
@@ -255,17 +255,17 @@ WError WLightBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, u
 					}
 
 					WColor lightColor = light->GetColor();
-					material->SetVariableMatrix("wvp", light->GetWorldMatrix() * cam->GetViewMatrix() * cam->GetProjectionMatrix());
-					material->SetVariableVector3("lightDir", WVec3TransformNormal(light->GetLVector(), cam->GetViewMatrix()));
-					material->SetVariableVector3("position", WVec3TransformCoord(light->GetPosition(), cam->GetViewMatrix()));
-					material->SetVariableVector3("lightColor", WVector3(lightColor.r, lightColor.g, lightColor.b));
-					material->SetVariableFloat("lightSpec", lightColor.a); // specular power is stored in alpha component
-					material->SetVariableFloat("intensity", light->GetIntensity());
-					material->SetVariableFloat("range", light->GetRange());
-					material->SetVariableFloat("minCosAngle", light->GetMinCosAngle());
+					material->SetVariable<WMatrix>("wvp", light->GetWorldMatrix() * cam->GetViewMatrix() * cam->GetProjectionMatrix());
+					material->SetVariable<WVector3>("lightDir", WVec3TransformNormal(light->GetLVector(), cam->GetViewMatrix()));
+					material->SetVariable<WVector3>("position", WVec3TransformCoord(light->GetPosition(), cam->GetViewMatrix()));
+					material->SetVariable<WVector3>("lightColor", WVector3(lightColor.r, lightColor.g, lightColor.b));
+					material->SetVariable<float>("lightSpec", lightColor.a); // specular power is stored in alpha component
+					material->SetVariable<float>("intensity", light->GetIntensity());
+					material->SetVariable<float>("range", light->GetRange());
+					material->SetVariable<float>("minCosAngle", light->GetMinCosAngle());
 					float emittingHalfAngle = acosf(light->GetMinCosAngle());
 					float spotRadius = tanf(emittingHalfAngle) * light->GetRange();
-					material->SetVariableFloat("spotRadius", spotRadius);
+					material->SetVariable<float>("spotRadius", spotRadius);
 					material->Bind(rt);
 
 					if (lightTypeAssets.fullscreen_sprite)

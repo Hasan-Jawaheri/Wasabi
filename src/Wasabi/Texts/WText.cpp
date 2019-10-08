@@ -136,6 +136,8 @@ WError WTextComponent::Initialize() {
 	if (ret) {
 		#if defined(__linux__)
 		ret = CreateTextFont(0, "Ubuntu-M");
+		#elif defined(__APPLE__)
+		ret = CreateTextFont(0, "Arial Unicode");
 		#else
 		ret = CreateTextFont(0, "Arial");
 		#endif
@@ -164,18 +166,26 @@ WError WTextComponent::CreateTextFont(uint32_t ID, std::string fontName) {
 
 	std::ifstream ttfFile;
 	ttfFile.open(fontName.c_str(), ios::in | ios::binary);
+	if (!ttfFile.is_open()) {
+		std::for_each(fontName.begin(), fontName.end(), [](char& c) { c = (char)std::toupper(c); });
+		ttfFile.open(fontName.c_str(), ios::in | ios::binary);
+	}
 	for (int i = 0; i < m_directories.size() && !ttfFile.is_open(); i++) {
 		for (auto& dirPath : stdfs::recursive_directory_iterator(m_directories[i])) {
 			stdfs::path p = dirPath;
-			if (p.has_filename() && std::string(p.filename()) == fontName)
-				ttfFile.open(p, ios::in | ios::binary);
+			if (p.has_filename()) {
+				std::string curFontName = p.filename().string();
+				std::for_each(curFontName.begin(), curFontName.end(), [](char& c) { c = (char)std::toupper(c); });
+				if (curFontName == fontName)
+					ttfFile.open(p, ios::in | ios::binary);
+			}
 		}
 	}
 	if (!ttfFile.is_open())
 		return WError(W_FILENOTFOUND);
 
 	ttfFile.seekg(0, std::ios::end);
-	uint32_t fsize = ttfFile.tellg();
+	size_t fsize = (size_t)ttfFile.tellg();
 	ttfFile.seekg(0, std::ios::beg);
 
 	unsigned char* buffer = new unsigned char[fsize+1];

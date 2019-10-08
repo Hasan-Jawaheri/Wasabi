@@ -35,7 +35,7 @@ void RenderTargetTextureDemo::Load() {
 	m_app->TextComponent->CreateTextFont(2, "arial");
 
 	WImage* img = new WImage(m_app);
-	o2->GetMaterial()->SetTexture("diffuseTexture", img);
+	o2->GetMaterials().SetTexture("diffuseTexture", img);
 	img->Load("Media/dummy.bmp");
 	img->RemoveReference();
 
@@ -51,7 +51,7 @@ void RenderTargetTextureDemo::Load() {
 	rt->SetName("Falla RT");
 	rt->Create(640, 480, rtImg);
 	rt->SetClearColor(WColor(0.6f, 0, 0));
-	o->GetMaterial()->SetTexture("diffuseTexture", rtImg);
+	o->GetMaterials().SetTexture("diffuseTexture", rtImg);
 }
 
 void RenderTargetTextureDemo::Update(float fDeltaTime) {

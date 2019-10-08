@@ -5,7 +5,7 @@
 #include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h>
 
 class FilesDemo : public WTestState {
-	WMaterial* m_material;
+	WMaterialCollection m_materials;
 	WObject* m_object;
 	WCamera* m_cam;
 	WSprite* m_sprite;

@@ -412,7 +412,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		return;
 
 	WMatrix worldM = GetWorldMatrix();
-	material->SetVariableMatrix("worldMatrix", worldM);
+	material->SetVariable<WMatrix>("worldMatrix", worldM);
 	material->SetTexture("instancingTexture", m_instanceTexture);
 	material->SetTexture("heightTexture", m_heightTexture);
 	material->SetTexture("diffuseTexture", m_textures);
@@ -535,7 +535,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 	for (auto it : m_pieces) {
 		WGeometry* geometry = it.first;
 		uint32_t numPieces = (uint32_t)it.second.size();
-		material->SetVariableInt("geometryOffsetInTexture", totalNumPieces); // <-- push constant
+		material->SetVariable<int>("geometryOffsetInTexture", totalNumPieces); // <-- push constant
 		material->Bind(rt, false, true);
 		geometry->Draw(rt, (uint32_t)-1, numPieces, false);
 		totalNumPieces += numPieces;

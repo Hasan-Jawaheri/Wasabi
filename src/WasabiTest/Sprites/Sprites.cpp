@@ -38,7 +38,7 @@ void SpritesDemo::Load() {
 	img = m_app->ImageManager->CreateImage("Media/checker.bmp");
 	m_sprites[1] = m_app->SpriteManager->CreateSprite(img);
 	m_sprites[1]->SetPosition(WVector2(100, 100));
-	m_sprites[1]->GetMaterial()->SetVariableFloat("alpha", 0.5f);
+	m_sprites[1]->GetMaterials().SetVariable<float>("alpha", 0.5f);
 	img->RemoveReference();
 	m_sprites[1]->SetPriority(2);
 
@@ -48,12 +48,12 @@ void SpritesDemo::Load() {
 	WEffect* spriteFX = m_app->SpriteManager->CreateSpriteEffect(nullptr, pixel_shader);
 	pixel_shader->RemoveReference();
 
-	m_sprites[2] = m_app->SpriteManager->CreateSprite(img);
-	m_sprites[2]->RemoveEffect(m_sprites[2]->GetDefaultEffect());
-	m_sprites[2]->AddEffect(spriteFX);
-	spriteFX->RemoveReference();
-	m_sprites[2]->SetPosition(WVector2(200, 200));
-	m_sprites[2]->SetSize(WVector2(400, 200));
+	//m_sprites[2] = m_app->SpriteManager->CreateSprite(img);
+	//m_sprites[2]->RemoveEffect(m_sprites[2]->GetDefaultEffect());
+	//m_sprites[2]->AddEffect(spriteFX);
+	//spriteFX->RemoveReference();
+	//m_sprites[2]->SetPosition(WVector2(200, 200));
+	//m_sprites[2]->SetSize(WVector2(400, 200));
 }
 
 void SpritesDemo::Update(float fDeltaTime) {

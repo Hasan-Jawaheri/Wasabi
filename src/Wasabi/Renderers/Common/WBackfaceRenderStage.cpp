@@ -27,7 +27,9 @@ WBackfaceDepthRenderStage::WBackfaceDepthRenderStage(Wasabi* const app) : WRende
 	m_stageDescription.depthOutput = WRenderStage::OUTPUT_IMAGE("BackfaceDepth", VK_FORMAT_D16_UNORM, WColor(1.0f, 0.0f, 0.0f, 0.0f));
 
 	m_perFrameMaterial = nullptr;
+	m_perFrameAnimatedMaterial = nullptr;
 	m_objectsFragment = nullptr;
+	m_animatedObjectsFragment = nullptr;
 }
 
 WError WBackfaceDepthRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
@@ -40,6 +42,11 @@ WError WBackfaceDepthRenderStage::Initialize(std::vector<WRenderStage*>& previou
 	m_app->FileManager->AddDefaultAsset(vs->GetName(), vs);
 	vs->Load();
 
+	WForwardRenderStageAnimatedObjectVS* vsa = new WForwardRenderStageAnimatedObjectVS(m_app);
+	vsa->SetName("DefaultBackfaceAnimatedVS");
+	m_app->FileManager->AddDefaultAsset(vsa->GetName(), vsa);
+	vsa->Load();
+
 	WBackfaceDepthRenderStageObjectPS* ps = new WBackfaceDepthRenderStageObjectPS(m_app);
 	ps->SetName("DefaultBackfacePS");
 	m_app->FileManager->AddDefaultAsset(ps->GetName(), ps);
@@ -48,29 +55,50 @@ WError WBackfaceDepthRenderStage::Initialize(std::vector<WRenderStage*>& previou
 	WEffect* fx = new WEffect(m_app);
 	fx->SetName("DefaultBackfaceEffect");
 	m_app->FileManager->AddDefaultAsset(fx->GetName(), fx);
+
+	WEffect* fxa = new WEffect(m_app);
+	fxa->SetName("DefaultBackfaceAnimatedEffect");
+	m_app->FileManager->AddDefaultAsset(fxa->GetName(), fxa);
+
+	VkPipelineRasterizationStateCreateInfo rs = {};
+	rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rs.polygonMode = VK_POLYGON_MODE_FILL;
+	rs.cullMode = VK_CULL_MODE_FRONT_BIT;
+	rs.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rs.depthClampEnable = VK_FALSE;
+	rs.rasterizerDiscardEnable = VK_FALSE;
+	rs.depthBiasEnable = VK_FALSE;
+	rs.lineWidth = 1.0f;
+
 	err = fx->BindShader(vs);
 	if (err) {
 		err = fx->BindShader(ps);
 		if (err) {
-			VkPipelineRasterizationStateCreateInfo rs = {};
-			rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-			rs.polygonMode = VK_POLYGON_MODE_FILL;
-			rs.cullMode = VK_CULL_MODE_FRONT_BIT;
-			rs.frontFace = VK_FRONT_FACE_CLOCKWISE;
-			rs.depthClampEnable = VK_FALSE;
-			rs.rasterizerDiscardEnable = VK_FALSE;
-			rs.depthBiasEnable = VK_FALSE;
-			rs.lineWidth = 1.0f;
 			fx->SetRasterizationState(rs);
 			err = fx->BuildPipeline(m_renderTarget);
+			if (err) {
+				err = fxa->BindShader(vsa);
+				if (err) {
+					err = fxa->BindShader(ps);
+					if (err) {
+						fxa->SetRasterizationState(rs);
+						err = fxa->BuildPipeline(m_renderTarget);
+					}
+				}
+			}
 		}
 	}
 	W_SAFE_REMOVEREF(vs);
+	W_SAFE_REMOVEREF(vsa);
 	W_SAFE_REMOVEREF(ps);
-	if (!err)
+	if (!err) {
+		W_SAFE_REMOVEREF(fx);
+		W_SAFE_REMOVEREF(fxa);
 		return err;
+	}
 
-	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, fx, m_app, false);
+	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, fx, m_app);
+	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, fxa, m_app);
 
 	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
 	if (!m_perFrameMaterial) {
@@ -80,13 +108,23 @@ WError WBackfaceDepthRenderStage::Initialize(std::vector<WRenderStage*>& previou
 		m_app->FileManager->AddDefaultAsset(m_perFrameMaterial->GetName(), m_perFrameMaterial);
 	}
 
+	m_perFrameAnimatedMaterial = m_animatedObjectsFragment->GetEffect()->CreateMaterial(1);
+	if (!m_perFrameAnimatedMaterial) {
+		err = WError(W_ERRORUNK);
+	} else {
+		m_perFrameAnimatedMaterial->SetName("PerFrameForwardAnimatedMaterial");
+		m_app->FileManager->AddDefaultAsset(m_perFrameAnimatedMaterial->GetName(), m_perFrameAnimatedMaterial);
+	}
+
 	return err;
 }
 
 void WBackfaceDepthRenderStage::Cleanup() {
 	WRenderStage::Cleanup();
 	W_SAFE_REMOVEREF(m_perFrameMaterial);
+	W_SAFE_REMOVEREF(m_perFrameAnimatedMaterial);
 	W_SAFE_DELETE(m_objectsFragment);
+	W_SAFE_DELETE(m_animatedObjectsFragment);
 }
 
 WError WBackfaceDepthRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
@@ -94,12 +132,20 @@ WError WBackfaceDepthRenderStage::Render(WRenderer* renderer, WRenderTarget* rt,
 		WCamera* cam = rt->GetCamera();
 
 		// create the per-frame UBO data
-		m_perFrameMaterial->SetVariableMatrix("viewMatrix", cam->GetViewMatrix());
-		m_perFrameMaterial->SetVariableMatrix("projectionMatrix", cam->GetProjectionMatrix());
-		m_perFrameMaterial->SetVariableVector3("camPosW", cam->GetPosition());
+		m_perFrameMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
+		m_perFrameMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
+		m_perFrameMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
 		m_perFrameMaterial->Bind(rt);
 
 		m_objectsFragment->Render(renderer, rt);
+
+		// create the per-frame UBO data
+		m_perFrameAnimatedMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
+		m_perFrameAnimatedMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
+		m_perFrameAnimatedMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
+		m_perFrameAnimatedMaterial->Bind(rt);
+
+		m_animatedObjectsFragment->Render(renderer, rt);
 	}
 
 	return WError(W_SUCCEEDED);

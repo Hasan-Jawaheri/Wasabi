@@ -320,42 +320,6 @@ WEffect* WMaterial::GetEffect() const {
 	return m_effect;
 }
 
-WError WMaterial::SetVariableFloat(const char* varName, float fVal) {
-	return SetVariableData(varName, &fVal, sizeof(float));
-}
-
-WError WMaterial::SetVariableFloatArray(const char* varName, float* fArr, int num_elements) {
-	return SetVariableData(varName, fArr, sizeof(float) * num_elements);
-}
-
-WError WMaterial::SetVariableInt(const char* varName, int iVal) {
-	return SetVariableData(varName, &iVal, sizeof(int));
-}
-
-WError WMaterial::SetVariableIntArray(const char* varName, int* iArr, int num_elements) {
-	return SetVariableData(varName, iArr, sizeof(int) * num_elements);
-}
-
-WError WMaterial::SetVariableMatrix(const char* varName, WMatrix mtx) {
-	return SetVariableData(varName, &mtx, sizeof(float) * 4 * 4);
-}
-
-WError WMaterial::SetVariableVector2(const char* varName, WVector2 vec) {
-	return SetVariableData(varName, &vec, sizeof(WVector2));
-}
-
-WError WMaterial::SetVariableVector3(const char* varName, WVector3 vec) {
-	return SetVariableData(varName, &vec, sizeof(WVector3));
-}
-
-WError WMaterial::SetVariableVector4(const char* varName, WVector4 vec) {
-	return SetVariableData(varName, &vec, sizeof(WVector4));
-}
-
-WError WMaterial::SetVariableColor(const char* varName, WColor col) {
-	return SetVariableData(varName, &col, sizeof(WColor));
-}
-
 WError WMaterial::SetVariableData(const char* varName, void* data, size_t len) {
 	uint32_t bufferIndex = m_app->GetCurrentBufferingIndex();
 	bool isFound = false;
@@ -574,5 +538,35 @@ WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream, std::ve
 		_DestroyResources();
 
 	return err;
+}
+
+WError WMaterialCollection::SetVariableData(const char* varName, void* data, size_t len) {
+	WError ret = WError(W_NOTVALID);
+	for (auto it : m_materials) {
+		WError err = it.first->SetVariableData(varName, data, len);
+		if (ret != W_SUCCEEDED)
+			ret = err;
+	}
+	return ret;
+}
+
+WError WMaterialCollection::SetTexture(uint32_t bindingIndex, class WImage* img, uint32_t arrayIndex) {
+	WError ret = WError(W_NOTVALID);
+	for (auto it : m_materials) {
+		WError err = it.first->SetTexture(bindingIndex, img, arrayIndex);
+		if (ret != W_SUCCEEDED)
+			ret = err;
+	}
+	return ret;
+}
+
+WError WMaterialCollection::SetTexture(std::string name, class WImage* img, uint32_t arrayIndex) {
+	WError ret = WError(W_NOTVALID);
+	for (auto it : m_materials) {
+		WError err = it.first->SetTexture(name, img, arrayIndex);
+		if (ret != W_SUCCEEDED)
+			ret = err;
+	}
+	return ret;
 }
 

@@ -11,6 +11,13 @@ public:
 	static W_SHADER_DESC GetDesc();
 };
 
+class WGBufferAnimatedVS : public WShader {
+public:
+	WGBufferAnimatedVS(class Wasabi* const app);
+	virtual void Load(bool bSaveData = false);
+	static W_SHADER_DESC GetDesc();
+};
+
 class WGBufferPS : public WShader {
 public:
 	WGBufferPS(class Wasabi* const app);
@@ -21,6 +28,9 @@ public:
 class WGBufferRenderStage : public WRenderStage {
 	WObjectsRenderFragment* m_objectsFragment;
 	class WMaterial* m_perFrameMaterial;
+
+	WObjectsRenderFragment* m_animatedObjectsFragment;
+	class WMaterial* m_perFrameAnimatedMaterial;
 
 public:
 	WGBufferRenderStage(class Wasabi* const app);

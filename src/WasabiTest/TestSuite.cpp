@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ LightsDemo
+#define _DEMO_STATE_CLASSNAME_ AnimationDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo
@@ -91,21 +91,23 @@ WError WasabiTester::Setup() {
 	WTestState* state = new _DEMO_STATE_CLASSNAME_(this);
 	this->maxFPS = 0;
 	this->m_state = state;
-	WError ret = StartEngine(640, 480);
-	if (!ret) {
-		char msg[512];
-		sprintf_s(msg, 512, "Ooops!\n%s", ret.AsString().c_str());
-		WindowAndInputComponent->ShowErrorMessage(msg);
-		return ret;
-	}
+	CheckError(StartEngine(640, 480));
 
-	TextComponent->CreateTextFont(1, "Calibri");
+	std::vector<std::string> fontNames = {
+		"Calibri",
+		"FreeSans",
+	};
+	for (auto fontName : fontNames) {
+		if (TextComponent->CreateTextFont(1, fontName))
+			break;
+	}
+	assert((bool)TextComponent->SetFont(1));
 
 	LightManager->GetDefaultLight()->Point(0, -1, -1);
 
 	SwitchState(state);
 
-	return ret;
+	return WError(W_SUCCEEDED);
 }
 
 bool WasabiTester::Loop(float fDeltaTime) {
@@ -162,6 +164,13 @@ WVector3 WasabiTester::GetCameraPosition() const {
 
 float WasabiTester::GetYawAngle() const {
 	return fYaw;
+}
+
+void WasabiTester::CheckError(WError err) {
+	if (!err) {
+		WindowAndInputComponent->ShowErrorMessage(err.AsString(true).c_str());
+		assert(err == W_SUCCEEDED);
+	}
 }
 
 Wasabi* WInitialize() {

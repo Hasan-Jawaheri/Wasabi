@@ -23,8 +23,8 @@ void LightsDemo::Load() {
 	plainGeometry->CreatePlain(50.0f, 0, 0);
 	m_plain->SetGeometry(plainGeometry);
 	plainGeometry->RemoveReference();
-	m_plain->GetMaterial()->SetVariableColor("color", WColor(0.4f, 0.4f, 0.4f));
-	m_plain->GetMaterial()->SetVariableInt("isTextured", 0);
+	m_plain->GetMaterials().SetVariable<WColor>("color", WColor(0.4f, 0.4f, 0.4f));
+	m_plain->GetMaterials().SetVariable<int>("isTextured", 0);
 
 	// Create the boxes
 	WGeometry* boxGeometry = new WGeometry(m_app);
@@ -37,8 +37,8 @@ void LightsDemo::Load() {
 		box->SetGeometry(boxGeometry);
 		box->SetPosition(x, y, z);
 		m_boxes.push_back(box);
-		box->GetMaterial()->SetVariableColor("color", WColor(0.7f, 0.7f, 0.7f));
-		box->GetMaterial()->SetVariableInt("isTextured", 0);
+		box->GetMaterials().SetVariable<WColor>("color", WColor(0.7f, 0.7f, 0.7f));
+		box->GetMaterials().SetVariable<int>("isTextured", 0);
 	}
 	boxGeometry->RemoveReference();
 
