@@ -25,8 +25,8 @@ WError WParticlesRenderStage::Initialize(std::vector<WRenderStage*>& previousSta
 	for (auto it = types.begin(); it != types.end(); it++) {
 		WEffect* fx = m_app->ParticlesManager->CreateParticlesEffect(*it);
 		if (!fx) {
-			for (auto fx : particleEffects)
-				fx.second->RemoveReference();
+			for (auto particleEffect: particleEffects)
+				particleEffect.second->RemoveReference();
 			return WError(W_OUTOFMEMORY);
 		}
 		fx->SetName("DefaultParticlesFX" + std::to_string(i++));

@@ -271,10 +271,14 @@ public:
 	}
 
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt) {
+		WError err = WError(W_SUCCEEDED);
 		for (auto renderEffect : m_particleEffects) {
 			m_renderEffect = renderEffect.second;
-			WRenderFragment::Render(renderer, rt);
+			err = WRenderFragment::Render(renderer, rt);
+			if (!err)
+				break;
 		}
+		return err;
 	}
 
 	virtual void RenderEntity(WParticles* particles, class WRenderTarget* rt, class WMaterial* material) {
