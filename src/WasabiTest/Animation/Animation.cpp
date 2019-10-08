@@ -27,7 +27,7 @@ void AnimationDemo::Load() {
 	WFile file(m_app);
 	CheckError(file.Open("Media/dante.WSBI"));
 	assert(file.GetAssetsCount() > 0);
-	CheckError(file.LoadAsset<WSkeleton>(file.GetAssetInfo(0).first, &animation, WSkeleton::LoadArgs()));
+	CheckError(file.LoadAsset<WSkeleton>("dante-animation", &animation, WSkeleton::LoadArgs()));
 	file.Close();
 
 	CheckError(character->SetAnimation(animation));
