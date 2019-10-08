@@ -24,8 +24,11 @@ WError WParticlesRenderStage::Initialize(std::vector<WRenderStage*>& previousSta
 	vector<W_DEFAULT_PARTICLE_EFFECT_TYPE> types({ W_DEFAULT_PARTICLES_ALPHA, W_DEFAULT_PARTICLES_ADDITIVE, W_DEFAULT_PARTICLES_SUBTRACTIVE });
 	for (auto it = types.begin(); it != types.end(); it++) {
 		WEffect* fx = m_app->ParticlesManager->CreateParticlesEffect(*it);
-		if (!fx)
+		if (!fx) {
+			for (auto fx : particleEffects)
+				fx.second->RemoveReference();
 			return WError(W_OUTOFMEMORY);
+		}
 		fx->SetName("DefaultParticlesFX" + std::to_string(i++));
 		m_app->FileManager->AddDefaultAsset(fx->GetName(), fx);
 
