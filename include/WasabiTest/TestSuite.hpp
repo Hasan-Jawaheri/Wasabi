@@ -25,11 +25,17 @@ public:
 	virtual WError SetupRenderer();
 	virtual WPhysicsComponent* CreatePhysicsComponent();
 	virtual WSoundComponent* CreateSoundComponent();
+
+	void CheckError(WError err);
 };
 
 class WTestState : public WGameState {
 public:
 	WTestState(Wasabi* const app) : WGameState(app) {}
+
+	void CheckError(WError err) {
+		((WasabiTester*)m_app)->CheckError(err);
+	}
 
 	virtual WError SetupRenderer() {
 		return WInitializeForwardRenderer(m_app);

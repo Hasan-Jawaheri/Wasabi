@@ -8,11 +8,8 @@
 #include "Wasabi/Cameras/WCamera.h"
 
 #include "Wasabi/Objects/WObject.h"
-
 #include "Wasabi/Terrains/WTerrain.h"
-
 #include "Wasabi/Sprites/WSprite.h"
-
 #include "Wasabi/Particles/WParticles.h"
 
 #include <map>
@@ -87,26 +84,22 @@ public:
 		UNREFERENCED_PARAMETER(renderer);
 
 		WEffect* boundFX = nullptr;
-		bool isBoundFXAnimated = false;
 		std::vector<SortingKeyT> reindexEntities;
 		for (auto it = m_allEntities.begin(); it != m_allEntities.end(); it++) {
 			EntityT* entity = it->second;
-			WEffect* effect = m_renderEffect;
-			WMaterial* material = entity->GetMaterial(effect);
-			if (!material)
-				material = entity->GetMaterial();
-			effect = material->GetEffect(); // in case m_renderEffect is null, then effect is the (default) material's effect
-			if (material && entity->WillRender(rt)) {
-				bool isAnimated = IsEntityAnimated(entity);
-				if (boundFX != effect || (isAnimated != isBoundFXAnimated)) {
-					effect->Bind(rt, isAnimated ? 2 : 1);
-					boundFX = effect;
-					isBoundFXAnimated = isAnimated;
-				}
-				if (KeyChanged(entity, effect, it->first))
-					reindexEntities.push_back(it->first);
+			if (ShouldRenderEntity(entity)) {
+				WEffect* effect = m_renderEffect;
+				WMaterial* material = entity->GetMaterial(effect);
+				if (material && entity->WillRender(rt)) {
+					if (boundFX != effect) {
+						effect->Bind(rt);
+						boundFX = effect;
+					}
+					if (KeyChanged(entity, effect, it->first))
+						reindexEntities.push_back(it->first);
 
-				RenderEntity(entity, rt, material);
+					RenderEntity(entity, rt, material);
+				}
 			}
 		}
 		for (auto it = reindexEntities.begin(); it != reindexEntities.end(); it++) {
@@ -119,9 +112,9 @@ public:
 
 	virtual void RenderEntity(EntityT* entity, class WRenderTarget* rt, class WMaterial* material) = 0;
 
-	virtual bool KeyChanged(EntityT* entity, class WEffect* effect, SortingKeyT key) = 0;
+	virtual bool ShouldRenderEntity(EntityT*) { return true; };
 
-	virtual bool IsEntityAnimated(EntityT* entity) = 0;
+	virtual bool KeyChanged(EntityT* entity, class WEffect* effect, SortingKeyT key) = 0;
 
 	virtual void OnEntityAdded(EntityT* entity) {
 		entity->AddEffect(m_renderEffect, 0);
@@ -131,62 +124,57 @@ public:
 
 
 struct WObjectSortingKey {
-	class WEffect* fx;
 	class WObject* obj;
-	bool animated;
 
 	WObjectSortingKey(class WObject* object) {
 		obj = object;
-		fx = obj->GetDefaultEffect();
-		animated = obj->GetAnimation() != nullptr;
 	}
 
 	const bool operator< (const WObjectSortingKey& that) const {
-		if (animated != that.animated)
-			return !animated;
-		return (void*)fx < (void*)that.fx ? true : fx == that.fx ? (obj < that.obj) : false;
+		return (obj < that.obj);
 	}
 
 	class WObject* GetEntity() { return obj; }
 };
 
 class WObjectsRenderFragment : public WRenderFragment<WObject, WObjectSortingKey> {
-	bool m_setEffectDefault;
+	bool m_animated;
 
 public:
-	WObjectsRenderFragment(std::string fragmentName, WEffect* fx, class Wasabi* wasabi, bool setEffectDefault = true) : WRenderFragment(fragmentName, fx, wasabi->ObjectManager) {
-		m_setEffectDefault = setEffectDefault;
+	WObjectsRenderFragment(std::string fragmentName, bool animated, WEffect* fx, class Wasabi* wasabi) : WRenderFragment(fragmentName, fx, wasabi->ObjectManager) {
+		m_animated = animated;
 	}
 
 	virtual void RenderEntity(WObject* object, class WRenderTarget* rt, class WMaterial* material) {
 		object->Render(rt, material);
 	}
 
-	virtual bool KeyChanged(WObject* object, class WEffect* effect, WObjectSortingKey key) {
-		return effect != key.fx || IsEntityAnimated(object) != key.animated;
+	virtual bool KeyChanged(WObject* obj, class WEffect* effect, WObjectSortingKey key) {
+		UNREFERENCED_PARAMETER(obj);
+		UNREFERENCED_PARAMETER(effect);
+		UNREFERENCED_PARAMETER(key);
+		return false;
 	}
 
-	virtual bool IsEntityAnimated(WObject* object) {
-		return object->GetAnimation() != nullptr;
-	}
+	virtual bool ShouldRenderEntity(WObject* object) {
+		return (object->GetAnimation() != nullptr) == m_animated;
+	};
 
 	virtual void OnEntityAdded(WObject* object) {
-		object->AddEffect(m_renderEffect, 0, m_setEffectDefault);
+		object->AddEffect(m_renderEffect, 0);
 		object->GetMaterial(m_renderEffect)->SetName(GenerateMaterialName());
 	}
 };
 
 struct WTerrainSortingKey {
-	class WEffect* fx;
 	class WTerrain* terrain;
 
 	WTerrainSortingKey(class WTerrain* t) {
 		terrain = t;
-		fx = terrain->GetDefaultEffect();
 	}
 
 	const bool operator< (const WTerrainSortingKey& that) const {
-		return (void*)fx < (void*)that.fx ? true : fx == that.fx ? (terrain < that.terrain) : false;
+		return (terrain < that.terrain);
 	}
 
 	class WTerrain* GetEntity() { return terrain; }
@@ -203,7 +191,9 @@ public:
 
 	virtual bool KeyChanged(WTerrain* terrain, class WEffect* effect, WTerrainSortingKey key) {
 		UNREFERENCED_PARAMETER(terrain);
-		return effect != key.fx;
+		UNREFERENCED_PARAMETER(effect);
+		UNREFERENCED_PARAMETER(key);
+		return false;
 	}
 
 	virtual bool IsEntityAnimated(WTerrain* terrain) {
@@ -214,20 +204,18 @@ public:
 
 
 struct WSpriteSortingKey {
-	class WEffect* fx;
 	class WSprite* sprite;
 	uint32_t priority;
 
 	WSpriteSortingKey(class WSprite* spr) {
 		sprite = spr;
-		fx = spr->GetDefaultEffect();
 		priority = spr->GetPriority();
 	}
 
 	const bool operator< (const WSpriteSortingKey& that) const {
 		if (priority != that.priority)
 			return priority < that.priority;
-		return (void*)fx < (void*)that.fx ? true : fx == that.fx ? (sprite < that.sprite) : false;
+		return (sprite < that.sprite);
 	}
 
 	class WSprite* GetEntity() { return sprite; }
@@ -244,7 +232,8 @@ public:
 	}
 
 	virtual bool KeyChanged(WSprite* sprite, class WEffect* effect, WSpriteSortingKey key) {
-		return effect != key.fx || sprite->GetPriority() != key.priority;
+		UNREFERENCED_PARAMETER(effect);
+		return sprite->GetPriority() != key.priority;
 	}
 
 	virtual bool IsEntityAnimated(WSprite* sprite) {
@@ -255,20 +244,18 @@ public:
 
 
 struct WParticlesSortingKey {
-	class WEffect* fx;
 	class WParticles* particles;
 	uint32_t priority;
 
 	WParticlesSortingKey(class WParticles* par) {
 		particles = par;
 		priority = par->GetPriority();
-		fx = par->GetDefaultEffect();
 	}
 
 	const bool operator< (const WParticlesSortingKey& that) const {
 		if (priority != that.priority)
 			return priority < that.priority;
-		return (void*)fx < (void*)that.fx ? true : fx == that.fx ? (particles < that.particles) : false;
+		return (particles < that.particles);
 	}
 
 	class WParticles* GetEntity() { return particles; }
@@ -283,12 +270,24 @@ public:
 		m_particleEffects = effects;
 	}
 
+	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt) {
+		WError err = WError(W_SUCCEEDED);
+		for (auto renderEffect : m_particleEffects) {
+			m_renderEffect = renderEffect.second;
+			err = WRenderFragment::Render(renderer, rt);
+			if (!err)
+				break;
+		}
+		return err;
+	}
+
 	virtual void RenderEntity(WParticles* particles, class WRenderTarget* rt, class WMaterial* material) {
 		particles->Render(rt, material);
 	}
 
 	virtual bool KeyChanged(WParticles* particles, class WEffect* effect, WParticlesSortingKey key) {
-		return effect != key.fx || particles->GetPriority() != key.priority;
+		UNREFERENCED_PARAMETER(effect);
+		return particles->GetPriority() != key.priority;
 	}
 
 	virtual bool IsEntityAnimated(WParticles* sprite) {
@@ -304,4 +303,3 @@ public:
 		}
 	}
 };
-

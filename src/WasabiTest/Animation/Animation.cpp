@@ -6,14 +6,18 @@ AnimationDemo::AnimationDemo(Wasabi* const app) : WTestState(app) {
 
 void AnimationDemo::Load() {
 	WGeometry* geometry = new WGeometry(m_app);
-	geometry->LoadFromHXM("Media/dante.HXM");
+	CheckError(geometry->LoadFromHXM("Media/dante.HXM"));
 
 	WImage* texture = m_app->ImageManager->CreateImage("Media/dante.bmp");
+	assert(texture != nullptr);
 
 	character = m_app->ObjectManager->CreateObject();
-	character->SetGeometry(geometry);
-	//character->GetMaterial()->SetVariableColor("color", WColor(1, 0, 0));
-	character->GetMaterial()->SetTexture("diffuseTexture", texture);
+	assert(character!= nullptr);
+	CheckError(character->SetGeometry(geometry));
+	//character->GetMaterial()->SetVariable<WColor>("color", WColor(1, 0, 0));
+	CheckError(character->GetMaterials().SetTexture("diffuseTexture", texture));
+
+	((WasabiTester*)m_app)->SetCameraPosition(WVector3(0, geometry->GetMaxPoint().y / 2, 0));
 
 	// don't need these anymore, character has the reference to them
 	geometry->RemoveReference();
@@ -21,18 +25,17 @@ void AnimationDemo::Load() {
 
 	WSkeleton* animation;
 	WFile file(m_app);
-	file.Open("Media/dante.WSBI");
-	file.LoadAsset<WSkeleton>(file.GetAssetInfo(0).first, &animation, WSkeleton::LoadArgs());
+	CheckError(file.Open("Media/dante.WSBI"));
+	assert(file.GetAssetsCount() > 0);
+	CheckError(file.LoadAsset<WSkeleton>("dante-animation", &animation, WSkeleton::LoadArgs()));
 	file.Close();
 
-	character->SetAnimation(animation);
+	CheckError(character->SetAnimation(animation));
 	animation->SetPlaySpeed(20.0f);
 	animation->Loop();
 
 	// don't need this anymore
 	animation->RemoveReference();
-
-	((WasabiTester*)m_app)->SetCameraPosition(WVector3(0, geometry->GetMaxPoint().y / 2, 0));
 }
 
 void AnimationDemo::Update(float fDeltaTime) {

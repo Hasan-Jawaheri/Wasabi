@@ -74,95 +74,30 @@ public:
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
-	 * and whose type is a float. If multiple variables have the same name, they
+	 * and whose type is T. If multiple variables have the same name, they
 	 * will all be set.
 	 * @param  varName Name of the variable to set
-	 * @param  fVal    Value to set
+	 * @param  value   Value to set
 	 * @return         Error code, see WError.h
 	 */
-	WError SetVariableFloat(const char* varName, float fVal);
+	template<typename T>
+	WError SetVariable(const char* varName, T value) {
+		return SetVariableData(varName, &value, sizeof(T));
+	}
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
-	 * and whose type is an array of floats. If multiple variables have the same
-	 * name, they will all be set.
-	 * @param  varName      Name of the variable to set
-	 * @param  fArr         Address of the array to set
-	 * @param  num_elements Number of elements in fArr
-	 * @return              Error code, see WError.h
-	 */
-	WError SetVariableFloatArray(const char* varName, float* fArr, int num_elements);
-
-	/**
-	 * Sets a variable in one of the bound effect's shaders whose name is varName
-	 * and whose type is an integer. If multiple variables have the same name,
-	 * they will all be set.
-	 * @param  varName Name of the variable to set
-	 * @param  iVal    Value to set
-	 * @return         Error code, see WError.h
-	 */
-	WError SetVariableInt(const char* varName, int iVal);
-	
-	/**
-	 * Sets a variable in one of the bound effect's shaders whose name is varName
-	 * and whose type is an array of integers. If multiple variables have the
+	 * and whose type is an array of T. If multiple variables have the
 	 * same name, they will all be set.
 	 * @param  varName      Name of the variable to set
-	 * @param  iArr         Address of the array to set
-	 * @param  num_elements Number of elements in fArr
+	 * @param  arr          Address of the array to set
+	 * @param  numElements  Number of elements in arr
 	 * @return              Error code, see WError.h
 	 */
-	WError SetVariableIntArray(const char* varName, int* iArr, int num_elements);
-
-	/**
-	 * Sets a variable in one of the bound effect's shaders whose name is varName
-	 * and whose type is a matrix. If multiple variables have the same name, they
-	 * will all be set.
-	 * @param  varName Name of the variable to set
-	 * @param  mtx     Value to set
-	 * @return         Error code, see WError.h
-	 */
-	WError SetVariableMatrix(const char* varName, WMatrix mtx);
-
-	/**
-	 * Sets a variable in one of the bound effect's shaders whose name is varName
-	 * and whose type is a 2D vector. If multiple variables have the same name,
-	 * they will all be set.
-	 * @param  varName Name of the variable to set
-	 * @param  vec     Value to set
-	 * @return         Error code, see WError.h
-	 */
-	WError SetVariableVector2(const char* varName, WVector2 vec);
-
-	/**
-	 * Sets a variable in one of the bound effect's shaders whose name is varName
-	 * and whose type is a 3D vector. If multiple variables have the same name,
-	 * they will all be set.
-	 * @param  varName Name of the variable to set
-	 * @param  vec     Value to set
-	 * @return         Error code, see WError.h
-	 */
-	WError SetVariableVector3(const char* varName, WVector3 vec);
-
-	/**
-	 * Sets a variable in one of the bound effect's shaders whose name is varName
-	 * and whose type is a 4D vector. If multiple variables have the same name,
-	 * they will all be set.
-	 * @param  varName Name of the variable to set
-	 * @param  vec     Value to set
-	 * @return         Error code, see WError.h
-	 */
-	WError SetVariableVector4(const char* varName, WVector4 vec);
-
-	/**
-	 * Sets a variable in one of the bound effect's shaders whose name is varName
-	 * and whose type is a color. If multiple variables have the same name,
-	 * they will all be set.
-	 * @param  varName Name of the variable to set
-	 * @param  col     Value to set
-	 * @return         Error code, see WError.h
-	 */
-	WError SetVariableColor(const char* varName, WColor col);
+	template<typename T>
+	WError SetVariableArray(const char* varName, T* arr, int numElements) {
+		return SetVariableData(varName, arr, sizeof(T) * numElements);
+	}
 
 	/**
 	 * Sets a variable in one of the bound effect's shaders whose name is varName
@@ -266,6 +201,27 @@ private:
 	 * Frees all resources allocated for the material.
 	 */
 	void _DestroyResources();
+};
+
+/**
+ * Helper class to deal with a collection of materials using the same interface as
+ * a single one.
+ */
+class WMaterialCollection {
+public:
+	std::unordered_map<WMaterial*, bool> m_materials;
+
+	template<typename T>
+	WError SetVariable(const char* varName, T value) {
+		return SetVariableData(varName, &value, sizeof(T));
+	}
+	template<typename T>
+	WError SetVariableArray(const char* varName, T* arr, int numElements) {
+		return SetVariableData(varName, arr, sizeof(T) * numElements);
+	}
+	WError SetVariableData(const char* varName, void* data, size_t len);
+	WError SetTexture(uint32_t bindingIndex, class WImage* img, uint32_t arrayIndex = 0);
+	WError SetTexture(std::string name, class WImage* img, uint32_t arrayIndex = 0);
 };
 
 /**

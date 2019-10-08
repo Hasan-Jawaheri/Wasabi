@@ -512,6 +512,7 @@ WTextComponent* Wasabi::CreateTextComponent() {
 	WTextComponent* tc = new WTextComponent(this);
 
 #ifdef _WIN32
+	// windows fonts
 	char dir[MAX_PATH];
 	int size = MAX_PATH;
 	GetWindowsDirectoryA(dir, size);
@@ -520,7 +521,11 @@ WTextComponent* Wasabi::CreateTextComponent() {
 		s += '/';
 	tc->AddFontDirectory(s + "fonts");
 #elif defined(__linux__)
+	// linux fonts
 	tc->AddFontDirectory("/usr/share/fonts/");
+#elif defined(__APPLE__)
+	// mac fonts
+	tc->AddFontDirectory("/Library/Fonts/");
 #endif
 	return tc;
 }

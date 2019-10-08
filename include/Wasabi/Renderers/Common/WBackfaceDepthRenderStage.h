@@ -19,7 +19,9 @@ public:
  */
 class WBackfaceDepthRenderStage : public WRenderStage {
 	WObjectsRenderFragment* m_objectsFragment;
+	WObjectsRenderFragment* m_animatedObjectsFragment;
 	class WMaterial* m_perFrameMaterial;
+	class WMaterial* m_perFrameAnimatedMaterial;
 
 public:
 	WBackfaceDepthRenderStage(class Wasabi* const app);

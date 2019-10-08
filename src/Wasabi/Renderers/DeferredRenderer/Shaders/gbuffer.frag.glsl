@@ -7,10 +7,9 @@ layout(set = 0, binding = 0) uniform UBOPerObject {
 	mat4 worldMatrix;
 	int animationTextureWidth;
 	int instanceTextureWidth;
-	int isAnimated;
 	int isInstanced;
-	vec4 color;
 	int isTextured;
+	vec4 color;
 } uboPerObject;
 
 layout(set = 0, binding = 4) uniform sampler2D diffuseTexture[8];

@@ -408,4 +408,3 @@ VkSampler WRenderer::GetTextureSampler(W_TEXTURE_SAMPLER_TYPE type) const {
 	UNREFERENCED_PARAMETER(type);
 	return m_sampler;
 }
-

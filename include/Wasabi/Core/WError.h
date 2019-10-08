@@ -84,13 +84,23 @@ public:
 
 	/**
 	 * Retrieves the string corresponding to the carried error.
+	 * @param getBacktrace  Whether or not to include a backtrace in the returned string
 	 * @return A string corresponding to m_error
 	 */
-	std::string AsString() const;
+	std::string AsString(bool getBacktrace = false) const;
 
 	/**
 	 * Evaluates this error code to a boolean.
 	 * @return return true if m_error == W_SUCCEEDED, false otherwise
 	 */
 	operator bool();
+
+	/** Performs == on the underlying m_error */
+	bool operator == (const WError& other) const;
+	/** Performs == on the underlying m_error */
+	bool operator == (const W_ERROR& other) const;
+	/** Performs != on the underlying m_error */
+	bool operator != (const WError& other) const;
+	/** Performs != on the underlying m_error */
+	bool operator != (const W_ERROR& other) const;
 };

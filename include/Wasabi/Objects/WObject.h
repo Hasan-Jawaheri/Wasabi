@@ -112,8 +112,6 @@ public:
 	 * object binds the provided material (WMaterial::Bind()), it will set the
 	 * following variables and resources in the material, if they exist:
 	 * * "worldMatrix" (WMatrix) will be set to the world matrix of this object.
-	 * * "isAnimated" (int) will be set to 1 if animation data is available,
-	 * 		0 otherwise.
 	 * * "isInstanced" (int) will be set to 1 if instancing data is available,
 	 * 		0 otherwise.
 	 * * "animationTextureWidth" (int) will be set to the width of the
@@ -121,8 +119,8 @@ public:
 	 * * "instanceTextureWidth" (int) will be set to the width of the
 	 * 		instancing texture. This will only be set if gInstancing was set to 1.
 	 * * texture "animationTexture" will be assigned to the animation texture
-	 *      from the attached animation. This will only occur if isAnimated was
-	 *      set to 1.
+	 *      from the attached animation. This will only occur if the object's
+	 *      material is rigged and there is an animation supplied.
 	 * * texture "instancingTexture" will be assigned to the instancing texture
 	 * 	    created by this object. This will only occur if isInstanced was set
 	 *      to 1.

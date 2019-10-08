@@ -25,7 +25,6 @@ layout(set = 0, binding = 0) uniform UBO {
 	mat4 worldMatrix;
 	int animationTextureWidth;
 	int instanceTextureWidth;
-	int isAnimated;
 	int isInstanced;
 	vec4 color;
 	int isTextured;
@@ -47,12 +46,12 @@ layout(location = 1) out vec3 outWorldPos;
 layout(location = 2) out vec3 outWorldNorm;
 layout(location = 3) flat out uint32_t outTexIndex;
 void main() {
-	mat4x4 animMtx = mat4x4(1.0) * (1 - uboPerObject.isAnimated);
+	mat4x4 animMtx = mat4x4(1.0);
 	mat4x4 instMtx =
 		uboPerObject.isInstanced == 1
 		? LoadMatrixFromTexture(gl_InstanceIndex, instancingTexture, uboPerObject.instanceTextureWidth)
 		: mat4x4(1.0f);
-	if (inBoneWeight.x * uboPerObject.isAnimated > 0.001f) {
+	if (inBoneWeight.x > 0.001f) {
 		animMtx += inBoneWeight.x * LoadMatrixFromTexture(int(inBoneIndex.x), animationTexture, uboPerObject.animationTextureWidth);
 		if (inBoneWeight.y > 0.001f) {
 			animMtx += inBoneWeight.y * LoadMatrixFromTexture(int(inBoneIndex.y), animationTexture, uboPerObject.animationTextureWidth);

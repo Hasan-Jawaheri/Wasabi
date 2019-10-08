@@ -24,10 +24,10 @@ static void ConvertVertices(void* vbFrom, void* vbTo, uint32_t numVerts, W_VERTE
 		char* myvtx = (char*)vbTo + vtxSize * i;
 		for (int j = 0; j < vtxTo.attributes.size(); j++) {
 			std::string name = vtxTo.attributes[j].name;
-			size_t off_in_from = vtxFrom.GetOffset(name);
+			size_t offInFrom = vtxFrom.GetOffset(name);
 			uint32_t index_in_from = vtxFrom.GetIndex(name);
-			if (off_in_from >= 0 && vtxTo.attributes[j].numComponents == vtxFrom.attributes[index_in_from].numComponents)
-				memcpy(myvtx + vtxTo.GetOffset(name), fromvtx + off_in_from, vtxTo.attributes[j].numComponents * 4);
+			if (offInFrom != (size_t)-1 && vtxTo.attributes[j].numComponents == vtxFrom.attributes[index_in_from].numComponents)
+				memcpy(myvtx + vtxTo.GetOffset(name), fromvtx + offInFrom, vtxTo.attributes[j].numComponents * 4);
 		}
 	}
 }
@@ -1270,11 +1270,9 @@ WError WGeometry::Draw(WRenderTarget* rt, uint32_t numIndices, uint32_t numInsta
 	VkDeviceSize offsets[] = { 0, 0 };
 	uint32_t bufferIndex = m_app->GetCurrentBufferingIndex();
 	VkBuffer bindings[] = { m_vertices.GetBuffer(m_app, bufferIndex), VK_NULL_HANDLE };
-	if (m_animationbuf.Valid())
+	if (bind_animation && m_animationbuf.Valid())
 		bindings[1] = m_animationbuf.GetBuffer(m_app, bufferIndex);
-	else
-		bindings[1] = bindings[0];
-	vkCmdBindVertexBuffers(renderCmdBuffer, 0, bind_animation ? 2 : 1, bindings, offsets);
+	vkCmdBindVertexBuffers(renderCmdBuffer, 0, bindings[1] == VK_NULL_HANDLE ? 1 : 2, bindings, offsets);
 
 	if (m_indices.Valid()) {
 		if (numIndices == (uint32_t)-1 || numIndices > m_numIndices)

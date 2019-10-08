@@ -10,6 +10,6 @@
 [submodule "dependencies/stb"]
 	path = dependencies/stb
 	url = https://github.com/nothings/stb.git
-[submodule "dependencies/Boxer"]
-	path = dependencies/Boxer
-	url = https://github.com/aaronmjacobs/Boxer
+[submodule "dependencies/tinyfiledialogs"]
+	path = dependencies/tinyfiledialogs
+	url = https://github.com/native-toolkit/tinyfiledialogs

@@ -25,11 +25,9 @@ WError WObjectManager::Load() {
 
 WObject* WObjectManager::CreateObject(uint32_t ID) const {
 	WObject* object = new WObject(m_app, ID);
-	WMaterial* mat = object->GetMaterial();
-	if (mat) {
-		mat->SetVariableColor("color", WColor(0.0f, 0.0f, 0.0f, 0.0f));
-		mat->SetVariableInt("isTextured", 1);
-	}
+	WMaterialCollection mats = object->GetMaterials();
+	mats.SetVariable<WColor>("color", WColor(0.0f, 0.0f, 0.0f, 0.0f));
+	mats.SetVariable<int>("isTextured", 1);
 	return object;
 }
 
@@ -244,18 +242,18 @@ void WObject::Render(WRenderTarget* rt, WMaterial* material, bool updateInstance
 
 	if (material) {
 		WMatrix worldM = GetWorldMatrix();
-		material->SetVariableMatrix("worldMatrix", worldM);
+		material->SetVariable<WMatrix>("worldMatrix", worldM);
 		// animation variables
-		material->SetVariableInt("isAnimated", is_animated ? 1 : 0);
-		material->SetVariableInt("isInstanced", is_instanced ? 1 : 0);
+		material->SetVariable<int>("isAnimated", is_animated ? 1 : 0);
+		material->SetVariable<int>("isInstanced", is_instanced ? 1 : 0);
 		if (is_animated) {
 			WImage* animTex = m_animation->GetTexture();
-			material->SetVariableInt("animationTextureWidth", animTex->GetWidth());
+			material->SetVariable<int>("animationTextureWidth", animTex->GetWidth());
 			material->SetTexture("animationTexture", animTex);
 		}
 		// instancing variables
 		if (is_instanced) {
-			material->SetVariableInt("instanceTextureWidth", m_instanceTexture->GetWidth());
+			material->SetVariable<int>("instanceTextureWidth", m_instanceTexture->GetWidth());
 			material->SetTexture("instancingTexture", m_instanceTexture);
 		}
 		material->Bind(rt);
@@ -474,12 +472,8 @@ WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
 
 	char tmpName[W_MAX_ASSET_NAME_SIZE];
 	std::vector<WFileAsset*> dependencies({ m_geometry, m_animation });
-	if (m_defaultEffect)
-		dependencies.push_back(GetMaterial());
-	for (auto it = m_materialMap.begin(); it != m_materialMap.end(); it++) {
-		if (it->first != m_defaultEffect)
-			dependencies.push_back(it->second);
-	}
+	for (auto mat : m_materialsCollection->m_materials)
+		dependencies.push_back(mat.first);
 
 	for (uint32_t i = 0; i < dependencies.size(); i++) {
 		if (dependencies[i])
@@ -570,10 +564,7 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 			WMaterial* mat;
 			status = file->LoadAsset<WMaterial>(dependencies[i], &mat, WMaterial::LoadArgs(), nameSuffix); // copy the materials (if required)
 			if (status) {
-				mat->GetEffect()->AddReference();
-				m_materialMap.insert(std::make_pair(mat->GetEffect(), mat));
-				if (!m_defaultEffect)
-					m_defaultEffect = mat->GetEffect();
+				_AddMaterial(mat);
 			}
 		}
 	}
@@ -583,4 +574,3 @@ WError WObject::LoadFromStream(WFile* file, std::istream& inputStream, std::vect
 
 	return status;
 }
-

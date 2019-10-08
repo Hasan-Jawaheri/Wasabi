@@ -575,14 +575,9 @@ public:
 	 * convenience when one wishes to use the same effect without supplying all
 	 * required vertex shaders.
 	 * @param  rt Render target that the effect plans on rendering to
-	 * @param  buildMultiplePipelines If set to true, multiple pipelines will be
-	 *                                created for 0 input layouts, 1 input layout,
-	 *                                2...n input layouts so the pipeline can be
-	 *                                used with less-than-total vertex buffers
-	 *                                (using WEffect::Bind(rt, num_vertex_buffers))
 	 * @return    Error code, see WError.h
 	 */
-	WError BuildPipeline(class WRenderTarget* rt, bool buildMultiplePipelines = true);
+	WError BuildPipeline(class WRenderTarget* rt);
 
 	/**
 	 * Binds the effect (pipeline) to render command buffer of the specified
@@ -590,14 +585,9 @@ public:
 	 * before this function is called. Binding an effect means binding all
 	 * descriptor sets of all specified materials and binding the effect's pipeline.
 	 * @param  rt                 Render target to bind to its command buffer
-	 * @param  num_vertex_buffers Number of vertex buffers that the effect
-	 *                            should expect to be bound on the pipeline,
-	 *                            value values are between 1 and the number of
-	 *                            input layouts supplied from the shaders (or 0
-	 *                            if no input layouts are present)
 	 * @return                    Error code, see WError.h
 	 */
-	WError Bind(class WRenderTarget* rt, uint32_t num_vertex_buffers = -1);
+	WError Bind(class WRenderTarget* rt);
 
 	/**
 	 * Allocates a new material for this effect.
@@ -647,8 +637,8 @@ public:
 	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
 
 private:
-	/** List of pipelines created for this effect */
-	std::vector<VkPipeline> m_pipelines;
+	/** Vulkan pipeline created for this effect */
+	VkPipeline m_pipeline;
 	/** List of bound shaders */
 	std::vector<WShader*> m_shaders;
 	/** Index of the bound vertex shader (-1 if none is bound) */
