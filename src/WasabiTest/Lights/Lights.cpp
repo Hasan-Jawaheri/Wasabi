@@ -4,7 +4,7 @@
 
 
 LightsDemo::LightsDemo(Wasabi* const app) : WTestState(app) {
-	m_isDeferred = false;
+	m_isDeferred = true;
 	m_plain = nullptr;
 }
 
@@ -16,8 +16,6 @@ WError LightsDemo::SetupRenderer() {
 
 void LightsDemo::Load() {
 	std::srand(3);
-
-	m_app->WindowAndInputComponent->ShowErrorMessage("hello\nmy name is error\nthis is very long this is very long this is very long this is very long this is very long ");
 
 	// Create the plain
 	m_plain = m_app->ObjectManager->CreateObject();
