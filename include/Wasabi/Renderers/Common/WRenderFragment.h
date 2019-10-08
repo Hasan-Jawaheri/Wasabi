@@ -270,6 +270,13 @@ public:
 		m_particleEffects = effects;
 	}
 
+	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt) {
+		for (auto renderEffect : m_particleEffects) {
+			m_renderEffect = renderEffect.second;
+			WRenderFragment::Render(renderer, rt);
+		}
+	}
+
 	virtual void RenderEntity(WParticles* particles, class WRenderTarget* rt, class WMaterial* material) {
 		particles->Render(rt, material);
 	}
@@ -292,4 +299,3 @@ public:
 		}
 	}
 };
-
