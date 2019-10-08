@@ -26,8 +26,8 @@ layout(set = 0, binding = 0) uniform UBO {
 	int animationTextureWidth;
 	int instanceTextureWidth;
 	int isInstanced;
-	vec4 color;
 	int isTextured;
+	vec4 color;
 } uboPerObject;
 
 layout(set = 1, binding = 1) uniform LUBO {
