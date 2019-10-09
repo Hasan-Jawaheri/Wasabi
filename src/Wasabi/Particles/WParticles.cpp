@@ -5,16 +5,15 @@
 #include "Wasabi/Materials/WEffect.h"
 #include "Wasabi/Materials/WMaterial.h"
 #include "Wasabi/Renderers/WRenderer.h"
+#include "Wasabi/Images/WImage.h"
 
-class WParticlesGeometry : public WGeometry {
+class PositionOnlyGeometry : public WGeometry {
 	const W_VERTEX_DESCRIPTION m_desc = W_VERTEX_DESCRIPTION({
 		W_ATTRIBUTE_POSITION,
-		W_VERTEX_ATTRIBUTE("particleUV", 2),
-		W_VERTEX_ATTRIBUTE("particleColor", 4),
 	});
 
 public:
-	WParticlesGeometry(Wasabi* const app, uint32_t ID = 0) : WGeometry(app, ID) {}
+	PositionOnlyGeometry(Wasabi* const app, uint32_t ID = 0) : WGeometry(app, ID) {}
 
 	virtual uint32_t GetVertexBufferCount() const {
 		return 1;
@@ -36,8 +35,10 @@ public:
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerParticles", {
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projectionMatrix"), // projection
+				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projection"),
+				W_SHADER_VARIABLE_INFO(W_TYPE_UINT, "instancingTextureWidth"), // width of the instancing texture
 			}),
+			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "instancingTexture"),
 		};
 	}
 
@@ -45,9 +46,7 @@ public:
 		m_desc.type = W_VERTEX_SHADER;
 		m_desc.bound_resources = GetBoundResources();
 		m_desc.input_layouts = { W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4), // color
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // local position
 		})};
 		vector<uint8_t> code {
 			#include "Shaders/particles.vert.glsl.spv"
@@ -63,7 +62,7 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "diffuseTexture"),
+			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 2, "diffuseTexture"),
 		};
 		vector<uint8_t> code {
 			#include "Shaders/particles.frag.glsl.spv"
@@ -71,6 +70,17 @@ public:
 		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
+
+inline void WParticlesInstance::SetParameters(const WMatrix& WVP, WColor color, WVector2 uvTopLeft, WVector2 uvBottomRight) {
+	mat1 = WVector4(WVP(0, 0), WVP(0, 1), WVP(0, 2), WVP(3, 0));
+	mat2 = WVector4(WVP(1, 0), WVP(1, 1), WVP(1, 2), WVP(3, 1));
+	mat3 = WVector4(WVP(2, 0), WVP(2, 1), WVP(2, 2), WVP(3, 2));
+	colorAndUVs = WVector4(color.r, color.g, color.b, color.a) * 255.1f;
+	colorAndUVs.x = std::floor(colorAndUVs.x) + uvTopLeft.x * 0.98f + 0.01f;
+	colorAndUVs.y = std::floor(colorAndUVs.y) + uvTopLeft.y * 0.98f + 0.01f;
+	colorAndUVs.z = std::floor(colorAndUVs.z) + uvBottomRight.x * 0.98f + 0.01f;
+	colorAndUVs.w = std::floor(colorAndUVs.w) + uvBottomRight.y * 0.98f + 0.01f;
+}
 
 WParticlesBehavior::WParticlesBehavior(uint32_t maxParticles, uint32_t particleSize) {
 	m_maxParticles = maxParticles;
@@ -90,19 +100,19 @@ void WParticlesBehavior::Emit(void* particle) {
 	}
 }
 
-uint32_t WParticlesBehavior::UpdateAndCopyToVB(float curTime, void* vb, uint32_t maxParticles, const WMatrix& worldMatrix, const WMatrix& viewMatrix) {
+uint32_t WParticlesBehavior::UpdateAndCopyToBuffer(float curTime, void* buffer, uint32_t maxParticles, const WMatrix& worldMatrix, WCamera* camera) {
 	UNREFERENCED_PARAMETER(maxParticles);
 
-	UpdateSystem(curTime, worldMatrix, viewMatrix);
+	UpdateSystem(curTime, worldMatrix, camera);
 
 	for (uint32_t i = 0; i < m_numParticles; i++) {
 		void* curParticleData = (char*)m_particlesData + (m_particleSize * i);
-		WParticlesVertex* verticesStart = reinterpret_cast<WParticlesVertex*>(vb) + (i * 4);
-		if (!UpdateParticleVertices(curTime, curParticleData, verticesStart, worldMatrix, viewMatrix)) {
+		WParticlesInstance* outputStart = (reinterpret_cast<WParticlesInstance*>(buffer)) + i;
+		if (!UpdateParticle(curTime, curParticleData, outputStart, worldMatrix, camera)) {
 			if (m_numParticles > 1) {
 				// put the last particle in this particle's place, then decrementing m_numParticles effectively removes this particle
 				memcpy(curParticleData, (char*)m_particlesData + (m_particleSize * (m_numParticles - 1)), m_particleSize);
-				memcpy(verticesStart, reinterpret_cast<WParticlesVertex*>(vb) + ((m_numParticles - 1) * 4), sizeof(WParticlesVertex) * 4);
+				memcpy(outputStart, reinterpret_cast<WParticlesInstance*>(buffer) + (m_numParticles - 1), sizeof(WParticlesInstance));
 			}
 			m_numParticles--;
 			i--;
@@ -131,11 +141,14 @@ WDefaultParticleBehavior::WDefaultParticleBehavior(uint32_t maxParticles)
 		std::make_pair(WColor(1.0f, 1.0f, 1.0f, 1.0f), 0.8f),
 		std::make_pair(WColor(1.0f, 1.0f, 1.0f, 0.0f), 0.0f)
 	};
+	// initially infinite bounding box
+	m_minPoint = WVector3(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+	m_maxPoint = WVector3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 }
 
-void WDefaultParticleBehavior::UpdateSystem(float curTime, const WMatrix& worldMatrix, const WMatrix& viewMatrix) {
+void WDefaultParticleBehavior::UpdateSystem(float curTime, const WMatrix& worldMatrix, WCamera* camera) {
 	UNREFERENCED_PARAMETER(worldMatrix);
-	UNREFERENCED_PARAMETER(viewMatrix);
+	UNREFERENCED_PARAMETER(camera);
 
 	uint32_t numTilesRows = (uint)(ceilf((float)m_numTiles / (float)m_numTilesColumns) + 0.01f);
 	int num_emitted = 0;
@@ -157,16 +170,13 @@ void WDefaultParticleBehavior::UpdateSystem(float curTime, const WMatrix& worldM
 	}
 }
 
-inline bool WDefaultParticleBehavior::UpdateParticleVertices(float curTime, void* particle, WParticlesVertex* vertices, const WMatrix& worldMatrix, const WMatrix& viewMatrix) {
-	Particle* p = (Particle*)particle;
+inline bool WDefaultParticleBehavior::UpdateParticle(float curTime, void* particleData, WParticlesInstance* outputInstance, const WMatrix& worldMatrix, WCamera* camera) {
+	WDefaultParticleBehavior::Particle* p = (WDefaultParticleBehavior::Particle*)particleData;
 	float lifePercentage = (curTime - p->spawnTime) / m_particleLife;
 	if (lifePercentage >= 1.0f)
 		return false;
 
 	float size = WUtil::flerp(m_emissionSize, m_deathSize, lifePercentage);
-	float sizeBillboard = m_type == WDefaultParticleBehavior::Type::BILLBOARD ? size : 0.0f;
-	float sizeNova = m_type == WDefaultParticleBehavior::Type::NOVA ? size : 0.0f;
-	WVector3 particleSize = m_type == BILLBOARD ? WVector3(0, size, 0) : WVector3(size, 0, 0);
 	WVector3 particlePosition = p->initialPos + lifePercentage * m_particleLife * p->velocity;
 	WColor particleColor;
 	float curColorPos = 0.0f;
@@ -178,40 +188,55 @@ inline bool WDefaultParticleBehavior::UpdateParticleVertices(float curTime, void
 		curColorPos += m_colorGradient[i].second;
 	}
 
-	/**
-	 * Vertices are arranged as follows:
-	 * v0-----v1
-	 * |       |
-	 * |       |
-	 * v3-----v2
+	/*
+	 * The geometry is a nova by default (a plain facing up, pointing to Z+).
+	 * To make it a billboard
 	 */
-	for (uint8_t i = 0; i < 4; i++) {
-		// set output vertex UV
-		vertices[i].UV = WVector2(
-			i / 2 == 0 ? p->UVTopLeft.x : p->UVBottomRight.x,
-			i % 2 == 0 ? p->UVTopLeft.y : p->UVBottomRight.y
-		);
-		// set output vertex color
-		memcpy(&(vertices[i].color), &particleColor, sizeof(WColor));
-		// set output vertex position
-		WVector3 localPos = particlePosition + WVector3(i / 2 == 0 ? -sizeNova : sizeNova, 0.0f, i % 2 == 0 ? sizeNova : -sizeNova);
-		WVector3 worldPos = WVec3TransformCoord(localPos, worldMatrix);
-		vertices[i].viewPos = WVec3TransformCoord(worldPos, viewMatrix);
-		vertices[i].viewPos += WVector3(i / 2 == 0 ? -sizeBillboard : sizeBillboard, i % 2 == 0 ? sizeBillboard : -sizeBillboard, 0.0f);
-	}
+	WMatrix view = camera->GetViewMatrix();
+	WMatrix transformation;
+	transformation = WScalingMatrix(WVector3(size, size, size)) * WTranslationMatrix(particlePosition) * worldMatrix;
+	// if (m_type == WDefaultParticleBehavior::Type::BILLBOARD)
+	// 	transformation *=
+	transformation = transformation * view;
+	outputInstance->SetParameters(transformation, particleColor, p->UVTopLeft, p->UVBottomRight);
+
+	// for (uint8_t i = 0; i < 4; i++) {
+	// 	// set output vertex UV
+	// 	vertices[i].UV = WVector2(
+	// 		i / 2 == 0 ? p->UVTopLeft.x : p->UVBottomRight.x,
+	// 		i % 2 == 0 ? p->UVTopLeft.y : p->UVBottomRight.y
+	// 	);
+	// 	// set output vertex color
+	// 	memcpy(&(vertices[i].color), &particleColor, sizeof(WColor));
+	// 	// set output vertex position
+	// 	WVector3 localPos = particlePosition + WVector3(i / 2 == 0 ? -sizeNova : sizeNova, 0.0f, i % 2 == 0 ? sizeNova : -sizeNova);
+	// 	WVector3 worldPos = WVec3TransformCoord(localPos, worldMatrix);
+	// 	vertices[i].viewPos = WVec3TransformCoord(worldPos, viewMatrix);
+	// 	vertices[i].viewPos += WVector3(i / 2 == 0 ? -sizeBillboard : sizeBillboard, i % 2 == 0 ? sizeBillboard : -sizeBillboard, 0.0f);
+	// }
 
 	return true;
+}
+
+inline WVector3& WDefaultParticleBehavior::GetMinPoint() {
+	return m_minPoint;
+}
+
+inline WVector3& WDefaultParticleBehavior::GetMaxPoint() {
+	return m_maxPoint;
 }
 
 WParticlesManager::WParticlesManager(class Wasabi* const app)
 	: WManager<WParticles>(app) {
 	m_vertexShader = nullptr;
 	m_fragmentShader = nullptr;
+	m_plainGeometry = nullptr;
 }
 
 WParticlesManager::~WParticlesManager() {
 	W_SAFE_REMOVEREF(m_vertexShader);
 	W_SAFE_REMOVEREF(m_fragmentShader);
+	W_SAFE_REMOVEREF(m_plainGeometry);
 }
 
 std::string WParticlesManager::GetTypeName() const {
@@ -227,6 +252,17 @@ WError WParticlesManager::Load() {
 	m_fragmentShader->SetName("DefaultParticlesPS");
 	m_app->FileManager->AddDefaultAsset(m_fragmentShader->GetName(), m_fragmentShader);
 	m_fragmentShader->Load();
+
+	m_plainGeometry = new PositionOnlyGeometry(m_app);
+	WParticlesVertex vertices[4];
+	vertices[0].pos = WVector3(-1.0f, 0.0f,  1.0f) * 0.5f;
+	vertices[1].pos = WVector3( 1.0f, 0.0f,  1.0f) * 0.5f;
+	vertices[2].pos = WVector3(-1.0f, 0.0f, -1.0f) * 0.5f;
+	vertices[3].pos = WVector3( 1.0f, 0.0f, -1.0f) * 0.5f;
+	WError err = m_plainGeometry->CreateFromData(static_cast<void*>(vertices), 4, nullptr, 0, W_GEOMETRY_CREATE_STATIC);
+	if (err != W_SUCCEEDED) {
+		return err;
+	}
 
 	return WError(W_SUCCEEDED);
 }
@@ -325,7 +361,7 @@ WParticles::WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE t
 	m_WorldM = WMatrix();
 
 	m_behavior = nullptr;
-	m_geometry = nullptr;
+	m_instancesTexture = nullptr;
 
 	app->ParticlesManager->AddEntity(this);
 }
@@ -346,7 +382,7 @@ std::string WParticles::GetTypeName() const {
 
 void WParticles::_DestroyResources() {
 	W_SAFE_DELETE(m_behavior);
-	W_SAFE_REMOVEREF(m_geometry);
+	W_SAFE_REMOVEREF(m_instancesTexture);
 }
 
 WParticlesBehavior* WParticles::GetBehavior() const {
@@ -354,7 +390,7 @@ WParticlesBehavior* WParticles::GetBehavior() const {
 }
 
 bool WParticles::Valid() const {
-	return m_behavior && m_geometry;
+	return m_behavior && m_instancesTexture;
 }
 
 W_DEFAULT_PARTICLE_EFFECT_TYPE WParticles::GetEffectType() const {
@@ -382,9 +418,9 @@ void WParticles::DisableFrustumCulling() {
 }
 
 bool WParticles::InCameraView(class WCamera* cam) {
-	WMatrix worldM = GetWorldMatrix();
-	WVector3 min = WVec3TransformCoord(m_geometry->GetMinPoint(), worldM) + WVector3(2, 2, 2); // @TODO: use particle size instead
-	WVector3 max = WVec3TransformCoord(m_geometry->GetMaxPoint(), worldM) - WVector3(2, 2, 2); // @TODO: use particle size instead
+	// @TODO: this is not a good check
+	WVector3 min = WVec3TransformCoord(m_behavior->GetMinPoint(), m_WorldM);
+	WVector3 max = WVec3TransformCoord(m_behavior->GetMaxPoint(), m_WorldM);
 	WVector3 pos = (max + min) / 2.0f;
 	WVector3 size = (max - min) / 2.0f;
 	return cam->CheckBoxInFrustum(pos, size);
@@ -395,11 +431,19 @@ WError WParticles::Create(uint32_t maxParticles, WParticlesBehavior* behavior) {
 	if (maxParticles == 0)
 		return WError(W_INVALIDPARAM);
 
-	m_geometry = new WParticlesGeometry(m_app);
-	WError err = m_geometry->CreateFromData(nullptr, maxParticles * 4, nullptr, 0, W_GEOMETRY_CREATE_VB_DYNAMIC | W_GEOMETRY_CREATE_VB_REWRITE_EVERY_FRAME);
-	if (err != W_SUCCEEDED) {
+	uint32_t numRequiredPixels = maxParticles * sizeof(WParticlesInstance) / (4*4);
+	uint32_t imgSize = static_cast<uint32_t>(std::ceil(std::sqrt(static_cast<double>(numRequiredPixels)))+0.01); // find the first power of 2 greater than the square of required pixels
+	imgSize--;
+    imgSize |= imgSize >> 1;
+    imgSize |= imgSize >> 2;
+    imgSize |= imgSize >> 4;
+    imgSize |= imgSize >> 8;
+    imgSize |= imgSize >> 16;
+    imgSize++;
+	m_instancesTexture = m_app->ImageManager->CreateImage(nullptr, imgSize, imgSize, VK_FORMAT_R32G32B32A32_SFLOAT, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
+	if (!m_instancesTexture) {
 		_DestroyResources();
-		return err;
+		return WError(W_OUTOFMEMORY);
 	}
 
 	m_behavior = behavior ? behavior : new WDefaultParticleBehavior(maxParticles);
@@ -415,24 +459,22 @@ bool WParticles::WillRender(WRenderTarget* rt) {
 }
 
 void WParticles::Render(WRenderTarget* const rt, WMaterial* material) {
-	WCamera* cam = rt->GetCamera();
-	WMatrix viewMatrix = cam->GetViewMatrix();
 	if (material) {
-		material->SetVariable<WMatrix>("worldMatrix", GetWorldMatrix());
-		material->SetVariable<WMatrix>("viewMatrix", viewMatrix);
-		material->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
+		material->SetTexture("instancingTexture", m_instancesTexture);
+		material->SetVariable<uint32_t>("instancingTextureWidth", m_instancesTexture->GetWidth());
+		material->SetVariable<WMatrix>("projection", rt->GetCamera()->GetProjectionMatrix());
 		material->Bind(rt);
 	}
 
 	// update the geometry
-	WParticlesVertex* vb;
-	m_geometry->MapVertexBuffer((void**)& vb, W_MAP_WRITE);
+	void* instances;
+	m_instancesTexture->MapPixels(&instances, W_MAP_WRITE);
 	float curTime = m_app->Timer.GetElapsedTime();
-	uint32_t numParticles = m_behavior->UpdateAndCopyToVB(curTime, vb, m_maxParticles, m_WorldM, viewMatrix);
-	m_geometry->UnmapVertexBuffer(false);
+	uint32_t numParticles = m_behavior->UpdateAndCopyToBuffer(curTime, instances, m_maxParticles, m_WorldM, rt->GetCamera());
+	m_instancesTexture->UnmapPixels();
 
 	if (numParticles > 0)
-		m_geometry->Draw(rt, numParticles * 4, 1, false);
+		m_app->ParticlesManager->m_plainGeometry->Draw(rt, UINT32_MAX, numParticles, false);
 }
 
 void WParticles::SetPriority(uint32_t priority) {
