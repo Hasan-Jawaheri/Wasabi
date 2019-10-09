@@ -495,8 +495,11 @@ uint32_t Wasabi::GetCurrentBufferingIndex() {
 VkPhysicalDeviceFeatures Wasabi::GetDeviceFeatures() {
 	VkPhysicalDeviceFeatures features = {};
 	features.samplerAnisotropy = VK_TRUE;
-	features.geometryShader = VK_TRUE;
 	features.fillModeNonSolid = VK_TRUE;
+#if !defined(__APPLE__)
+	// MoltenVK doesn't support geometry shaders (boo)
+	features.geometryShader = VK_TRUE;
+#endif
 	return features;
 }
 

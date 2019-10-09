@@ -296,7 +296,7 @@ public:
 	}
 
 	virtual void OnEntityAdded(WParticles* particles) {
-		auto it = m_particleEffects.find(particles->GetType());
+		auto it = m_particleEffects.find(particles->GetEffectType());
 		if (it != m_particleEffects.end()) {
 			particles->AddEffect(it->second, 0);
 			particles->GetMaterial(it->second)->SetName(GenerateMaterialName());
