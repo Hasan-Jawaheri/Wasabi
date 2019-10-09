@@ -43,7 +43,8 @@ endif()
 #####################################
 
 # Source files
-file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp" "${TFD_DIR}/tinyfiledialogs.c")
+file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp")
+file(GLOB_RECURSE TFD_SOURCES "${TFD_DIR}/tinyfiledialogs.c")
 file(GLOB_RECURSE LIB_GLSL "src/Wasabi/*.glsl")
 file(GLOB_RECURSE LIB_HEADERS "include/Wasabi/*")
 file(GLOB_RECURSE TEST_SOURCES "src/WasabiTest/*.cpp")
@@ -54,8 +55,8 @@ file(GLOB_RECURSE FBX_LOADER_HEADERS "include/FBXLoader/*")
 include_directories("include/")
 
 # Wasabi library
-assign_source_group(${LIB_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
-add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
+assign_source_group(${LIB_SOURCES} ${TFD_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
+add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${TFD_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
 add_dependencies(standalone-wasabi glsl-code)
 target_compile_definitions(standalone-wasabi PRIVATE COMPILING_WASABI)
 target_include_directories(standalone-wasabi PRIVATE SYSTEM ${Vulkan_INCLUDE_DIRS})
@@ -65,9 +66,19 @@ target_include_directories(standalone-wasabi PRIVATE SYSTEM "${GLFW_DIR}/include
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${TFD_DIR}/")
 target_link_libraries(standalone-wasabi ${Vulkan_LIBRARY})
-target_link_libraries(standalone-wasabi common ex-common OpenAL)
+target_link_libraries(standalone-wasabi ex-common OpenAL)
 target_link_libraries(standalone-wasabi glfw)
 target_link_libraries(standalone-wasabi Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
+enable_all_warnings(standalone-wasabi)
+
+# Ignore TFD warnings
+if (MSVC)
+    set_source_files_properties(${TFD_SOURCES} PROPERTIES COMPILE_FLAGS /wd4267)
+    set_source_files_properties(${STB_DIR}/stb.h PROPERTIES COMPILE_FLAGS /wd4701)
+else()
+    set_source_files_properties(${TFD_SOURCES} PROPERTIES COMPILE_FLAGS -Wno-4267)
+    set_source_files_properties(${STB_DIR}/stb.h PROPERTIES COMPILE_FLAGS -Wno-4701)
+endif()
 
 # Bundle the libraries together
 bundle_static_library(standalone-wasabi wasabi)
@@ -85,6 +96,7 @@ add_dependencies(wasabi_test build-dist)
 target_include_directories(wasabi_test PRIVATE "include/WasabiTest")
 link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")
 set_property(TARGET wasabi_test PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+enable_all_warnings(wasabi_test)
 
 # FBX Loader
 if (FBXSDK_ROOT)
@@ -100,15 +112,18 @@ if (FBXSDK_ROOT)
     target_link_libraries(fbx_loader debug ${FBX_LIBRARIES_DEBUG})
     target_include_directories(fbx_loader PRIVATE ${FBX_INCLUDE_DIR})
     set_property(TARGET fbx_loader PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    enable_all_warnings(fbx_loader)
 endif()
 
-# ignore MSVC warnings for external headers
 if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
+    # ignore MSVC warnings for external headers
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0")
     set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
 
     target_compile_options(standalone-wasabi PRIVATE /external:I${STB_DIR})
     target_compile_options(wasabi_test PRIVATE /external:I${STB_DIR})
+    target_compile_options(standalone-wasabi PRIVATE /external:I${TFD_DIR})
+    target_compile_options(wasabi_test PRIVATE /external:I${TFD_DIR})
     target_compile_options(standalone-wasabi PRIVATE /external:I${BULLET_DIR}/src)
     target_compile_options(wasabi_test PRIVATE /external:I${BULLET_DIR}/src)
 endif()
