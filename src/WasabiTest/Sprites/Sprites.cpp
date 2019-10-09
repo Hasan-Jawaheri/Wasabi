@@ -43,11 +43,12 @@ void SpritesDemo::Load() {
 	m_sprites[1]->SetPriority(2);
 
 	
-	WShader* pixel_shader = new CustomSpritePS(m_app);
-	pixel_shader->Load();
-	WEffect* spriteFX = m_app->SpriteManager->CreateSpriteEffect(nullptr, pixel_shader);
-	pixel_shader->RemoveReference();
+	WShader* pixelShader = new CustomSpritePS(m_app);
+	pixelShader->Load();
+	WEffect* spriteFX = m_app->SpriteManager->CreateSpriteEffect(nullptr, pixelShader);
+	pixelShader->RemoveReference();
 
+	UNREFERENCED_PARAMETER(spriteFX);
 	//m_sprites[2] = m_app->SpriteManager->CreateSprite(img);
 	//m_sprites[2]->RemoveEffect(m_sprites[2]->GetDefaultEffect());
 	//m_sprites[2]->AddEffect(spriteFX);
