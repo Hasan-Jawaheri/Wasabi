@@ -245,9 +245,9 @@ public:
 	uint32_t GetPriority() const;
 
 	/**
-	 * @return the type of this particles system
+	 * @return the effect type of this particles system
 	 */
-	W_DEFAULT_PARTICLE_EFFECT_TYPE GetType() const;
+	W_DEFAULT_PARTICLE_EFFECT_TYPE GetEffectType() const;
 
 	/**
 	 * Shows the particle system so that it can be rendered.
@@ -306,7 +306,7 @@ public:
 
 private:
 	/** Type of tyhis particle system */
-	W_DEFAULT_PARTICLE_EFFECT_TYPE m_type;
+	W_DEFAULT_PARTICLE_EFFECT_TYPE m_effectType;
 	/** true if the world matrix needs to be updated, false otherwise */
 	bool m_bAltered;
 	/** true if the particle system is hidden, false otherwise */

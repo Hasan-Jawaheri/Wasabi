@@ -316,7 +316,7 @@ WParticles* WParticlesManager::CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE ty
 }
 
 WParticles::WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE type, uint32_t ID) : WBase(app, ID) {
-	m_type = type;
+	m_effectType = type;
 	m_hidden = false;
 	m_bAltered = true;
 	m_bFrustumCull = true;
@@ -357,8 +357,8 @@ bool WParticles::Valid() const {
 	return m_behavior && m_geometry;
 }
 
-W_DEFAULT_PARTICLE_EFFECT_TYPE WParticles::GetType() const {
-	return m_type;
+W_DEFAULT_PARTICLE_EFFECT_TYPE WParticles::GetEffectType() const {
+	return m_effectType;
 }
 
 void WParticles::Show() {
