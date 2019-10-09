@@ -109,6 +109,10 @@ void ParticlesDemo::Update(float fDeltaTime) {
 		for (uint32_t i = 1; i < m_particles.size(); i++)
 			((WDefaultParticleBehavior*)m_particles[i]->GetBehavior())->m_emissionPosition.x = behavior->m_emissionPosition.x;
 	}
+	if (m_particles.size() > 0 && m_app->WindowAndInputComponent->KeyDown('R')) {
+		for (uint32_t i = 0; i < m_particles.size(); i++)
+			m_particles[i]->Roll(10.0f * fDeltaTime);
+	}
 }
 
 void ParticlesDemo::Cleanup() {

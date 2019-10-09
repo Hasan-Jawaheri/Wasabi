@@ -169,6 +169,10 @@ void WDefaultParticleBehavior::UpdateSystem(float curTime, const WMatrix& worldM
 		p.UVBottomRight = WVector2((float)(x+1) / m_numTilesColumns, (float)(y + 1) / m_numTilesColumns);
 		Emit((void*)&p);
 	}
+
+	// flip those and update them in UpdateParticle
+	m_minPoint = WVector3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+	m_maxPoint = WVector3(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
 }
 
 inline bool WDefaultParticleBehavior::UpdateParticle(float curTime, void* particleData, WParticlesInstance* outputInstance, const WMatrix& worldMatrix, WCamera* camera) {
@@ -193,14 +197,19 @@ inline bool WDefaultParticleBehavior::UpdateParticle(float curTime, void* partic
 	 * The geometry is a nova by default (a plain facing up, pointing to Z+).
 	 * Scaling is done in the vertex shader (to decide billboard vs nova)
 	 */
-	WMatrix transformation =
-		WTranslationMatrix(particlePosition) *
-		worldMatrix *
-		camera->GetViewMatrix();
+	WVector3 particleWroldPosition = WVec3TransformCoord(particlePosition, worldMatrix);
+	WMatrix transformation = WTranslationMatrix(particleWroldPosition) * camera->GetViewMatrix();
 	outputInstance->SetParameters(transformation, particleColor, p->UVTopLeft, p->UVBottomRight,
 		m_type == WDefaultParticleBehavior::Type::BILLBOARD ? 0.0f : size,
 		m_type == WDefaultParticleBehavior::Type::BILLBOARD ? size : 0.0f
 	);
+
+	m_minPoint.x = std::min(m_minPoint.x, particleWroldPosition.x);
+	m_minPoint.y = std::min(m_minPoint.y, particleWroldPosition.y);
+	m_minPoint.z = std::min(m_minPoint.z, particleWroldPosition.z);
+	m_maxPoint.x = std::max(m_maxPoint.x, particleWroldPosition.x);
+	m_maxPoint.y = std::max(m_maxPoint.y, particleWroldPosition.y);
+	m_maxPoint.z = std::max(m_maxPoint.z, particleWroldPosition.z);
 
 	return true;
 }
@@ -406,8 +415,9 @@ void WParticles::DisableFrustumCulling() {
 
 bool WParticles::InCameraView(class WCamera* cam) {
 	// @TODO: this is not a good check
-	WVector3 min = WVec3TransformCoord(m_behavior->GetMinPoint(), m_WorldM);
-	WVector3 max = WVec3TransformCoord(m_behavior->GetMaxPoint(), m_WorldM);
+	WMatrix worldM = GetWorldMatrix();
+	WVector3 min = WVec3TransformCoord(m_behavior->GetMinPoint(), worldM);
+	WVector3 max = WVec3TransformCoord(m_behavior->GetMaxPoint(), worldM);
 	WVector3 pos = (max + min) / 2.0f;
 	WVector3 size = (max - min) / 2.0f;
 	return cam->CheckBoxInFrustum(pos, size);
@@ -457,7 +467,7 @@ void WParticles::Render(WRenderTarget* const rt, WMaterial* material) {
 	void* instances;
 	m_instancesTexture->MapPixels(&instances, W_MAP_WRITE);
 	float curTime = m_app->Timer.GetElapsedTime();
-	uint32_t numParticles = m_behavior->UpdateAndCopyToBuffer(curTime, instances, m_maxParticles, m_WorldM, rt->GetCamera());
+	uint32_t numParticles = m_behavior->UpdateAndCopyToBuffer(curTime, instances, m_maxParticles, GetWorldMatrix(), rt->GetCamera());
 	m_instancesTexture->UnmapPixels();
 
 	if (numParticles > 0)
