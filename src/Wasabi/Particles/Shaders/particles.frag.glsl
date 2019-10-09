@@ -6,7 +6,7 @@ layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec4 inColor;
 layout(location = 0) out vec4 outFragColor;
 
-layout(binding = 2) uniform sampler2D diffuseTexture;
+layout(binding = 1) uniform sampler2D diffuseTexture;
 
 void main() {
 	vec4 color = texture(diffuseTexture, inUV).rgba * inColor;

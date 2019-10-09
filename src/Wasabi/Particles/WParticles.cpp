@@ -34,11 +34,10 @@ public:
 
 	static vector<W_BOUND_RESOURCE> GetBoundResources() {
 		return {
-			W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerParticles", {
+			W_BOUND_RESOURCE(W_TYPE_PUSH_CONSTANT, 0, "pcPerParticles", {
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projection"),
-				W_SHADER_VARIABLE_INFO(W_TYPE_UINT, "instancingTextureWidth"), // width of the instancing texture
 			}),
-			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "instancingTexture"),
+			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 0, "instancingTexture"),
 		};
 	}
 
@@ -62,7 +61,7 @@ public:
 	virtual void Load(bool bSaveData = false) {
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
-			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 2, "diffuseTexture"),
+			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "diffuseTexture"),
 		};
 		vector<uint8_t> code {
 			#include "Shaders/particles.frag.glsl.spv"
@@ -71,7 +70,7 @@ public:
 	}
 };
 
-inline void WParticlesInstance::SetParameters(const WMatrix& WVP, WColor color, WVector2 uvTopLeft, WVector2 uvBottomRight) {
+inline void WParticlesInstance::SetParameters(const WMatrix& WVP, WColor color, WVector2 uvTopLeft, WVector2 uvBottomRight, float localSize, float viewSize) {
 	mat1 = WVector4(WVP(0, 0), WVP(0, 1), WVP(0, 2), WVP(3, 0));
 	mat2 = WVector4(WVP(1, 0), WVP(1, 1), WVP(1, 2), WVP(3, 1));
 	mat3 = WVector4(WVP(2, 0), WVP(2, 1), WVP(2, 2), WVP(3, 2));
@@ -80,6 +79,8 @@ inline void WParticlesInstance::SetParameters(const WMatrix& WVP, WColor color, 
 	colorAndUVs.y = std::floor(colorAndUVs.y) + uvTopLeft.y * 0.98f + 0.01f;
 	colorAndUVs.z = std::floor(colorAndUVs.z) + uvBottomRight.x * 0.98f + 0.01f;
 	colorAndUVs.w = std::floor(colorAndUVs.w) + uvBottomRight.y * 0.98f + 0.01f;
+	sizeLocalSpace = localSize;
+	sizeViewSpace = viewSize;
 }
 
 WParticlesBehavior::WParticlesBehavior(uint32_t maxParticles, uint32_t particleSize) {
@@ -190,30 +191,16 @@ inline bool WDefaultParticleBehavior::UpdateParticle(float curTime, void* partic
 
 	/*
 	 * The geometry is a nova by default (a plain facing up, pointing to Z+).
-	 * To make it a billboard
+	 * Scaling is done in the vertex shader (to decide billboard vs nova)
 	 */
-	WMatrix view = camera->GetViewMatrix();
-	WMatrix transformation;
-	transformation = WScalingMatrix(WVector3(size, size, size)) * WTranslationMatrix(particlePosition) * worldMatrix;
-	// if (m_type == WDefaultParticleBehavior::Type::BILLBOARD)
-	// 	transformation *=
-	transformation = transformation * view;
-	outputInstance->SetParameters(transformation, particleColor, p->UVTopLeft, p->UVBottomRight);
-
-	// for (uint8_t i = 0; i < 4; i++) {
-	// 	// set output vertex UV
-	// 	vertices[i].UV = WVector2(
-	// 		i / 2 == 0 ? p->UVTopLeft.x : p->UVBottomRight.x,
-	// 		i % 2 == 0 ? p->UVTopLeft.y : p->UVBottomRight.y
-	// 	);
-	// 	// set output vertex color
-	// 	memcpy(&(vertices[i].color), &particleColor, sizeof(WColor));
-	// 	// set output vertex position
-	// 	WVector3 localPos = particlePosition + WVector3(i / 2 == 0 ? -sizeNova : sizeNova, 0.0f, i % 2 == 0 ? sizeNova : -sizeNova);
-	// 	WVector3 worldPos = WVec3TransformCoord(localPos, worldMatrix);
-	// 	vertices[i].viewPos = WVec3TransformCoord(worldPos, viewMatrix);
-	// 	vertices[i].viewPos += WVector3(i / 2 == 0 ? -sizeBillboard : sizeBillboard, i % 2 == 0 ? sizeBillboard : -sizeBillboard, 0.0f);
-	// }
+	WMatrix transformation =
+		WTranslationMatrix(particlePosition) *
+		worldMatrix *
+		camera->GetViewMatrix();
+	outputInstance->SetParameters(transformation, particleColor, p->UVTopLeft, p->UVBottomRight,
+		m_type == WDefaultParticleBehavior::Type::BILLBOARD ? 0.0f : size,
+		m_type == WDefaultParticleBehavior::Type::BILLBOARD ? size : 0.0f
+	);
 
 	return true;
 }

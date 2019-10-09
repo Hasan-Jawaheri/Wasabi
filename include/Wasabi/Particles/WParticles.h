@@ -33,9 +33,17 @@ struct WParticlesInstance {
 	 * - The floating point component of each float is (uv top-left, uv bottom-right) [0.01-0.99]
 	 */
 	WVector4 colorAndUVs;
+	/** Size multiplier applied before any transformation (in local space) in the VS */
+	float sizeLocalSpace;
+	/** Size added to the x and y components of the particles in view space */
+	float sizeViewSpace;
+	/** Padding to be aligned to pixel size */
+	float pad1;
+	/** Padding to be aligned to pixel size */
+	float pad2;
 
 	/** Utility to encode the particle instance parameters into its fields */
-	inline void SetParameters(const WMatrix& WVP, WColor color, WVector2 uvTopLeft, WVector2 uvBottomRight);
+	inline void SetParameters(const WMatrix& WVP, WColor color, WVector2 uvTopLeft, WVector2 uvBottomRight, float localSize, float viewSize);
 };
 
 /** Type of default particle effects supported by WParticlesManager */
