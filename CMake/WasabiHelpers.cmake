@@ -32,6 +32,14 @@ function(initialize_submodules)
     endif()
 endfunction()
 
+function(enable_all_warnings TARGET_NAME)
+    if(MSVC)
+        target_compile_options(${TARGET_NAME} PRIVATE /W4)
+    else()
+        target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -pedantic)
+    endif()
+endfunction()
+
 # include dependency utilities
 include(OpenAL)
 include(Bullet)
