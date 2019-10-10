@@ -90,7 +90,7 @@ public:
 	 */
 	WParticlesBehavior(uint32_t maxParticles, uint32_t particleSize);
 
-	~WParticlesBehavior();
+	virtual ~WParticlesBehavior();
 
 	/**
 	 * Called by the WParticles implementation to update the particles and fill

@@ -414,6 +414,8 @@ void WParticles::DisableFrustumCulling() {
 }
 
 bool WParticles::InCameraView(class WCamera* cam) {
+	if (!Valid())
+		return false;
 	// @TODO: this is not a good check
 	WMatrix worldM = GetWorldMatrix();
 	WVector3 min = WVec3TransformCoord(m_behavior->GetMinPoint(), worldM);
