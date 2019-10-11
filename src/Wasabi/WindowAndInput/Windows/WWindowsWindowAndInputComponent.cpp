@@ -205,13 +205,13 @@ uint32_t WWindowsWindowAndInputComponent::RestoreWindow() {
 	return result;
 }
 
-uint32_t WWindowsWindowAndInputComponent::GetWindowWidth() const {
+uint32_t WWindowsWindowAndInputComponent::GetWindowWidth(bool framebuffer) const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.right;
 }
 
-uint32_t WWindowsWindowAndInputComponent::GetWindowHeight() const {
+uint32_t WWindowsWindowAndInputComponent::GetWindowHeight(bool framebuffer) const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.bottom;

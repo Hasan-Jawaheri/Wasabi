@@ -128,15 +128,21 @@ uint32_t WGLFWWindowAndInputComponent::RestoreWindow() {
 	return ret;
 }
 
-uint32_t WGLFWWindowAndInputComponent::GetWindowWidth() const {
+uint32_t WGLFWWindowAndInputComponent::GetWindowWidth(bool framebuffer) const {
 	int w, h;
-	glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
+	if (framebuffer)
+		glfwGetFramebufferSize((GLFWwindow*)m_window, &w, &h);
+	else
+		glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
 	return (uint32_t)w;
 }
 
-uint32_t WGLFWWindowAndInputComponent::GetWindowHeight() const {
+uint32_t WGLFWWindowAndInputComponent::GetWindowHeight(bool framebuffer) const {
 	int w, h;
-	glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
+	if (framebuffer)
+		glfwGetFramebufferSize((GLFWwindow*)m_window, &w, &h);
+	else
+		glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
 	return (uint32_t)h;
 }
 

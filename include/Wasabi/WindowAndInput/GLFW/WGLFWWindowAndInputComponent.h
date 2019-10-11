@@ -33,8 +33,8 @@ public:
 	virtual void MinimizeWindow();
 	virtual uint32_t RestoreWindow();
 
-	virtual uint32_t GetWindowWidth() const;
-	virtual uint32_t GetWindowHeight() const;
+	virtual uint32_t GetWindowWidth(bool framebuffer = true) const;
+	virtual uint32_t GetWindowHeight(bool framebuffer = true) const;
 	virtual int GetWindowPositionX() const;
 	virtual int GetWindowPositionY() const;
 

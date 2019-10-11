@@ -151,15 +151,27 @@ public:
 
 	/**
 	 * Retrieves the width of the client area of the window.
+	 * @param framebuffer If true, this function retrieves the width of the
+	 *        frame buffer inside the window. Otherwise it returns the width
+	 *        of the window
 	 * @return Width of the window's client area, in pixels
 	 */
-	virtual uint32_t GetWindowWidth() const { return (uint32_t)-1; }
+	virtual uint32_t GetWindowWidth(bool framebuffer = true) const {
+		UNREFERENCED_PARAMETER(framebuffer);
+		return (uint32_t)-1;
+	}
 
 	/**
 	 * Retrieves the height of the client area of the window.
+	 * @param framebuffer If true, this function retrieves the height of the
+	 *        frame buffer inside the window. Otherwise it returns the height
+	 *        of the window
 	 * @return Height of the window's client area, in pixels
 	 */
-	virtual uint32_t GetWindowHeight() const { return (uint32_t)-1; }
+	virtual uint32_t GetWindowHeight(bool framebuffer = true) const {
+		UNREFERENCED_PARAMETER(framebuffer);
+		return (uint32_t)-1;
+	}
 
 	/**
 	 * Retrieves the x-coordinate of the window on the screen.
