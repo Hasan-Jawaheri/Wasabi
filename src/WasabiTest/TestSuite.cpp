@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ ParticlesDemo
+#define _DEMO_STATE_CLASSNAME_ LightsDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo
@@ -30,48 +30,38 @@
 #include "Files/Files.hpp"
 
 void WasabiTester::ApplyMousePivot() {
-	WCamera* cam = CameraManager->GetDefaultCamera();
 	static bool bMouseHidden = false;
-	static int lx, ly;
-	if (WindowAndInputComponent->MouseClick(MOUSE_LEFT)) {
+	static double lx, ly;
+	WCamera* cam = CameraManager->GetDefaultCamera();
+	WWindowAndInputComponent* WIC = WindowAndInputComponent;
+	if (WIC->MouseClick(MOUSE_LEFT)) {
 		if (!bMouseHidden) {
-			WindowAndInputComponent->ShowCursor(false);
 			bMouseHidden = true;
-
-			lx = WindowAndInputComponent->MouseX(MOUSEPOS_DESKTOP, 0);
-			ly = WindowAndInputComponent->MouseY(MOUSEPOS_DESKTOP, 0);
-
-			WindowAndInputComponent->SetMousePosition(640 / 2, 480 / 2, MOUSEPOS_VIEWPORT);
+			lx = WIC->MouseX(MOUSEPOS_DESKTOP, 0);
+			ly = WIC->MouseY(MOUSEPOS_DESKTOP, 0);
+			WIC->SetCursorMotionMode(true);
 		}
 
-		int mx = WindowAndInputComponent->MouseX(MOUSEPOS_VIEWPORT, 0);
-		int my = WindowAndInputComponent->MouseY(MOUSEPOS_VIEWPORT, 0);
+		double mx = WIC->MouseX(MOUSEPOS_DESKTOP, 0);
+		double my = WIC->MouseY(MOUSEPOS_DESKTOP, 0);
 
-		int dx = mx - 640 / 2;
-		int dy = my - 480 / 2;
-
-		if (fabs(dx) < 2)
-			dx = 0;
-		if (fabs(dy) < 2)
-			dy = 0;
+		double dx = mx - lx;
+		double dy = my - ly;
 
 		fYaw += (float)dx / 2.0f;
 		fPitch += (float)dy / 2.0f;
 
-		if (dx || dy)
-			WindowAndInputComponent->SetMousePosition(640 / 2, 480 / 2);
+		WIC->SetMousePosition(lx, ly, MOUSEPOS_DESKTOP);
 	} else {
 		if (bMouseHidden) {
-			WindowAndInputComponent->ShowCursor(true);
 			bMouseHidden = false;
-
-			WindowAndInputComponent->SetMousePosition(lx, ly, MOUSEPOS_DESKTOP);
+			WIC->SetCursorMotionMode(false);
 		}
 	}
 
-	float fMouseZ = (float)WindowAndInputComponent->MouseZ();
-	fDist += (fMouseZ) * (abs(fDist) / 10.0f);
-	WindowAndInputComponent->SetMouseZ(0);
+	float fMouseZ = (float)WIC->MouseZ();
+	fDist += (fMouseZ) * (std::abs(fDist) / 10.0f);
+	WIC->SetMouseZ(0);
 	fDist = std::min(-1.0f, fDist);
 
 	cam->SetPosition(vPos);
@@ -96,6 +86,7 @@ WError WasabiTester::Setup() {
 	std::vector<std::string> fontNames = {
 		"Calibri",
 		"FreeSans",
+		"Arial Unicode",
 	};
 	for (auto fontName : fontNames) {
 		if (TextComponent->CreateTextFont(1, fontName))

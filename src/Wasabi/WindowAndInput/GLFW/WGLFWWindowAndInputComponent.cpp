@@ -24,15 +24,17 @@ WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : 
 	m_surface = nullptr;
 	m_isMinimized = false;
 	m_escapeQuit = true;
+	m_cmdWQuit = true;
 	m_leftClick = false;
 	m_rightClick = false;
 	m_middleClick = false;
 	m_isMouseInScreen = false;
-	m_mouseZ = 0;
+	m_mouseZ = 0.0;
 	for (uint32_t i = 0; i < sizeof(m_keyDown) / sizeof(m_keyDown[0]); i++)
 		m_keyDown[i] = false;
 	for (uint32_t i = 0; i < 4; i++)
 		m_windowSizeLimits[i] = GLFW_DONT_CARE;
+	m_dpiXScale = m_dpiYScale = 1.0f;
 }
 
 WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
@@ -47,7 +49,7 @@ WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
 	if (!m_window)
 		return WError(W_WINDOWNOTCREATED);
 	glfwSetWindowUserPointer((GLFWwindow*)m_window, (void*)this);
-
+	glfwGetWindowContentScale((GLFWwindow*)m_window, &m_dpiXScale, &m_dpiYScale);
 	SetCallbacks();
 
 	VkResult err = glfwCreateWindowSurface(m_app->GetVulkanInstance(), (GLFWwindow*)m_window, NULL, &m_surface);
@@ -128,16 +130,22 @@ uint32_t WGLFWWindowAndInputComponent::RestoreWindow() {
 	return ret;
 }
 
-uint32_t WGLFWWindowAndInputComponent::GetWindowWidth() const {
+uint32_t WGLFWWindowAndInputComponent::GetWindowWidth(bool framebuffer) const {
 	int w, h;
-	glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
-	return (uint)w;
+	if (framebuffer)
+		glfwGetFramebufferSize((GLFWwindow*)m_window, &w, &h);
+	else
+		glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
+	return (uint32_t)w;
 }
 
-uint32_t WGLFWWindowAndInputComponent::GetWindowHeight() const {
+uint32_t WGLFWWindowAndInputComponent::GetWindowHeight(bool framebuffer) const {
 	int w, h;
-	glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
-	return (uint)h;
+	if (framebuffer)
+		glfwGetFramebufferSize((GLFWwindow*)m_window, &w, &h);
+	else
+		glfwGetWindowSize((GLFWwindow*)m_window, &w, &h);
+	return (uint32_t)h;
 }
 
 int WGLFWWindowAndInputComponent::GetWindowPositionX() const {
@@ -194,37 +202,41 @@ bool WGLFWWindowAndInputComponent::MouseClick(W_MOUSEBUTTON button) const {
 	return false;
 }
 
-int WGLFWWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
+double WGLFWWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
 	UNREFERENCED_PARAMETER(vpID);
 
 	double mx, my;
 	glfwGetCursorPos((GLFWwindow*)m_window, &mx, &my);
-	if (posT == MOUSEPOS_VIEWPORT)
-		return (int)mx;
+	if (posT == MOUSEPOS_WINDOW)
+		return mx;
+	else if (posT == MOUSEPOS_VIEWPORT)
+		return mx * m_dpiXScale;
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
 		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
-		return (int)(mx + (double)wx);
+		return mx + (double)wx;
 	}
 	return 0;
 }
 
-int WGLFWWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
+double WGLFWWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
 	UNREFERENCED_PARAMETER(vpID);
 
 	double mx, my;
 	glfwGetCursorPos((GLFWwindow*)m_window, &mx, &my);
-	if (posT == MOUSEPOS_VIEWPORT)
-		return (int)my;
+	if (posT == MOUSEPOS_WINDOW)
+		return my;
+	else if (posT == MOUSEPOS_VIEWPORT)
+		return my * m_dpiYScale;
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
 		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
-		return (int)(my + (double)wy);
+		return my + (double)wy;
 	}
 	return 0;
 }
 
-int WGLFWWindowAndInputComponent::MouseZ() const {
+double WGLFWWindowAndInputComponent::MouseZ() const {
 	return m_mouseZ;
 }
 
@@ -235,17 +247,19 @@ bool WGLFWWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint32_t v
 	return m_isMouseInScreen;
 }
 
-void WGLFWWindowAndInputComponent::SetMousePosition(uint32_t x, uint32_t y, W_MOUSEPOSTYPE posT) {
-	if (posT == MOUSEPOS_VIEWPORT)
-		glfwSetCursorPos((GLFWwindow*)m_window, (double)x, (double)y);
+void WGLFWWindowAndInputComponent::SetMousePosition(double x, double y, W_MOUSEPOSTYPE posT) {
+	if (posT == MOUSEPOS_WINDOW)
+		glfwSetCursorPos((GLFWwindow*)m_window, x, y);
+	else if (posT == MOUSEPOS_VIEWPORT)
+		glfwSetCursorPos((GLFWwindow*)m_window, x / m_dpiXScale, y / m_dpiYScale);
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
 		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
-		glfwSetCursorPos((GLFWwindow*)m_window, (double)(x - wx), (double)(y - wy));
+		glfwSetCursorPos((GLFWwindow*)m_window, x - (double)wx, y - (double)wy);
 	}
 }
 
-void WGLFWWindowAndInputComponent::SetMouseZ(int value) {
+void WGLFWWindowAndInputComponent::SetMouseZ(double value) {
 	m_mouseZ = value;
 }
 
@@ -256,12 +270,16 @@ void WGLFWWindowAndInputComponent::ShowCursor(bool bShow) {
 		glfwSetInputMode((GLFWwindow*)m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
-void WGLFWWindowAndInputComponent::EnableEscapeKeyQuit() {
-	m_escapeQuit = true;
+void WGLFWWindowAndInputComponent::SetCursorMotionMode(bool bEnable) {
+	if (bEnable)
+		glfwSetInputMode((GLFWwindow*)m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	else
+		glfwSetInputMode((GLFWwindow*)m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void WGLFWWindowAndInputComponent::DisableEscapeKeyQuit() {
-	m_escapeQuit = false;
+void WGLFWWindowAndInputComponent::SetQuitKeys(bool escape, bool cmdW) {
+	m_escapeQuit = escape;
+	m_cmdWQuit = cmdW;
 }
 
 bool WGLFWWindowAndInputComponent::KeyDown(uint32_t key) const {
@@ -284,7 +302,6 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 
 	glfwSetKeyCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int key, int scancode, int mode, int mods) {
 		UNREFERENCED_PARAMETER(scancode);
-		UNREFERENCED_PARAMETER(mods);
 
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (mode == GLFW_RELEASE) {
@@ -293,7 +310,7 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 				comp->m_app->curState->OnKeyUp((uint8_t)key);
 		} else if (mode == GLFW_PRESS) {
 			comp->InsertRawInput(key, true);
-			if (key == W_KEY_ESCAPE && comp->m_escapeQuit)
+			if ((key == W_KEY_ESCAPE && comp->m_escapeQuit) || (key == W_KEY_W && (mods & GLFW_MOD_SUPER) && comp->m_cmdWQuit))
 				glfwSetWindowShouldClose(window, 1);
 			if (comp->m_app->curState)
 				comp->m_app->curState->OnKeyDown((uint8_t)key);
@@ -336,8 +353,8 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 
 		if (comp->m_app->curState && validButton) {
 			W_MOUSEBUTTON wbutton = button == GLFW_MOUSE_BUTTON_1 ? MOUSE_LEFT : (button == GLFW_MOUSE_BUTTON_2 ? MOUSE_RIGHT : MOUSE_MIDDLE);
-			int mx = comp->MouseX(MOUSEPOS_VIEWPORT);
-			int my = comp->MouseY(MOUSEPOS_VIEWPORT);
+			double mx = comp->MouseX(MOUSEPOS_VIEWPORT);
+			double my = comp->MouseY(MOUSEPOS_VIEWPORT);
 			if (mode == GLFW_PRESS)
 				comp->m_app->curState->OnMouseDown(wbutton, mx, my);
 			else if (mode == GLFW_RELEASE)
@@ -348,7 +365,7 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 	glfwSetCursorPosCallback((GLFWwindow*)m_window, [](GLFWwindow* window, double x, double y) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (comp->m_app->curState)
-			comp->m_app->curState->OnMouseMove((int)x, (int)y);
+			comp->m_app->curState->OnMouseMove(x, y);
 	});
 
 	glfwSetCursorEnterCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int entered) {
@@ -360,6 +377,6 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 		UNREFERENCED_PARAMETER(x);
 
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
-		comp->m_mouseZ += (int)y;
+		comp->m_mouseZ += y;
 	});
 }

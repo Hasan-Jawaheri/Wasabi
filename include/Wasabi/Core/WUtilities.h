@@ -25,7 +25,7 @@ namespace WUtil {
    *               y coordinate
    * @return       true if the point appears in on the screen, false otherwise
    */
-	bool Point3DToScreen2D(Wasabi* app, WVector3 point, int* x, int* y);
+	bool Point3DToScreen2D(Wasabi* app, WVector3 point, double* x, double* y);
 
   /**
    * Checks if a given ray intersects a given cube in 3D space.
@@ -38,8 +38,7 @@ namespace WUtil {
    *                      origin is at cubePos and whose dimensions are
    *                      2*cubeHalfSize, false otherwise
    */
-	bool RayIntersectCube(float cubeHalfSize, WVector3 rayPos, WVector3 rayDir,
-                        WVector3 cubePos = WVector3(0, 0, 0));
+	bool RayIntersectCube(float cubeHalfSize, WVector3 rayPos, WVector3 rayDir, WVector3 cubePos = WVector3(0, 0, 0));
 
   /**
    * Checks if a given ray intersects a given box in 3D space.
@@ -52,8 +51,7 @@ namespace WUtil {
    *                        origin is at boxPos and whose dimensions are
    *                        2*halfDimensions, false otherwise
    */
-	bool RayIntersectBox(WVector3 halfDimensions, WVector3 rayPos,
-                       WVector3 rayDir, WVector3 boxPos = WVector3(0, 0, 0));
+	bool RayIntersectBox(WVector3 halfDimensions, WVector3 rayPos, WVector3 rayDir, WVector3 boxPos = WVector3(0, 0, 0));
 
 	/**
 	 * Returns a random number between 0 and 1

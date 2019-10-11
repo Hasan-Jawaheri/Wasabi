@@ -16,7 +16,7 @@ class WSoundComponent {
 
 public:
 	WSoundComponent(class Wasabi* const app) : m_app(app), SoundManager(nullptr) {}
-	~WSoundComponent() {}
+	virtual ~WSoundComponent() {}
 
 	class WSoundManager* SoundManager;
 

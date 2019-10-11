@@ -205,13 +205,13 @@ uint32_t WWindowsWindowAndInputComponent::RestoreWindow() {
 	return result;
 }
 
-uint32_t WWindowsWindowAndInputComponent::GetWindowWidth() const {
+uint32_t WWindowsWindowAndInputComponent::GetWindowWidth(bool framebuffer) const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.right;
 }
 
-uint32_t WWindowsWindowAndInputComponent::GetWindowHeight() const {
+uint32_t WWindowsWindowAndInputComponent::GetWindowHeight(bool framebuffer) const {
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.bottom;
@@ -313,7 +313,7 @@ bool WWindowsWindowAndInputComponent::MouseClick(W_MOUSEBUTTON button) const {
 	return false;
 }
 
-int WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
+double WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
 	UNREFERENCED_PARAMETER(vpID);
 
 	//get mouse position and convert it to the desired type
@@ -338,7 +338,7 @@ int WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent::MouseX(W_M
 		return 0;
 }
 
-int WWindowsWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
+double WWindowsWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
 	UNREFERENCED_PARAMETER(vpID);
 	
 	//get mouse position and convert it to the desired type
@@ -363,7 +363,7 @@ int WWindowsWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) 
 		return 0;
 }
 
-int WWindowsWindowAndInputComponent::MouseZ() const {
+double WWindowsWindowAndInputComponent::MouseZ() const {
 	//return registered mouse wheel position
 	return m_mouseZ;
 }
@@ -412,7 +412,7 @@ bool WWindowsWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint32_
 	return false;
 }
 
-void WWindowsWindowAndInputComponent::SetMousePosition(uint32_t x, uint32_t y, W_MOUSEPOSTYPE posT) {
+void WWindowsWindowAndInputComponent::SetMousePosition(double x, double y, W_MOUSEPOSTYPE posT) {
 	if (posT == MOUSEPOS_VIEWPORT) {
 		POINT pos = { (long)x, (long)y };
 		//convert to screen space
@@ -423,7 +423,7 @@ void WWindowsWindowAndInputComponent::SetMousePosition(uint32_t x, uint32_t y, W
 	}
 }
 
-void WWindowsWindowAndInputComponent::SetMouseZ(int value) {
+void WWindowsWindowAndInputComponent::SetMouseZ(double value) {
 	//set the mouse wheel position
 	m_mouseZ = value;
 }
@@ -432,12 +432,12 @@ void WWindowsWindowAndInputComponent::ShowCursor(bool bShow) {
 	::ShowCursor(bShow);
 }
 
-void WWindowsWindowAndInputComponent::EnableEscapeKeyQuit() {
-	m_escapeE = true;
+void WWindowsWindowAndInputComponent::SetCursorMotionMode(bool bEnable) {
 }
 
-void WWindowsWindowAndInputComponent::DisableEscapeKeyQuit() {
-	m_escapeE = false;
+void SetQuitKeys(bool escape, bool cmdW) {
+	UNREFERENCED_PARAMETER(cmdW);
+	m_escapeE = escape;
 }
 
 bool WWindowsWindowAndInputComponent::KeyDown(uint32_t key) const {
