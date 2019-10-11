@@ -19,7 +19,7 @@ class WOpenALSoundComponent : public WSoundComponent {
 
 public:
 	WOpenALSoundComponent(class Wasabi* const app);
-	~WOpenALSoundComponent();
+	virtual ~WOpenALSoundComponent();
 
 	virtual WError Initialize();
 	virtual void Cleanup();
