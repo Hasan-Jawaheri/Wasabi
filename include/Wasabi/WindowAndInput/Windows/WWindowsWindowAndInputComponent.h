@@ -92,8 +92,7 @@ public:
 	virtual void ShowCursor(bool bShow);
 	virtual void SetCursorMotionMode(bool bEnable);
 
-	virtual void EnableEscapeKeyQuit();
-	virtual void DisableEscapeKeyQuit();
+	virtual void SetQuitKeys(bool escape = true, bool cmdW = true);
 
 	virtual bool KeyDown(uint32_t key) const;
 
@@ -127,7 +126,7 @@ private:
 	bool m_middleClick;
 	/** Scroll value for the mouse */
 	int m_mouseZ;
-	/** true if escape key quit is on, false otherwise */
+	/** true iff escape key quit is on */
 	bool m_escapeE;
 	/** states of all keys */
 	bool m_keyDown[256];

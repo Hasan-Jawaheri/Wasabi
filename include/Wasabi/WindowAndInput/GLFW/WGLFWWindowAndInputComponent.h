@@ -54,8 +54,7 @@ public:
 	virtual void ShowCursor(bool bShow);
 	virtual void SetCursorMotionMode(bool bEnable);
 
-	virtual void EnableEscapeKeyQuit();
-	virtual void DisableEscapeKeyQuit();
+	virtual void SetQuitKeys(bool escape = true, bool cmdW = true);
 
 	virtual bool KeyDown(uint32_t key) const;
 
@@ -72,6 +71,8 @@ private:
 	bool m_isMinimized;
 	/** Whether or not to quit on escape */
 	bool m_escapeQuit;
+	/** Whether or not to quit when (on Mac) user pressed cmd-W */
+	bool m_cmdWQuit;
 	/** true if mouse left button is clicked, false otherwise */
 	bool m_leftClick;
 	/** true if mouse right button is clicked, false otherwise */

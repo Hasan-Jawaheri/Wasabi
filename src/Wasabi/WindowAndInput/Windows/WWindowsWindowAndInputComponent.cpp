@@ -435,12 +435,9 @@ void WWindowsWindowAndInputComponent::ShowCursor(bool bShow) {
 void WWindowsWindowAndInputComponent::SetCursorMotionMode(bool bEnable) {
 }
 
-void WWindowsWindowAndInputComponent::EnableEscapeKeyQuit() {
-	m_escapeE = true;
-}
-
-void WWindowsWindowAndInputComponent::DisableEscapeKeyQuit() {
-	m_escapeE = false;
+void SetQuitKeys(bool escape, bool cmdW) {
+	UNREFERENCED_PARAMETER(cmdW);
+	m_escapeE = escape;
 }
 
 bool WWindowsWindowAndInputComponent::KeyDown(uint32_t key) const {

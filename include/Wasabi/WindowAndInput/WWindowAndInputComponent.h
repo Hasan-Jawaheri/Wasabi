@@ -289,16 +289,11 @@ public:
 	virtual void SetCursorMotionMode(bool bEnable) = 0;
 
 	/**
-	 * Enables escape key quit. When escape key quit is enabled, the application
-	 * will close when the escape key is captured.
+	 * Enables or disables closing the application when certain keys are pressed
+	 * @param escape Whether or not to quit when escape is pressed
+	 * @param cmdW   Whether or not to quit when cmd-W (Mac) is pressed
 	 */
-	virtual void EnableEscapeKeyQuit() = 0;
-
-	/**
-	 * Disables escape key quit. When escape key quit is enabled, the application
-	 * will close when the escape key is captured.
-	 */
-	virtual void DisableEscapeKeyQuit() = 0;
+	virtual void SetQuitKeys(bool escape = true, bool cmdW = true) = 0;
 
 	/**
 	 * Checks if a key is currently pressed.

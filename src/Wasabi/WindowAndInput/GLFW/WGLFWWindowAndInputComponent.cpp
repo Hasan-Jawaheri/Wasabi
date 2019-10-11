@@ -24,6 +24,7 @@ WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : 
 	m_surface = nullptr;
 	m_isMinimized = false;
 	m_escapeQuit = true;
+	m_cmdWQuit = true;
 	m_leftClick = false;
 	m_rightClick = false;
 	m_middleClick = false;
@@ -276,12 +277,9 @@ void WGLFWWindowAndInputComponent::SetCursorMotionMode(bool bEnable) {
 		glfwSetInputMode((GLFWwindow*)m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void WGLFWWindowAndInputComponent::EnableEscapeKeyQuit() {
-	m_escapeQuit = true;
-}
-
-void WGLFWWindowAndInputComponent::DisableEscapeKeyQuit() {
-	m_escapeQuit = false;
+void WGLFWWindowAndInputComponent::SetQuitKeys(bool escape, bool cmdW) {
+	m_escapeQuit = escape;
+	m_cmdWQuit = cmdW;
 }
 
 bool WGLFWWindowAndInputComponent::KeyDown(uint32_t key) const {
@@ -304,7 +302,6 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 
 	glfwSetKeyCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int key, int scancode, int mode, int mods) {
 		UNREFERENCED_PARAMETER(scancode);
-		UNREFERENCED_PARAMETER(mods);
 
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (mode == GLFW_RELEASE) {
@@ -313,7 +310,7 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 				comp->m_app->curState->OnKeyUp((uint8_t)key);
 		} else if (mode == GLFW_PRESS) {
 			comp->InsertRawInput(key, true);
-			if (key == W_KEY_ESCAPE && comp->m_escapeQuit)
+			if ((key == W_KEY_ESCAPE && comp->m_escapeQuit) || (key == W_KEY_W && (mods & GLFW_MOD_SUPER) && comp->m_cmdWQuit))
 				glfwSetWindowShouldClose(window, 1);
 			if (comp->m_app->curState)
 				comp->m_app->curState->OnKeyDown((uint8_t)key);
