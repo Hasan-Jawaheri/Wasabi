@@ -151,15 +151,27 @@ public:
 
 	/**
 	 * Retrieves the width of the client area of the window.
+	 * @param framebuffer If true, this function retrieves the width of the
+	 *        frame buffer inside the window. Otherwise it returns the width
+	 *        of the window
 	 * @return Width of the window's client area, in pixels
 	 */
-	virtual uint32_t GetWindowWidth() const { return (uint32_t)-1; }
+	virtual uint32_t GetWindowWidth(bool framebuffer = true) const {
+		UNREFERENCED_PARAMETER(framebuffer);
+		return (uint32_t)-1;
+	}
 
 	/**
 	 * Retrieves the height of the client area of the window.
+	 * @param framebuffer If true, this function retrieves the height of the
+	 *        frame buffer inside the window. Otherwise it returns the height
+	 *        of the window
 	 * @return Height of the window's client area, in pixels
 	 */
-	virtual uint32_t GetWindowHeight() const { return (uint32_t)-1; }
+	virtual uint32_t GetWindowHeight(bool framebuffer = true) const {
+		UNREFERENCED_PARAMETER(framebuffer);
+		return (uint32_t)-1;
+	}
 
 	/**
 	 * Retrieves the x-coordinate of the window on the screen.
@@ -222,7 +234,7 @@ public:
 	 * @param  vpID Unused
 	 * @return      The x coordinate of the system cursor, relative to posT
 	 */
-	virtual int MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
+	virtual double MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
 
 	/**
 	 * Retrieves the y position of the system cursor.
@@ -231,14 +243,14 @@ public:
 	 * @param  vpID Unused
 	 * @return      The y coordinate of the system cursor, relative to posT
 	 */
-	virtual int MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
+	virtual double MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
 
 	/**
 	 * Retrieves the current scroll value of the mouse wheel. When the mouse
 	 * wheel is spun, each tick will increment or decrement this value.
 	 * @return Current scroll value of the mouse wheel
 	 */
-	virtual int MouseZ() const = 0;
+	virtual double MouseZ() const = 0;
 
 	/**
 	 * Checks if the cursor is within the coordinate system posT.
@@ -256,13 +268,13 @@ public:
 	 * @param posT The coordinate system which the position should be relative
 	 *              to
 	 */
-	virtual void SetMousePosition(uint32_t x, uint32_t y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT) = 0;
+	virtual void SetMousePosition(double x, double y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT) = 0;
 
 	/**
 	 * Sets the value of the mouse scroll.
 	 * @param value New value to set
 	 */
-	virtual void SetMouseZ(int value) = 0;
+	virtual void SetMouseZ(double value) = 0;
 
 	/**
 	 * Shows or hides the mouse cursor.
@@ -271,16 +283,17 @@ public:
 	virtual void ShowCursor(bool bShow) = 0;
 
 	/**
-	 * Enables escape key quit. When escape key quit is enabled, the application
-	 * will close when the escape key is captured.
+	 * Enables or disables cursor motion mode. In motion mode, the cursor is locked in
+	 * place, hidden, and all mouse input is made to be relative to that locked position
 	 */
-	virtual void EnableEscapeKeyQuit() = 0;
+	virtual void SetCursorMotionMode(bool bEnable) = 0;
 
 	/**
-	 * Disables escape key quit. When escape key quit is enabled, the application
-	 * will close when the escape key is captured.
+	 * Enables or disables closing the application when certain keys are pressed
+	 * @param escape Whether or not to quit when escape is pressed
+	 * @param cmdW   Whether or not to quit when cmd-W (Mac) is pressed
 	 */
-	virtual void DisableEscapeKeyQuit() = 0;
+	virtual void SetQuitKeys(bool escape = true, bool cmdW = true) = 0;
 
 	/**
 	 * Checks if a key is currently pressed.

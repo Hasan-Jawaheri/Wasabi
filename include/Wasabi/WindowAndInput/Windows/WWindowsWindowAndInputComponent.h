@@ -71,8 +71,8 @@ public:
 	virtual void MinimizeWindow();
 	virtual uint32_t RestoreWindow();
 
-	virtual uint32_t GetWindowWidth() const;
-	virtual uint32_t GetWindowHeight() const;
+	virtual uint32_t GetWindowWidth(bool framebuffer = true) const;
+	virtual uint32_t GetWindowHeight(bool framebuffer = true) const;
 	virtual int GetWindowPositionX() const;
 	virtual int GetWindowPositionY() const;
 
@@ -82,20 +82,17 @@ public:
 	virtual void SetWindowMaximumSize(int maxX, int maxY);
 
 	virtual bool MouseClick(W_MOUSEBUTTON button) const;
-	virtual int MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-		uint32_t vpID = 0) const;
-	virtual int MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-		uint32_t vpID = 0) const;
-	virtual int MouseZ() const;
-	virtual bool MouseInScreen(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT,
-		uint32_t vpID = 0) const;
+	virtual double MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const;
+	virtual double MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const;
+	virtual double MouseZ() const;
+	virtual bool MouseInScreen(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const;
 
-	virtual void SetMousePosition(uint32_t x, uint32_t y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT);
-	virtual void SetMouseZ(int value);
+	virtual void SetMousePosition(double x, double y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT);
+	virtual void SetMouseZ(double value);
 	virtual void ShowCursor(bool bShow);
+	virtual void SetCursorMotionMode(bool bEnable);
 
-	virtual void EnableEscapeKeyQuit();
-	virtual void DisableEscapeKeyQuit();
+	virtual void SetQuitKeys(bool escape = true, bool cmdW = true);
 
 	virtual bool KeyDown(uint32_t key) const;
 
@@ -129,7 +126,7 @@ private:
 	bool m_middleClick;
 	/** Scroll value for the mouse */
 	int m_mouseZ;
-	/** true if escape key quit is on, false otherwise */
+	/** true iff escape key quit is on */
 	bool m_escapeE;
 	/** states of all keys */
 	bool m_keyDown[256];

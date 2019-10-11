@@ -1,6 +1,10 @@
 #pragma once
 
 #include "Wasabi/Physics/Bullet/WBulletPhysics.h"
+
+#include <btBulletCollisionCommon.h>
+#include <btBulletDynamicsCommon.h>
+
 #include <thread>
 #include <vector>
 #include <mutex>

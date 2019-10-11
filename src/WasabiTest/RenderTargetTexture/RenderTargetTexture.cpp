@@ -32,8 +32,6 @@ void RenderTargetTextureDemo::Load() {
 	o3->SetPosition(4, 4, 0);
 	o3->Roll(80);
 
-	m_app->TextComponent->CreateTextFont(2, "arial");
-
 	WImage* img = new WImage(m_app);
 	o2->GetMaterials().SetTexture("diffuseTexture", img);
 	img->Load("Media/dummy.bmp");
@@ -57,15 +55,15 @@ void RenderTargetTextureDemo::Load() {
 void RenderTargetTextureDemo::Update(float fDeltaTime) {
 	UNREFERENCED_PARAMETER(fDeltaTime);
 
-	int mx = m_app->WindowAndInputComponent->MouseX();
-	int my = m_app->WindowAndInputComponent->MouseY();
+	double mx = m_app->WindowAndInputComponent->MouseX();
+	double my = m_app->WindowAndInputComponent->MouseY();
 
 	WVector3 pt;
 	WObject* picked = m_app->ObjectManager->PickObject(mx, my, false, 0, 1, &pt);
 	if (picked) {
 		m_app->ObjectManager->GetEntity("sphere")->SetPosition(pt);
 		WVector2 out;
-		int x, y;
+		double x, y;
 		WUtil::Point3DToScreen2D(m_app, pt, &x, &y);
 	}
 
@@ -79,8 +77,8 @@ void RenderTargetTextureDemo::Update(float fDeltaTime) {
 
 	char title[128];
 	sprintf_s(title, 128, "Elapsed time: %.2f\nFPS: %.2f", m_app->Timer.GetElapsedTime() / 1000.0f, m_app->FPS);
-	float width = m_app->TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 2);
-	m_app->TextComponent->RenderText(title, mx - width / 2.0f, my - 45.0f, 32, 2);
+	float width = m_app->TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
+	m_app->TextComponent->RenderText(title, mx - width / 2.0f, my - 45.0f, 32, 1);
 }
 
 void RenderTargetTextureDemo::Cleanup() {
