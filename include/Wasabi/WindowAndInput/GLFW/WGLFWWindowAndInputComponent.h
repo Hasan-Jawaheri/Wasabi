@@ -44,14 +44,15 @@ public:
 	virtual void SetWindowMaximumSize(int maxX, int maxY);
 
 	virtual bool MouseClick(W_MOUSEBUTTON button) const;
-	virtual int MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const;
-	virtual int MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const;
-	virtual int MouseZ() const;
+	virtual double MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const;
+	virtual double MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const;
+	virtual double MouseZ() const;
 	virtual bool MouseInScreen(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const;
 
-	virtual void SetMousePosition(uint32_t x, uint32_t y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT);
-	virtual void SetMouseZ(int value);
+	virtual void SetMousePosition(double x, double y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT);
+	virtual void SetMouseZ(double value);
 	virtual void ShowCursor(bool bShow);
+	virtual void SetCursorMotionMode(bool bEnable);
 
 	virtual void EnableEscapeKeyQuit();
 	virtual void DisableEscapeKeyQuit();
@@ -80,7 +81,7 @@ private:
 	/** Whether or not the mouse is in the window */
 	bool m_isMouseInScreen;
 	/** Scroll value for the mouse */
-	int m_mouseZ;
+	double m_mouseZ;
 	/** states of all keys */
 	bool m_keyDown[350];
 	/** Size limits for GLFW window */

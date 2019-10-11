@@ -222,7 +222,7 @@ public:
 	 * @param  vpID Unused
 	 * @return      The x coordinate of the system cursor, relative to posT
 	 */
-	virtual int MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
+	virtual double MouseX(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
 
 	/**
 	 * Retrieves the y position of the system cursor.
@@ -231,14 +231,14 @@ public:
 	 * @param  vpID Unused
 	 * @return      The y coordinate of the system cursor, relative to posT
 	 */
-	virtual int MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
+	virtual double MouseY(W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT, uint32_t vpID = 0) const = 0;
 
 	/**
 	 * Retrieves the current scroll value of the mouse wheel. When the mouse
 	 * wheel is spun, each tick will increment or decrement this value.
 	 * @return Current scroll value of the mouse wheel
 	 */
-	virtual int MouseZ() const = 0;
+	virtual double MouseZ() const = 0;
 
 	/**
 	 * Checks if the cursor is within the coordinate system posT.
@@ -256,19 +256,25 @@ public:
 	 * @param posT The coordinate system which the position should be relative
 	 *              to
 	 */
-	virtual void SetMousePosition(uint32_t x, uint32_t y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT) = 0;
+	virtual void SetMousePosition(double x, double y, W_MOUSEPOSTYPE posT = MOUSEPOS_VIEWPORT) = 0;
 
 	/**
 	 * Sets the value of the mouse scroll.
 	 * @param value New value to set
 	 */
-	virtual void SetMouseZ(int value) = 0;
+	virtual void SetMouseZ(double value) = 0;
 
 	/**
 	 * Shows or hides the mouse cursor.
 	 * @param bShow  Whether to show or hide the cursor
 	 */
 	virtual void ShowCursor(bool bShow) = 0;
+
+	/**
+	 * Enables or disables cursor motion mode. In motion mode, the cursor is locked in
+	 * place, hidden, and all mouse input is made to be relative to that locked position
+	 */
+	virtual void SetCursorMotionMode(bool bEnable) = 0;
 
 	/**
 	 * Enables escape key quit. When escape key quit is enabled, the application
