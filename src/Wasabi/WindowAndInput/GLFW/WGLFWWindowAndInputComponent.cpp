@@ -33,6 +33,7 @@ WGLFWWindowAndInputComponent::WGLFWWindowAndInputComponent(Wasabi* const app) : 
 		m_keyDown[i] = false;
 	for (uint32_t i = 0; i < 4; i++)
 		m_windowSizeLimits[i] = GLFW_DONT_CARE;
+	m_dpiXScale = m_dpiYScale = 1.0f;
 }
 
 WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
@@ -47,7 +48,7 @@ WError WGLFWWindowAndInputComponent::Initialize(int width, int height) {
 	if (!m_window)
 		return WError(W_WINDOWNOTCREATED);
 	glfwSetWindowUserPointer((GLFWwindow*)m_window, (void*)this);
-
+	glfwGetWindowContentScale((GLFWwindow*)m_window, &m_dpiXScale, &m_dpiYScale);
 	SetCallbacks();
 
 	VkResult err = glfwCreateWindowSurface(m_app->GetVulkanInstance(), (GLFWwindow*)m_window, NULL, &m_surface);
@@ -205,8 +206,10 @@ double WGLFWWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint32_t vpID) 
 
 	double mx, my;
 	glfwGetCursorPos((GLFWwindow*)m_window, &mx, &my);
-	if (posT == MOUSEPOS_VIEWPORT)
+	if (posT == MOUSEPOS_WINDOW)
 		return mx;
+	else if (posT == MOUSEPOS_VIEWPORT)
+		return mx * m_dpiXScale;
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
 		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
@@ -220,8 +223,10 @@ double WGLFWWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) 
 
 	double mx, my;
 	glfwGetCursorPos((GLFWwindow*)m_window, &mx, &my);
-	if (posT == MOUSEPOS_VIEWPORT)
+	if (posT == MOUSEPOS_WINDOW)
 		return my;
+	else if (posT == MOUSEPOS_VIEWPORT)
+		return my * m_dpiYScale;
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
 		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
@@ -242,8 +247,10 @@ bool WGLFWWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint32_t v
 }
 
 void WGLFWWindowAndInputComponent::SetMousePosition(double x, double y, W_MOUSEPOSTYPE posT) {
-	if (posT == MOUSEPOS_VIEWPORT)
+	if (posT == MOUSEPOS_WINDOW)
 		glfwSetCursorPos((GLFWwindow*)m_window, x, y);
+	else if (posT == MOUSEPOS_VIEWPORT)
+		glfwSetCursorPos((GLFWwindow*)m_window, x / m_dpiXScale, y / m_dpiYScale);
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
 		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);

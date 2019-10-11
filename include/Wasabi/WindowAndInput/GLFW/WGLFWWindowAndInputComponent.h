@@ -88,6 +88,10 @@ private:
 	int m_windowSizeLimits[4];
 	/** Stored x, y, width, height, before going fullscreen */
 	int m_storedWindowDimensions[4];
+	/** DPI scale on the X axis */
+	float m_dpiXScale;
+	/** DPI scale on the Y axis */
+	float m_dpiYScale;
 
 	/** Registers GLFW callbacks */
 	void SetCallbacks();

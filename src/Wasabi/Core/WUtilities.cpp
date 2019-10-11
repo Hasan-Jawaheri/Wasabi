@@ -5,10 +5,10 @@
 #include "Wasabi/Images/WRenderTarget.h"
 #include "Wasabi/WindowAndInput/WWindowAndInputComponent.h"
 
-bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, int* _x, int* _y) {
+bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, double* _x, double* _y) {
 	WCamera* cam = app->Renderer->GetRenderTarget(app->Renderer->GetPickingRenderStageName())->GetCamera();
-	float width = (float)app->WindowAndInputComponent->GetWindowWidth();
-	float height = (float)app->WindowAndInputComponent->GetWindowHeight();
+	float width = (float)app->WindowAndInputComponent->GetWindowWidth(false);
+	float height = (float)app->WindowAndInputComponent->GetWindowHeight(false);
 	WVector3 pos = WVec3TransformCoord(point, cam->GetViewMatrix());
 
 	float fX = pos.x * cam->GetMinRange() / pos.z;
@@ -23,16 +23,10 @@ bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, int* _x, int* _y) {
 	fX = (fX / fTriHalfSideX) * width;
 	fY = (1 - (fY / fTriHalfSideY)) * height;
 
-	int x = (int)fX;
-	int y = (int)fY;
+	if (_x) *_x = fX;
+	if (_y) *_y = fX;
 
-	if (_x) *_x = x;
-	if (_y) *_y = y;
-
-	if (x >= 0 && x <= width && y >= 0 && y <= height)
-		return true;
-
-	return false;
+	return fX >= 0 && fX <= width && fY >= 0 && fY <= height;
 }
 
 bool WUtil::RayIntersectCube(float cubeHalfSize, WVector3 rayPos, WVector3 rayDir, WVector3 cubePos) {

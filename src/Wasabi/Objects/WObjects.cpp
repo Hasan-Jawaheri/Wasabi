@@ -31,8 +31,7 @@ WObject* WObjectManager::CreateObject(uint32_t ID) const {
 	return object;
 }
 
-WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, uint32_t iObjStartID, uint32_t iObjEndID,
-									WVector3* _pt, WVector2* uv, uint32_t* faceIndex) const {
+WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, uint32_t iObjStartID, uint32_t iObjEndID, WVector3* _pt, WVector2* uv, uint32_t* faceIndex) const {
 	struct pickStruct {
 		WObject* obj;
 		WVector3 pos;
@@ -111,7 +110,7 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, uint32_t iObjSta
 		return 0;
 
 	uint32_t nearest = 0;
-	float distance = FLT_MAX;
+	float distance = std::numeric_limits<float>::max();
 	for (uint32_t i = 0; i < pickedObjects.size(); i++) {
 		float fCurDist = WVec3Length(pickedObjects[i].pos - cam->GetPosition());
 		if (fCurDist < distance) {
