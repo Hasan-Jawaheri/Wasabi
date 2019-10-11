@@ -9,18 +9,10 @@ public:
 		m_desc.type = W_FRAGMENT_SHADER;
 		m_desc.bound_resources = {
 		};
-		LoadCodeGLSL(
-			"#version 450\n"
-			"#extension GL_ARB_separate_shader_objects : enable\n"
-			"#extension GL_ARB_shading_language_420pack : enable\n"
-			""
-			"layout(location = 0) in vec2 inUV;\n"
-			"layout(location = 0) out vec4 outFragColor;\n"
-			""
-			"void main() {\n"
-			"	outFragColor = vec4(inUV.xy, 0, 0.65);\n"
-			"}\n"
-		, bSaveData);
+		std::vector<uint8_t> code = {
+			#include "sprite.frag.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
