@@ -68,13 +68,13 @@ public:
 		m_manager->RegisterChangeCallback(m_name, [this](EntityT* o, bool a) {this->OnEntityChange(o, a); });
 	}
 	virtual ~WRenderFragment() {
-		W_SAFE_REMOVEREF(m_renderEffect);
-		m_manager->RemoveChangeCallback(m_name);
 		uint32_t numEntities = m_manager->GetEntitiesCount();
 		for (uint32_t i = 0; i < numEntities; i++) {
 			EntityT* entity = m_manager->GetEntityByIndex(i);
 			entity->RemoveEffect(m_renderEffect);
 		}
+		m_manager->RemoveChangeCallback(m_name);
+		W_SAFE_REMOVEREF(m_renderEffect);
 	}
 
 	class WEffect* GetEffect() {
