@@ -16,11 +16,9 @@ layout(location = 6) in vec4 inBoneWeight;
 
 layout(set = 0, binding = 0) uniform UBOPerObject {
 	mat4 worldMatrix;
-	int animationTextureWidth;
-	int instanceTextureWidth;
+	vec4 color;
 	int isInstanced;
 	int isTextured;
-	vec4 color;
 } uboPerObject;
 
 layout(set = 1, binding = 1) uniform UBOPerFrame {
@@ -40,16 +38,17 @@ void main() {
 	mat4x4 animMtx = mat4x4(1.0);
 	mat4x4 instMtx =
 		uboPerObject.isInstanced == 1
-		? LoadMatrixFromTexture(gl_InstanceIndex, instancingTexture, uboPerObject.instanceTextureWidth)
+		? LoadMatrixFromTexture(gl_InstanceIndex, instancingTexture, textureSize(instancingTexture, 0).x)
 		: mat4x4(1.0f);
 	if (inBoneWeight.x  > 0.001f) {
-		animMtx += inBoneWeight.x * LoadMatrixFromTexture(int(inBoneIndex.x), animationTexture, uboPerObject.animationTextureWidth);
+		int animationTextureWidth = textureSize(animationTexture, 0).x;
+		animMtx += inBoneWeight.x * LoadMatrixFromTexture(int(inBoneIndex.x), animationTexture, animationTextureWidth);
 		if (inBoneWeight.y > 0.001f) {
-			animMtx += inBoneWeight.y * LoadMatrixFromTexture(int(inBoneIndex.y), animationTexture, uboPerObject.animationTextureWidth);
+			animMtx += inBoneWeight.y * LoadMatrixFromTexture(int(inBoneIndex.y), animationTexture, animationTextureWidth);
 			if (inBoneWeight.z > 0.001f) {
-				animMtx += inBoneWeight.z * LoadMatrixFromTexture(int(inBoneIndex.z), animationTexture, uboPerObject.animationTextureWidth);
+				animMtx += inBoneWeight.z * LoadMatrixFromTexture(int(inBoneIndex.z), animationTexture, animationTextureWidth);
 				if (inBoneWeight.w > 0.001f) {
-					animMtx += inBoneWeight.w * LoadMatrixFromTexture(int(inBoneIndex.w), animationTexture, uboPerObject.animationTextureWidth);
+					animMtx += inBoneWeight.w * LoadMatrixFromTexture(int(inBoneIndex.w), animationTexture, animationTextureWidth);
 				}
 			}
 		}

@@ -15,11 +15,9 @@ struct Light {
 
 layout(set = 0, binding = 0) uniform UBO {
 	mat4 worldMatrix;
-	int animationTextureWidth;
-	int instanceTextureWidth;
+	vec4 color;
 	int isInstanced;
 	int isTextured;
-	vec4 color;
 } uboPerObject;
 
 layout(set = 1, binding = 1) uniform LUBO {
