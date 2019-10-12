@@ -68,13 +68,15 @@ public:
 		m_manager->RegisterChangeCallback(m_name, [this](EntityT* o, bool a) {this->OnEntityChange(o, a); });
 	}
 	virtual ~WRenderFragment() {
-		uint32_t numEntities = m_manager->GetEntitiesCount();
-		for (uint32_t i = 0; i < numEntities; i++) {
-			EntityT* entity = m_manager->GetEntityByIndex(i);
-			entity->RemoveEffect(m_renderEffect);
+		if (m_renderEffect) {
+			uint32_t numEntities = m_manager->GetEntitiesCount();
+			for (uint32_t i = 0; i < numEntities; i++) {
+				EntityT* entity = m_manager->GetEntityByIndex(i);
+				entity->RemoveEffect(m_renderEffect);
+			}
+			W_SAFE_REMOVEREF(m_renderEffect);
 		}
 		m_manager->RemoveChangeCallback(m_name);
-		W_SAFE_REMOVEREF(m_renderEffect);
 	}
 
 	class WEffect* GetEffect() {
@@ -271,6 +273,18 @@ public:
 		m_particleEffects = effects;
 	}
 
+	virtual ~WParticlesRenderFragment() {
+		uint32_t numEntities = m_manager->GetEntitiesCount();
+		for (uint32_t i = 0; i < numEntities; i++) {
+			WParticles* particles= m_manager->GetEntityByIndex(i);
+			for (auto renderEffect : m_particleEffects)
+				particles->RemoveEffect(renderEffect.second);
+		}
+		for (auto effect : m_particleEffects)
+			effect.second->RemoveReference();
+		m_particleEffects.clear();
+	}
+
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt) {
 		WError err = WError(W_SUCCEEDED);
 		for (auto renderEffect : m_particleEffects) {
@@ -279,6 +293,7 @@ public:
 			if (!err)
 				break;
 		}
+		m_renderEffect = nullptr;
 		return err;
 	}
 
