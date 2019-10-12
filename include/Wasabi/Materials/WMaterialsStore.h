@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Wasabi/Core/WCommon.h"
+
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -17,6 +19,10 @@ protected:
 	class WMaterialCollection* m_materialsCollection;
 
 	void _AddMaterial(class WMaterial* material);
+
+	virtual void OnMaterialAdded(class WMaterial* newMaterial) {
+		UNREFERENCED_PARAMETER(newMaterial);
+	}
 
 public:
 	WMaterialsStore();

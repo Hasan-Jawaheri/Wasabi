@@ -25,9 +25,6 @@ WError WObjectManager::Load() {
 
 WObject* WObjectManager::CreateObject(uint32_t ID) const {
 	WObject* object = new WObject(m_app, ID);
-	WMaterialCollection mats = object->GetMaterials();
-	mats.SetVariable<WColor>("color", WColor(0.0f, 0.0f, 0.0f, 0.0f));
-	mats.SetVariable<int>("isTextured", 1);
 	return object;
 }
 
@@ -217,6 +214,11 @@ std::string WObject::GetTypeName() const {
 
 bool WObject::Valid() const {
 	return m_geometry && m_geometry->Valid();
+}
+
+void WObject::OnMaterialAdded(WMaterial* newMaterial) {
+	newMaterial->SetVariable<WColor>("color", WColor(0.0f, 0.0f, 0.0f, 0.0f));
+	newMaterial->SetVariable<int>("isTextured", 1);
 }
 
 bool WObject::WillRender(WRenderTarget* rt) {
