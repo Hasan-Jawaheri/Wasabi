@@ -249,12 +249,10 @@ void WObject::Render(WRenderTarget* rt, WMaterial* material, bool updateInstance
 		material->SetVariable<int>("isInstanced", is_instanced ? 1 : 0);
 		if (is_animated) {
 			WImage* animTex = m_animation->GetTexture();
-			material->SetVariable<int>("animationTextureWidth", animTex->GetWidth());
 			material->SetTexture("animationTexture", animTex);
 		}
 		// instancing variables
 		if (is_instanced) {
-			material->SetVariable<int>("instanceTextureWidth", m_instanceTexture->GetWidth());
 			material->SetTexture("instancingTexture", m_instanceTexture);
 		}
 		material->Bind(rt);

@@ -460,7 +460,6 @@ bool WParticles::WillRender(WRenderTarget* rt) {
 void WParticles::Render(WRenderTarget* const rt, WMaterial* material) {
 	if (material) {
 		material->SetTexture("instancingTexture", m_instancesTexture);
-		material->SetVariable<uint32_t>("instancingTextureWidth", m_instancesTexture->GetWidth());
 		material->SetVariable<WMatrix>("projection", rt->GetCamera()->GetProjectionMatrix());
 		material->Bind(rt);
 	}

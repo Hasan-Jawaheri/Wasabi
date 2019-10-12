@@ -116,10 +116,6 @@ public:
 	 * * "worldMatrix" (WMatrix) will be set to the world matrix of this object.
 	 * * "isInstanced" (int) will be set to 1 if instancing data is available,
 	 * 		0 otherwise.
-	 * * "animationTextureWidth" (int) will be set to the width of the
-	 * 		animation texture. This will only be set if gAnimation was set to 1.
-	 * * "instanceTextureWidth" (int) will be set to the width of the
-	 * 		instancing texture. This will only be set if gInstancing was set to 1.
 	 * * texture "animationTexture" will be assigned to the animation texture
 	 *      from the attached animation. This will only occur if the object's
 	 *      material is rigged and there is an animation supplied.
