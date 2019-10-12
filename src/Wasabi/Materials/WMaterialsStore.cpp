@@ -16,6 +16,7 @@ void WMaterialsStore::_AddMaterial(class WMaterial* material) {
 	material->GetEffect()->AddReference();
 	m_materialMap.insert(std::make_pair(material->GetEffect(), material));
 	m_materialsCollection->m_materials.insert(std::make_pair(material, true));
+	OnMaterialAdded(material);
 }
 
 void WMaterialsStore::AddEffect(WEffect* effect, uint32_t bindingSet) {
@@ -26,6 +27,7 @@ void WMaterialsStore::AddEffect(WEffect* effect, uint32_t bindingSet) {
 	if (material) {
 		m_materialMap.insert(std::pair<WEffect*, WMaterial*>(effect, material));
 		m_materialsCollection->m_materials.insert(std::make_pair(material, true));
+		OnMaterialAdded(material);
 	} else
 		effect->RemoveReference();
 }

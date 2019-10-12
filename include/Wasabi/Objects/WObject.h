@@ -88,6 +88,8 @@ class WObject : public WOrientation, public WFileAsset, public WMaterialsStore {
 protected:
 	virtual ~WObject();
 
+	virtual void OnMaterialAdded(class WMaterial* newMaterial);
+
 public:
 	/**
 	 * Returns "Object" string.
