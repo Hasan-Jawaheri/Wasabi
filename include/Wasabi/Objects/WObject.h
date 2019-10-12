@@ -386,7 +386,8 @@ public:
 	 * @return             Object that was picked, nullptr if no Object was
 	 *                     was picked
 	 */
-	WObject* PickObject(int x, int y, bool bAnyHit,
+	WObject* PickObject(
+		double x, double y, bool bAnyHit,
 		uint32_t iObjStartID = 0,
 		uint32_t iObjEndID = 0,
 		WVector3* pt = nullptr, WVector2* uv = nullptr,

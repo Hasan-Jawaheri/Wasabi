@@ -78,7 +78,7 @@ void RenderTargetTextureDemo::Update(float fDeltaTime) {
 	char title[128];
 	sprintf_s(title, 128, "Elapsed time: %.2f\nFPS: %.2f", m_app->Timer.GetElapsedTime() / 1000.0f, m_app->FPS);
 	float width = m_app->TextComponent->GetTextWidth("Elapsed time: 0.00", 32, 1);
-	m_app->TextComponent->RenderText(title, mx - width / 2.0f, my - 45.0f, 32, 1);
+	m_app->TextComponent->RenderText(title, (float)mx - width / 2.0f, (float)my - 45.0f, 32, 1);
 }
 
 void RenderTargetTextureDemo::Cleanup() {
