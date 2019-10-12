@@ -28,7 +28,7 @@ WObject* WObjectManager::CreateObject(uint32_t ID) const {
 	return object;
 }
 
-WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, uint32_t iObjStartID, uint32_t iObjEndID, WVector3* _pt, WVector2* uv, uint32_t* faceIndex) const {
+WObject* WObjectManager::PickObject(double x, double y, bool bAnyHit, uint32_t iObjStartID, uint32_t iObjEndID, WVector3* _pt, WVector2* uv, uint32_t* faceIndex) const {
 	struct pickStruct {
 		WObject* obj;
 		WVector3 pos;
@@ -50,8 +50,8 @@ WObject* WObjectManager::PickObject(int x, int y, bool bAnyHit, uint32_t iObjSta
 	WMatrix inverseV = WMatrixInverse(V);
 
 	// Compute picking ray in view space.
-	float vx = (+2.0f*x / Width  - 1.0f) / P(0, 0);
-	float vy = (+2.0f*y / Height - 1.0f) / P(1, 1);
+	float vx = (+2.0f*(float)x / Width  - 1.0f) / P(0, 0);
+	float vy = (+2.0f*(float)y / Height - 1.0f) / P(1, 1);
 
 	WVector3 pos(0.0f, 0.0f, 0.0f);
 	WVector3 dir(vx, vy, 1.0f);
