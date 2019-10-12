@@ -399,11 +399,11 @@ WError WLightBufferRenderStage::LoadSpotLightsAssets() {
 WError WLightBufferRenderStage::LoadDirectionalLightsAssets() {
 	LightTypeAssets assets;
 
-	WShader* pixel_shader = new DirectionalLightPS(m_app);
-	pixel_shader->Load();
+	WShader* pixelShader = new DirectionalLightPS(m_app);
+	pixelShader->Load();
 
-	assets.effect = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget);
-	W_SAFE_REMOVEREF(pixel_shader);
+	assets.effect = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget, pixelShader);
+	W_SAFE_REMOVEREF(pixelShader);
 	if (!assets.effect)
 		return WError(W_OUTOFMEMORY);
 
