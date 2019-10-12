@@ -59,9 +59,11 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	m_fullscreenSprite = m_app->SpriteManager->CreateSprite();
 	if (!m_fullscreenSprite)
 		return WError(W_OUTOFMEMORY);
+	m_fullscreenSprite->SetName("SceneCompositionFullscreenSprite");
 	uint32_t windowWidth = m_app->WindowAndInputComponent->GetWindowWidth();
 	uint32_t windowHeight = m_app->WindowAndInputComponent->GetWindowHeight();
 	m_fullscreenSprite->SetSize(WVector2((float)windowWidth, (float)windowHeight));
+	m_fullscreenSprite->Hide();
 
 	VkPipelineColorBlendAttachmentState bs = {};
 	bs.blendEnable = VK_FALSE;

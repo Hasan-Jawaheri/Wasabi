@@ -416,6 +416,7 @@ WError WLightBufferRenderStage::LoadDirectionalLightsAssets() {
 	assets.fullscreen_sprite = m_app->SpriteManager->CreateSprite();
 	assets.fullscreen_sprite->SetSize(WVector2((float)windowWidth, (float)windowHeight));
 	assets.fullscreen_sprite->Hide();
+	assets.fullscreen_sprite->SetName("LightBufferDirectionLightSprite");
 
 	m_lightRenderingAssets.insert(std::pair<int, LightTypeAssets>((int)W_LIGHT_DIRECTIONAL, assets));
 
