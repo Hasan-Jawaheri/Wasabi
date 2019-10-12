@@ -23,8 +23,6 @@ void LightsDemo::Load() {
 	plainGeometry->CreatePlain(50.0f, 0, 0);
 	m_plain->SetGeometry(plainGeometry);
 	plainGeometry->RemoveReference();
-	m_plain->GetMaterials().SetVariable<WColor>("color", WColor(0.4f, 0.4f, 0.4f));
-	m_plain->GetMaterials().SetVariable<int>("isTextured", 0);
 
 	// Create the boxes
 	WGeometry* boxGeometry = new WGeometry(m_app);
@@ -37,8 +35,6 @@ void LightsDemo::Load() {
 		box->SetGeometry(boxGeometry);
 		box->SetPosition(x, y, z);
 		m_boxes.push_back(box);
-		box->GetMaterials().SetVariable<WColor>("color", WColor(0.7f, 0.7f, 0.7f));
-		box->GetMaterials().SetVariable<int>("isTextured", 0);
 	}
 	boxGeometry->RemoveReference();
 
@@ -79,6 +75,20 @@ void LightsDemo::Load() {
 		l->SetColor(colors[rand() % (sizeof(colors) / sizeof(WColor))]);
 		m_lights.push_back(l);
 	}
+
+	SetSceneProperties();
+}
+
+void LightsDemo::SetSceneProperties() {
+	if (m_plain) {
+		m_plain->GetMaterials().SetVariable<WColor>("color", WColor(0.4f, 0.4f, 0.4f));
+		m_plain->GetMaterials().SetVariable<int>("isTextured", 0);
+	}
+
+	for (auto box : m_boxes) {
+		box->GetMaterials().SetVariable<WColor>("color", WColor(0.7f, 0.7f, 0.7f));
+		box->GetMaterials().SetVariable<int>("isTextured", 0);
+	}
 }
 
 void LightsDemo::Update(float fDeltaTime) {
@@ -87,9 +97,11 @@ void LightsDemo::Update(float fDeltaTime) {
 	if (m_app->WindowAndInputComponent->KeyDown('1') && !m_isDeferred) {
 		m_isDeferred = true;
 		SetupRenderer();
+		SetSceneProperties();
 	} else if (m_app->WindowAndInputComponent->KeyDown('2') && m_isDeferred) {
 		m_isDeferred = false;
 		SetupRenderer();
+		SetSceneProperties();
 	}
 
 	for (auto it = m_boxes.begin(); it != m_boxes.end(); it++) {

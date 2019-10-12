@@ -17,4 +17,6 @@ public:
 	virtual void Cleanup();
 
 	virtual WError SetupRenderer();
+
+	void SetSceneProperties();
 };
