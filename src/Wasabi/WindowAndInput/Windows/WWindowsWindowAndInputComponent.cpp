@@ -435,7 +435,7 @@ void WWindowsWindowAndInputComponent::ShowCursor(bool bShow) {
 void WWindowsWindowAndInputComponent::SetCursorMotionMode(bool bEnable) {
 }
 
-void SetQuitKeys(bool escape, bool cmdW) {
+void WWindowsWindowAndInputComponent::SetQuitKeys(bool escape, bool cmdW) {
 	UNREFERENCED_PARAMETER(cmdW);
 	m_escapeE = escape;
 }
