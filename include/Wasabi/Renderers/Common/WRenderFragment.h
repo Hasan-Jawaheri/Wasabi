@@ -24,6 +24,7 @@ protected:
 	class WManager<EntityT>* m_manager;
 	class WEffect* m_renderEffect;
 	uint32_t m_currentMatId;
+	std::vector<SortingKeyT> m_reindexEntities;
 
 	/** Sorted container for all the entities to be rendered by this fragment */
 	std::map<SortingKeyT, EntityT*> m_allEntities;
@@ -84,7 +85,6 @@ public:
 		UNREFERENCED_PARAMETER(renderer);
 
 		WEffect* boundFX = nullptr;
-		std::vector<SortingKeyT> reindexEntities;
 		for (auto it = m_allEntities.begin(); it != m_allEntities.end(); it++) {
 			EntityT* entity = it->second;
 			if (ShouldRenderEntity(entity)) {
@@ -96,16 +96,17 @@ public:
 						boundFX = effect;
 					}
 					if (KeyChanged(entity, effect, it->first))
-						reindexEntities.push_back(it->first);
+						m_reindexEntities.push_back(it->first);
 
 					RenderEntity(entity, rt, material);
 				}
 			}
 		}
-		for (auto it = reindexEntities.begin(); it != reindexEntities.end(); it++) {
+		for (auto it = m_reindexEntities.begin(); it != m_reindexEntities.end(); it++) {
 			m_allEntities.erase(*it);
 			m_allEntities.insert(std::make_pair(SortingKeyT(it->GetEntity()), it->GetEntity()));
 		}
+		m_reindexEntities.clear();
 
 		return WError(W_SUCCEEDED);
 	}
