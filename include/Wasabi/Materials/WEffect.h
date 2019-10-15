@@ -268,6 +268,38 @@ typedef struct W_SHADER_DESC {
 	std::vector<W_INPUT_LAYOUT> input_layouts;
 } W_SHADER_DESC;
 
+/** Flags to describe rendering properties of a WEffect */
+enum W_EFFECT_RENDER_FLAGS : uint32_t {
+	/** No flags */
+	EFFECT_RENDER_FLAG_NONE = 0,
+	/** Effect should render in the GBuffer stage */
+	EFFECT_RENDER_FLAG_RENDER_GBUFFER = (1 << 0),
+	/** Effect should render in a forward rendering stage */
+	EFFECT_RENDER_FLAG_RENDER_FORWARD = (1 << 1),
+	/** Effect can output alpha < 1 (translucent/transparent) */
+	EFFECT_RENDER_FLAG_TRANSLUCENT = (1 << 2),
+};
+
+inline W_EFFECT_RENDER_FLAGS operator | (W_EFFECT_RENDER_FLAGS lhs, W_EFFECT_RENDER_FLAGS rhs) {
+	using T = std::underlying_type_t <W_EFFECT_RENDER_FLAGS>;
+	return static_cast<W_EFFECT_RENDER_FLAGS>(static_cast<T>(lhs) | static_cast<T>(rhs));
+}
+
+inline W_EFFECT_RENDER_FLAGS operator & (W_EFFECT_RENDER_FLAGS lhs, W_EFFECT_RENDER_FLAGS rhs) {
+	using T = std::underlying_type_t <W_EFFECT_RENDER_FLAGS>;
+	return static_cast<W_EFFECT_RENDER_FLAGS>(static_cast<T>(lhs)& static_cast<T>(rhs));
+}
+
+inline W_EFFECT_RENDER_FLAGS& operator |= (W_EFFECT_RENDER_FLAGS& lhs, W_EFFECT_RENDER_FLAGS rhs) {
+	lhs = lhs | rhs;
+	return lhs;
+}
+
+inline W_EFFECT_RENDER_FLAGS& operator &= (W_EFFECT_RENDER_FLAGS& lhs, W_EFFECT_RENDER_FLAGS rhs) {
+	lhs = lhs & rhs;
+	return lhs;
+}
+
 /**
  * @ingroup engineclass
  * Encapsulation of a shader object. A shader is a small program bound to
@@ -590,6 +622,20 @@ public:
 	WError Bind(class WRenderTarget* rt);
 
 	/**
+	 * Sets the render flags of this effect. Render flags is a bitfield of
+	 * type W_EFFECT_RENDER_FLAGS that specifies various preperties about
+	 * the rendering of the effect, such as which stage it should render in.
+	 * @param flags Flags to set
+	 */
+	void SetRenderFlags(W_EFFECT_RENDER_FLAGS flags);
+
+	/**
+	 * Retrieves the render flags of this effect. See WEffect::SetRenderFlags.
+	 * @return Render flags of this effect
+	 */
+	W_EFFECT_RENDER_FLAGS GetRenderFlags() const;
+
+	/**
 	 * Allocates a new material for this effect.
 	 * @param bindingSet  The binding set to use from this effect
 	 * @return            Newly allocated and initialized material
@@ -656,6 +702,8 @@ private:
 	VkPipelineDepthStencilStateCreateInfo m_depthStencilState;
 	/** Vulkan rasterization state to use for the next pipeline generation */
 	VkPipelineRasterizationStateCreateInfo m_rasterizationState;
+	/** Render flags. See W_EFFECT_RENDER_FLAGS & WEffect::SetRenderFlags */
+	W_EFFECT_RENDER_FLAGS m_flags;
 
 	/**
 	 * Frees all resources allocated by the effect.

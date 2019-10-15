@@ -469,6 +469,7 @@ WEffect::WEffect(Wasabi* const app, uint32_t ID) : WFileAsset(app, ID), m_depthS
 	m_vertexShaderIndex = (uint32_t)-1;
 
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	m_flags = EFFECT_RENDER_FLAG_RENDER_GBUFFER | EFFECT_RENDER_FLAG_RENDER_FORWARD | EFFECT_RENDER_FLAG_TRANSLUCENT;
 
 	m_pipeline = VK_NULL_HANDLE;
 	m_pipelineLayout = VK_NULL_HANDLE;
@@ -845,6 +846,14 @@ WError WEffect::Bind(WRenderTarget* rt) {
 	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
 	return WError(W_SUCCEEDED);
+}
+
+void WEffect::SetRenderFlags(W_EFFECT_RENDER_FLAGS flags) {
+	m_flags = flags;
+}
+
+W_EFFECT_RENDER_FLAGS WEffect::GetRenderFlags() const {
+	return m_flags;
 }
 
 WMaterial* WEffect::CreateMaterial(uint32_t bindingSet) {

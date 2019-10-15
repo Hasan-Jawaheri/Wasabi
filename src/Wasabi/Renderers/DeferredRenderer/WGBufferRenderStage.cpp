@@ -158,8 +158,8 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 		return err;
 	}
 
-	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, GBufferFX, m_app);
-	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, GBufferAnimatedFX, m_app);
+	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, GBufferFX, m_app, false);
+	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, GBufferAnimatedFX, m_app, false);
 
 	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
 	if (!m_perFrameMaterial)

@@ -41,12 +41,12 @@ void SpritesDemo::Load() {
 	pixelShader->RemoveReference();
 
 	UNREFERENCED_PARAMETER(spriteFX);
-	//m_sprites[2] = m_app->SpriteManager->CreateSprite(img);
-	//m_sprites[2]->RemoveEffect(m_sprites[2]->GetDefaultEffect());
-	//m_sprites[2]->AddEffect(spriteFX);
-	//spriteFX->RemoveReference();
-	//m_sprites[2]->SetPosition(WVector2(200, 200));
-	//m_sprites[2]->SetSize(WVector2(400, 200));
+	m_sprites[2] = m_app->SpriteManager->CreateSprite(img);
+	m_sprites[2]->ClearEffects();
+	m_sprites[2]->AddEffect(spriteFX);
+	spriteFX->RemoveReference();
+	m_sprites[2]->SetPosition(WVector2(200, 200));
+	m_sprites[2]->SetSize(WVector2(400, 200));
 }
 
 void SpritesDemo::Update(float fDeltaTime) {

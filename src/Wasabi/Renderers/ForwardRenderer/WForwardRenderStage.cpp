@@ -267,10 +267,10 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 		return err;
 	}
 
-	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, fx, m_app);
-	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, fxa, m_app);
+	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, fx, m_app, true);
+	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, fxa, m_app, true);
 
-	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, terrainFX, m_app);
+	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, terrainFX, m_app, true);
 
 	m_perFrameObjectsMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
 	if (!m_perFrameObjectsMaterial) {
