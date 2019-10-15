@@ -22,6 +22,8 @@ WError WSpritesRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	WEffect* spritesFX = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget);
 	if (!spritesFX)
 		return WError(W_ERRORUNK);
+	spritesFX->SetName("SpriteDefaultFX");
+	m_app->FileManager->AddDefaultAsset(spritesFX->GetName(), spritesFX);
 
 	m_spritesFragment = new WSpritesRenderFragment(m_stageDescription.name, spritesFX, m_app);
 

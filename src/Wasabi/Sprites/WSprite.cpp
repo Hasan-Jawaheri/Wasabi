@@ -203,9 +203,6 @@ WEffect* WSpriteManager::CreateSpriteEffect(
 		return nullptr;
 	}
 
-	spriteFX->SetName("SpriteDefaultFX");
-	m_app->FileManager->AddDefaultAsset(spriteFX->GetName(), spriteFX);
-
 	return spriteFX;
 }
 
