@@ -2,9 +2,12 @@
 function (link_target_to_wasabi target_name wasabi_path)
     # find vulkan
     find_package(Vulkan)
-        if (NOT Vulkan_FOUND)
-            message(FATAL_ERROR "Could not find Vulkan library!")
+    if (NOT Vulkan_FOUND)
+        message(FATAL_ERROR "Could not find Vulkan library!")
     endif()
+    set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS} PARENT_SCOPE)
+    set(Vulkan_LIBRARY ${Vulkan_LIBRARY} PARENT_SCOPE)
+    set(VULKAN_SDK_PATH ${Vulkan_INCLUDE_DIRS}/.. PARENT_SCOPE)
 
     # link to wasabi
     target_include_directories(${target_name} PRIVATE ${wasabi_path}/include)
