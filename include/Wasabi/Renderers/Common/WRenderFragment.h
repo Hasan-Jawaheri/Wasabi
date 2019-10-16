@@ -169,12 +169,9 @@ class WObjectsRenderFragment : public WRenderFragment<WObject, WObjectSortingKey
 	bool m_animated;
 
 public:
-	WObjectsRenderFragment(std::string fragmentName, bool animated, WEffect* fx, class Wasabi* wasabi, bool isForward) : WRenderFragment(fragmentName, fx, wasabi->ObjectManager) {
+	WObjectsRenderFragment(std::string fragmentName, bool animated, WEffect* fx, class Wasabi* wasabi, W_EFFECT_RENDER_FLAGS renderFlags) : WRenderFragment(fragmentName, fx, wasabi->ObjectManager) {
 		m_animated = animated;
-		if (isForward)
-			m_requiredRenderFlags = EFFECT_RENDER_FLAG_RENDER_FORWARD;
-		else
-			m_requiredRenderFlags = EFFECT_RENDER_FLAG_RENDER_GBUFFER;
+		m_requiredRenderFlags = renderFlags;
 	}
 
 	virtual void RenderEntity(WObject* object, class WRenderTarget* rt, class WMaterial* material) {

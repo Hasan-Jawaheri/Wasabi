@@ -28,12 +28,11 @@
 
 #define W_ENGINE_NAME "Wasabi"
 
-#define W_SAFE_RELEASE(x) { if ( x ) { (x)->Release ( ); x = NULL; } }
-#define W_SAFE_REMOVEREF(x) { if ( x ) { (x)->RemoveReference ( ); x = NULL; } }
-#define W_SAFE_DELETE(x) { if ( x ) { delete x; x = NULL; } }
-#define W_SAFE_DELETE_ARRAY(x) { if ( x ) { delete[] x; x = NULL; } }
+#define W_SAFE_REMOVEREF(x) { if (x) { (x)->RemoveReference(); x = nullptr; } }
+#define W_SAFE_DELETE(x) { if (x) { delete x; x = nullptr; } }
+#define W_SAFE_DELETE_ARRAY(x) { if (x) { delete[] x; x = nullptr; } }
 #define W_SAFE_ALLOC(x) malloc(x)
-#define W_SAFE_FREE(x) { if ( x ) { free(x); x = NULL; } }
+#define W_SAFE_FREE(x) { if (x) { free(x); x = nullptr; } }
 
 enum W_MOUSEBUTTON: uint8_t;
 
