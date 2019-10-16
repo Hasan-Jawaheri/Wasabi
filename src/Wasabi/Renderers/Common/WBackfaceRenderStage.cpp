@@ -100,7 +100,7 @@ WError WBackfaceDepthRenderStage::Initialize(std::vector<WRenderStage*>& previou
 	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, fx, m_app, EFFECT_RENDER_FLAG_RENDER_DEPTH_ONLY);
 	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, fxa, m_app, EFFECT_RENDER_FLAG_RENDER_DEPTH_ONLY);
 
-	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
+	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1, true);
 	if (!m_perFrameMaterial) {
 		err = WError(W_ERRORUNK);
 	} else {
@@ -108,7 +108,7 @@ WError WBackfaceDepthRenderStage::Initialize(std::vector<WRenderStage*>& previou
 		m_app->FileManager->AddDefaultAsset(m_perFrameMaterial->GetName(), m_perFrameMaterial);
 	}
 
-	m_perFrameAnimatedMaterial = m_animatedObjectsFragment->GetEffect()->CreateMaterial(1);
+	m_perFrameAnimatedMaterial = m_animatedObjectsFragment->GetEffect()->CreateMaterial(1, true);
 	if (!m_perFrameAnimatedMaterial) {
 		err = WError(W_ERRORUNK);
 	} else {
@@ -135,15 +135,12 @@ WError WBackfaceDepthRenderStage::Render(WRenderer* renderer, WRenderTarget* rt,
 		m_perFrameMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
 		m_perFrameMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
-		m_perFrameMaterial->Bind(rt);
 
-		m_objectsFragment->Render(renderer, rt);
-
-		// create the per-frame UBO data
 		m_perFrameAnimatedMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameAnimatedMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
 		m_perFrameAnimatedMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
-		m_perFrameAnimatedMaterial->Bind(rt);
+
+		m_objectsFragment->Render(renderer, rt);
 
 		m_animatedObjectsFragment->Render(renderer, rt);
 	}

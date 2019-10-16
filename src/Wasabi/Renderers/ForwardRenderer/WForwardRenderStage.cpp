@@ -272,7 +272,7 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 
 	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, terrainFX, m_app, true);
 
-	m_perFrameObjectsMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
+	m_perFrameObjectsMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1, true);
 	if (!m_perFrameObjectsMaterial) {
 		err = WError(W_ERRORUNK);
 	} else {
@@ -280,7 +280,7 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 		m_app->FileManager->AddDefaultAsset(m_perFrameObjectsMaterial->GetName(), m_perFrameObjectsMaterial);
 	}
 
-	m_perFrameAnimatedObjectsMaterial = m_animatedObjectsFragment->GetEffect()->CreateMaterial(1);
+	m_perFrameAnimatedObjectsMaterial = m_animatedObjectsFragment->GetEffect()->CreateMaterial(1, true);
 	if (!m_perFrameAnimatedObjectsMaterial) {
 		err = WError(W_ERRORUNK);
 	} else {
@@ -288,7 +288,7 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 		m_app->FileManager->AddDefaultAsset(m_perFrameAnimatedObjectsMaterial->GetName(), m_perFrameAnimatedObjectsMaterial);
 	}
 
-	m_perFrameTerrainsMaterial = m_terrainsFragment->GetEffect()->CreateMaterial(1);
+	m_perFrameTerrainsMaterial = m_terrainsFragment->GetEffect()->CreateMaterial(1, true);
 	if (!m_perFrameTerrainsMaterial) {
 		err = WError(W_ERRORUNK);
 	} else {
@@ -336,7 +336,6 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint3
 		m_perFrameTerrainsMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
 		m_perFrameTerrainsMaterial->SetVariable<int>("numLights", numLights);
 		m_perFrameTerrainsMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
-		m_perFrameTerrainsMaterial->Bind(rt);
 
 		m_terrainsFragment->Render(renderer, rt);
 	}
@@ -348,17 +347,14 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint3
 		m_perFrameObjectsMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
 		m_perFrameObjectsMaterial->SetVariable<int>("numLights", numLights);
 		m_perFrameObjectsMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
-		m_perFrameObjectsMaterial->Bind(rt);
 
-		m_objectsFragment->Render(renderer, rt);
-
-		// create the per-frame UBO data
 		m_perFrameAnimatedObjectsMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameAnimatedObjectsMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
 		m_perFrameAnimatedObjectsMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
 		m_perFrameAnimatedObjectsMaterial->SetVariable<int>("numLights", numLights);
 		m_perFrameAnimatedObjectsMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
-		m_perFrameAnimatedObjectsMaterial->Bind(rt);
+
+		m_objectsFragment->Render(renderer, rt);
 
 		m_animatedObjectsFragment->Render(renderer, rt);
 	}
