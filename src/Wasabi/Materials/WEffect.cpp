@@ -511,6 +511,9 @@ WEffect::~WEffect() {
 	m_shaders.clear();
 	m_vertexShaderIndex = (uint32_t)-1;
 
+	// no references were held for this
+	m_perFrameMaterials.clear();
+
 	_DestroyPipeline();
 
 	m_app->EffectManager->RemoveEntity(this);
@@ -845,6 +848,12 @@ WError WEffect::Bind(WRenderTarget* rt) {
 
 	vkCmdBindPipeline(renderCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
+	for (auto material : m_perFrameMaterials) {
+		WError err = material->Bind(rt);
+		if (!err)
+			return err;
+	}
+
 	return WError(W_SUCCEEDED);
 }
 
@@ -856,10 +865,14 @@ W_EFFECT_RENDER_FLAGS WEffect::GetRenderFlags() const {
 	return m_flags;
 }
 
-WMaterial* WEffect::CreateMaterial(uint32_t bindingSet) {
+WMaterial* WEffect::CreateMaterial(uint32_t bindingSet, bool isPerFrame) {
 	WMaterial* material = new WMaterial(m_app);
 	if (!material->CreateForEffect(this, bindingSet))
 		W_SAFE_REMOVEREF(material);
+	if (material && isPerFrame) {
+		// DONT HOLD A REFERENCE - read docs for m_perFrameMaterials
+		m_perFrameMaterials.push_back(material);
+	}
 	return material;
 }
 

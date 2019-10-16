@@ -61,7 +61,7 @@ W_SHADER_DESC WGBufferAnimatedVS::GetDesc() {
 		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 2, 0, "animationTexture"),
 		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 3, 0, "instancingTexture"),
 	};
-	desc.input_layouts = { 
+	desc.input_layouts = {
 		WGBufferVS::GetDesc().input_layouts[0], W_INPUT_LAYOUT({
 		W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone index
 		W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weight
@@ -161,13 +161,13 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, GBufferFX, m_app, EFFECT_RENDER_FLAG_RENDER_GBUFFER);
 	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, GBufferAnimatedFX, m_app, EFFECT_RENDER_FLAG_RENDER_GBUFFER);
 
-	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1);
+	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1, true);
 	if (!m_perFrameMaterial)
 		return WError(W_ERRORUNK);
 	m_perFrameMaterial->SetName("GBufferPerFrameMaterial");
 	m_app->FileManager->AddDefaultAsset(m_perFrameMaterial->GetName(), m_perFrameMaterial);
 
-	m_perFrameAnimatedMaterial = m_animatedObjectsFragment->GetEffect()->CreateMaterial(1);
+	m_perFrameAnimatedMaterial = m_animatedObjectsFragment->GetEffect()->CreateMaterial(1, true);
 	if (!m_perFrameAnimatedMaterial)
 		return WError(W_ERRORUNK);
 	m_perFrameAnimatedMaterial->SetName("GBufferPerFrameAnimatedMaterial");
@@ -190,13 +190,11 @@ WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint3
 
 		m_perFrameMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
-		m_perFrameMaterial->Bind(rt);
-
-		m_objectsFragment->Render(renderer, rt);
 
 		m_perFrameAnimatedMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameAnimatedMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
-		m_perFrameAnimatedMaterial->Bind(rt);
+
+		m_objectsFragment->Render(renderer, rt);
 
 		m_animatedObjectsFragment->Render(renderer, rt);
 	}

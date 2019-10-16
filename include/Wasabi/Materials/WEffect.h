@@ -315,7 +315,7 @@ inline W_EFFECT_RENDER_FLAGS& operator &= (W_EFFECT_RENDER_FLAGS& lhs, W_EFFECT_
  * resources that can/need to be bound to it.
  *
  * Examples:
- * 
+ *
  * Creating a simple vertex shader type that is compatible with the default
  * vertex layout of Wasabi (see WDefaultVertex).
  * @code
@@ -382,7 +382,7 @@ inline W_EFFECT_RENDER_FLAGS& operator &= (W_EFFECT_RENDER_FLAGS& lhs, W_EFFECT_
  * class SimplePS : public WShader {
  * public:
  * 	SimplePS(class Wasabi* const app) : WShader(app) {}
- * 
+ *
  * 	virtual void Load(bool bSaveData = false) {
  * 		m_desc.type = W_FRAGMENT_SHADER; // Fragment (or pixel) shader
  * 		m_desc.bound_resources = {}; // no bound resources
@@ -640,10 +640,12 @@ public:
 	/**
 	 * Allocates a new material for this effect.
 	 * @param bindingSet  The binding set to use from this effect
+	 * @param isPerFrame  If set to true, this material will be bound to the
+	 *                    pipeline automatically every time this effect is bound
 	 * @return            Newly allocated and initialized material
 	 */
-	class WMaterial* CreateMaterial(uint32_t bindingSet = 0);
-	
+	class WMaterial* CreateMaterial(uint32_t bindingSet = 0, bool isPerFrame = false);
+
 	/**
 	 * Retrieves the layout of the pipelines created by this effect.
 	 * @return The Vulkan pipeline layout for the effect's pipelines
@@ -706,6 +708,11 @@ private:
 	VkPipelineRasterizationStateCreateInfo m_rasterizationState;
 	/** Render flags. See W_EFFECT_RENDER_FLAGS & WEffect::SetRenderFlags */
 	W_EFFECT_RENDER_FLAGS m_flags;
+	/** An array of materials to be automatically bound every time this effect is bound
+	 *  (no reference is held for these materials since that would make a cyclic relationship,
+	 *  instead, the materials will remove themselves from here on destruction).
+	 */
+	std::vector<class WMaterial*> m_perFrameMaterials;
 
 	/**
 	 * Frees all resources allocated by the effect.

@@ -59,6 +59,16 @@ void WMaterial::_DestroyResources() {
 		m_app->MemoryManager->ReleaseDescriptorSet(*it, m_descriptorPool, m_app->GetCurrentBufferingIndex());
 	m_app->MemoryManager->ReleaseDescriptorPool(m_descriptorPool, m_app->GetCurrentBufferingIndex());
 
+	if (m_effect) {
+		// if this material is being destroyed and is in the parent effect's per-frame materials, remove it
+		// manually (the effect cannot hold a reference to this material because it would be a circular relationship)
+		for (uint32_t i = 0; i < m_effect->m_perFrameMaterials.size(); i++) {
+			if (m_effect->m_perFrameMaterials[i] == this) {
+				m_effect->m_perFrameMaterials.erase(m_effect->m_perFrameMaterials.begin() + i);
+				break;
+			}
+		}
+	}
 	W_SAFE_REMOVEREF(m_effect);
 }
 
@@ -569,4 +579,3 @@ WError WMaterialCollection::SetTexture(std::string name, class WImage* img, uint
 	}
 	return ret;
 }
-

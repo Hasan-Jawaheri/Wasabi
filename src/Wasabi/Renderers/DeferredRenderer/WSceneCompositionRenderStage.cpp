@@ -77,8 +77,8 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	if (!m_effect)
 		return WError(W_OUTOFMEMORY);
 
-	m_perFrameMaterial = m_effect->CreateMaterial(0);
-	m_constantsMaterial = m_effect->CreateMaterial(1);
+	m_perFrameMaterial = m_effect->CreateMaterial(0, true);
+	m_constantsMaterial = m_effect->CreateMaterial(1, true);
 
 	if (!m_perFrameMaterial || !m_constantsMaterial)
 		return WError(W_ERRORUNK);
@@ -118,10 +118,9 @@ WError WSceneCompositionRenderStage::Render(class WRenderer* renderer, class WRe
 		m_constantsMaterial->SetVariable<float>("camFarClip", m_currentCameraFarPlane);
 	}
 
-	m_effect->Bind(rt);
-	m_constantsMaterial->Bind(rt);
 	m_perFrameMaterial->SetVariable<WMatrix>("projInv", WMatrixInverse(cam->GetProjectionMatrix()));
-	m_perFrameMaterial->Bind(rt);
+
+	m_effect->Bind(rt);
 	m_fullscreenSprite->Render(rt);
 
 	return WError(W_SUCCEEDED);
