@@ -381,7 +381,7 @@ public:
 	 * @param mx      Mouse X where the event happened
 	 * @param my      Mouse Y where the event happened
 	 */
-	virtual void OnMouseDown(W_MOUSEBUTTON button, int mx, int my) {
+	virtual void OnMouseDown(W_MOUSEBUTTON button, double mx, double my) {
 		UNREFERENCED_PARAMETER(button);
 		UNREFERENCED_PARAMETER(mx);
 		UNREFERENCED_PARAMETER(my);
@@ -394,7 +394,7 @@ public:
 	 * @param mx      Mouse X where the event happened
 	 * @param my      Mouse Y where the event happened
 	 */
-	virtual void OnMouseUp(W_MOUSEBUTTON button, int mx, int my) {
+	virtual void OnMouseUp(W_MOUSEBUTTON button, double mx, double my) {
 		UNREFERENCED_PARAMETER(button);
 		UNREFERENCED_PARAMETER(mx);
 		UNREFERENCED_PARAMETER(my);
@@ -406,7 +406,7 @@ public:
 	 * @param mx  New mouse X
 	 * @param my  New mouse Y
 	 */
-	virtual void OnMouseMove(int mx, int my) {
+	virtual void OnMouseMove(double mx, double my) {
 		UNREFERENCED_PARAMETER(mx);
 		UNREFERENCED_PARAMETER(my);
 	}
