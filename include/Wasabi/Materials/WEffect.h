@@ -276,8 +276,10 @@ enum W_EFFECT_RENDER_FLAGS : uint32_t {
 	EFFECT_RENDER_FLAG_RENDER_GBUFFER = (1 << 0),
 	/** Effect should render in a forward rendering stage */
 	EFFECT_RENDER_FLAG_RENDER_FORWARD = (1 << 1),
+	/** Effect should render in a depth-only render stage */
+	EFFECT_RENDER_FLAG_RENDER_DEPTH_ONLY = (1 << 2),
 	/** Effect can output alpha < 1 (translucent/transparent) */
-	EFFECT_RENDER_FLAG_TRANSLUCENT = (1 << 2),
+	EFFECT_RENDER_FLAG_TRANSLUCENT = (1 << 3),
 };
 
 inline W_EFFECT_RENDER_FLAGS operator | (W_EFFECT_RENDER_FLAGS lhs, W_EFFECT_RENDER_FLAGS rhs) {
@@ -735,4 +737,3 @@ class WEffectManager : public WManager<WEffect> {
 public:
 	WEffectManager(class Wasabi* const app);
 };
-
