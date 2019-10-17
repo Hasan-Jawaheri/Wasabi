@@ -149,12 +149,6 @@ struct WObjectSortingKey {
 
 	WObjectSortingKey(class WObject* object, class WEffect* effect = nullptr) {
 		obj = object;
-		if (!effect) {
-			WMaterialCollection mats = object->GetMaterials();
-			auto it = mats.m_materials.begin();
-			if (it != mats.m_materials.end())
-				effect = it->first->GetEffect();
-		}
 		fx = effect;
 	}
 
@@ -238,12 +232,6 @@ struct WSpriteSortingKey {
 	WSpriteSortingKey(class WSprite* spr, class WEffect* effect = nullptr) {
 		sprite = spr;
 		priority = spr->GetPriority();
-		if (!effect) {
-			WMaterialCollection mats = spr->GetMaterials();
-			auto it = mats.m_materials.begin();
-			if (it != mats.m_materials.end())
-				effect = it->first->GetEffect();
-		}
 		fx = effect;
 	}
 
@@ -281,12 +269,6 @@ struct WParticlesSortingKey {
 	WParticlesSortingKey(class WParticles* par, class WEffect* effect = nullptr) {
 		particles = par;
 		priority = par->GetPriority();
-		if (!effect) {
-			WMaterialCollection mats = par->GetMaterials();
-			auto it = mats.m_materials.begin();
-			if (it != mats.m_materials.end())
-				effect = it->first->GetEffect();
-		}
 		fx = effect;
 	}
 
