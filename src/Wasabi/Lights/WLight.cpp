@@ -46,6 +46,17 @@ std::string WLight::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WLight::SetID(uint32_t newID) {
+	m_app->LightManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->LightManager->AddEntity(this);
+}
+
+void WLight::SetName(std::string newName) {
+	m_name = newName;
+	m_app->LightManager->OnEntityNameChanged(this, newName);
+}
+
 bool WLight::Valid() const {
 	return true;
 }

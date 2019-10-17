@@ -102,10 +102,9 @@ public:
 		if (!entity)
 			return;
 		m_entities[W_HASH(entity->GetID())].push_back(entity);
-		entity->SetManager((void*)this);
 		std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Added to the manager.\n";
 		for (auto it = m_changeCallbacks.begin(); it != m_changeCallbacks.end(); it++)
-			it->second((T*)entity, true);
+			it->second(entity, true);
 	}
 
 	/**

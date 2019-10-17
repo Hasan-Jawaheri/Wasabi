@@ -376,6 +376,17 @@ std::string WParticles::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WParticles::SetID(uint32_t newID) {
+	m_app->ParticlesManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->ParticlesManager->AddEntity(this);
+}
+
+void WParticles::SetName(std::string newName) {
+	m_name = newName;
+	m_app->ParticlesManager->OnEntityNameChanged(this, newName);
+}
+
 void WParticles::_DestroyResources() {
 	W_SAFE_DELETE(m_behavior);
 	W_SAFE_REMOVEREF(m_instancesTexture);

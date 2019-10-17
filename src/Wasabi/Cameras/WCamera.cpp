@@ -53,6 +53,17 @@ std::string WCamera::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WCamera::SetID(uint32_t newID) {
+	m_app->CameraManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->CameraManager->AddEntity(this);
+}
+
+void WCamera::SetName(std::string newName) {
+	m_name = newName;
+	m_app->CameraManager->OnEntityNameChanged(this, newName);
+}
+
 void WCamera::EnableAutoAspect() {
 	m_bAutoAspect = true;
 }
@@ -227,7 +238,7 @@ void WCamera::UpdateInternals() {
 			m_ProjM = WPerspectiveProjMatrixFOV(W_RADTODEG(m_fFOV), m_fAspect, m_minRange, m_maxRange);
 		else if (m_projType == PROJECTION_ORTHOGONAL)
 			m_ProjM = m_orthoMatrix;
-		
+
 		// fix the coordinate system (we use LHS, Vulkan uses RHS, so flip y coordinate)
 		m_ProjM(1, 1) *= -1; // flip Y-axis in the render
 

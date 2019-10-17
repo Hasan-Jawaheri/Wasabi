@@ -40,8 +40,10 @@ public:
 	 * Returns "RenderTarget" string.
 	 * @return Returns "RenderTarget" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	/**
 	 * Create a render target with a single color attachment backed by a WImage.
@@ -59,7 +61,7 @@ public:
 	 * rt = new WRenderTarget(this);
 	 * rt->Create(640, 480, rtImg);
 	 * @endcode
-	 * 
+	 *
 	 * @param  width       Width of the render target
 	 * @param  height      Height of the render target
 	 * @param  target      A pointer to a WImage backing the render target
@@ -260,4 +262,3 @@ public:
 	 */
 	WRenderTarget* CreateImmediateRenderTarget(uint32_t ID = 0);
 };
-

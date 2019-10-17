@@ -220,6 +220,17 @@ std::string WTerrain::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WTerrain::SetID(uint32_t newID) {
+	m_app->TerrainManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->TerrainManager->AddEntity(this);
+}
+
+void WTerrain::SetName(std::string newName) {
+	m_name = newName;
+	m_app->TerrainManager->OnEntityNameChanged(this, newName);
+}
+
 void WTerrain::_DestroyResources() {
 	W_SAFE_REMOVEREF(m_MxMGeometry);
 	W_SAFE_REMOVEREF(m_Mx3Geometry);

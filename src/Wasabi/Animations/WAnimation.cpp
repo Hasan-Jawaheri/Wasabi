@@ -42,6 +42,17 @@ std::string WAnimation::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WAnimation::SetID(uint32_t newID) {
+	m_app->AnimationManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->AnimationManager->AddEntity(this);
+}
+
+void WAnimation::SetName(std::string newName) {
+	m_name = newName;
+	m_app->AnimationManager->OnEntityNameChanged(this, newName);
+}
+
 void WAnimation::m_UpdateFirstFrame(uint32_t subAnimation) {
 	if (subAnimation == (uint32_t)-1) {
 		for (int i = 0; i < m_subAnimations.size(); i++) {

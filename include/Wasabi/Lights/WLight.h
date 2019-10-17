@@ -46,8 +46,10 @@ public:
 	 * Returns "Light" string.
 	 * @return Returns "Light" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	WLight(class Wasabi* const app, W_LIGHT_TYPE type = W_LIGHT_DIRECTIONAL, uint32_t ID = 0);
 

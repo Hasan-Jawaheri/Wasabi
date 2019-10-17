@@ -28,8 +28,10 @@ public:
 	 * Returns "RigidBody" string.
 	 * @return Returns "RigidBody" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	WBulletRigidBody(class Wasabi* const app, uint32_t ID = 0);
 

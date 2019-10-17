@@ -120,6 +120,17 @@ std::string WGeometry::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WGeometry::SetID(uint32_t newID) {
+	m_app->GeometryManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->GeometryManager->AddEntity(this);
+}
+
+void WGeometry::SetName(std::string newName) {
+	m_name = newName;
+	m_app->GeometryManager->OnEntityNameChanged(this, newName);
+}
+
 bool WGeometry::Valid() const {
 	return m_vertices.Valid();
 }

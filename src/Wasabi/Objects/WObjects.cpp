@@ -212,6 +212,17 @@ std::string WObject::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WObject::SetID(uint32_t newID) {
+	m_app->ObjectManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->ObjectManager->AddEntity(this);
+}
+
+void WObject::SetName(std::string newName) {
+	m_name = newName;
+	m_app->ObjectManager->OnEntityNameChanged(this, newName);
+}
+
 bool WObject::Valid() const {
 	return m_geometry && m_geometry->Valid();
 }

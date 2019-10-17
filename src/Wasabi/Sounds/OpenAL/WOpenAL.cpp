@@ -187,6 +187,17 @@ std::string WOpenALSound::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WOpenALSound::SetID(uint32_t newID) {
+	m_app->SoundComponent->SoundManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->SoundComponent->SoundManager->AddEntity(this);
+}
+
+void WOpenALSound::SetName(std::string newName) {
+	m_name = newName;
+	m_app->SoundComponent->SoundManager->OnEntityNameChanged(this, newName);
+}
+
 WError WOpenALSound::LoadFromMemory(uint32_t buffer, void* data, size_t dataSize, int format, uint32_t frequency, bool bSaveData) {
 	if (!m_bCheck(true)) return WError(W_ERRORUNK);
 

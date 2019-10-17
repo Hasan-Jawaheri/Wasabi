@@ -58,9 +58,11 @@ protected:
 	virtual ~WOpenALSound();
 
 public:
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
-	
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
+
 	WOpenALSound(class Wasabi* const app, uint32_t ID = 0);
 
 	virtual bool Valid() const;

@@ -48,8 +48,10 @@ public:
 	 * Returns "Material" string.
 	 * @return Returns "Material" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	/**
 	 * Binds the resources to the pipeline. In Vulkan terms, this binds the descriptor

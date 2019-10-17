@@ -53,6 +53,17 @@ std::string WRenderTarget::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WRenderTarget::SetID(uint32_t newID) {
+	m_app->RenderTargetManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->RenderTargetManager->AddEntity(this);
+}
+
+void WRenderTarget::SetName(std::string newName) {
+	m_name = newName;
+	m_app->RenderTargetManager->OnEntityNameChanged(this, newName);
+}
+
 bool WRenderTarget::Valid() const {
 	return m_bufferedFrameBuffer.Valid();
 }
