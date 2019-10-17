@@ -84,11 +84,11 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 		return WError(W_ERRORUNK);
 
 	m_currentCameraFarPlane = m_renderTarget->GetCamera()->GetMaxRange();
-	m_constantsMaterial->SetVariable<WColor>("ambient", WColor(0.3f, 0.3f, 0.3f));
-	m_constantsMaterial->SetVariable<float>("SSAOSampleRadius", 0.1f);
-	m_constantsMaterial->SetVariable<float>("SSAOIntensity", 1.0f);
-	m_constantsMaterial->SetVariable<float>("SSAODistanceScale", 3.0f);
-	m_constantsMaterial->SetVariable<float>("SSAOAngleBias", 0.15f);
+	SetAmbientLight(WColor(0.3f, 0.3f, 0.3f));
+	SetSSAOSampleRadius(0.1f);
+	SetSSAOIntensity(1.0f);
+	SetSSAODistanceScale(3.0f);
+	SetSSAOAngleBias(0.15f);
 	m_constantsMaterial->SetVariable<float>("camFarClip", m_currentCameraFarPlane);
 
 	m_constantsMaterial->SetTexture("diffuseTexture", m_app->Renderer->GetRenderTargetImage("GBufferDiffuse"));
@@ -137,4 +137,25 @@ WError WSceneCompositionRenderStage::Resize(uint32_t width, uint32_t height) {
 	if (m_fullscreenSprite)
 		m_fullscreenSprite->SetSize(WVector2((float)width, (float)height));
 	return WRenderStage::Resize(width, height);
+}
+
+void WSceneCompositionRenderStage::SetAmbientLight(WColor color) {
+	m_constantsMaterial->SetVariable<WColor>("ambient", color);
+}
+
+void WSceneCompositionRenderStage::SetSSAOSampleRadius(float value) {
+	m_constantsMaterial->SetVariable<float>("SSAOSampleRadius", value);
+
+}
+
+void WSceneCompositionRenderStage::SetSSAOIntensity(float value) {
+	m_constantsMaterial->SetVariable<float>("SSAOIntensity", value);
+}
+
+void WSceneCompositionRenderStage::SetSSAODistanceScale(float value) {
+	m_constantsMaterial->SetVariable<float>("SSAODistanceScale", value);
+}
+
+void WSceneCompositionRenderStage::SetSSAOAngleBias(float value) {
+	m_constantsMaterial->SetVariable<float>("SSAOAngleBias", value);
 }
