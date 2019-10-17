@@ -51,7 +51,7 @@ public:
 	 * stored in the file, and when loaded, will just fetch the same engine assets
 	 * and increase their reference count. Default assets ignore the nameSuffix
 	 * parameter.
-	 * @param name 
+	 * @param name
 	 * @param loadedAsset
 	 * @param args
 	 * @param nameSuffix
@@ -128,4 +128,5 @@ public:
 	~WFileManager();
 
 	void AddDefaultAsset(std::string name, WFileAsset* asset);
+	bool IsDefaultAsset(std::string name) const;
 };

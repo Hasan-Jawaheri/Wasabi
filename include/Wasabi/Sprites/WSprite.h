@@ -40,6 +40,7 @@ class WSprite : public WBase, public WMaterialsStore {
 
 protected:
 	WSprite(Wasabi* const app, uint32_t ID = 0);
+	WSprite(Wasabi* const app, class WEffect* fx, uint32_t bindingSet, uint32_t ID = 0);
 	~WSprite();
 
 public:
@@ -234,6 +235,19 @@ public:
 	 * @return    New sprite
 	 */
 	WSprite* CreateSprite(class WImage* img = nullptr, uint32_t ID = 0) const;
+
+	/**
+	 * Allocates and initializes a new sprite. If an image is supplied, it
+	 * will be set to the default sprite's material texture "diffuseTexture".
+	 * @param fx         An effect to be used for this sprite. If nullptr, a
+	 *                   default effect will be used
+	 * @param bindingSet The binding set to use to create the material from
+	 *                   the given fx
+	 * @param img        Image to set to the new sprite
+	 * @param ID         Id of the new image
+	 * @return           New sprite
+	 */
+	WSprite* CreateSprite(class WEffect* fx, uint32_t bindingSet, class WImage* img = nullptr, uint32_t ID = 0) const;
 
 	/**
 	 * Retrieves the default vertex shader that sprites use.

@@ -105,11 +105,15 @@ WError WSpriteManager::Resize(uint32_t width, uint32_t height) {
 }
 
 WSprite* WSpriteManager::CreateSprite(WImage* img, uint32_t ID) const {
+	return CreateSprite(nullptr, 0, img, ID);
+}
+
+WSprite* WSpriteManager::CreateSprite(WEffect* fx, uint32_t bindingSet, WImage* img, uint32_t ID) const {
 	WGeometry* geometry = CreateSpriteGeometry();
 	if (!geometry)
 		return nullptr;
 
-	WSprite* sprite = new WSprite(m_app, ID);
+	WSprite* sprite = new WSprite(m_app, fx, bindingSet, ID);
 	WMaterialCollection mats = sprite->GetMaterials();
 	sprite->m_geometry = geometry;
 	if (img) {
@@ -233,7 +237,8 @@ void WSprite::SetName(std::string newName) {
 	m_app->SpriteManager->OnEntityNameChanged(this, newName);
 }
 
-WSprite::WSprite(Wasabi* const app, uint32_t ID) : WBase(app, ID) {
+WSprite::WSprite(Wasabi* const app, uint32_t ID) : WSprite(app, nullptr, 0, ID) {}
+WSprite::WSprite(Wasabi* const app, WEffect* fx, uint32_t bindingSet, uint32_t ID) : WBase(app, ID) {
 	m_hidden = false;
 	m_geometry = nullptr;
 	m_angle = 0.0f;
@@ -242,6 +247,9 @@ WSprite::WSprite(Wasabi* const app, uint32_t ID) : WBase(app, ID) {
 	m_rotationCenter = WVector2();
 	m_priority = 0;
 	m_geometryChanged = true;
+
+	if (fx)
+		AddEffect(fx, bindingSet);
 
 	app->SpriteManager->AddEntity(this);
 }
