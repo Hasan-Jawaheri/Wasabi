@@ -233,8 +233,10 @@ public:
 	 * Returns "Particles" string.
 	 * @return Returns "Particles" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	/**
 	 * Initializes the particle system. This must be called for a WParticles

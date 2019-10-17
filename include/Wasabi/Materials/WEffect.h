@@ -466,8 +466,10 @@ public:
 	 * Returns "Shader" string.
 	 * @return Returns "Shader" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	WShader(class Wasabi* const app, uint32_t ID = 0);
 	~WShader();
@@ -545,8 +547,10 @@ public:
 	 * Returns "Effect" string.
 	 * @return Returns "Effect" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	WEffect(class Wasabi* const app, uint32_t ID = 0);
 

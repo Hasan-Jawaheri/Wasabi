@@ -222,6 +222,17 @@ std::string WSprite::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WSprite::SetID(uint32_t newID) {
+	m_app->SpriteManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->SpriteManager->AddEntity(this);
+}
+
+void WSprite::SetName(std::string newName) {
+	m_name = newName;
+	m_app->SpriteManager->OnEntityNameChanged(this, newName);
+}
+
 WSprite::WSprite(Wasabi* const app, uint32_t ID) : WBase(app, ID) {
 	m_hidden = false;
 	m_geometry = nullptr;

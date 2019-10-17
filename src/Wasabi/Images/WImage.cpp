@@ -136,6 +136,17 @@ std::string WImage::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WImage::SetID(uint32_t newID) {
+	m_app->ImageManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->ImageManager->AddEntity(this);
+}
+
+void WImage::SetName(std::string newName) {
+	m_name = newName;
+	m_app->ImageManager->OnEntityNameChanged(this, newName);
+}
+
 bool WImage::Valid() const {
 	return m_bufferedImage.Valid();
 }
@@ -295,7 +306,7 @@ void WImage::_UpdatePendingMap(void* mappedData, uint32_t bufferIndex, W_MAP_FLA
 void WImage::_UpdatePendingUnmap(uint32_t bufferIndex) {
 	if (m_pendingBufferedMaps.size() > 0) {
 		// we stored the mapped pixels in m_pendingBufferedMaps[bufferIndex]
-		// create a copy of it and add it as pending for the other 
+		// create a copy of it and add it as pending for the other
 		void* bufferedMaps = W_SAFE_ALLOC(m_bufferedImage.GetMemorySize());
 		memcpy(bufferedMaps, m_pendingBufferedMaps[bufferIndex], m_bufferedImage.GetMemorySize());
 		for (uint32_t i = 0; i < m_pendingBufferedMaps.size(); i++) {

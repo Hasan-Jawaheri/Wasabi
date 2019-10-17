@@ -43,7 +43,13 @@ public:
 	 * Sets the ID of this object and notifies its manager.
 	 * @param newID New ID
 	 */
-	void SetID(uint32_t newID);
+	virtual void SetID(uint32_t newID) = 0;
+
+	/**
+	 * Sets the name of this object.
+	 * @param name New name for the object
+	 */
+	virtual void SetName(std::string newName) = 0;
 
 	/**
 	 * Retrieves the ID of this object.
@@ -52,22 +58,16 @@ public:
 	uint32_t GetID() const;
 
 	/**
-	 * Retrieves a pointer to the Wasabi class used to create this object.
-	 * @return A pointer to the Wasabi class
-	 */
-	class Wasabi* GetAppPtr() const;
-
-	/**
-	 * Sets the name of this object.
-	 * @param name New name for the object
-	 */
-	void SetName(std::string name);
-
-	/**
 	 * Retrieves the name of this object.
 	 * @return The name of the object
 	 */
 	std::string GetName() const;
+
+	/**
+	 * Retrieves a pointer to the Wasabi class used to create this object.
+	 * @return A pointer to the Wasabi class
+	 */
+	class Wasabi* GetAppPtr() const;
 
 	/**
 	 * Add to the reference count.
@@ -87,24 +87,15 @@ public:
 	 */
 	virtual bool Valid() const = 0;
 
-	/**
-	 * Sets the manager of this object. The manager should be of a type
-	 * WManager<X> such that X is a child of WBase.
-	 * @param mgr The manager
-	 */
-	void SetManager(void* mgr);
-
 protected:
 	/** The Wasabi application under which this object is created */
 	class Wasabi*	m_app;
-
-private:
-	/** The reference count, starting at 1 */
-	int m_refCount;
 	/** ID of this object */
 	uint32_t m_ID;
 	/** Name of this object */
 	std::string m_name;
-	/** The manager of the object */
-	void* m_mgr;
+
+private:
+	/** The reference count, starting at 1 */
+	int m_refCount;
 };

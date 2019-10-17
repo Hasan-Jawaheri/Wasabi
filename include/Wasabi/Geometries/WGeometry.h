@@ -196,8 +196,10 @@ public:
 	 * Returns "Geometry" string.
 	 * @return Returns "Geometry" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	WGeometry(Wasabi* const app, uint32_t ID = 0);
 
@@ -267,7 +269,7 @@ public:
 	 * uint32_t indices[] = {0, 1, 2};
 	 * WGeomery* geometry = GeometryManager->CreateFromData(vertices, 3, indices, 3);
 	 * @endcode
-	 * 
+	 *
 	 * @param  vb            A pointer to the memory containing the vertex data,
 	 *                       which must be a valid contiguous memory of size
 	 *                       <a>num_verts*GetVertexDescription(0).GetSize()</a>
@@ -297,7 +299,7 @@ public:
 	 * have the following function calls work: SaveToWGM(), all map and unmap
 	 * functions, all scaling functions, all offset functions and Intersect().
 	 * Immutable geometry cannot be copied. Immutable geometry uses less memory.
-	 * 
+	 *
 	 * @param  size    Dimension of the cube
 	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
@@ -306,7 +308,7 @@ public:
 
 	/**
 	 * Creates a box geometry.
-	 * 
+	 *
 	 * @param  dimensions Dimensions of the box
 	 * @param  flags      Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return            Error code, see WError.h
@@ -316,7 +318,7 @@ public:
 	/**
 	 * Creates a plain geometry that is segmented. The plain will be split into
 	 * (xsegs+1)*(zsegs+1) squares, which will have 2 triangles each.
-	 * 
+	 *
 	 * @param  size    Size (dimension) of the plain
 	 * @param  xsegs    Number of segments on the X axis, minimum is 0
 	 * @param  zsegs    Number of segments on the Z axis, minimum is 0
@@ -341,7 +343,7 @@ public:
 	/**
 	 * Creates a sphere geometry, with VRes vertical segments and URes horizontal
 	 * segments.
-	 * 
+	 *
 	 * @param  radius   Radius of the sphere
 	 * @param  vres     Vertical resolution, or number of vertical splits,
 	 *                  minimum is 3
@@ -355,7 +357,7 @@ public:
 	/**
 	 * Creates a cone geometry, with csegs segments at the bottom circle and
 	 * hsegs segments along the cone's height.
-	 * 
+	 *
 	 * @param  radius   Radius of the bottom circle
 	 * @param  height   Height of the cone
 	 * @param  hsegs    Number of segments along the height, minimum is 0
@@ -381,7 +383,7 @@ public:
 
 	/**
 	 * Copy another (non-immutable) geometry.
-	 * 
+	 *
 	 * @param  from     Geometry to copy
 	 * @param  flags    Creation flags, see W_GEOMETRY_CREATE_FLAGS
 	 * @return          Error code, see WError.h
@@ -394,7 +396,7 @@ public:
 	 * vertex buffer (created from a Load*, CreateFromData() or CopyFrom() call)
 	 * was dynamic, false otherwise. If the geometry of this object is immutable,
 	 * the the animation buffer will also be.
-	 * 
+	 *
 	 * @param  animBuf A pointer to the memory to create the animation buffer
 	 *                 from, which must be a valid contiguous memory of size
 	 *                 <a>GetNumVertices()*GetVertexDescription(1).GetSize()</a>
@@ -429,7 +431,7 @@ public:
 	 * vertices[0].pos.x += 5;
 	 * geometry->UnmapVertexBuffer();
 	 * @endcode
-	 * 
+	 *
 	 * @param  vb        The address of a pointer to have it point to the mapped
 	 *                   memory of the vertices
 	 * @param  flags     Map flags (bitwise OR'd), specifying read/write intention
@@ -453,7 +455,7 @@ public:
 	 * indices[2] = temp;
 	 * geometry->UnmapIndexBuffer();
 	 * @endcode
-	 * 
+	 *
 	 * @param  ib        The address of a pointer to have it point to the mapped
 	 *                   memory of the indices
 	 * @param  flags     Map flags (bitwise OR'd), specifying read/write intention
@@ -730,4 +732,3 @@ public:
 	 */
 	void UpdateDynamicGeometries(uint32_t bufferIndex) const;
 };
-

@@ -95,8 +95,10 @@ public:
 	 * Returns "Object" string.
 	 * @return Returns "Object" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	WObject(Wasabi* const app, uint32_t ID = 0);
 
@@ -126,7 +128,7 @@ public:
 	 * If the object's instancing is initiated (see InitInstancing()), and there
 	 * is at least one instance created (see CreateInstance()), the object will
 	 * be rendered using geometry instancing.
-	 * 
+	 *
 	 * @param rt              Render target to render to.
 	 * @param material        Material to fill in with object data and bind
 	 * @param updateInstances Whether or not to update the instances data

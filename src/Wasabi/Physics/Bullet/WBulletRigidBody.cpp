@@ -53,6 +53,17 @@ std::string WBulletRigidBody::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WBulletRigidBody::SetID(uint32_t newID) {
+	m_app->PhysicsComponent->RigidBodyManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->PhysicsComponent->RigidBodyManager->AddEntity(this);
+}
+
+void WBulletRigidBody::SetName(std::string newName) {
+	m_name = newName;
+	m_app->PhysicsComponent->RigidBodyManager->OnEntityNameChanged(this, newName);
+}
+
 void WBulletRigidBody::_DestroyResources() {
 	WBulletPhysics* physics = (WBulletPhysics*)m_app->PhysicsComponent;
 
@@ -218,7 +229,7 @@ void WBulletRigidBody::Update(float deltaTime) {
 void WBulletRigidBody::BindObject(WOrientation* obj, WBase* objBase) {
 	if (m_boundObjectBase)
 		m_boundObjectBase->RemoveReference();
-	
+
 	m_boundObject = obj;
 	m_boundObjectBase = objBase;
 

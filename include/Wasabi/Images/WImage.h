@@ -57,8 +57,10 @@ public:
 	 * Returns "Image" string.
 	 * @return Returns "Image" string
 	 */
-	virtual std::string GetTypeName() const;
 	static std::string _GetTypeName();
+	virtual std::string GetTypeName() const override;
+	virtual void SetID(uint32_t newID) override;
+	virtual void SetName(std::string newName) override;
 
 	WImage(class Wasabi* const app, uint32_t ID = 0);
 
@@ -118,7 +120,7 @@ public:
 	 * img->CreateFromPixelsArray(pixels, 32, 32, VK_FORMAT_R8G8_UNORM);
 	 * delete[] pixels;
 	 * @endcode
-	 * 
+	 *
 	 * @param  pixels         A pointer to the memory containing the pixels. If NULL,
 	 *                        the image will not have initial data.
 	 * @param  width          Width of the image
@@ -180,7 +182,7 @@ public:
 	 * pixels[10] = WColor(1.0f, 0.0f, 0.0f, 1.0f);
 	 * img->UnmapPixels();
 	 * @endcode
-	 * 
+	 *
 	 * @param  pixels    The address of a pointer to have it point to the mapped
 	 *                   memory of the pixels
 	 * @param  flags     Map flags (bitwise OR'd), specifying read/write intention

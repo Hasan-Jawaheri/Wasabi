@@ -210,6 +210,17 @@ std::string WShader::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WShader::SetID(uint32_t newID) {
+	m_app->ShaderManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->ShaderManager->AddEntity(this);
+}
+
+void WShader::SetName(std::string newName) {
+	m_name = newName;
+	m_app->ShaderManager->OnEntityNameChanged(this, newName);
+}
+
 WShader::WShader(class Wasabi* const app, uint32_t ID) : WFileAsset(app, ID) {
 	m_module = VK_NULL_HANDLE;
 	m_code = nullptr;
@@ -525,6 +536,17 @@ std::string WEffect::_GetTypeName() {
 
 std::string WEffect::GetTypeName() const {
 	return _GetTypeName();
+}
+
+void WEffect::SetID(uint32_t newID) {
+	m_app->EffectManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->EffectManager->AddEntity(this);
+}
+
+void WEffect::SetName(std::string newName) {
+	m_name = newName;
+	m_app->EffectManager->OnEntityNameChanged(this, newName);
 }
 
 bool WEffect::_ValidShaders() const {

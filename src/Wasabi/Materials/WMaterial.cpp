@@ -32,6 +32,17 @@ std::string WMaterial::GetTypeName() const {
 	return _GetTypeName();
 }
 
+void WMaterial::SetID(uint32_t newID) {
+	m_app->MaterialManager->RemoveEntity(this);
+	m_ID = newID;
+	m_app->MaterialManager->AddEntity(this);
+}
+
+void WMaterial::SetName(std::string newName) {
+	m_name = newName;
+	m_app->MaterialManager->OnEntityNameChanged(this, newName);
+}
+
 bool WMaterial::Valid() const {
 	return m_descriptorSets.size() > 0;
 }
