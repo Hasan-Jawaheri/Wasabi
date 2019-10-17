@@ -16,4 +16,13 @@ public:
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint32_t filter);
 	virtual void Cleanup();
 	virtual WError Resize(uint32_t width, uint32_t height);
+
+	/**
+	 * Composition parameters
+	 */
+	void SetAmbientLight(WColor color);
+	void SetSSAOSampleRadius(float value);
+	void SetSSAOIntensity(float value);
+	void SetSSAODistanceScale(float value);
+	void SetSSAOAngleBias(float value);
 };
