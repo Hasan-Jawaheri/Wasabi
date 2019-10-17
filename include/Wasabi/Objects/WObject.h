@@ -101,6 +101,7 @@ public:
 	virtual void SetName(std::string newName) override;
 
 	WObject(Wasabi* const app, uint32_t ID = 0);
+	WObject(Wasabi* const app, class WEffect* fx, uint32_t bindingSet, uint32_t ID = 0);
 
 	/**
 	 * Checks whether a call to Render() will cause any rendering (draw call) to
@@ -355,6 +356,15 @@ public:
 	 * @return    New object
 	 */
 	WObject* CreateObject(uint32_t ID = 0) const;
+
+	/**
+	 * Allocates and initializes a new object.
+	 * @param fx         An effect to use. If nullptr, a default effect will be assigned
+	 * @param bindingSet Binding set to use for the material of the given fx
+	 * @param ID         Id of the new object
+	 * @return           New object
+	 */
+	WObject* CreateObject(class WEffect* fx, uint32_t bindingSet, uint32_t ID = 0) const;
 
 	/**
 	 * Checks if an object is in the view in the default renderer's camera and

@@ -86,8 +86,12 @@ public:
 		}
 	}
 
-	class WEffect* GetEffect() {
+	class WEffect* GetEffect() const {
 		return m_renderEffect;
+	}
+
+	W_EFFECT_RENDER_FLAGS GetRequiredRenderFlags() const {
+		return m_requiredRenderFlags;
 	}
 
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt) {
@@ -137,8 +141,15 @@ public:
 	virtual bool KeyChanged(EntityT* entity, class WEffect* effect, SortingKeyT key) = 0;
 
 	virtual void OnEntityAdded(EntityT* entity) {
-		entity->AddEffect(m_renderEffect, 0);
-		entity->GetMaterial(m_renderEffect)->SetName(GenerateMaterialName());
+		bool entityHasUsableNonDefaultMaterial = false;
+		for (auto mat : entity->GetMaterials().m_materials)
+			if (mat.first->GetEffect()->GetRenderFlags() & m_requiredRenderFlags && !mat.first->GetAppPtr()->FileManager->IsDefaultAsset(mat.first->GetEffect()->GetName()))
+				entityHasUsableNonDefaultMaterial = true;
+
+		if (!entityHasUsableNonDefaultMaterial) {
+			entity->AddEffect(m_renderEffect, 0);
+			entity->GetMaterial(m_renderEffect)->SetName(GenerateMaterialName());
+		}
 	}
 };
 
@@ -166,6 +177,7 @@ public:
 	WObjectsRenderFragment(std::string fragmentName, bool animated, WEffect* fx, class Wasabi* wasabi, W_EFFECT_RENDER_FLAGS renderFlags) : WRenderFragment(fragmentName, fx, wasabi->ObjectManager) {
 		m_animated = animated;
 		m_requiredRenderFlags = renderFlags;
+		fx->SetRenderFlags(m_requiredRenderFlags);
 	}
 
 	virtual void RenderEntity(WObject* object, class WRenderTarget* rt, class WMaterial* material) {
@@ -180,11 +192,6 @@ public:
 	virtual bool ShouldRenderEntity(WObject* object) {
 		return (object->GetAnimation() != nullptr) == m_animated;
 	};
-
-	virtual void OnEntityAdded(WObject* object) {
-		object->AddEffect(m_renderEffect, 0);
-		object->GetMaterial(m_renderEffect)->SetName(GenerateMaterialName());
-	}
 };
 
 struct WTerrainSortingKey {
@@ -204,11 +211,9 @@ struct WTerrainSortingKey {
 
 class WTerrainRenderFragment : public WRenderFragment<WTerrain, WTerrainSortingKey> {
 public:
-	WTerrainRenderFragment(std::string fragmentName, WEffect* fx, class Wasabi* wasabi, bool isForward) : WRenderFragment(fragmentName, fx, wasabi->TerrainManager) {
-		if (isForward)
-			m_requiredRenderFlags = EFFECT_RENDER_FLAG_RENDER_FORWARD;
-		else
-			m_requiredRenderFlags = EFFECT_RENDER_FLAG_RENDER_GBUFFER;
+	WTerrainRenderFragment(std::string fragmentName, WEffect* fx, class Wasabi* wasabi, W_EFFECT_RENDER_FLAGS renderFlags) : WRenderFragment(fragmentName, fx, wasabi->TerrainManager) {
+		m_requiredRenderFlags = renderFlags;
+		fx->SetRenderFlags(m_requiredRenderFlags);
 	}
 
 	virtual void RenderEntity(WTerrain* terrain, class WRenderTarget* rt, class WMaterial* material) {
@@ -248,6 +253,7 @@ class WSpritesRenderFragment : public WRenderFragment<WSprite, WSpriteSortingKey
 public:
 	WSpritesRenderFragment(std::string fragmentName, WEffect* fx, class Wasabi* wasabi) : WRenderFragment(fragmentName, fx, wasabi->SpriteManager) {
 		m_requiredRenderFlags = EFFECT_RENDER_FLAG_RENDER_FORWARD;
+		fx->SetRenderFlags(m_requiredRenderFlags);
 	}
 
 	virtual void RenderEntity(WSprite* sprite, class WRenderTarget* rt, class WMaterial* material) {
@@ -289,6 +295,8 @@ public:
 	WParticlesRenderFragment(std::string fragmentName, unordered_map<W_DEFAULT_PARTICLE_EFFECT_TYPE, class WEffect*> effects, class Wasabi* wasabi) : WRenderFragment(fragmentName, nullptr, wasabi->ParticlesManager) {
 		m_requiredRenderFlags = EFFECT_RENDER_FLAG_RENDER_FORWARD;
 		m_particleEffects = effects;
+		for (auto it : effects)
+			it.second->SetRenderFlags(m_requiredRenderFlags);
 	}
 
 	virtual ~WParticlesRenderFragment() {
@@ -326,8 +334,8 @@ public:
 	virtual void OnEntityAdded(WParticles* particles) {
 		auto it = m_particleEffects.find(particles->GetEffectType());
 		if (it != m_particleEffects.end()) {
-			particles->AddEffect(it->second, 0);
-			particles->GetMaterial(it->second)->SetName(GenerateMaterialName());
+			m_renderEffect = it->second;
+			WRenderFragment::OnEntityAdded(particles);
 		}
 	}
 };

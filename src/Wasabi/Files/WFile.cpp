@@ -34,6 +34,10 @@ void WFileManager::AddDefaultAsset(std::string name, WFileAsset* asset) {
 	m_defaultAssets.insert(std::make_pair(name, asset));
 }
 
+bool WFileManager::IsDefaultAsset(std::string name) const {
+	return m_defaultAssets.find(name) != m_defaultAssets.end();
+}
+
 WFile::WFile(Wasabi* const app) : m_app(app) {
 }
 

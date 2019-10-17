@@ -34,16 +34,14 @@ void SpritesDemo::Load() {
 	img->RemoveReference();
 	m_sprites[1]->SetPriority(2);
 
-	
+
 	WShader* pixelShader = new CustomSpritePS(m_app);
 	pixelShader->Load();
 	WEffect* spriteFX = m_app->SpriteManager->CreateSpriteEffect(nullptr, pixelShader);
 	pixelShader->RemoveReference();
 
 	UNREFERENCED_PARAMETER(spriteFX);
-	m_sprites[2] = m_app->SpriteManager->CreateSprite(img);
-	m_sprites[2]->ClearEffects();
-	m_sprites[2]->AddEffect(spriteFX);
+	m_sprites[2] = m_app->SpriteManager->CreateSprite(spriteFX, 0, img);
 	spriteFX->RemoveReference();
 	m_sprites[2]->SetPosition(WVector2(200, 200));
 	m_sprites[2]->SetSize(WVector2(400, 200));

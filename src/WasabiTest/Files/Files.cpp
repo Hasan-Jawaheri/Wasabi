@@ -103,10 +103,8 @@ void FilesDemo::Load() {
 	fx->BindShader(ps);
 	fx->BuildPipeline(m_app->Renderer->GetRenderTarget());
 
-	m_object = m_app->ObjectManager->CreateObject();
+	m_object = m_app->ObjectManager->CreateObject(fx, 0);
 	m_object->SetGeometry(geometry);
-	m_object->ClearEffects();
-	m_object->AddEffect(fx);
 	m_object->GetMaterials().SetVariable<WColor>("color", WColor(0, 0, 1));
 	m_object->GetMaterials().SetTexture("diffuseTexture", img);
 

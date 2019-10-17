@@ -24,7 +24,11 @@ WError WObjectManager::Load() {
 }
 
 WObject* WObjectManager::CreateObject(uint32_t ID) const {
-	WObject* object = new WObject(m_app, ID);
+	return CreateObject(nullptr, 0, ID);
+}
+
+WObject* WObjectManager::CreateObject(WEffect* fx, uint32_t bindingSet, uint32_t ID) const {
+	WObject* object = new WObject(m_app, fx, bindingSet, ID);
 	return object;
 }
 
@@ -179,7 +183,8 @@ void WInstance::OnStateChange(STATE_CHANGE_TYPE type) {
 	m_bAltered = true;
 }
 
-WObject::WObject(Wasabi* const app, uint32_t ID) : WFileAsset(app, ID), m_instanceV(0) {
+WObject::WObject(Wasabi* const app, uint32_t ID) : WObject(app, nullptr, 0, ID) {}
+WObject::WObject(Wasabi* const app, WEffect* fx, uint32_t bindingSet, uint32_t ID) : WFileAsset(app, ID), m_instanceV(0) {
 	m_geometry = nullptr;
 	m_animation = nullptr;
 
@@ -191,6 +196,9 @@ WObject::WObject(Wasabi* const app, uint32_t ID) : WFileAsset(app, ID), m_instan
 	m_scale = WVector3(1.0f, 1.0f, 1.0f);
 
 	m_instanceTexture = nullptr;
+
+	if (fx)
+		AddEffect(fx, bindingSet);
 
 	app->ObjectManager->AddEntity(this);
 }
