@@ -71,7 +71,7 @@ public:
 };
 
 WTextComponent::WTextComponent(Wasabi* app) : m_app(app) {
-	m_curFont = (uint32_t)-1;
+	m_curFont = std::numeric_limits<uint32_t>::max();
 	m_curColor = WColor(0.1f, 0.6f, 0.2f, 1.0f);
 
 	m_textEffect = nullptr;

@@ -206,12 +206,16 @@ uint32_t WWindowsWindowAndInputComponent::RestoreWindow() {
 }
 
 uint32_t WWindowsWindowAndInputComponent::GetWindowWidth(bool framebuffer) const {
+	UNREFERENCED_PARAMETER(framebuffer);
+
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.right;
 }
 
 uint32_t WWindowsWindowAndInputComponent::GetWindowHeight(bool framebuffer) const {
+	UNREFERENCED_PARAMETER(framebuffer);
+
 	RECT rc;
 	GetClientRect(m_mainWindow, &rc);
 	return rc.bottom;
@@ -413,19 +417,19 @@ bool WWindowsWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint32_
 }
 
 void WWindowsWindowAndInputComponent::SetMousePosition(double x, double y, W_MOUSEPOSTYPE posT) {
+	POINT pos = { (long)x, (long)y };
 	if (posT == MOUSEPOS_VIEWPORT) {
-		POINT pos = { (long)x, (long)y };
 		//convert to screen space
 		ClientToScreen(m_mainWindow, &pos);
 		SetCursorPos(pos.x, pos.y);
 	} else if (posT == MOUSEPOS_DESKTOP) {
-		SetCursorPos(x, y);
+		SetCursorPos(pos.x, pos.y);
 	}
 }
 
 void WWindowsWindowAndInputComponent::SetMouseZ(double value) {
 	//set the mouse wheel position
-	m_mouseZ = value;
+	m_mouseZ = (int)value;
 }
 
 void WWindowsWindowAndInputComponent::ShowCursor(bool bShow) {
@@ -433,6 +437,7 @@ void WWindowsWindowAndInputComponent::ShowCursor(bool bShow) {
 }
 
 void WWindowsWindowAndInputComponent::SetCursorMotionMode(bool bEnable) {
+	UNREFERENCED_PARAMETER(bEnable);
 }
 
 void WWindowsWindowAndInputComponent::SetQuitKeys(bool escape, bool cmdW) {

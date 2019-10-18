@@ -342,9 +342,9 @@ public:
 	/**
 	 * @return Whether or not the particles system will render properly
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
-	virtual void OnStateChange(STATE_CHANGE_TYPE type);
+	virtual void OnStateChange(STATE_CHANGE_TYPE type) override;
 
 private:
 	/** Type of tyhis particle system */

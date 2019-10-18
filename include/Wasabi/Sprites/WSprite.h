@@ -174,7 +174,7 @@ public:
 	 * and its' size is greater than zero (both width and height).
 	 * @return true if the sprite is valid, false otherwise
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
 private:
 	/** true if the sprite is hidden (will no render), false otherwise */

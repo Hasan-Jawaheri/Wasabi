@@ -491,11 +491,11 @@ public:
 	 * set.
 	 * @return true if the shader is valid, false otherwise
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
 	static std::vector<void*> LoadArgs(bool bSaveData = false);
-	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) override;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) override;
 };
 
 /**
@@ -684,11 +684,11 @@ public:
 	 * input layout.
 	 * @return true if the effect is valid, false otherwise
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
 	static std::vector<void*> LoadArgs(class WRenderTarget* rt, bool bSaveData = false);
-	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) override;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) override;
 
 private:
 	/** Vulkan pipeline created for this effect */

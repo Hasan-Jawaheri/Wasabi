@@ -15,7 +15,7 @@ class WSoundComponent {
 	friend class WSound;
 
 public:
-	WSoundComponent(class Wasabi* const app) : m_app(app), SoundManager(nullptr) {}
+	WSoundComponent(class Wasabi* const app) : SoundManager(nullptr), m_app(app) {}
 	virtual ~WSoundComponent() {}
 
 	class WSoundManager* SoundManager;
@@ -117,8 +117,8 @@ public:
 
 	virtual void SetVolume(float volume) = 0;
 
-	virtual void SetPitch(float fPitch) {
-		UNREFERENCED_PARAMETER(fPitch);
+	virtual void SetPitch(int pitch) {
+		UNREFERENCED_PARAMETER(pitch);
 	}
 
 	virtual void SetFrequency(uint32_t buffer, uint32_t frequency) {

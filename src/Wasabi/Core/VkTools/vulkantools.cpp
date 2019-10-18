@@ -260,7 +260,7 @@ namespace vkTools
 #else
 		// TODO : Linux
 #endif
-		std::cerr << message << "\n";
+		std::cerr << caption << "\n" << message << "\n";
 		exit(1);
 	}
 
@@ -284,7 +284,7 @@ namespace vkTools
 	// Load a binary file into a buffer (e.g. SPIR-V)
 	char *readBinaryFile(const char *filename, size_t *psize)
 	{
-		long int size;
+		size_t size;
 		size_t retval;
 		void *shader_code;
 
@@ -297,7 +297,7 @@ namespace vkTools
 		if (!fp) return NULL;
 
 		fseek(fp, 0L, SEEK_END);
-		size = ftell(fp);
+		size = static_cast<size_t>(ftell(fp));
 
 		fseek(fp, 0L, SEEK_SET);
 
@@ -307,7 +307,7 @@ namespace vkTools
 
 		*psize = size;
 
-		return (char*)shader_code;
+		return static_cast<char*>(shader_code);
 	}
 
 #if defined(__ANDROID__)
@@ -358,7 +358,7 @@ namespace vkTools
 		moduleCreateInfo.pNext = NULL;
 
 		moduleCreateInfo.codeSize = size;
-		moduleCreateInfo.pCode = (uint*)shaderCode;
+		moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode);
 		moduleCreateInfo.flags = 0;
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
 		if (err)
@@ -369,7 +369,7 @@ namespace vkTools
 	VkShaderModule loadShaderFromCode(const char *code, int len, VkDevice device, VkShaderStageFlagBits stage) {
 		UNREFERENCED_PARAMETER(stage);
 
-		size_t size = len;
+		size_t size = static_cast<size_t>(len);
 		const char *shaderCode = code;
 		if (size <= 0)
 			return VK_NULL_HANDLE;
@@ -382,7 +382,7 @@ namespace vkTools
 		moduleCreateInfo.pNext = NULL;
 
 		moduleCreateInfo.codeSize = size;
-		moduleCreateInfo.pCode = (uint*)shaderCode;
+		moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode);
 		moduleCreateInfo.flags = 0;
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
 		if (err)
@@ -408,17 +408,17 @@ namespace vkTools
 		moduleCreateInfo.pNext = NULL;
 
 		moduleCreateInfo.codeSize = 3 * sizeof(uint) + size;
-		moduleCreateInfo.pCode = (uint*)malloc(moduleCreateInfo.codeSize);
+		moduleCreateInfo.pCode = static_cast<uint32_t*>(malloc(moduleCreateInfo.codeSize));
 		moduleCreateInfo.flags = 0;
 
 		// Magic SPV number
-		((uint32_t *)moduleCreateInfo.pCode)[0] = 0x07230203;
-		((uint32_t *)moduleCreateInfo.pCode)[1] = 0;
-		((uint32_t *)moduleCreateInfo.pCode)[2] = stage;
-		memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderCode, size);
+		const_cast<uint32_t*>(moduleCreateInfo.pCode)[0] = 0x07230203;
+		const_cast<uint32_t*>(moduleCreateInfo.pCode)[1] = 0;
+		const_cast<uint32_t*>(moduleCreateInfo.pCode)[2] = stage;
+		memcpy(const_cast<uint32_t*>(moduleCreateInfo.pCode + 3), shaderCode, size);
 
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
-		free((void*)moduleCreateInfo.pCode);
+		free(const_cast<void*>(reinterpret_cast<const void*>(moduleCreateInfo.pCode)));
 		if (err)
 			return VK_NULL_HANDLE;
 
@@ -426,7 +426,7 @@ namespace vkTools
 	}
 	VkShaderModule loadShaderGLSLFromCode(const char *code, int len, VkDevice device, VkShaderStageFlagBits stage) {
 		const char *shaderCode = code;
-		size_t size = len;
+		size_t size = static_cast<size_t>(len);
 		if (size <= 0)
 			return VK_NULL_HANDLE;
 
@@ -438,17 +438,17 @@ namespace vkTools
 		moduleCreateInfo.pNext = NULL;
 
 		moduleCreateInfo.codeSize = 3 * sizeof(uint) + size;
-		moduleCreateInfo.pCode = (uint*)malloc(moduleCreateInfo.codeSize);
+		moduleCreateInfo.pCode = static_cast<uint32_t*>(malloc(moduleCreateInfo.codeSize));
 		moduleCreateInfo.flags = 0;
 
 		// Magic SPV number
-		((uint32_t *)moduleCreateInfo.pCode)[0] = 0x07230203;
-		((uint32_t *)moduleCreateInfo.pCode)[1] = 0;
-		((uint32_t *)moduleCreateInfo.pCode)[2] = stage;
-		memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderCode, size);
+		const_cast<uint32_t*>(moduleCreateInfo.pCode)[0] = 0x07230203;
+		const_cast<uint32_t*>(moduleCreateInfo.pCode)[1] = 0;
+		const_cast<uint32_t*>(moduleCreateInfo.pCode)[2] = stage;
+		memcpy(const_cast<uint32_t*>(moduleCreateInfo.pCode + 3), shaderCode, size);
 
 		err = vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule);
-		free((void*)moduleCreateInfo.pCode);
+		free(const_cast<void*>(reinterpret_cast<const void*>(moduleCreateInfo.pCode)));
 		if (err)
 			return VK_NULL_HANDLE;
 
@@ -651,8 +651,8 @@ VkViewport vkTools::initializers::viewport(
 }
 
 VkRect2D vkTools::initializers::rect2D(
-	int32_t width,
-	int32_t height,
+	uint32_t width,
+	uint32_t height,
 	int32_t offsetX,
 	int32_t offsetY)
 {

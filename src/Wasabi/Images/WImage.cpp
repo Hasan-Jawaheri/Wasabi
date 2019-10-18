@@ -1,16 +1,9 @@
 #include "Wasabi/Images/WImage.h"
 #include "Wasabi/Renderers/WRenderer.h"
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wwrite-strings"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnarrowing"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-fpermissive"
-#pragma warning(disable:4477)
-#pragma warning(disable:4838)
-#endif
+
+#pragma warning(push)
+#pragma warning(disable: 4701)
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -21,13 +14,7 @@
 #define STB_DEFINE
 #include "stb.h"
 
-#ifdef __GNUC__
-#pragma warning(default:4477)
-#pragma warning(default:4838)
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
-#endif
+#pragma warning(pop)
 
 std::string WImageManager::GetTypeName() const {
 	return "Image";
@@ -43,7 +30,7 @@ WImageManager::~WImageManager() {
 	// we need to perform this here because some destructed images will need access to m_dynamicImages
 	// which will be destructed by the time WManager::~WManager() destroys the images this way
 	for (uint32_t j = 0; j < W_HASHTABLESIZE; j++) {
-		for (uint32_t i = 0; i < m_entities[j].size(); i)
+		for (uint32_t i = 0; i < m_entities[j].size();)
 			m_entities[j][i]->RemoveReference();
 		m_entities[j].clear();
 	}

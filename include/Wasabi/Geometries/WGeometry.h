@@ -101,7 +101,7 @@ struct WDefaultVertex {
 					float tx, float ty, float tz,
 					float nx, float ny, float nz,
 					float u, float v, uint32_t t = 0)
-					: pos(x, y, z), norm(nx, ny, nz), tang(tx, ty, tz), texC(u, v), textureIndex(t) {
+					: pos(x, y, z), tang(tx, ty, tz), norm(nx, ny, nz), texC(u, v), textureIndex(t) {
 	};
 
 	/** Position attribute */
@@ -634,11 +634,11 @@ public:
 	 * vertex and an index buffer.
 	 * @return true if the geometry is valid, false otherwise
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
 	static std::vector<void*> LoadArgs(W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
-	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) override;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) override;
 
 private:
 	/** Vertex buffer */

@@ -142,11 +142,11 @@ public:
 	 * valid effect assigned to it.
 	 * @return true of the material is valid, false otherwise
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
 	static std::vector<void*> LoadArgs();
-	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) override;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) override;
 
 private:
 	/** Effect that this material is bound to */

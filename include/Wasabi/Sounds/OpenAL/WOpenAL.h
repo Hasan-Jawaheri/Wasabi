@@ -65,37 +65,39 @@ public:
 
 	WOpenALSound(class Wasabi* const app, uint32_t ID = 0);
 
-	virtual bool Valid() const;
-	virtual WError LoadWAV(std::string Filename, uint32_t buffer, bool bSaveData = false);
+	virtual bool Valid() const override;
+	
+	virtual WError LoadWAV(std::string Filename, uint32_t buffer, bool bSaveData = false) override;
 	WError LoadFromMemory(uint32_t buffer, void* data, size_t dataSize, int format, uint32_t frequency, bool bSaveData = false);
-	virtual void Play();
-	virtual void Loop();
-	virtual void Pause();
-	virtual void Reset();
-	virtual void SetTime(uint32_t time);
-	virtual bool Playing() const;
-	virtual bool Looping() const;
-	virtual void SetVolume(float volume);
-	virtual void SetPitch(int pitch);
 
-	virtual void SetFrequency(uint32_t buffer, uint32_t frequency);
-	virtual uint32_t GetNumChannels(uint32_t buffer) const;
-	virtual uint32_t GetBitDepth(uint32_t buffer) const;
+	virtual void Play() override;
+	virtual void Loop() override;
+	virtual void Pause() override;
+	virtual void Reset() override;
+	virtual void SetTime(uint32_t time) override;
+	virtual bool Playing() const override;
+	virtual bool Looping() const override;
+	virtual void SetVolume(float volume) override;
+	virtual void SetPitch(int pitch) override;
+
+	virtual void SetFrequency(uint32_t buffer, uint32_t frequency) override;
+	virtual uint32_t GetNumChannels(uint32_t buffer) const override;
+	virtual uint32_t GetBitDepth(uint32_t buffer) const override;
 	uint32_t GetALBuffer(uint32_t buffer) const;
 	uint32_t GetALSource() const;
 
-	virtual void SetPosition(float x, float y, float z);
-	virtual void SetPosition(WVector3 pos);
-	virtual void SetPosition(WOrientation* pos);
-	virtual void SetVelocity(float x, float y, float z);
-	virtual void SetVelocity(WVector3 vel);
-	virtual void SetDirection(WVector3 look);
-	virtual void SetDirection(class WOrientation* look);
-	virtual void SetToOrientation(class WOrientation* oriDev);
+	virtual void SetPosition(float x, float y, float z) override;
+	virtual void SetPosition(WVector3 pos) override;
+	virtual void SetPosition(WOrientation* pos) override;
+	virtual void SetVelocity(float x, float y, float z) override;
+	virtual void SetVelocity(WVector3 vel) override;
+	virtual void SetDirection(WVector3 look) override;
+	virtual void SetDirection(class WOrientation* look) override;
+	virtual void SetToOrientation(class WOrientation* oriDev) override;
 
 	static std::vector<void*> LoadArgs();
-	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) override;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) override;
 
 private:
 	bool m_valid;

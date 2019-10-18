@@ -33,11 +33,9 @@ function(initialize_submodules)
 endfunction()
 
 function(enable_all_warnings TARGET_NAME)
-    if(MSVC)
-        target_compile_options(${TARGET_NAME} PRIVATE /W4)
-    else()
-        target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -pedantic)
-    endif()
+    target_compile_options(${TARGET_NAME} PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -fms-extensions>
+        $<$<CXX_COMPILER_ID:MSVC>:/W4>)
 endfunction()
 
 # include dependency utilities

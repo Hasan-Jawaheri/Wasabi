@@ -7,6 +7,8 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
+set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
+
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(WasabiHelpers)
 
@@ -65,23 +67,27 @@ target_include_directories(standalone-wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/"
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${TFD_DIR}/")
-target_link_libraries(standalone-wasabi ${Vulkan_LIBRARY})
-target_link_libraries(standalone-wasabi ex-common OpenAL)
-target_link_libraries(standalone-wasabi glfw)
-target_link_libraries(standalone-wasabi Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
+# target_link_libraries(standalone-wasabi ${Vulkan_LIBRARY})
+# target_link_libraries(standalone-wasabi ex-common OpenAL)
+# target_link_libraries(standalone-wasabi glfw)
+# target_link_libraries(standalone-wasabi Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
 enable_all_warnings(standalone-wasabi)
 
 # Ignore TFD warnings
-if (MSVC)
+if(MSVC)
     set_source_files_properties(${TFD_SOURCES} PROPERTIES COMPILE_FLAGS /wd4267)
     set_source_files_properties(${STB_DIR}/stb.h PROPERTIES COMPILE_FLAGS /wd4701)
+elseif(MACOSX)
 else()
     set_source_files_properties(${TFD_SOURCES} PROPERTIES COMPILE_FLAGS -Wno-4267)
     set_source_files_properties(${STB_DIR}/stb.h PROPERTIES COMPILE_FLAGS -Wno-4701)
 endif()
 
 # Bundle the libraries together
-bundle_static_library(standalone-wasabi wasabi)
+bundle_static_library(
+    TARGET standalone-wasabi
+    BUNDLED_TARGET wasabi
+    DEPENDENCIES ex-common OpenAL glfw Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
 # Build the dist folder
 build_dist(build-dist wasabi)
 

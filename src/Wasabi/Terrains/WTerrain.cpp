@@ -548,7 +548,7 @@ void WTerrain::Render(class WRenderTarget* const rt, WMaterial* material) {
 		uint32_t numPieces = (uint32_t)it.second.size();
 		material->SetVariable<int>("geometryOffsetInTexture", totalNumPieces); // <-- push constant
 		material->Bind(rt, false, true);
-		geometry->Draw(rt, (uint32_t)-1, numPieces, false);
+		geometry->Draw(rt, std::numeric_limits<uint32_t>::max(), numPieces, false);
 		totalNumPieces += numPieces;
 	}
 }

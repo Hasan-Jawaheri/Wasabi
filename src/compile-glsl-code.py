@@ -53,7 +53,7 @@ def compileShader(filename):
 	try:
 		entry_point = "main"
 		command = [GLSLANG_VALIDATOR_PATH, "-V", "--entry-point", entry_point, filename, "-o", tmp_output_file]
-		print(" ".join(command))
+		# print(" ".join(command))
 		p = Popen(command, stdout=PIPE, stderr=PIPE)
 		out = p.stdout.read().decode('utf-8').replace('\r', '')
 		err = p.stderr.read().decode('utf-8').replace('\r', '')

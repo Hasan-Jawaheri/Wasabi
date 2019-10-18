@@ -51,7 +51,7 @@ inline STATE_CHANGE_TYPE& operator &= (STATE_CHANGE_TYPE& lhs, STATE_CHANGE_TYPE
 class WOrientation {
 public:
 	WOrientation();
-	~WOrientation();
+	virtual ~WOrientation();
 
 	/**
 	 * Sets the position of this entity. This will result in calling

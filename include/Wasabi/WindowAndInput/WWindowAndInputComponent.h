@@ -43,6 +43,7 @@ enum W_MOUSEPOSTYPE: uint8_t {
 class WWindowAndInputComponent {
 public:
 	WWindowAndInputComponent(class Wasabi* const app) : m_app(app) {}
+	virtual ~WWindowAndInputComponent() {}
 
 	/**
 	 * Initializes the window component if it is not initialized, otherwise it
@@ -147,7 +148,7 @@ public:
 	 * Restores the window (if it was minimized, it should make it appear).
 	 * @return 0 if the window was hidden before this call, nonzero otherwise
 	 */
-	virtual uint32_t RestoreWindow() { return (uint32_t)-1; }
+	virtual uint32_t RestoreWindow() { return std::numeric_limits<uint32_t>::max(); }
 
 	/**
 	 * Retrieves the width of the client area of the window.
@@ -158,7 +159,7 @@ public:
 	 */
 	virtual uint32_t GetWindowWidth(bool framebuffer = true) const {
 		UNREFERENCED_PARAMETER(framebuffer);
-		return (uint32_t)-1;
+		return std::numeric_limits<uint32_t>::max();
 	}
 
 	/**
@@ -170,7 +171,7 @@ public:
 	 */
 	virtual uint32_t GetWindowHeight(bool framebuffer = true) const {
 		UNREFERENCED_PARAMETER(framebuffer);
-		return (uint32_t)-1;
+		return std::numeric_limits<uint32_t>::max();
 	}
 
 	/**

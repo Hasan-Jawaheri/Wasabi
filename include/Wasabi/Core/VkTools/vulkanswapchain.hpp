@@ -49,7 +49,7 @@ typedef uint32_t uint;
 // Macro to get a procedure address based on a vulkan device
 #define GET_DEVICE_PROC_ADDR(dev, entrypoint)                           \
 {                                                                       \
-    fp##entrypoint = (PFN_vk##entrypoint) vkGetDeviceProcAddr(dev, "vk"#entrypoint);   \
+    fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetDeviceProcAddr(dev, "vk"#entrypoint));   \
     if (fp##entrypoint == NULL)                                         \
 	{																    \
         exit(1);                                                        \
@@ -209,7 +209,7 @@ public:
 	}
 
 	// Create the swap chain and get images with given width and height
-	void create(VkCommandBuffer cmdBuffer, uint32_t *width, uint32_t *height, uint32_t numDesiredSwapchainImages = (uint32_t)-1)
+	void create(VkCommandBuffer cmdBuffer, uint32_t *width, uint32_t *height, uint32_t numDesiredSwapchainImages = std::numeric_limits<uint32_t>::max())
 	{
 		VkResult err;
 		VkSwapchainKHR oldSwapchain = swapChain;
@@ -232,7 +232,7 @@ public:
 
 		VkExtent2D swapchainExtent = {};
 		// width and height are either both -1, or both not -1.
-		if (surfCaps.currentExtent.width == -1)
+		if (surfCaps.currentExtent.width == std::numeric_limits<uint32_t>::max())
 		{
 			// If the surface size is undefined, the size is set to
 			// the size of the images requested.
@@ -264,14 +264,14 @@ public:
 
 		// Determine the number of images
 		uint32_t desiredNumberOfSwapchainImages = numDesiredSwapchainImages;
-		if (desiredNumberOfSwapchainImages == -1)
+		if (desiredNumberOfSwapchainImages == std::numeric_limits<uint32_t>::max())
 			desiredNumberOfSwapchainImages = surfCaps.minImageCount + 1;
 		if ((surfCaps.maxImageCount > 0) && (desiredNumberOfSwapchainImages > surfCaps.maxImageCount))
 		{
 			desiredNumberOfSwapchainImages = surfCaps.maxImageCount;
 		}
 
-		VkSurfaceTransformFlagsKHR preTransform;
+		VkSurfaceTransformFlagBitsKHR preTransform;
 		if (surfCaps.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
 		{
 			preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
@@ -290,7 +290,7 @@ public:
 		swapchainCI.imageColorSpace = colorSpace;
 		swapchainCI.imageExtent = { swapchainExtent.width, swapchainExtent.height };
 		swapchainCI.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		swapchainCI.preTransform = (VkSurfaceTransformFlagBitsKHR)preTransform;
+		swapchainCI.preTransform = preTransform;
 		swapchainCI.imageArrayLayers = 1;
 		swapchainCI.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		swapchainCI.queueFamilyIndexCount = 0;
@@ -364,7 +364,7 @@ public:
 	// Acquires the next image in the swap chain
 	VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t *currentBuffer)
 	{
-		return fpAcquireNextImageKHR(device, swapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, currentBuffer);
+		return fpAcquireNextImageKHR(device, swapChain, UINT64_MAX, presentCompleteSemaphore, nullptr, currentBuffer);
 	}
 
 	// Present the current image to the queue

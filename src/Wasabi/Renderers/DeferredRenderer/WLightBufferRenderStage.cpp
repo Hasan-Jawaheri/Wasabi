@@ -234,12 +234,12 @@ WError WLightBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, u
 
 		for (auto it = m_lightRenderingAssets.begin(); it != m_lightRenderingAssets.end(); it++) {
 			LightTypeAssets lightTypeAssets = it->second;
-			if (lightTypeAssets.material_map.size()) {
+			if (lightTypeAssets.materialMap.size()) {
 				lightTypeAssets.effect->Bind(rt);
 				lightTypeAssets.perFrameMaterial->SetVariable<WMatrix>("projInv", WMatrixInverse(cam->GetProjectionMatrix()));
 				lightTypeAssets.perFrameMaterial->Bind(rt);
 
-				for (auto materialIt = lightTypeAssets.material_map.begin(); materialIt != lightTypeAssets.material_map.end(); materialIt++) {
+				for (auto materialIt = lightTypeAssets.materialMap.begin(); materialIt != lightTypeAssets.materialMap.end(); materialIt++) {
 					WLight* light = materialIt->first;
 					WMaterial* material = materialIt->second;
 					int lightType = (int)light->GetType();
@@ -268,8 +268,8 @@ WError WLightBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, u
 					material->SetVariable<float>("spotRadius", spotRadius);
 					material->Bind(rt);
 
-					if (lightTypeAssets.fullscreen_sprite)
-						lightTypeAssets.fullscreen_sprite->Render(rt);
+					if (lightTypeAssets.fullscreenSprite)
+						lightTypeAssets.fullscreenSprite->Render(rt);
 					if (lightTypeAssets.geometry)
 						lightTypeAssets.geometry->Draw(rt);
 				}
@@ -290,8 +290,8 @@ void WLightBufferRenderStage::Cleanup() {
 
 WError WLightBufferRenderStage::Resize(uint32_t width, uint32_t height) {
 	for (auto iter = m_lightRenderingAssets.begin(); iter != m_lightRenderingAssets.end(); iter++)
-		if (iter->second.fullscreen_sprite)
-			iter->second.fullscreen_sprite->SetSize(WVector2((float)width, (float)height));
+		if (iter->second.fullscreenSprite)
+			iter->second.fullscreenSprite->SetSize(WVector2((float)width, (float)height));
 	return WRenderStage::Resize(width, height);
 }
 
@@ -303,12 +303,12 @@ void WLightBufferRenderStage::OnLightsChange(WLight* light, bool is_added) {
 
 	if (is_added) {
 		WMaterial* material = assets.effect->CreateMaterial(0);
-		iter->second.material_map.insert(std::pair<class WLight*, class WMaterial*>(light, material));
+		iter->second.materialMap.insert(std::pair<class WLight*, class WMaterial*>(light, material));
 	} else {
-		auto it = assets.material_map.find(light);
-		if (it != assets.material_map.end()) {
+		auto it = assets.materialMap.find(light);
+		if (it != assets.materialMap.end()) {
 			W_SAFE_REMOVEREF(it->second);
-			iter->second.material_map.erase(light);
+			iter->second.materialMap.erase(light);
 		}
 	}
 }
@@ -413,10 +413,10 @@ WError WLightBufferRenderStage::LoadDirectionalLightsAssets() {
 
 	uint32_t windowWidth = m_app->WindowAndInputComponent->GetWindowWidth();
 	uint32_t windowHeight = m_app->WindowAndInputComponent->GetWindowHeight();
-	assets.fullscreen_sprite = m_app->SpriteManager->CreateSprite();
-	assets.fullscreen_sprite->SetSize(WVector2((float)windowWidth, (float)windowHeight));
-	assets.fullscreen_sprite->Hide();
-	assets.fullscreen_sprite->SetName("LightBufferDirectionLightSprite");
+	assets.fullscreenSprite = m_app->SpriteManager->CreateSprite();
+	assets.fullscreenSprite->SetSize(WVector2((float)windowWidth, (float)windowHeight));
+	assets.fullscreenSprite->Hide();
+	assets.fullscreenSprite->SetName("LightBufferDirectionLightSprite");
 
 	m_lightRenderingAssets.insert(std::pair<int, LightTypeAssets>((int)W_LIGHT_DIRECTIONAL, assets));
 
@@ -424,10 +424,10 @@ WError WLightBufferRenderStage::LoadDirectionalLightsAssets() {
 }
 
 void WLightBufferRenderStage::LightTypeAssets::Destroy() {
-	for (auto it = material_map.begin(); it != material_map.end(); it++)
+	for (auto it = materialMap.begin(); it != materialMap.end(); it++)
 		W_SAFE_REMOVEREF(it->second);
 	W_SAFE_REMOVEREF(geometry);
 	W_SAFE_REMOVEREF(effect);
-	W_SAFE_REMOVEREF(fullscreen_sprite);
-	material_map.clear();
+	W_SAFE_REMOVEREF(fullscreenSprite);
+	materialMap.clear();
 }
