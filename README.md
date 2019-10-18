@@ -61,6 +61,7 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 
 ### Building Wasabi
 ```bash
+git submodule init && git submodule update
 mkdir build && cd build
 cmake ..
 ```
