@@ -111,14 +111,12 @@ MyApplication must implement 3 functions from Wasabi: Setup, Loop and Cleanup:
 ### [Doxygen documentation](https://hasan-jawaheri.github.io/Wasabi/)
 ### [Samples](https://github.com/Hasan-Jawaheri/Wasabi/tree/master/samples)
 
-## Contribution
-
-WIP
-
-## Gallery
-
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/particles.png" />
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/ssao.png" />
+
+## Contribution
+
+Contribution is highly appreciated! Please [pick up or create an issue](https://github.com/Hasan-Jawaheri/Wasabi/issues) first. Once an issue has been selected and you wish to address it, fork the repository and create a branch to implement the necessary changes. Once you're done and you have tested your changes, submit a pull request and it shall be reviewed shortly and hopefully merged into the repository.
 
 ## Acknowledgments
 
