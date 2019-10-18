@@ -1,4 +1,4 @@
-/** @file WTerrain.h
+/** @file WTerrain.hpp
  *  @brief Terrain system for Wasabi
  *
  *  Terrain systems offer an efficient way to render large landscapes.

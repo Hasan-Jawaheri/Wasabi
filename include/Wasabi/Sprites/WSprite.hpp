@@ -1,4 +1,4 @@
-/** @file WSprite.h
+/** @file WSprite.hpp
  *  @brief Implementation of sprites
  *
  * 	Sprites are used to render 2D graphics on a screen. A sprite provides an

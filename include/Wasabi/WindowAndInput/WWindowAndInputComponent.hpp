@@ -1,4 +1,4 @@
-/** @file WWindowAndInputComponent.h
+/** @file WWindowAndInputComponent.hpp
  *  @brief Window/input component interface
  *
  *  This is the interface to define a window/input component for Wasabi.

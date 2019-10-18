@@ -1,5 +1,5 @@
 /**
- * @file WCompatibility.h
+ * @file WCompatibility.hpp
  * Compatibility macros
  **/
 

@@ -1,4 +1,4 @@
-/** @file WImage.h
+/** @file WImage.hpp
  *  @brief Rendering materials implementation
  *
  *  Materials are the way Wasabi passes parameters to effects and their

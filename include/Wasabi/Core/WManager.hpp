@@ -1,4 +1,4 @@
-/** @file WImage.h
+/** @file WImage.hpp
  *  @brief Manager class implementation
  *
  *  A WManager is a template for a class that manages classes which inherit

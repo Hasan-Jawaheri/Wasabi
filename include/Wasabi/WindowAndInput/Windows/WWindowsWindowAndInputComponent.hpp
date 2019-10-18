@@ -1,4 +1,4 @@
-/** @file WWindowsWindowAndInputComponent.h
+/** @file WWindowsWindowAndInputComponent.hpp
  *  @brief Window/input component for Windows
  *
  *  @author Hasan Al-Jawaheri (hbj)

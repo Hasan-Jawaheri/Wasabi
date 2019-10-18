@@ -1,4 +1,4 @@
-/** @file WForwardRenderer.h
+/** @file WForwardRenderer.hpp
  *  @brief Utility to setup a forward renderer
  *
  *  @author Hasan Al-Jawaheri (hbj)

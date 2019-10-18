@@ -1,4 +1,4 @@
-/** @file Wasabi.h
+/** @file Wasabi.hpp
  *  @brief Main header file for the library
  *
  *  @author Hasan Al-Jawaheri (hbj)

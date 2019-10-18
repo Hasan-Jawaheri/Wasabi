@@ -1,4 +1,4 @@
-/** @file WCore.h
+/** @file WCore.hpp
  *  @brief Core of the engine.
  *
  *  This file contains the core of the engine (the Wasabi class) and various

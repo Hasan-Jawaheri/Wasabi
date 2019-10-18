@@ -1,4 +1,4 @@
-/** @file WError.h
+/** @file WError.hpp
  *  @brief Error codes implementation
  *
  *  A WError is a convenient way of reporting errors, providing tools for

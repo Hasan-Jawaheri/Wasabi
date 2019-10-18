@@ -1,4 +1,4 @@
-/** @file WPhysicsComponent.h
+/** @file WPhysicsComponent.hpp
  *  @brief Physics component implementation spec
  *
  *  A physics component can be implemented by a library and used by an

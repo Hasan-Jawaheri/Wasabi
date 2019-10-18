@@ -1,4 +1,4 @@
-/** @file WBulletRigidBody.h
+/** @file WBulletRigidBody.hpp
  *  @brief Rigid Body system for the Bullet physics implementation
  *
  *  Rigid bodies are the main way to connect objects to the physics simulation

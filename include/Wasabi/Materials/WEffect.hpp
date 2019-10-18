@@ -1,4 +1,4 @@
-/** @file WEffect.h
+/** @file WEffect.hpp
  *  @brief Shaders and rendering effects implementation
  *
  *  An effect in Wasabi is a collection of shaders and rendering states (

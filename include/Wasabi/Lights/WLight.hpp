@@ -1,4 +1,4 @@
-/** @file WLight.h
+/** @file WLight.hpp
  *  @brief Lights control in Wasabi
  *
  *  Lighting in Wasabi is designed such that lights are independent from the

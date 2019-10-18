@@ -1,4 +1,4 @@
-/** @file WRigidBody.h
+/** @file WRigidBody.hpp
  *  @brief Rigid Body interface to be implemented by physics implementations
  *         such as Havok or Bullet
  *

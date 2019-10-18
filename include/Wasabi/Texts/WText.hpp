@@ -1,4 +1,4 @@
-/** @file WText.h
+/** @file WText.hpp
  *  @brief Text rendering implementation
  *
  *  Text rendering is Wasabi is done by using a 3rd party library called stb.

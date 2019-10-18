@@ -1,4 +1,4 @@
-/** @file WAnimation.h
+/** @file WAnimation.hpp
  *  @brief Animation implementation
  *
  *  Each animation contains information to allow a WObject to render with

@@ -1,4 +1,4 @@
-/** @file WMath.h
+/** @file WMath.hpp
  *  @brief Basic math library
  *
  *  @author Hasan Al-Jawaheri (hbj)

@@ -1,4 +1,4 @@
-/** @file WSkeletalAnimation.h
+/** @file WSkeletalAnimation.hpp
  *  @brief Skeletal animation implementation
  *
  *  Skeletal animation is implemented as follows:

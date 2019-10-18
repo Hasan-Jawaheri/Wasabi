@@ -1,4 +1,4 @@
-/** @file WObject.h
+/** @file WObject.hpp
  *  @brief Implementation of rendered objects
  *
  *  An object in Wasabi is the normal way to render geometry. Objects provide

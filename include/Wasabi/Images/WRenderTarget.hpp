@@ -1,4 +1,4 @@
-/** @file WRenderTarget.h
+/** @file WRenderTarget.hpp
  *  @brief Render targets implementation
  *
  *  Render targets are special images that can be used to render a scene to. A

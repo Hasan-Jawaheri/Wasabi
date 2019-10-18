@@ -1,4 +1,4 @@
-/** @file WDeferredRenderer.h
+/** @file WDeferredRenderer.hpp
  *  @brief Utility to setup a deferred renderer
  *
  *  Deferred rendering is a rendering technique in which objects are not

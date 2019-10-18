@@ -1,4 +1,4 @@
-/** @file WParticles.h
+/** @file WParticles.hpp
  *  @brief Particle systems in Wasabi
  *
  *  Particle systems in Wasabi are billboard-like geometries that are updated

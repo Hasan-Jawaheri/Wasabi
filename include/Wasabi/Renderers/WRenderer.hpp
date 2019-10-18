@@ -1,4 +1,4 @@
-/** @file WRenderer.h
+/** @file WRenderer.hpp
  *  @brief Renderer implementation spec
  *
  *  A renderer provides tools and utilities to control the rendering of objects

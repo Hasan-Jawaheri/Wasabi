@@ -1,4 +1,4 @@
-/** @file WBase.h
+/** @file WBase.hpp
  *  @brief WBase implementation
  *
  *  WBase class is used by the engine to create a unified way of managing

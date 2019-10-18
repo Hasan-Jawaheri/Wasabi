@@ -1,4 +1,4 @@
-/** @file WImage.h
+/** @file WImage.hpp
  *  @brief Images (textures) implementation
  *
  *  An image in Wasabi is a way to represent textures that could be used for

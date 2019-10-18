@@ -1,4 +1,4 @@
-/** @file WWindowsWindowAndInputComponent.h
+/** @file WWindowsWindowAndInputComponent.hpp
  *  @brief Window/input component using GLFW, supports Windows, Linux and Mac
  *
  *  @author Hasan Al-Jawaheri (hbj)

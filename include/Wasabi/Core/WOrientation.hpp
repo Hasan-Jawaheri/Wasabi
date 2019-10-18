@@ -1,4 +1,4 @@
-/** @file WOrientation.h
+/** @file WOrientation.hpp
  *  @brief An orientation management class
  *
  *  A WOrientation can be inherited by any class to have attributes that

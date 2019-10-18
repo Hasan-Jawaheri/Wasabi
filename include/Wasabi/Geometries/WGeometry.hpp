@@ -1,4 +1,4 @@
-/** @file WGeometry.h
+/** @file WGeometry.hpp
  *  @brief Geometry (mesh) implementation
  *
  *  A WGeometry is a flexible way to represent any geometry that is needed for

@@ -1,4 +1,4 @@
-/** @file WCamera.h
+/** @file WCamera.hpp
  *  @brief Cameras implementation
  *
  *  A camera in Wasabi is a combination of a view matrix and a projection. A

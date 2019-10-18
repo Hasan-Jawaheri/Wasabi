@@ -1,5 +1,5 @@
 /**
- * @file WKeyCodes.h
+ * @file WKeyCodes.hpp
  * @brief Code keys similar to GLFW's
  */
 #pragma once

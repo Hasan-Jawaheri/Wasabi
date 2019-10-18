@@ -1,4 +1,4 @@
-/** @file WTimer.h
+/** @file WTimer.hpp
  *  @brief Basic timer implementation
  *
  *  @author Hasan Al-Jawaheri (hbj)

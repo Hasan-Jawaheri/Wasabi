@@ -1,4 +1,4 @@
-/** @file WUtilities.h
+/** @file WUtilities.hpp
  *  @brief Utility functions
  *
  *  This file contains general-purpose utility functions for the engine

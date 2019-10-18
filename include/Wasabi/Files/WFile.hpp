@@ -1,4 +1,4 @@
-/** @file WFile.h
+/** @file WFile.hpp
  *  @brief Wasabi file storage
  *
  *  Wasabi uses WFile's to store and load all engine assets.
