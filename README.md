@@ -108,8 +108,8 @@ MyApplication must implement 3 functions from Wasabi: Setup, Loop and Cleanup:
 
 ## Resources
 
-[Doxygen documentation](https://hasan-jawaheri.github.io/Wasabi/)
-[Samples](https://github.com/Hasan-Jawaheri/Wasabi/tree/master/samples)
+### [Doxygen documentation](https://hasan-jawaheri.github.io/Wasabi/)
+### [Samples](https://github.com/Hasan-Jawaheri/Wasabi/tree/master/samples)
 
 ## Contribution
 
