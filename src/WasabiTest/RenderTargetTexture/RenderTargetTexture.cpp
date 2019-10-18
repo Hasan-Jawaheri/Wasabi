@@ -34,7 +34,7 @@ void RenderTargetTextureDemo::Load() {
 
 	WImage* img = new WImage(m_app);
 	o2->GetMaterials().SetTexture("diffuseTexture", img);
-	img->Load("media/dummy.bmp");
+	img->Load("media/seamless_snow.jpg");
 	img->RemoveReference();
 
 	l = new WPointLight(m_app);

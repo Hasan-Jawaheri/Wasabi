@@ -5,10 +5,16 @@ AnimationDemo::AnimationDemo(Wasabi* const app) : WTestState(app) {
 }
 
 void AnimationDemo::Load() {
-	WGeometry* geometry = new WGeometry(m_app);
-	CheckError(geometry->LoadFromHXM("media/dante.HXM"));
+	WSkeleton* animation;
+	WGeometry* geometry;
+	WFile file(m_app);
+	CheckError(file.Open("media/dante.WSBI"));
+	assert(file.GetAssetsCount() >= 2);
+	CheckError(file.LoadAsset<WSkeleton>("dante-animation", &animation, WSkeleton::LoadArgs()));
+	CheckError(file.LoadAsset<WGeometry>("dante-geometry", &geometry, WGeometry::LoadArgs()));
+	file.Close();
 
-	WImage* texture = m_app->ImageManager->CreateImage("media/dante.bmp");
+	WImage* texture = m_app->ImageManager->CreateImage("media/dante.png");
 	assert(texture != nullptr);
 
 	character = m_app->ObjectManager->CreateObject();
@@ -22,13 +28,6 @@ void AnimationDemo::Load() {
 	// don't need these anymore, character has the reference to them
 	geometry->RemoveReference();
 	texture->RemoveReference();
-
-	WSkeleton* animation;
-	WFile file(m_app);
-	CheckError(file.Open("media/dante.WSBI"));
-	assert(file.GetAssetsCount() > 0);
-	CheckError(file.LoadAsset<WSkeleton>("dante-animation", &animation, WSkeleton::LoadArgs()));
-	file.Close();
 
 	CheckError(character->SetAnimation(animation));
 	animation->SetPlaySpeed(20.0f);

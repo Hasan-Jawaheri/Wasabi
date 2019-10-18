@@ -58,7 +58,7 @@ FilesDemo::FilesDemo(Wasabi* const app) : WTestState(app) {
 
 void FilesDemo::Load() {
 	WImage* img = new WImage(m_app);
-	img->Load("media/dummy.bmp", W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_TEXTURE);
+	img->Load("media/seamless_grass.jpg", W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_TEXTURE);
 
 	WGeometry* geometry = new WGeometry(m_app);
 	geometry->CreateCube(1, W_GEOMETRY_CREATE_DYNAMIC);

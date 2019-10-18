@@ -7,18 +7,14 @@ InstancingDemo::InstancingDemo(Wasabi* const app) : WTestState(app) {
 }
 
 void InstancingDemo::Load() {
-	geometry = new WGeometry(m_app);
-	if (!geometry->LoadFromHXM("media/dante.HXM")) {
-		m_app->WindowAndInputComponent->ShowErrorMessage("Failed to load model Media/dante.HXM");
-		return;
-	}
-	//geometry->CreateCube(0.9);
+	WFile file(m_app);
+	CheckError(file.Open("media/dante.WSBI"));
+	assert(file.GetAssetsCount() >= 1);
+	CheckError(file.LoadAsset<WGeometry>("dante-geometry", &geometry, WGeometry::LoadArgs()));
+	file.Close();
 
 	texture = new WImage(m_app);
-	if (!texture->Load("media/dante.bmp")) {
-		m_app->WindowAndInputComponent->ShowErrorMessage("Failed to load image Media/dante.bmp");
-		return;
-	}
+	CheckError(texture->Load("media/dante.png"));
 
 	character = m_app->ObjectManager->CreateObject();
 	character->SetGeometry(geometry);
