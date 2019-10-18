@@ -51,7 +51,7 @@ public:
 	 * a change in orientation.
 	 * @param type Orientation change type (rotation or motion)
 	 */
-	void OnStateChange(STATE_CHANGE_TYPE type);
+	void OnStateChange(STATE_CHANGE_TYPE type) override;
 
 	/**
 	 * Update the matrices to match the latest changes. This is automatically
@@ -230,7 +230,7 @@ public:
 	 * Checks if the camera is valid (always true).
 	 * @return true
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
 private:
 	/** true if one of the matrices needs to be updated, false otherwise */

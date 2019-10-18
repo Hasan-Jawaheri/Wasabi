@@ -66,7 +66,7 @@ uint32_t W_VERTEX_DESCRIPTION::GetIndex(std::string attribName) const {
 		if (attributes[i].name == attribName)
 			return i;
 	}
-	return (uint32_t)-1;
+	return std::numeric_limits<uint32_t>::max();
 }
 
 bool W_VERTEX_DESCRIPTION::isEqualTo(W_VERTEX_DESCRIPTION other) const {
@@ -89,7 +89,7 @@ WGeometryManager::~WGeometryManager() {
 	// we need to perform this here because some destructed geometries will need access to m_dynamicGeometries
 	// which will be destructed by the time WManager::~WManager() destroys the geometries this way
 	for (uint32_t j = 0; j < W_HASHTABLESIZE; j++) {
-		for (uint32_t i = 0; i < m_entities[j].size(); i)
+		for (uint32_t i = 0; i < m_entities[j].size();)
 			m_entities[j][i]->RemoveReference();
 		m_entities[j].clear();
 	}
@@ -489,8 +489,7 @@ WError WGeometry::CreateSphere(float Radius, uint32_t VRes, uint32_t URes, W_GEO
 
 	// Top ring first
 	for (uint32_t u = 0; u < URes; ++u) {
-		const uint32_t currentU = u;
-		const uint32_t nextU = (u + 1) % URes;
+		uint32_t nextU = (u + 1) % URes;
 		indices[curIndex++] = 0;
 		indices[curIndex++] = u + 1;
 		indices[curIndex++] = nextU + 1;
@@ -498,15 +497,15 @@ WError WGeometry::CreateSphere(float Radius, uint32_t VRes, uint32_t URes, W_GEO
 
 	// Now the middle rings
 	for (uint32_t v = 1; v < VRes - 2; ++v) {
-		const uint32_t top = 1 + ((v - 1) * URes);
-		const uint32_t bottom = top + URes;
+		uint32_t top = 1 + ((v - 1) * URes);
+		uint32_t bottom = top + URes;
 		for (uint32_t u = 0; u < URes; ++u) {
-			const uint32_t currentU = u;
-			const uint32_t nextU = (u + 1) % URes;
-			const uint32_t currTop = top + currentU;
-			const uint32_t nextTop = top + nextU;
-			const uint32_t currBottom = bottom + currentU;
-			const uint32_t nextBottom = bottom + nextU;
+			uint32_t currentU = u;
+			uint32_t nextU = (u + 1) % URes;
+			uint32_t currTop = top + currentU;
+			uint32_t nextTop = top + nextU;
+			uint32_t currBottom = bottom + currentU;
+			uint32_t nextBottom = bottom + nextU;
 
 			indices[curIndex++] = currTop;
 			indices[curIndex++] = currBottom;
@@ -864,7 +863,7 @@ WError WGeometry::LoadFromHXM(std::string filename, W_GEOMETRY_CREATE_FLAGS flag
 	W_SAFE_DELETE_ARRAY(ind);
 
 	if (a) {
-		if (GetVertexBufferCount() > 1 || GetVertexDescription(1).GetSize() == (4 * 4 + 4 * 4) && ret) {
+		if (ret && GetVertexBufferCount() > 1 && GetVertexDescription(1).GetSize() == sizeof(WDefaultVertex_Animation)) {
 			ret = CreateAnimationData((void*)a);
 		}
 		W_SAFE_DELETE_ARRAY(a);
@@ -1161,16 +1160,16 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 	uint32_t pos_offset = (uint32_t)GetVertexDescription(0).GetOffset("position");
 	uint32_t vtxSize = (uint32_t)GetVertexDescription(0).GetSize();
 	uint32_t uv_offset = (uint32_t)GetVertexDescription(0).GetOffset("uv");
-	uint32_t uv_size = (uint32_t)-1;
+	uint32_t uv_size = std::numeric_limits<uint32_t>::max();
 
-	if (pos_offset == (uint32_t)-1)
+	if (pos_offset == std::numeric_limits<uint32_t>::max())
 		return false;
 	if (GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents < 3)
 		return false;
-	if (uv_offset != (uint32_t)-1)
+	if (uv_offset != std::numeric_limits<uint32_t>::max())
 		uv_size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("uv")].numComponents * 4;
 	if (uv_size < 8) // if we don't have at least 2 components, ignore UVs
-		uv_offset = (uint32_t)-1;
+		uv_offset = std::numeric_limits<uint32_t>::max();
 
 	struct IntersectionInfo {
 		uint32_t index;
@@ -1286,13 +1285,13 @@ WError WGeometry::Draw(WRenderTarget* rt, uint32_t numIndices, uint32_t numInsta
 	vkCmdBindVertexBuffers(renderCmdBuffer, 0, bindings[1] == VK_NULL_HANDLE ? 1 : 2, bindings, offsets);
 
 	if (m_indices.Valid()) {
-		if (numIndices == (uint32_t)-1 || numIndices > m_numIndices)
+		if (numIndices == std::numeric_limits<uint32_t>::max() || numIndices > m_numIndices)
 			numIndices = m_numIndices;
 		// Bind triangle indices & draw the indexed triangle
 		vkCmdBindIndexBuffer(renderCmdBuffer, m_indices.GetBuffer(m_app, bufferIndex), 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed(renderCmdBuffer, numIndices, numInstances, 0, 0, 0);
 	} else {
-		if (numIndices == (uint32_t)-1 || numIndices > m_numVertices)
+		if (numIndices == std::numeric_limits<uint32_t>::max() || numIndices > m_numVertices)
 			numIndices = m_numVertices;
 		// render the vertices without indices
 		vkCmdDraw(renderCmdBuffer, numIndices, numInstances, 0, 0);

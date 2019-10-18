@@ -105,9 +105,9 @@ public:
 	/**
 	 * @return Whether or not the terrain will render properly
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
-	virtual void OnStateChange(STATE_CHANGE_TYPE type);
+	virtual void OnStateChange(STATE_CHANGE_TYPE type) override;
 
 private:
 	/** true if the world matrix needs to be updated, false otherwise */

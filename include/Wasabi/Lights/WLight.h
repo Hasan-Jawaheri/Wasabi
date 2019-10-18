@@ -150,13 +150,13 @@ public:
 	 * Always true.
 	 * @return true
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
-	virtual void OnStateChange(STATE_CHANGE_TYPE type);
+	virtual void OnStateChange(STATE_CHANGE_TYPE type) override;
 
 	static std::vector<void*> LoadArgs();
-	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) override;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) override;
 
 private:
 	/** true if the light is hidden, false otherwise */

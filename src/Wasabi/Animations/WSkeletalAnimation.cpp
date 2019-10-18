@@ -198,7 +198,7 @@ struct _WSkeletalFrame : public W_FRAME {
 		if (index)
 			currentBone->SetIndex(*index);
 		WBone* curChild = nullptr;
-		uint32_t i = (uint32_t)-1;
+		uint32_t i = std::numeric_limits<uint32_t>::max();
 		while ((curChild = base->GetChild(++i)) != nullptr) {
 			WBone* newBone = new WBone();
 			newBone->SetParent(currentBone);
@@ -246,7 +246,7 @@ WError WSkeleton::CreateKeyFrame(WBone* baseBone, float fTime) {
 
 	f->baseBone = new WBone();
 	uint32_t index = 0;
-	f->ConstructHierarchyFromBase(baseBone, f->baseBone, baseBone->GetIndex() == (uint32_t)-1 ? &index : nullptr);
+	f->ConstructHierarchyFromBase(baseBone, f->baseBone, baseBone->GetIndex() == std::numeric_limits<uint32_t>::max() ? &index : nullptr);
 
 	WError err = WError(W_SUCCEEDED);
 
@@ -303,11 +303,11 @@ void WSkeleton::SetSubAnimationBaseBone(uint32_t subAnimation, uint32_t boneInde
 		return;
 
 	if (boneIndex != -1) {
-		uint32_t indexInVector = (uint32_t)-1;
-		for (uint32_t i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[0])->boneV.size() && indexInVector == (uint32_t)-1; i++)
+		uint32_t indexInVector = std::numeric_limits<uint32_t>::max();
+		for (uint32_t i = 0; i < ((_WSkeletalFrame*)WAnimation::m_frames[0])->boneV.size() && indexInVector == std::numeric_limits<uint32_t>::max(); i++)
 			if (((_WSkeletalFrame*)WAnimation::m_frames[0])->boneV[i]->GetIndex() == boneIndex)
 				indexInVector = i;
-		if (indexInVector == (uint32_t)-1)
+		if (indexInVector == std::numeric_limits<uint32_t>::max())
 			return;
 
 		//get all involved bones, start with the parent (at boneIndex) and store all children indices
@@ -360,8 +360,8 @@ void WSkeleton::Update(float fDeltaTime) {
 				WBone* nextFrameOldParent = nullptr;
 				if (curSubAnim->parentSubAnimation != -1) {
 					uint32_t boneIndex = curSubAnim->boneIndices[0];
-					uint32_t boneInVector = (uint32_t)-1;
-					for (uint32_t k = 0; k < curFrame->boneV.size() && boneInVector == (uint32_t)-1; k++)
+					uint32_t boneInVector = std::numeric_limits<uint32_t>::max();
+					for (uint32_t k = 0; k < curFrame->boneV.size() && boneInVector == std::numeric_limits<uint32_t>::max(); k++)
 						if (curFrame->boneV[k]->GetIndex() == boneIndex)
 							boneInVector = k;
 					WBone* curFrameBone = curFrame->boneV[boneInVector];
@@ -381,8 +381,8 @@ void WSkeleton::Update(float fDeltaTime) {
 
 				for (uint32_t i = 0; i < curSubAnim->boneIndices.size(); i++) {
 					uint32_t boneIndex = curSubAnim->boneIndices[i];
-					uint32_t boneInVector = (uint32_t)-1;
-					for (uint32_t k = 0; k < curFrame->boneV.size() && boneInVector == (uint32_t)-1; k++)
+					uint32_t boneInVector = std::numeric_limits<uint32_t>::max();
+					for (uint32_t k = 0; k < curFrame->boneV.size() && boneInVector == std::numeric_limits<uint32_t>::max(); k++)
 						if (curFrame->boneV[k]->GetIndex() == boneIndex)
 							boneInVector = k;
 
@@ -418,8 +418,8 @@ void WSkeleton::Update(float fDeltaTime) {
 				//set parents back to normal
 				if (curSubAnim->parentSubAnimation != -1) {
 					uint32_t boneIndex = curSubAnim->boneIndices[0];
-					uint32_t boneInVector = (uint32_t)-1;
-					for (uint32_t k = 0; k < curFrame->boneV.size() && boneInVector == (uint32_t)-1; k++)
+					uint32_t boneInVector = std::numeric_limits<uint32_t>::max();
+					for (uint32_t k = 0; k < curFrame->boneV.size() && boneInVector == std::numeric_limits<uint32_t>::max(); k++)
 						if (curFrame->boneV[k]->GetIndex() == boneIndex)
 							boneInVector = k;
 					curFrame->boneV[boneInVector]->SetParent(curFrameOldParent);

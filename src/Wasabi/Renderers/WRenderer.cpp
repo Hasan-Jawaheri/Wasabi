@@ -172,7 +172,7 @@ void WRenderer::Render() {
 			if (!status)
 				return;
 		}
-		WError status = stage->Render(this, currentRT, (uint32_t)-1);
+		WError status = stage->Render(this, currentRT, std::numeric_limits<uint32_t>::max());
 		if (!status)
 			return;
 	}
@@ -327,10 +327,10 @@ WError WRenderer::SetRenderingStages(std::vector<WRenderStage*> stages) {
 				m_textsRenderStageName = stages[i]->m_stageDescription.name;
 			if (stages[i]->m_stageDescription.flags & RENDER_STAGE_FLAG_PICKING_RENDER_STAGE)
 				m_pickingRenderStageName = stages[i]->m_stageDescription.name;
+			if (stages[i]->m_stageDescription.flags & RENDER_STAGE_FLAG_PARTICLES_RENDER_STAGE)
+				m_particlesRenderStageName = stages[i]->m_stageDescription.name;
 			if (stages[i]->m_stageDescription.target == RENDER_STAGE_TARGET_BACK_BUFFER)
 				m_backbufferRenderStageName = stages[i]->m_stageDescription.name;
-			if (stages[i]->m_stageDescription.target == RENDER_STAGE_FLAG_PARTICLES_RENDER_STAGE)
-				m_particlesRenderStageName = stages[i]->m_stageDescription.name;
 
 			WError err = stages[i]->Initialize(m_renderStages, w, h);
 			if (!err) {

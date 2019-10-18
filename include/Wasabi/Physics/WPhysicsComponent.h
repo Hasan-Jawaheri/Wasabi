@@ -31,7 +31,8 @@ typedef struct W_RAYCAST_OUTPUT {
  */
 class WPhysicsComponent {
 public:
-	WPhysicsComponent(class Wasabi* app) : m_app(app), RigidBodyManager(nullptr){}
+	WPhysicsComponent(class Wasabi* app) : RigidBodyManager(nullptr), m_app(app) {}
+	virtual ~WPhysicsComponent() {}
 
 	WRigidBodyManager* RigidBodyManager;
 

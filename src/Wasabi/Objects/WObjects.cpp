@@ -243,7 +243,6 @@ void WObject::OnMaterialAdded(WMaterial* newMaterial) {
 bool WObject::WillRender(WRenderTarget* rt) {
 	if (Valid() && !m_hidden) {
 		WCamera* cam = rt->GetCamera();
-		WMatrix worldM = GetWorldMatrix();
 		if (m_bFrustumCull) {
 			if (!InCameraView(cam))
 				return false;
@@ -277,7 +276,8 @@ void WObject::Render(WRenderTarget* rt, WMaterial* material, bool updateInstance
 		material->Bind(rt);
 	}
 
-	WError err = m_geometry->Draw(rt, (uint32_t)-1, std::max((uint32_t)m_instanceV.size(), (uint32_t)1), is_animated);
+	WError err = m_geometry->Draw(rt, std::numeric_limits<uint32_t>::max(), std::max((uint32_t)m_instanceV.size(), (uint32_t)1), is_animated);
+	(void)err;
 }
 
 WError WObject::SetGeometry(class WGeometry* geometry) {

@@ -7,7 +7,7 @@ class LightsDemo : public WTestState {
 	vector<WObject*> m_boxes;
 	vector<WLight*> m_lights;
 
-	bool m_wantDeferred, m_isDeferred;
+	bool m_isDeferred;
 
 public:
 	LightsDemo(Wasabi* const app);

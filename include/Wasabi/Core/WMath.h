@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <cmath>
 #include <cstdint>
+#include <cmath>
 
 #define W_EPSILON 0.0001f
 #define W_PI (3.14159265358979323846f)
@@ -22,27 +22,35 @@
  */
 class WColor {
 public:
-	/** red component of the color */
-	float r;
-	/** green component of the color */
-	float g;
-	/** blue component of the color */
-	float b;
-	/** alpha component of the color */
-	float a;
+	union {
+		#pragma pack(push, 1)
+		struct {
+			/** red component of the color */
+			float r;
+			/** green component of the color */
+			float g;
+			/** blue component of the color */
+			float b;
+			/** alpha component of the color */
+			float a;
+		};
+		#pragma pack(pop)
+
+		float components[4];
+	};
 
 	WColor() : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {}
-	WColor(uint32_t hex) : r((float)((hex >> 24) & 0xFF) / 255.0f), g((float)((hex >> 16) & 0xFF) / 255.0f), b((float)((hex >> 8) & 0xFF) / 255.0f), a((float)((hex) & 0xFF) / 255.0f) {}
-	WColor(int hex) : r((float)(((uint32_t)hex >> 24) & 0xFF) / 255.0f), g((float)(((uint32_t)hex >> 16) & 0xFF) / 255.0f), b((float)(((uint32_t)hex >> 8) & 0xFF) / 255.0f), a((float)(((uint32_t)hex) & 0xFF) / 255.0f) {}
+	WColor(uint32_t hex) : r(static_cast<float>((hex >> 24) & 0xFF) / 255.0f), g(static_cast<float>((hex >> 16) & 0xFF) / 255.0f), b(static_cast<float>((hex >> 8) & 0xFF) / 255.0f), a(static_cast<float>((hex) & 0xFF) / 255.0f) {}
+	WColor(int hex) : r(static_cast<float>((static_cast<uint32_t>(hex) >> 24) & 0xFF) / 255.0f), g(static_cast<float>((static_cast<uint32_t>(hex) >> 16) & 0xFF) / 255.0f), b(static_cast<float>((static_cast<uint32_t>(hex) >> 8) & 0xFF) / 255.0f), a(static_cast<float>(static_cast<uint32_t>(hex) & 0xFF) / 255.0f) {}
 	WColor(float fRGB) : r(fRGB), g(fRGB), b(fRGB), a(1.0f) {}
 	WColor(float fR, float fG, float fB) : r(fR), g(fG), b(fB), a(1.0f) {}
 	WColor(float fR, float fG, float fB, float fA) : r(fR), g(fG), b(fB), a(fA){}
 
 	operator float* () {
-		return (float*)&r;
+		return static_cast<float*>(components);
 	}
 	operator const float* () {
-		return (const float*)&r;
+		return const_cast<const float*>(components);
 	}
 
 	const WColor operator+ () const {
@@ -115,37 +123,35 @@ public:
 	}
 
 	float& operator[] (const uint32_t index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator[] (const uint32_t index) const {
-		return *((float*)(this) + index);
+	float operator[] (const uint32_t index) const {
+		return components[index];
 	}
 	float& operator[] (const int index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator[] (const int index) const {
-		return *((float*)(this) + index);
+	float operator[] (const int index) const {
+		return components[index];
 	}
 	float& operator() (const uint32_t index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator() (const uint32_t index) const {
-		return *((float*)(this) + index);
+	float operator() (const uint32_t index) const {
+		return components[index];
 	}
 	float& operator() (const int index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator() (const int index) const {
-		return *((float*)(this) + index);
+	float operator() (const int index) const {
+		return components[index];
 	}
 
-	const bool operator== (const WColor col) const {
-		return (fabs(r - col.r) < W_EPSILON && fabs(g - col.g) < W_EPSILON &&
-			fabs(b - col.b) < W_EPSILON && fabs(a - col.a) < W_EPSILON);
+	bool operator== (const WColor col) const {
+		return (std::abs(r - col.r) < W_EPSILON && std::abs(g - col.g) < W_EPSILON && std::abs(b - col.b) < W_EPSILON && std::abs(a - col.a) < W_EPSILON);
 	}
-	const bool operator!= (const WColor col) const {
-		return (fabs(r - col.r) >= W_EPSILON || fabs(g - col.g) >= W_EPSILON ||
-			fabs(b - col.b) >= W_EPSILON || fabs(a - col.a) >= W_EPSILON);
+	bool operator!= (const WColor col) const {
+		return (std::abs(r - col.r) >= W_EPSILON || std::abs(g - col.g) >= W_EPSILON || std::abs(b - col.b) >= W_EPSILON || std::abs(a - col.a) >= W_EPSILON);
 	}
 };
 
@@ -156,19 +162,27 @@ public:
  */
 class WVector2 {
 public:
-	/** x component of the vector */
-	float x;
-	/** y component of the vector */
-	float y;
+	union {
+		#pragma pack(push, 1)
+		struct {
+			/** x component of the vector */
+			float x;
+			/** y component of the vector */
+			float y;
+		};
+		#pragma pack(pop)
+
+		float components[2];
+	};
 
 	WVector2() : x(0.0f), y(0.0f) {}
 	WVector2(float fX, float fY) : x(fX), y(fY) {}
 
 	operator float* () {
-		return (float*)&x;
+		return static_cast<float*>(components);
 	}
 	operator const float* () {
-		return (const float*)&x;
+		return const_cast<const float*>(components);
 	}
 
 	const WVector2 operator+ () const {
@@ -229,35 +243,35 @@ public:
 	}
 
 	float& operator[] (const uint32_t index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator[] (const uint32_t index) const {
-		return *((float*)(this) + index);
+	float operator[] (const uint32_t index) const {
+		return components[index];
 	}
 	float& operator[] (const int index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator[] (const int index) const {
-		return *((float*)(this) + index);
+	float operator[] (const int index) const {
+		return components[index];
 	}
 	float& operator() (const uint32_t index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator() (const uint32_t index) const {
-		return *((float*)(this) + index);
+	float operator() (const uint32_t index) const {
+		return components[index];
 	}
 	float& operator() (const int index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator() (const int index) const {
-		return *((float*)(this) + index);
+	float operator() (const int index) const {
+		return components[index];
 	}
 
-	const bool operator== (const WVector2 vec) const {
-		return (fabs(x - vec.x) < W_EPSILON && fabs(y - vec.y) < W_EPSILON);
+	bool operator== (const WVector2 vec) const {
+		return (std::abs(x - vec.x) < W_EPSILON && std::abs(y - vec.y) < W_EPSILON);
 	}
-	const bool operator!= (const WVector2 vec) const {
-		return (fabs(x - vec.x) >= W_EPSILON || fabs(y - vec.y) >= W_EPSILON);
+	bool operator!= (const WVector2 vec) const {
+		return (std::abs(x - vec.x) >= W_EPSILON || std::abs(y - vec.y) >= W_EPSILON);
 	}
 };
 
@@ -268,21 +282,29 @@ public:
  */
 class WVector3 {
 public:
-	/** x component of the vector */
-	float x;
-	/** y component of the vector */
-	float y;
-	/** z component of the vector */
-	float z;
+	union {
+		#pragma pack(push, 1)
+		struct {
+			/** x component of the vector */
+			float x;
+			/** y component of the vector */
+			float y;
+			/** z component of the vector */
+			float z;
+		};
+		#pragma pack(pop)
+		
+		float components[3];
+	};
 
 	WVector3() : x(0.0f), y(0.0f), z(0.0f) {}
 	WVector3(float fX, float fY, float fZ) : x(fX), y(fY), z(fZ) {}
 
 	operator float* () {
-		return (float*)&x;
+		return static_cast<float*>(components);
 	}
 	operator const float* () {
-		return (const float*)&x;
+		return const_cast<const float*>(components);
 	}
 
 	const WVector3 operator+ () const {
@@ -349,37 +371,35 @@ public:
 	}
 
 	float& operator[] (const uint32_t index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator[] (const uint32_t index) const {
-		return *((float*)(this) + index);
+	float operator[] (const uint32_t index) const {
+		return components[index];
 	}
 	float& operator[] (const int index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator[] (const int index) const {
-		return *((float*)(this) + index);
+	float operator[] (const int index) const {
+		return components[index];
 	}
 	float& operator() (const uint32_t index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator() (const uint32_t index) const {
-		return *((float*)(this) + index);
+	float operator() (const uint32_t index) const {
+		return components[index];
 	}
 	float& operator() (const int index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator() (const int index) const {
-		return *((float*)(this) + index);
+	float operator() (const int index) const {
+		return components[index];
 	}
 
-	const bool operator== (const WVector3 vec) const {
-		return (fabs(x - vec.x) < W_EPSILON && fabs(y - vec.y) <
-						W_EPSILON && fabs(z - vec.z) < W_EPSILON);
+	bool operator== (const WVector3 vec) const {
+		return (std::abs(x - vec.x) < W_EPSILON && std::abs(y - vec.y) < W_EPSILON && std::abs(z - vec.z) < W_EPSILON);
 	}
-	const bool operator!= (const WVector3 vec) const {
-		return (fabs(x - vec.x) >= W_EPSILON || fabs(y - vec.y) >=
-						W_EPSILON || fabs(z - vec.z) >= W_EPSILON);
+	bool operator!= (const WVector3 vec) const {
+		return (std::abs(x - vec.x) >= W_EPSILON || std::abs(y - vec.y) >= W_EPSILON || std::abs(z - vec.z) >= W_EPSILON);
 	}
 };
 
@@ -390,14 +410,22 @@ public:
  */
 class WVector4 {
 public:
-	/** x component of the vector */
-	float x;
-	/** y component of the vector */
-	float y;
-	/** z component of the vector */
-	float z;
-	/** w component of the vector */
-	float w;
+	union {
+		#pragma pack(push, 1)
+		struct {
+			/** x component of the vector */
+			float x;
+			/** y component of the vector */
+			float y;
+			/** z component of the vector */
+			float z;
+			/** w component of the vector */
+			float w;
+		};
+		#pragma pack(pop)
+		
+		float components[4];
+	};
 
 	WVector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
 	WVector4(float fX, float fY, float fZ) : x(fX), y(fY), z(fZ), w(0.0f) {}
@@ -405,10 +433,10 @@ public:
 		: x(fX), y(fY), z(fZ), w(fW) {}
 
 	operator float* () {
-		return (float*)&x;
+		return static_cast<float*>(components);
 	}
 	operator const float* () {
-		return (const float*)&x;
+		return const_cast<const float*>(components);
 	}
 
 	const WVector4 operator+ () const {
@@ -481,37 +509,35 @@ public:
 	}
 
 	float& operator[] (const uint32_t index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator[] (const uint32_t index) const {
-		return *((float*)(this) + index);
+	float operator[] (const uint32_t index) const {
+		return components[index];
 	}
 	float& operator[] (const int index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator[] (const int index) const {
-		return *((float*)(this) + index);
+	float operator[] (const int index) const {
+		return components[index];
 	}
 	float& operator() (const uint32_t index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator() (const uint32_t index) const {
-		return *((float*)(this) + index);
+	float operator() (const uint32_t index) const {
+		return components[index];
 	}
 	float& operator() (const int index) {
-		return *((float*)(this) + index);
+		return components[index];
 	}
-	const float operator() (const int index) const {
-		return *((float*)(this) + index);
+	float operator() (const int index) const {
+		return components[index];
 	}
 
-	const bool operator== (const WVector4 vec) const {
-		return (fabs(x - vec.x) < W_EPSILON && fabs(y - vec.y) < W_EPSILON &&
-			fabs(z - vec.z) < W_EPSILON && fabs(w - vec.w) < W_EPSILON);
+	bool operator== (const WVector4 vec) const {
+		return (std::abs(x - vec.x) < W_EPSILON && std::abs(y - vec.y) < W_EPSILON && std::abs(z - vec.z) < W_EPSILON && std::abs(w - vec.w) < W_EPSILON);
 	}
-	const bool operator!= (const WVector4 vec) const {
-		return (fabs(x - vec.x) >= W_EPSILON || fabs(y - vec.y) >= W_EPSILON ||
-			fabs(z - vec.z) >= W_EPSILON || fabs(w - vec.w) >= W_EPSILON);
+	bool operator!= (const WVector4 vec) const {
+		return (std::abs(x - vec.x) >= W_EPSILON || std::abs(y - vec.y) >= W_EPSILON || std::abs(z - vec.z) >= W_EPSILON || std::abs(w - vec.w) >= W_EPSILON);
 	}
 };
 
@@ -524,8 +550,7 @@ public:
 class WQuaternion : public WVector4 {
 public:
 	WQuaternion() : WVector4(0.0f, 0.0f, 0.0f, 1.0f) {}
-	WQuaternion(float fX, float fY, float fZ, float fW)
-		: WVector4(fX, fY, fZ, fW) {}
+	WQuaternion(float fX, float fY, float fZ, float fW) : WVector4(fX, fY, fZ, fW) {}
 };
 
 /**
@@ -535,14 +560,22 @@ public:
  */
 class WPlane {
 public:
-	/** a component of the plane */
-	float a;
-	/** b component of the plane */
-	float b;
-	/** c component of the plane */
-	float c;
-	/** d component of the plane */
-	float d;
+	union {
+		#pragma pack(push, 1)
+		struct {
+			/** a component of the plane */
+			float a;
+			/** b component of the plane */
+			float b;
+			/** c component of the plane */
+			float c;
+			/** d component of the plane */
+			float d;
+		};
+		#pragma pack(pop)
+		
+		float components[4];
+	};
 
 	WPlane(void) : a(0), b(0), c(0), d(0) {}
 	WPlane(float A, float B, float C, float D) : a(A), b(B), c(C), d(D) {}
@@ -565,19 +598,19 @@ public:
 		float f41, float f42, float f43, float f44);
 
 	operator float* () {
-		return (float*)&mat;
+		return static_cast<float*>(mat);
 	}
 	operator const float* () {
-		return (const float*)&mat;
+		return const_cast<const float*>(mat);
 	}
 
-	const WMatrix operator+ (const WMatrix m) const;
-	const WMatrix operator- (const WMatrix m) const;
-	const WMatrix operator* (const WMatrix m) const;
-	const WMatrix operator/ (const WMatrix m) const;
+	WMatrix operator+ (const WMatrix m) const;
+	WMatrix operator- (const WMatrix m) const;
+	WMatrix operator* (const WMatrix m) const;
+	WMatrix operator/ (const WMatrix m) const;
 
-	const WMatrix operator* (const float f) const;
-	const WMatrix operator/ (const float f) const;
+	WMatrix operator* (const float f) const;
+	WMatrix operator/ (const float f) const;
 
 	void operator+= (const WMatrix m);
 	void operator-= (const WMatrix m);
@@ -588,9 +621,9 @@ public:
 	void operator/= (const float f);
 
 	float& operator() (const uint32_t row, const uint32_t col);
-	const float operator() (const uint32_t row,const uint32_t col) const;
+	float operator() (const uint32_t row, const uint32_t col) const;
 	float& operator[] (const uint32_t index);
-	const float operator[] (const uint32_t index) const;
+	float operator[] (const uint32_t index) const;
 };
 
 /**
@@ -598,14 +631,14 @@ public:
  * @param  m matrix to transpose
  * @return   The transposed matrix
  */
-const WMatrix WMatrixTranspose(const WMatrix m);
+WMatrix WMatrixTranspose(const WMatrix m);
 
 /**
  * Invert a matrix.
  * @param  m Matrix to invert
  * @return   Inverse of m
  */
-const WMatrix WMatrixInverse(const WMatrix m);
+WMatrix WMatrixInverse(const WMatrix m);
 
 /**
  * Dot product of two 2D vectors.
@@ -613,28 +646,28 @@ const WMatrix WMatrixInverse(const WMatrix m);
  * @param  v2 Second vector
  * @return    The dot product of v1 and v2
  */
-const float WVec2Dot(const WVector2 v1, const WVector2 v2);
+float WVec2Dot(const WVector2 v1, const WVector2 v2);
 
 /**
  * Normalizes a 2D vector.
  * @param  v Vector to normalize
  * @return   Normalized vector
  */
-const WVector2 WVec2Normalize(const WVector2 v);
+WVector2 WVec2Normalize(const WVector2 v);
 
 /**
  * Calculates the length of a 2D vector.
  * @param  v Vector to calculate its length
  * @return   Length of v
  */
-const float WVec2Length(const WVector2 v);
+float WVec2Length(const WVector2 v);
 
 /**
  * Calculates the squared length of a 2D vector.
  * @param  v Vector to calculate its length
  * @return   Squared length of v
  */
-const float WVec2LengthSq(const WVector2 v);
+float WVec2LengthSq(const WVector2 v);
 
 /**
  * Linearly interpolate two 2D vectors.
@@ -643,8 +676,7 @@ const float WVec2LengthSq(const WVector2 v);
  * @param  fLerpVal Linear interpolation value
  * @return          The interpolated vector
  */
-const WVector2 WVec2Lerp(const WVector2 v1, const WVector2 v2,
-												 const float fLerpVal);
+WVector2 WVec2Lerp(const WVector2 v1, const WVector2 v2, const float fLerpVal);
 
 /**
  * Transform a 2D vector by a matrix. This is the same as
@@ -653,7 +685,7 @@ const WVector2 WVec2Lerp(const WVector2 v1, const WVector2 v2,
  * @param  m Matrix to transform by
  * @return   The result of the transformation
  */
-const WVector4 WVec2Transform(const WVector2 v, const WMatrix m);
+WVector4 WVec2Transform(const WVector2 v, const WMatrix m);
 
 /**
  * Transform a 2D point by a matrix. This is the same as
@@ -663,7 +695,7 @@ const WVector4 WVec2Transform(const WVector2 v, const WMatrix m);
  * @param  m Matrix to transform by
  * @return   The result of the transformation
  */
-const WVector2 WVec2TransformCoord(const WVector2 v, const WMatrix m);
+WVector2 WVec2TransformCoord(const WVector2 v, const WMatrix m);
 
 /**
  * Transform a 2D normal by a matrix. This is the same as
@@ -673,7 +705,7 @@ const WVector2 WVec2TransformCoord(const WVector2 v, const WMatrix m);
  * @param  m Matrix to transform by
  * @return   The result of the transformation
  */
-const WVector2 WVec2TransformNormal(const WVector2 v, const WMatrix m);
+WVector2 WVec2TransformNormal(const WVector2 v, const WMatrix m);
 
 /**
  * Dot product of two 3D vectors.
@@ -681,7 +713,7 @@ const WVector2 WVec2TransformNormal(const WVector2 v, const WMatrix m);
  * @param  v2 Second vector
  * @return    The dot product of v1 and v2
  */
-const float WVec3Dot(const WVector3 v1, const WVector3 v2);
+float WVec3Dot(const WVector3 v1, const WVector3 v2);
 
 /**
  * Calculates the cross product of two 3D vectors.
@@ -689,28 +721,28 @@ const float WVec3Dot(const WVector3 v1, const WVector3 v2);
  * @param  v2 Second vector
  * @return    Cross product of v1 and v2
  */
-const WVector3 WVec3Cross(const WVector3 v1, const WVector3 v2);
+WVector3 WVec3Cross(const WVector3 v1, const WVector3 v2);
 
 /**
  * Normalizes a 3D vector.
  * @param  v Vector to normalize
  * @return   Normalized vector
  */
-const WVector3 WVec3Normalize(const WVector3 v);
+WVector3 WVec3Normalize(const WVector3 v);
 
 /**
  * Calculates the length of a 3D vector.
  * @param  v Vector to calculate its length
  * @return   Length of v
  */
-const float WVec3Length(const WVector3 v);
+float WVec3Length(const WVector3 v);
 
 /**
  * Calculates the squared length of a 3D vector.
  * @param  v Vector to calculate its length
  * @return   Squared length of v
  */
-const float WVec3LengthSq(const WVector3 v);
+float WVec3LengthSq(const WVector3 v);
 
 /**
  * Linearly interpolate two 3D vectors.
@@ -719,8 +751,7 @@ const float WVec3LengthSq(const WVector3 v);
  * @param  fLerpVal Linear interpolation value
  * @return          The interpolated vector
  */
-const WVector3 WVec3Lerp(const WVector3 v1, const WVector3 v2,
-												 const float fLerpVal);
+WVector3 WVec3Lerp(const WVector3 v1, const WVector3 v2, const float fLerpVal);
 
 /**
  * Transform a 3D vector by a matrix. This is the same as
@@ -729,7 +760,7 @@ const WVector3 WVec3Lerp(const WVector3 v1, const WVector3 v2,
  * @param  m Matrix to transform by
  * @return   The result of the transformation
  */
-const WVector4 WVec3Transform(const WVector3 v, const WMatrix m);
+WVector4 WVec3Transform(const WVector3 v, const WMatrix m);
 
 /**
  * Transform a 3D point by a matrix. This is the same as
@@ -739,7 +770,7 @@ const WVector4 WVec3Transform(const WVector3 v, const WMatrix m);
  * @param  m Matrix to transform by
  * @return   The result of the transformation
  */
-const WVector3 WVec3TransformCoord(const WVector3 v, const WMatrix m);
+WVector3 WVec3TransformCoord(const WVector3 v, const WMatrix m);
 
 /**
  * Transform a 3D normal by a matrix. This is the same as
@@ -749,7 +780,7 @@ const WVector3 WVec3TransformCoord(const WVector3 v, const WMatrix m);
  * @param  m Matrix to transform by
  * @return   The result of the transformation
  */
-const WVector3 WVec3TransformNormal(const WVector3 v, const WMatrix m);
+WVector3 WVec3TransformNormal(const WVector3 v, const WMatrix m);
 
 /**
  * Dot product of two 4D vectors.
@@ -757,28 +788,28 @@ const WVector3 WVec3TransformNormal(const WVector3 v, const WMatrix m);
  * @param  v2 Second vector
  * @return    The dot product of v1 and v2
  */
-const float WVec4Dot(const WVector4 v1, const WVector4 v2);
+float WVec4Dot(const WVector4 v1, const WVector4 v2);
 
 /**
  * Normalizes a 4D vector.
  * @param  v Vector to normalize
  * @return   Normalized vector
  */
-const WVector4 WVec4Normalize(const WVector4 v);
+WVector4 WVec4Normalize(const WVector4 v);
 
 /**
  * Calculates the length of a 4D vector.
  * @param  v Vector to calculate its length
  * @return   Length of v
  */
-const float WVec4Length(const WVector4 v);
+float WVec4Length(const WVector4 v);
 
 /**
  * Calculates the squared length of a 4D vector.
  * @param  v Vector to calculate its length
  * @return   Squared length of v
  */
-const float WVec4LengthSq(const WVector4 v);
+float WVec4LengthSq(const WVector4 v);
 
 /**
  * Linearly interpolate two 4D vectors.
@@ -787,7 +818,7 @@ const float WVec4LengthSq(const WVector4 v);
  * @param  fLerpVal Linear interpolation value
  * @return          The interpolated vector
  */
-const WVector4 WVec4Lerp(const WVector4 v1, const WVector4 v2, const float fLerpVal);
+WVector4 WVec4Lerp(const WVector4 v1, const WVector4 v2, const float fLerpVal);
 
 /**
  * Transform a 4D vector by a matrix.
@@ -795,28 +826,28 @@ const WVector4 WVec4Lerp(const WVector4 v1, const WVector4 v2, const float fLerp
  * @param  m Matrix to transform by
  * @return   The result of the transformation
  */
-const WVector4 WVec4Transform(const WVector4 v, const WMatrix m);
+WVector4 WVec4Transform(const WVector4 v, const WMatrix m);
 
 /**
  * Creates a matrix that performs a rotation on the X axis.
  * @param  fAngle Angle of rotation, in radians
  * @return        The resulting matrix
  */
-const WMatrix WRotationMatrixX(const float fAngle);
+WMatrix WRotationMatrixX(const float fAngle);
 
 /**
  * Creates a matrix that performs a rotation on the Y axis.
  * @param  fAngle Angle of rotation, in radians
  * @return        The resulting matrix
  */
-const WMatrix WRotationMatrixY(const float fAngle);
+WMatrix WRotationMatrixY(const float fAngle);
 
 /**
  * Creates a matrix that performs a rotation on the Z axis.
  * @param  fAngle Angle of rotation, in radians
  * @return        The resulting matrix
  */
-const WMatrix WRotationMatrixZ(const float fAngle);
+WMatrix WRotationMatrixZ(const float fAngle);
 
 /**
  * Creates a matrix that performs a rotation on any given axis.
@@ -824,7 +855,7 @@ const WMatrix WRotationMatrixZ(const float fAngle);
  * @param  fAngle Angle of rotation, in radians
  * @return        The resulting matrix
  */
-const WMatrix WRotationMatrixAxis(const WVector3 axis, const float fAngle);
+WMatrix WRotationMatrixAxis(const WVector3 axis, const float fAngle);
 
 /**
  * Creates a matrix that performs scaling.
@@ -833,14 +864,14 @@ const WMatrix WRotationMatrixAxis(const WVector3 axis, const float fAngle);
  * @param  fZ Scaling on the Z axis
  * @return    The resulting matrix
  */
-const WMatrix WScalingMatrix(const float fX, const float fY, const float fZ);
+WMatrix WScalingMatrix(const float fX, const float fY, const float fZ);
 
 /**
  * Creates a matrix that performs scaling.
  * @param  scale Scaling components
  * @return       The resulting matrix
  */
-const WMatrix WScalingMatrix(const WVector3 scale);
+WMatrix WScalingMatrix(const WVector3 scale);
 
 /**
  * Creates a matrix that performs translation.
@@ -849,15 +880,14 @@ const WMatrix WScalingMatrix(const WVector3 scale);
  * @param  fZ Translation on the Z axis
  * @return    The resulting matrix
  */
-const WMatrix WTranslationMatrix(const float fX, const float fY,
-																 const float fZ);
+WMatrix WTranslationMatrix(const float fX, const float fY, const float fZ);
 
 /**
  * Creates a matrix that performs translation.
  * @param  pos Translation components
  * @return     The resulting matrix
  */
-const WMatrix WTranslationMatrix(const WVector3 pos);
+WMatrix WTranslationMatrix(const WVector3 pos);
 
 /**
  * Creates a matrix that performs perspective projection.
@@ -867,8 +897,7 @@ const WMatrix WTranslationMatrix(const WVector3 pos);
  * @param  zfar   Far plane
  * @return        The resulting matrix
  */
-const WMatrix WPerspectiveProjMatrix(const float width, const float height,
-	const float znear, const float zfar);
+WMatrix WPerspectiveProjMatrix(const float width, const float height, const float znear, const float zfar);
 
 /**
  * Creates a matrix that performs perspective projection.
@@ -878,8 +907,7 @@ const WMatrix WPerspectiveProjMatrix(const float width, const float height,
  * @param  zf      Far plane
  * @return         The resulting matrix
  */
-const WMatrix WPerspectiveProjMatrixFOV(const float fFOV, const float fAspect,
-	const float zn, const float zf);
+WMatrix WPerspectiveProjMatrixFOV(const float fFOV, const float fAspect, const float zn, const float zf);
 
 /**
  * Creates a matrix that performs orthogonal projection.
@@ -889,8 +917,7 @@ const WMatrix WPerspectiveProjMatrixFOV(const float fFOV, const float fAspect,
  * @param  zfar   Far plane
  * @return        The resulting matrix
  */
-const WMatrix WOrthogonalProjMatrix(const float width, const float height,
-	const float znear, const float zfar);
+WMatrix WOrthogonalProjMatrix(const float width, const float height, const float znear, const float zfar);
 
 /**
  * Perform a plane dot product with a point.
@@ -898,7 +925,7 @@ const WMatrix WOrthogonalProjMatrix(const float width, const float height,
  * @param  vec   3D point
  * @return       Result of the dot product
  */
-const float WPlaneDotCoord(const WPlane plane, const WVector3 vec);
+float WPlaneDotCoord(const WPlane plane, const WVector3 vec);
 
 /**
  * Perform a plane dot product with a normal.
@@ -906,14 +933,14 @@ const float WPlaneDotCoord(const WPlane plane, const WVector3 vec);
  * @param  vec   3D normal vector
  * @return       Result of the dot product
  */
-const float WPlaneDotNormal(const WPlane plane, const WVector3 vec);
+float WPlaneDotNormal(const WPlane plane, const WVector3 vec);
 
 /**
  * Normalizes a plane.
  * @param  plane Plane to normalize
  * @return       The resulting normalized plane
  */
-const WPlane WNormalizePlane(const WPlane plane);
+WPlane WNormalizePlane(const WPlane plane);
 
 /**
  * Linearly interpolate two colors.
@@ -922,4 +949,4 @@ const WPlane WNormalizePlane(const WPlane plane);
  * @param  fLerpVal Linear interpolation value
  * @return          The interpolated color
  */
-const WColor WColorLerp(const WColor c1, const WColor c2, const float fLerpVal);
+WColor WColorLerp(const WColor c1, const WColor c2, const float fLerpVal);

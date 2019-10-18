@@ -35,29 +35,29 @@ public:
 
 	WBulletRigidBody(class Wasabi* const app, uint32_t ID = 0);
 
-	virtual WError Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveInfo = false);
+	virtual WError Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveInfo = false) override;
 
-	virtual void Update(float deltaTime);
+	virtual void Update(float deltaTime) override;
 
-	virtual void BindObject(WOrientation* obj, WBase* objBase = nullptr);
+	virtual void BindObject(WOrientation* obj, WBase* objBase = nullptr) override;
 
-	virtual void SetLinearVelocity(WVector3 vel);
-	virtual void SetAngularVelocity(WVector3 vel);
-	virtual void SetLinearDamping(float power);
-	virtual void SetAngularDamping(float power);
-	virtual void SetBouncingPower(float bouncing);
-	virtual void SetMass(float mass);
-	virtual void SetMassCenter(float x, float y, float z);
-	virtual void SetFriction(float friction);
-	virtual void ApplyForce(WVector3 force);
-	virtual void ApplyForce(WVector3 force, WVector3 relative_pos);
-	virtual void ApplyImpulse(WVector3 impulse);
-	virtual void ApplyImpulse(WVector3 impulse, WVector3 relative_pos);
-	virtual void ApplyTorque(WVector3 torque);
-	virtual WVector3 getLinearVelocity() const;
-	virtual WVector3 getAngularVelocity() const;
-	virtual WVector3 getTotalForce() const;
-	virtual WVector3 getTotalTorque() const;
+	virtual void SetLinearVelocity(WVector3 vel) override;
+	virtual void SetAngularVelocity(WVector3 vel) override;
+	virtual void SetLinearDamping(float power) override;
+	virtual void SetAngularDamping(float power) override;
+	virtual void SetBouncingPower(float bouncing) override;
+	virtual void SetMass(float mass) override;
+	virtual void SetMassCenter(float x, float y, float z) override;
+	virtual void SetFriction(float friction) override;
+	virtual void ApplyForce(WVector3 force) override;
+	virtual void ApplyForce(WVector3 force, WVector3 relative_pos) override;
+	virtual void ApplyImpulse(WVector3 impulse) override;
+	virtual void ApplyImpulse(WVector3 impulse, WVector3 relative_pos) override;
+	virtual void ApplyTorque(WVector3 torque) override;
+	virtual WVector3 getLinearVelocity() const override;
+	virtual WVector3 getAngularVelocity() const override;
+	virtual WVector3 getTotalForce() const override;
+	virtual WVector3 getTotalTorque() const override;
 
 	/**
 	 * Retrieves the world matrix for the rigid body.
@@ -68,13 +68,13 @@ public:
 	/**
 	 * @return Whether or not the rigid body will render properly
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
-	virtual void OnStateChange(STATE_CHANGE_TYPE type);
+	virtual void OnStateChange(STATE_CHANGE_TYPE type) override;
 
 	static std::vector<void*> LoadArgs(bool bSaveInfo = false);
-	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) override;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) override;
 
 private:
 	/** Set to true while inside Update() */

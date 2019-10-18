@@ -13,7 +13,6 @@
 
 #pragma once
 
-#include "Wasabi/Core/WBase.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -45,8 +44,8 @@ template<typename T>
 class WManager {
 protected:
 	/** a hash table of all entities registered */
-	std::vector<WBase*> m_entities[W_HASHTABLESIZE];
-	std::unordered_map<std::string, WBase*> m_entitiesByName;
+	std::vector<T*> m_entities[W_HASHTABLESIZE];
+	std::unordered_map<std::string, T*> m_entitiesByName;
 
 	/**
 	 * This function must be implemented by a child class. It should return the
@@ -172,7 +171,7 @@ public:
 	T* GetEntity(std::string name) const {
 		auto it = m_entitiesByName.find(name.c_str());
 		if (it != m_entitiesByName.end())
-			return (T*)it->second;
+			return it->second;
 		return nullptr;
 	}
 
@@ -184,8 +183,8 @@ public:
 	T* GetEntityByIndex(uint32_t index) const {
 		for (uint32_t j = 0; j < W_HASHTABLESIZE; j++) {
 			if (index < m_entities[j].size())
-				return (T*)m_entities[j][index];
-			index -= (uint32_t)m_entities[j].size();
+				return m_entities[j][index];
+			index -= static_cast<uint32_t>(m_entities[j].size());
 		}
 		return nullptr;
 	}
@@ -197,7 +196,7 @@ public:
 	uint32_t GetEntitiesCount(void) const {
 		uint32_t size = 0;
 		for (uint32_t j = 0; j < W_HASHTABLESIZE; j++)
-			size += (uint32_t)m_entities[j].size();
+			size += static_cast<uint32_t>(m_entities[j].size());
 		return size;
 	}
 

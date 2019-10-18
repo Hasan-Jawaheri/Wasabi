@@ -91,7 +91,7 @@ WParticlesBehavior::WParticlesBehavior(uint32_t maxParticles, uint32_t particleS
 }
 
 WParticlesBehavior::~WParticlesBehavior() {
-	delete[] m_particlesData;
+	delete[] static_cast<char*>(m_particlesData);
 }
 
 void WParticlesBehavior::Emit(void* particle) {
@@ -316,6 +316,8 @@ class WEffect* WParticlesManager::CreateParticlesEffect(W_DEFAULT_PARTICLE_EFFEC
 		blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 		blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 		blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+		break;
+	default:
 		break;
 	}
 

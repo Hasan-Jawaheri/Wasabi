@@ -192,7 +192,7 @@ public:
 	 * it has at least one frame buffer.
 	 * @return true if the render target is valid, false otherwise
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
 private:
 	/** Buffered frame buffer for the render target */

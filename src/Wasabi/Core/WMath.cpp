@@ -1,7 +1,7 @@
 #include "Wasabi/Core/WMath.h"
 #include <memory>
 
-WMatrix::WMatrix(void) {
+WMatrix::WMatrix() {
 	for (int i = 0; i < 16; i++)
 		mat[i] = i % 4 == i / 4 ? 1.0f : 0.0f;
 }
@@ -26,21 +26,21 @@ WMatrix::WMatrix(float f11, float f12, float f13, float f14,
 	mat[14] = f43;
 	mat[15] = f44;
 }
-const WMatrix WMatrix::operator+ (const WMatrix m) const {
+WMatrix WMatrix::operator+ (const WMatrix m) const {
 	WMatrix out = *this;
 	for (uint32_t i = 0; i < 4; i++)
 		for (uint32_t j = 0; j < 4; j++)
 			out(i, j) += m(i, j);
 	return out;
 }
-const WMatrix WMatrix::operator- (const WMatrix m) const {
+WMatrix WMatrix::operator- (const WMatrix m) const {
 	WMatrix out = *this;
 	for (uint32_t i = 0; i < 4; i++)
 		for (uint32_t j = 0; j < 4; j++)
 			out(i, j) -= m(i, j);
 	return out;
 }
-const WMatrix WMatrix::operator* (const WMatrix m) const {
+WMatrix WMatrix::operator* (const WMatrix m) const {
 	WMatrix out;
 	for (uint32_t i = 0; i < 4; i++)
 		for (uint32_t j = 0; j < 4; j++) {
@@ -51,7 +51,7 @@ const WMatrix WMatrix::operator* (const WMatrix m) const {
 		}
 	return out;
 }
-const WMatrix WMatrix::operator/ (const WMatrix m) const {
+WMatrix WMatrix::operator/ (const WMatrix m) const {
 	WMatrix out;
 	for (uint32_t i = 0; i < 4; i++)
 		for (uint32_t j = 0; j < 4; j++) {
@@ -62,7 +62,7 @@ const WMatrix WMatrix::operator/ (const WMatrix m) const {
 		}
 	return out;
 }
-const WMatrix WMatrix::operator* (const float f) const {
+WMatrix WMatrix::operator* (const float f) const {
 	WMatrix out = *this;
 	for (uint32_t i = 0; i < 4; i++) {
 		for (uint32_t j = 0; j < 4; j++) {
@@ -71,7 +71,7 @@ const WMatrix WMatrix::operator* (const float f) const {
 	}
 	return out;
 }
-const WMatrix WMatrix::operator/ (const float f) const {
+WMatrix WMatrix::operator/ (const float f) const {
 	WMatrix out = *this;
 	for (uint32_t i = 0; i < 4; i++)
 		for (uint32_t j = 0; j < 4; j++)
@@ -121,24 +121,24 @@ void WMatrix::operator/= (const float f) {
 float& WMatrix::operator() (const uint32_t row, const uint32_t col) {
 	return mat[row * 4 + col];
 }
-const float WMatrix::operator() (const uint32_t row, const uint32_t col) const {
+float WMatrix::operator() (const uint32_t row, const uint32_t col) const {
 	return mat[row * 4 + col];
 }
 float& WMatrix::operator[] (const uint32_t index) {
 	return mat[index];
 }
-const float WMatrix::operator[] (const uint32_t index) const {
+float WMatrix::operator[] (const uint32_t index) const {
 	return mat[index];
 }
 
-const WMatrix WMatrixTranspose(const WMatrix m) {
+WMatrix WMatrixTranspose(const WMatrix m) {
 	WMatrix out;
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++)
+	for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t j = 0; j < 4; j++)
 			out(i, j) = m(j, i);
 	return out;
 }
-const WMatrix WMatrixInverse(const WMatrix m) {
+WMatrix WMatrixInverse(const WMatrix m) {
 	WMatrix out;
 
 	float s0 = m(0, 0) * m(1, 1) - m(1, 0) * m(0, 1);
@@ -181,83 +181,83 @@ const WMatrix WMatrixInverse(const WMatrix m) {
 	return out;
 }
 
-const float WVec2Dot(const WVector2 v1, const WVector2 v2) {
+float WVec2Dot(const WVector2 v1, const WVector2 v2) {
 	return v1.x * v2.x + v1.y * v2.y;
 }
-const WVector2 WVec2Normalize(const WVector2 v) {
+WVector2 WVec2Normalize(const WVector2 v) {
 	return v / WVec2Length(v);
 }
-const float WVec2Length(const WVector2 v) {
+float WVec2Length(const WVector2 v) {
 	return sqrtf(v.x * v.x + v.y * v.y);
 }
-const float WVec2LengthSq(const WVector2 v) {
+float WVec2LengthSq(const WVector2 v) {
 	return (v.x * v.x + v.y * v.y);
 }
-const WVector2 WVec2Lerp(const WVector2 v1, const WVector2 v2, const float fLerpVal) {
+WVector2 WVec2Lerp(const WVector2 v1, const WVector2 v2, const float fLerpVal) {
 	return v1 + (v2 - v1) * fLerpVal;
 }
-const WVector4 WVec2Transform(const WVector2 v, const WMatrix m) {
+WVector4 WVec2Transform(const WVector2 v, const WMatrix m) {
 	return WVec4Transform(WVector4(v.x, v.y, 0, 1), m);
 }
-const WVector2 WVec2TransformCoord(const WVector2 v, const WMatrix m) {
+WVector2 WVec2TransformCoord(const WVector2 v, const WMatrix m) {
 	WVector4 out = WVec4Transform(WVector4(v.x, v.y, 0, 1), m);
 	return WVector2(out.x, out.y) / out.w;
 }
-const WVector2 WVec2TransformNormal(const WVector2 v, const WMatrix m) {
+WVector2 WVec2TransformNormal(const WVector2 v, const WMatrix m) {
 	WVector4 out = WVec4Transform(WVector4(v.x, v.y, 0, 0), m);
 	return WVector2(out.x, out.y);
 }
 
-const float WVec3Dot(const WVector3 v1, const WVector3 v2) {
+float WVec3Dot(const WVector3 v1, const WVector3 v2) {
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
-const WVector3 WVec3Cross(const WVector3 v1, const WVector3 v2) {
+WVector3 WVec3Cross(const WVector3 v1, const WVector3 v2) {
 	WVector3 v;
 	v.x = v1.y * v2.z - v1.z * v2.y;
 	v.y = v1.z * v2.x - v1.x * v2.z;
 	v.z = v1.x * v2.y - v1.y * v2.x;
 	return v;
 }
-const WVector3 WVec3Normalize(const WVector3 v) {
+WVector3 WVec3Normalize(const WVector3 v) {
 	return v / WVec3Length(v);
 }
-const float WVec3Length(const WVector3 v) {
+float WVec3Length(const WVector3 v) {
 	return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
-const float WVec3LengthSq(const WVector3 v) {
+float WVec3LengthSq(const WVector3 v) {
 	return (v.x * v.x + v.y * v.y + v.z * v.z);
 }
-const WVector3 WVec3Lerp(const WVector3 v1, const WVector3 v2, const float fLerpVal) {
+WVector3 WVec3Lerp(const WVector3 v1, const WVector3 v2, const float fLerpVal) {
 	return v1 + (v2 - v1) * fLerpVal;
 }
-const WVector4 WVec3Transform(const WVector3 v, const WMatrix m) {
+WVector4 WVec3Transform(const WVector3 v, const WMatrix m) {
 	return WVec4Transform(WVector4(v.x, v.y, v.z, 1), m);
 }
-const WVector3 WVec3TransformCoord(const WVector3 v, const WMatrix m) {
+WVector3 WVec3TransformCoord(const WVector3 v, const WMatrix m) {
 	WVector4 out = WVec4Transform(WVector4(v.x, v.y, v.z, 1), m);
 	return WVector3(out.x, out.y, out.z) / out.w;
 }
-const WVector3 WVec3TransformNormal(const WVector3 v, const WMatrix m) {
+WVector3 WVec3TransformNormal(const WVector3 v, const WMatrix m) {
 	WVector4 out = WVec4Transform(WVector4(v.x, v.y, v.z, 0), m);
 	return WVector3(out.x, out.y, out.z);
 }
 
-const float WVec4Dot(const WVector4 v1, const WVector4 v2) {
+float WVec4Dot(const WVector4 v1, const WVector4 v2) {
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
 }
-const WVector4 WVec4Normalize(const WVector4 v) {
+WVector4 WVec4Normalize(const WVector4 v) {
 	return v / WVec4Length(v);
 }
-const float WVec4Length(const WVector4 v) {
+float WVec4Length(const WVector4 v) {
 	return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w);
 }
-const float WVec4LengthSq(const WVector4 v) {
+float WVec4LengthSq(const WVector4 v) {
 	return (v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w);
 }
-const WVector4 WVec4Lerp(const WVector4 v1, const WVector4 v2, const float fLerpVal) {
+WVector4 WVec4Lerp(const WVector4 v1, const WVector4 v2, const float fLerpVal) {
 	return v1 + (v2 - v1) * fLerpVal;
 }
-const WVector4 WVec4Transform(const WVector4 v, const WMatrix m) {
+WVector4 WVec4Transform(const WVector4 v, const WMatrix m) {
 	WVector4 out;
 	out.x = v.x * m(0, 0) + v.y * m(1, 0) + v.z * m(2, 0) + v.w * m(3, 0);
 	out.y = v.x * m(0, 1) + v.y * m(1, 1) + v.z * m(2, 1) + v.w * m(3, 1);
@@ -266,25 +266,25 @@ const WVector4 WVec4Transform(const WVector4 v, const WMatrix m) {
 	return out;
 }
 
-const WMatrix WRotationMatrixX(const float fAngle) {
+WMatrix WRotationMatrixX(const float fAngle) {
 	return WMatrix(1.0f, 0, 0, 0,
 		0, cosf(fAngle), sinf(fAngle), 0,
 		0, -sinf(fAngle), cosf(fAngle), 0,
 		0, 0, 0, 1.0f);
 }
-const WMatrix WRotationMatrixY(const float fAngle) {
+WMatrix WRotationMatrixY(const float fAngle) {
 	return WMatrix(cosf(fAngle), 0, -sinf(fAngle), 0,
 		0, 1.0f, 0, 0,
 		sinf(fAngle), 0, cosf(fAngle), 0,
 		0, 0, 0, 1.0f);
 }
-const WMatrix WRotationMatrixZ(const float fAngle) {
+WMatrix WRotationMatrixZ(const float fAngle) {
 	return WMatrix(cosf(fAngle), sinf(fAngle), 0, 0,
 		-sinf(fAngle), cosf(fAngle), 0, 0,
 		0, 0, 1.0f, 0,
 		0, 0, 0, 1.0f);
 }
-const WMatrix WRotationMatrixAxis(const WVector3 axis, const float fAngle) {
+WMatrix WRotationMatrixAxis(const WVector3 axis, const float fAngle) {
 	float c = cosf(fAngle);
 	float s = sinf(fAngle);
 	float t = 1 - c;
@@ -297,42 +297,42 @@ const WMatrix WRotationMatrixAxis(const WVector3 axis, const float fAngle) {
 		t*X*Z + s*Y, t*Y*Z - s*X, t*Z*Z + c, 0,
 		0, 0, 0, 1);
 }
-const WMatrix WScalingMatrix(const float fX, const float fY, const float fZ) {
+WMatrix WScalingMatrix(const float fX, const float fY, const float fZ) {
 	WMatrix out = WMatrix();
 	out(0, 0) = fX;
 	out(1, 1) = fY;
 	out(2, 2) = fZ;
 	return out;
 }
-const WMatrix WScalingMatrix(const WVector3 scale) {
+WMatrix WScalingMatrix(const WVector3 scale) {
 	WMatrix out = WMatrix();
 	out(0, 0) = scale.x;
 	out(1, 1) = scale.y;
 	out(2, 2) = scale.z;
 	return out;
 }
-const WMatrix WTranslationMatrix(const float fX, const float fY, const float fZ) {
+WMatrix WTranslationMatrix(const float fX, const float fY, const float fZ) {
 	WMatrix out = WMatrix();
 	out(3, 0) = fX;
 	out(3, 1) = fY;
 	out(3, 2) = fZ;
 	return out;
 }
-const WMatrix WTranslationMatrix(const WVector3 pos) {
+WMatrix WTranslationMatrix(const WVector3 pos) {
 	WMatrix out = WMatrix();
 	out(3, 0) = pos.x;
 	out(3, 1) = pos.y;
 	out(3, 2) = pos.z;
 	return out;
 }
-const WMatrix WPerspectiveProjMatrix(const float w, const float h,
+WMatrix WPerspectiveProjMatrix(const float w, const float h,
 	const float zn, const float zf) {
 	return WMatrix(2.0f*zn / w, 0, 0, 0,
 		0, 2.0f*zn / h, 0, 0,
 		0, 0, zf / (zf - zn), 1,
 		0, 0, zn*zf / (zn - zf), 0);
 }
-const WMatrix WPerspectiveProjMatrixFOV(const float fFOV, const float fAspect,
+WMatrix WPerspectiveProjMatrixFOV(const float fFOV, const float fAspect,
 	const float zn, const float zf) {
 	float yScale = 1.0f / tanf(W_DEGTORAD(fFOV) / 2.0f);
 	float xScale = yScale / fAspect;
@@ -341,7 +341,7 @@ const WMatrix WPerspectiveProjMatrixFOV(const float fFOV, const float fAspect,
 		0, 0, zf / (zf - zn), 1,
 		0, 0, zn*zf / (zn - zf), 0);
 }
-const WMatrix WOrthogonalProjMatrix(const float w, const float h,
+WMatrix WOrthogonalProjMatrix(const float w, const float h,
 	const float zn, const float zf) {
 	return WMatrix(2.0f / w, 0, 0, 0,
 		0, 2.0f / h, 0, 0,
@@ -349,17 +349,17 @@ const WMatrix WOrthogonalProjMatrix(const float w, const float h,
 		0, 0, zn / (zn - zf), 1);
 
 }
-const float WPlaneDotCoord(const WPlane plane, const WVector3 vec) {
+float WPlaneDotCoord(const WPlane plane, const WVector3 vec) {
 	return plane.a*vec.x + plane.b*vec.y + plane.c*vec.z + plane.d * 1;
 }
-const float WPlaneDotNormal(const WPlane plane, const WVector3 vec) {
+float WPlaneDotNormal(const WPlane plane, const WVector3 vec) {
 	return plane.a*vec.x + plane.b*vec.y + plane.c*vec.z + plane.d * 0;
 }
-const WPlane WNormalizePlane(const WPlane plane) {
+WPlane WNormalizePlane(const WPlane plane) {
 	WVector4 norm = WVec4Normalize(WVector4(plane.a, plane.b, plane.c, plane.d));
 	return WPlane(norm.x, norm.y, norm.z, norm.w);
 }
 
-const WColor WColorLerp(const WColor c1, const WColor c2, const float fLerpVal) {
+WColor WColorLerp(const WColor c1, const WColor c2, const float fLerpVal) {
 	return c1 + (c2 - c1) * fLerpVal;
 }

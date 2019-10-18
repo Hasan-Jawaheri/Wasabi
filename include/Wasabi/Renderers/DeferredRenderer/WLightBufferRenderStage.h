@@ -19,13 +19,13 @@ class WLightBufferRenderStage : public WRenderStage {
 		/** Effect used to build materials */
 		class WEffect* effect;
 		/** A sprite that renders at full-screen (for directional lights), only one of fullscreen_sprite and geometry is not null */
-		class WSprite* fullscreen_sprite;
+		class WSprite* fullscreenSprite;
 		/** Per-frame material for this light type */
 		class WMaterial* perFrameMaterial;
 		/** Render materials for all lights of this type */
-		unordered_map<class WLight*, class WMaterial*> material_map;
+		unordered_map<class WLight*, class WMaterial*> materialMap;
 
-		LightTypeAssets() : geometry(nullptr), fullscreen_sprite(nullptr), effect(nullptr) {}
+		LightTypeAssets() : geometry(nullptr), effect(nullptr), fullscreenSprite(nullptr), perFrameMaterial(nullptr) {}
 
 		/** Free the resources of this object */
 		void Destroy();

@@ -125,8 +125,8 @@ VkFormat W_SHADER_VARIABLE_INFO::GetFormat() const {
 		return VK_FORMAT_R32G32B32_SFLOAT;
 	case W_TYPE_VEC_4:
 		return VK_FORMAT_R32G32B32A32_SFLOAT;
+	default: return VK_FORMAT_UNDEFINED;
 	}
-	return VK_FORMAT_UNDEFINED;
 }
 
 W_BOUND_RESOURCE::W_BOUND_RESOURCE(
@@ -144,7 +144,7 @@ W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 	std::string _name,
 	std::vector<W_SHADER_VARIABLE_INFO> v,
 	uint32_t textureArraySize
-) : variables(v), type(t), binding_index(index), binding_set(set), name(_name) {
+) : type(t), binding_index(index), binding_set(set), name(_name), variables(v) {
 	if (t == W_TYPE_UBO || t == W_TYPE_PUSH_CONSTANT) {
 		size_t curOffset = 0;
 		_offsets.resize(variables.size());
@@ -161,7 +161,7 @@ W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 		if (t == W_TYPE_PUSH_CONSTANT) {
 			for (int i = 0; i < _offsets.size(); i++)
 				_offsets[i] += binding_index;
-			binding_index = (uint32_t)-1;
+			binding_index = std::numeric_limits<uint32_t>::max();
 		}
 	} else if (t == W_TYPE_TEXTURE) {
 		_size = textureArraySize;
@@ -477,7 +477,7 @@ WEffectManager::WEffectManager(class Wasabi* const app) : WManager<WEffect>(app)
 }
 
 WEffect::WEffect(Wasabi* const app, uint32_t ID) : WFileAsset(app, ID), m_depthStencilState({}) {
-	m_vertexShaderIndex = (uint32_t)-1;
+	m_vertexShaderIndex = std::numeric_limits<uint32_t>::max();
 
 	m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	m_flags = EFFECT_RENDER_FLAG_RENDER_GBUFFER | EFFECT_RENDER_FLAG_RENDER_FORWARD | EFFECT_RENDER_FLAG_TRANSLUCENT;
@@ -520,7 +520,7 @@ WEffect::~WEffect() {
 		m_shaders[i]->RemoveReference();
 	}
 	m_shaders.clear();
-	m_vertexShaderIndex = (uint32_t)-1;
+	m_vertexShaderIndex = std::numeric_limits<uint32_t>::max();
 
 	// no references were held for this
 	m_perFrameMaterials.clear();
@@ -593,7 +593,7 @@ WError WEffect::UnbindShader(W_SHADER_TYPE type) {
 
 			// if vertex shader was removed, make sure to remove its cached index
 			if (i == m_vertexShaderIndex)
-				m_vertexShaderIndex = (uint32_t)-1;
+				m_vertexShaderIndex = std::numeric_limits<uint32_t>::max();
 
 			return WError(W_SUCCEEDED);
 		}

@@ -1,6 +1,12 @@
 
-function(bundle_static_library tgt_name bundled_tgt_name)
-    list(APPEND static_libs ${tgt_name})
+function(bundle_static_library)
+    set(optionArgs "")
+    set(oneValueArgs TARGET BUNDLED_TARGET)
+    set(multiValueArgs DEPENDENCIES)
+    cmake_parse_arguments(FUNCTION_ARGS "${optionArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(tgt_name ${FUNCTION_ARGS_TARGET})
+    set(bundled_tgt_name ${FUNCTION_ARGS_BUNDLED_TARGET})
+    list(APPEND static_libs ${tgt_name} ${FUNCTION_ARGS_DEPENDENCIES})
 
     function(_recursively_collect_dependencies input_target)
         set(_input_link_libraries LINK_LIBRARIES)

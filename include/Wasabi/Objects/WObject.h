@@ -88,7 +88,7 @@ class WObject : public WOrientation, public WFileAsset, public WMaterialsStore {
 protected:
 	virtual ~WObject();
 
-	virtual void OnMaterialAdded(class WMaterial* newMaterial);
+	virtual void OnMaterialAdded(class WMaterial* newMaterial) override;
 
 public:
 	/**
@@ -279,7 +279,7 @@ public:
 	 */
 	bool UpdateLocals();
 
-	virtual void OnStateChange(STATE_CHANGE_TYPE type);
+	virtual void OnStateChange(STATE_CHANGE_TYPE type) override;
 
 	/**
 	 * Checks the validity of this object. An object is valid if it meets all the
@@ -289,14 +289,14 @@ public:
 	 *   description of the geometry have the same size.
 	 * @return true if the object is valid, false otherwise
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
 	/**
 	 * Animations can only be saved if they are an instance of WSkeleton
 	 */
 	static std::vector<void*> LoadArgs();
-	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) override;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) override;
 
 private:
 	/** Attached geometry */

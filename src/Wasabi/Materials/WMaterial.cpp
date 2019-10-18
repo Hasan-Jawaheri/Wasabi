@@ -444,7 +444,6 @@ WError WMaterial::SaveToStream(WFile* file, std::ostream& outputStream) {
 	char tmpName[W_MAX_ASSET_NAME_SIZE];
 	tmp = (uint32_t)m_samplers.size();
 	outputStream.write((char*)&tmp, sizeof(tmp));
-	std::streampos texturesOffset = outputStream.tellp();
 	for (uint32_t i = 0; i < m_samplers.size(); i++) {
 		SAMPLER_INFO* SI = &m_samplers[i];
 		outputStream.write((char*)& SI->sampler_info->binding_index, sizeof(SI->sampler_info->binding_index));

@@ -250,7 +250,7 @@ public:
 	 * Vulkan image view.
 	 * @return true if the image is valid, false otherwise
 	 */
-	virtual bool Valid() const;
+	virtual bool Valid() const override;
 
 	/**
 	 * Retrieves the size of a pixel in this image.
@@ -259,8 +259,8 @@ public:
 	size_t GetPixelSize() const;
 
 	static std::vector<void*> LoadArgs(W_IMAGE_CREATE_FLAGS flags = W_IMAGE_CREATE_TEXTURE);
-	virtual WError SaveToStream(WFile* file, std::ostream& outputStream);
-	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix);
+	virtual WError SaveToStream(WFile* file, std::ostream& outputStream) override;
+	virtual WError LoadFromStream(WFile* file, std::istream& inputStream, std::vector<void*>& args, std::string nameSuffix) override;
 
 private:
 	/** Buffered image resource */

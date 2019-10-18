@@ -212,8 +212,8 @@ struct W_SKELETAL_SUB_ANIMATION : public W_SUB_ANIMATION {
 	uint32_t parentSubAnimation;
 
 	W_SKELETAL_SUB_ANIMATION() {
-		parentIndex = (uint32_t)-1;
-		parentSubAnimation = (uint32_t)-1;
+		parentIndex = std::numeric_limits<uint32_t>::max();
+		parentSubAnimation = std::numeric_limits<uint32_t>::max();
 		boneIndices.clear();
 	}
 
@@ -226,7 +226,7 @@ struct W_SKELETAL_SUB_ANIMATION : public W_SUB_ANIMATION {
 		boneIndices.push_back(curBone->GetIndex());
 
 		WBone* curChild = nullptr;
-		uint32_t i = (uint32_t)-1;
+		uint32_t i = std::numeric_limits<uint32_t>::max();
 		while ((curChild = curBone->GetChild(++i)) != nullptr)
 			BuildIndices(curBone->GetChild(i));
 	}
