@@ -106,13 +106,10 @@ MyApplication must implement 3 functions from Wasabi: Setup, Loop and Cleanup:
 * Loop(): This function is called every frame. This is where you update your application.
 * Cleanup(): This is called before the engine exits so you can cleanup resources.
 
-## Tutorials
+## Resources
 
-WIP
-
-## Documentation
-
-WIP
+[Doxygen documentation](https://hasan-jawaheri.github.io/Wasabi/)
+[Samples](https://github.com/Hasan-Jawaheri/Wasabi/tree/master/samples)
 
 ## Contribution
 
