@@ -45,9 +45,9 @@ Wasabi Vulkan Game Engine is currently a work-in-progress port for HasX11 Game E
 
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Map Editor
 
-<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Linux Support
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/tick.ico" width="16" height="16"> Linux Support
 
-<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Mac Support
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/tick.ico" width="16" height="16"> Mac Support
 
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/wip.ico" width="16" height="16"> Assimp integration (and getting rid of FBX SDK!)
 
