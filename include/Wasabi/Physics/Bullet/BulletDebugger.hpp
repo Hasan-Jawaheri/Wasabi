@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Wasabi/Physics/Bullet/WBulletPhysics.h"
+#include "Wasabi/Physics/Bullet/WBulletPhysics.hpp"
 
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>

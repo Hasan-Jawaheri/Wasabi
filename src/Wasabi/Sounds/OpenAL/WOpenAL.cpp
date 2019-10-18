@@ -1,4 +1,4 @@
-#include "Wasabi/Sounds/OpenAL/WOpenAL.h"
+#include "Wasabi/Sounds/OpenAL/WOpenAL.hpp"
 
 #include <AL/al.h>
 #include <AL/alc.h>

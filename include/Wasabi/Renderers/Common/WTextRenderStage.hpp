@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Wasabi/Renderers/WRenderStage.h"
+#include "Wasabi/Renderers/WRenderStage.hpp"
 
 class WTextsRenderStage : public WRenderStage {
 public:

@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/WindowAndInput/WKeyCodes.h"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/WindowAndInput/WKeyCodes.hpp"
 
 /**
  * @ingroup engineclass

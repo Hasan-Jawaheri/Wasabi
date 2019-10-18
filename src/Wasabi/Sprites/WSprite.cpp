@@ -1,13 +1,13 @@
-#include "Wasabi/Sprites/WSprite.h"
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Renderers/WRenderer.h"
-#include "Wasabi/Images/WImage.h"
-#include "Wasabi/Images/WRenderTarget.h"
-#include "Wasabi/Materials/WEffect.h"
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Geometries/WGeometry.h"
-#include "Wasabi/Renderers/Common/WSpritesRenderStage.h"
-#include "Wasabi/WindowAndInput/WWindowAndInputComponent.h"
+#include "Wasabi/Sprites/WSprite.hpp"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
+#include "Wasabi/Images/WImage.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Geometries/WGeometry.hpp"
+#include "Wasabi/Renderers/Common/WSpritesRenderStage.hpp"
+#include "Wasabi/WindowAndInput/WWindowAndInputComponent.hpp"
 
 struct SpriteVertex {
 	WVector2 pos, uv;

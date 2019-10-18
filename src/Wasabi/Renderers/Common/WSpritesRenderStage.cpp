@@ -1,10 +1,10 @@
-#include "Wasabi/Renderers/Common/WSpritesRenderStage.h"
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Renderers/WRenderer.h"
-#include "Wasabi/Images/WRenderTarget.h"
-#include "Wasabi/Sprites/WSprite.h"
-#include "Wasabi/Materials/WEffect.h"
-#include "Wasabi/Materials/WMaterial.h"
+#include "Wasabi/Renderers/Common/WSpritesRenderStage.hpp"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
+#include "Wasabi/Sprites/WSprite.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
 
 WSpritesRenderStage::WSpritesRenderStage(Wasabi* const app, bool backbuffer) : WRenderStage(app) {
 	m_stageDescription.name = __func__;

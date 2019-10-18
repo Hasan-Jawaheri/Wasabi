@@ -1,6 +1,6 @@
-#include "Wasabi/Geometries/WGeometry.h"
-#include "Wasabi/Renderers/WRenderer.h"
-#include "Wasabi/Images/WRenderTarget.h"
+#include "Wasabi/Geometries/WGeometry.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
 
 const W_VERTEX_DESCRIPTION g_defaultVertexDescriptions[] = {
 	W_VERTEX_DESCRIPTION({ // Vertex buffer

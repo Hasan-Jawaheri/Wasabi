@@ -1,4 +1,4 @@
-#include "Wasabi/Core/WMath.h"
+#include "Wasabi/Core/WMath.hpp"
 #include <memory>
 
 WMatrix::WMatrix() {

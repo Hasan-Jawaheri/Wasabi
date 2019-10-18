@@ -6,7 +6,7 @@ desc.: Wasabi Engine OpenAL wrapper
 
 #pragma once
 
-#include "Wasabi/Sounds/WSound.h"
+#include "Wasabi/Sounds/WSound.hpp"
 
 #define W_NUM_SOUND_BUFFERS_PER_SOUND 10
 

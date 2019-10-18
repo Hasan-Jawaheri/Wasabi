@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../WPhysicsComponent.h"
+#include "../WPhysicsComponent.hpp"
 
 #include <stdio.h>
 #include <conio.h>

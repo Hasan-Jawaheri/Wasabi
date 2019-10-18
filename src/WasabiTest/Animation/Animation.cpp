@@ -6,9 +6,9 @@ AnimationDemo::AnimationDemo(Wasabi* const app) : WTestState(app) {
 
 void AnimationDemo::Load() {
 	WGeometry* geometry = new WGeometry(m_app);
-	CheckError(geometry->LoadFromHXM("Media/dante.HXM"));
+	CheckError(geometry->LoadFromHXM("media/dante.HXM"));
 
-	WImage* texture = m_app->ImageManager->CreateImage("Media/dante.bmp");
+	WImage* texture = m_app->ImageManager->CreateImage("media/dante.bmp");
 	assert(texture != nullptr);
 
 	character = m_app->ObjectManager->CreateObject();
@@ -25,7 +25,7 @@ void AnimationDemo::Load() {
 
 	WSkeleton* animation;
 	WFile file(m_app);
-	CheckError(file.Open("Media/dante.WSBI"));
+	CheckError(file.Open("media/dante.WSBI"));
 	assert(file.GetAssetsCount() > 0);
 	CheckError(file.LoadAsset<WSkeleton>("dante-animation", &animation, WSkeleton::LoadArgs()));
 	file.Close();

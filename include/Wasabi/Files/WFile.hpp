@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Core/WCore.hpp"
 #include <iostream>
 #include <string>
 

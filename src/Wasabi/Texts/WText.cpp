@@ -1,14 +1,14 @@
-#include "Wasabi/Texts/WText.h"
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Renderers/WRenderer.h"
-#include "Wasabi/Images/WImage.h"
-#include "Wasabi/Materials/WEffect.h"
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Geometries/WGeometry.h"
-#include "Wasabi/WindowAndInput/WWindowAndInputComponent.h"
+#include "Wasabi/Texts/WText.hpp"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
+#include "Wasabi/Images/WImage.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Geometries/WGeometry.hpp"
+#include "Wasabi/WindowAndInput/WWindowAndInputComponent.hpp"
 
 #define STB_TRUETYPE_IMPLEMENTATION
-#include "stb_truetype.h"
+#include <stb_truetype.h>
 
 #include <filesystem>
 #include <iostream>

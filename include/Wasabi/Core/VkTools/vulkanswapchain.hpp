@@ -26,12 +26,12 @@
 #include <X11/Xlib.h>
 #endif
 
-#include "Wasabi/WCompatibility.h"
+#include "Wasabi/WCompatibility.hpp"
 #include <vulkan/vulkan.h>
-#include "Wasabi/Core/VkTools/vulkantools.h"
+#include "Wasabi/Core/VkTools/vulkantools.hpp"
 
 #ifdef __ANDROID__
-#include "vulkanandroid.h"
+#include "vulkanandroid.hpp"
 #endif
 
 typedef uint32_t uint;

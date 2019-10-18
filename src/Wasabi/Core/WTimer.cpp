@@ -1,4 +1,4 @@
-#include "Wasabi/Core/WTimer.h"
+#include "Wasabi/Core/WTimer.hpp"
 #include <cstdlib>
 #ifdef _WIN32
 #include <Windows.h>

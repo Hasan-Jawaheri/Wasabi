@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Core/WCore.hpp"
 
 /** Specifies which components are to be rendered. The fields can be bitwise
 		OR'ed (e.g. RENDER_FILTER_OBJECTS | RENDER_FILTER_PARTICLES) to add

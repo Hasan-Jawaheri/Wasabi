@@ -18,7 +18,7 @@ void ParticlesDemo::Load() {
 	};
 	m_particles[0]->SetPriority(0);
 
-	WImage* texture = m_app->ImageManager->CreateImage("Media/fire_particles_tiles.png");
+	WImage* texture = m_app->ImageManager->CreateImage("media/fire_particles_tiles.png");
 	assert(texture != nullptr && texture->Valid());
 	texture->SetName("Fire Texture");
 	CheckError(m_particles[0]->GetMaterials().SetTexture("diffuseTexture", texture));
@@ -58,7 +58,7 @@ void ParticlesDemo::Load() {
 	((WDefaultParticleBehavior*)m_particles[2]->GetBehavior())->m_emissionPosition = WVector3(0.0f, -0.5f, 0.0f);
 	m_particles[2]->SetPriority(1);
 
-	texture = m_app->ImageManager->CreateImage("Media/glow.png");
+	texture = m_app->ImageManager->CreateImage("media/glow.png");
 	assert(texture != nullptr && texture->Valid());
 	texture->SetName("Glow Texture");
 	CheckError(m_particles[2]->GetMaterials().SetTexture("diffuseTexture", texture));
@@ -83,7 +83,7 @@ void ParticlesDemo::Load() {
 	((WDefaultParticleBehavior*)m_particles[3]->GetBehavior())->m_emissionPosition = WVector3(0.0f, 0.5f, 0.0f);
 	m_particles[3]->SetPriority(1);
 
-	texture = m_app->ImageManager->CreateImage("Media/spark.png");
+	texture = m_app->ImageManager->CreateImage("media/spark.png");
 	assert(texture != nullptr && texture->Valid());
 	texture->SetName("Sparks Texture");
 	CheckError(m_particles[3]->GetMaterials().SetTexture("diffuseTexture", texture));

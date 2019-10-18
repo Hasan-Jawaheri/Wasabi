@@ -1,4 +1,4 @@
-#include "main.h"
+#include "main.hpp"
 
 struct RAWBONE {
 	float vals[9];

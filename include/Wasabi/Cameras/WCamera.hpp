@@ -18,7 +18,7 @@
  */
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Core/WCore.hpp"
 
 /** Type of the projection method used by the camera */
 enum W_PROJECTIONTYPE: uint8_t {

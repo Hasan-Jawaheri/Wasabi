@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Wasabi/Physics/WPhysicsComponent.h"
+#include "Wasabi/Physics/WPhysicsComponent.hpp"
 
 /*
  * Creating an instance of this class creates the following engine parameters :

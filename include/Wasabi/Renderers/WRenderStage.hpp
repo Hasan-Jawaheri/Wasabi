@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Core/WCore.hpp"
 
 enum W_RENDER_STAGE_TARGET: uint8_t {
 	RENDER_STAGE_TARGET_BUFFER = 0,

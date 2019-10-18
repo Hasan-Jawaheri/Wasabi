@@ -1,6 +1,6 @@
 #include "Lights/Lights.hpp"
-#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h>
-#include <Wasabi/Renderers/DeferredRenderer/WDeferredRenderer.h>
+#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.hpp>
+#include <Wasabi/Renderers/DeferredRenderer/WDeferredRenderer.hpp>
 
 
 LightsDemo::LightsDemo(Wasabi* const app) : WTestState(app) {

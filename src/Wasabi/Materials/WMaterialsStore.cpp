@@ -1,7 +1,7 @@
-#include "Wasabi/Materials/WMaterialsStore.h"
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Materials/WEffect.h"
-#include "Wasabi/Renderers/WRenderer.h"
+#include "Wasabi/Materials/WMaterialsStore.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
 
 WMaterialsStore::WMaterialsStore() {
 	m_materialsCollection = new WMaterialCollection();

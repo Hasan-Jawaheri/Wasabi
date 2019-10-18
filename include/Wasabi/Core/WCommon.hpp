@@ -10,11 +10,11 @@
 #endif	
 #endif
 
-#include "Wasabi/WCompatibility.h"
+#include "Wasabi/WCompatibility.hpp"
 
 #include <vulkan/vulkan.h>
 #include "Wasabi/Core/VkTools/vulkanswapchain.hpp"
-#include "Wasabi/Core/VkTools/vulkantools.h"
+#include "Wasabi/Core/VkTools/vulkantools.hpp"
 
 #include <math.h>
 #include <float.h>
@@ -28,6 +28,6 @@
 #include <array>
 #include <chrono>
 
-#include "Wasabi/Core/WError.h"
-#include "Wasabi/Core/WTimer.h"
-#include "Wasabi/Core/WMath.h"
+#include "Wasabi/Core/WError.hpp"
+#include "Wasabi/Core/WTimer.hpp"
+#include "Wasabi/Core/WMath.hpp"

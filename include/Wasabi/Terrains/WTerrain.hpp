@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Materials/WMaterialsStore.h"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Materials/WMaterialsStore.hpp"
 
 /**
  * @ingroup engineclass

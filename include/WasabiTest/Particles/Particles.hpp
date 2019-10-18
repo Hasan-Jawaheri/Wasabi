@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TestSuite.hpp"
-#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h>
+#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.hpp>
 
 class ParticlesDemo : public WTestState {
 	vector<WParticles*> m_particles;

@@ -1,5 +1,5 @@
-#include "Wasabi/Animations/WSkeletalAnimation.h"
-#include "Wasabi/Images/WImage.h"
+#include "Wasabi/Animations/WSkeletalAnimation.hpp"
+#include "Wasabi/Images/WImage.hpp"
 
 const uint32_t sizeofBoneNoPtrs = 4 + 64 + sizeof(bool) + sizeof(WVector3) + 2 * sizeof(WMatrix);
 

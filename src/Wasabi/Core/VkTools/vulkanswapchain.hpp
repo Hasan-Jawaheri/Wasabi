@@ -27,10 +27,10 @@
 #endif
 
 #include <vulkan/vulkan.h>
-#include "vulkantools.h"
+#include "vulkantools.hpp"
 
 #ifdef __ANDROID__
-#include "vulkanandroid.h"
+#include "vulkanandroid.hpp"
 #endif
 
 typedef uint32_t uint;

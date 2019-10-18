@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Core/WCore.hpp"
 
 /** Describes a light type */
 enum W_LIGHT_TYPE: uint8_t {

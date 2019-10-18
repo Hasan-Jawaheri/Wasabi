@@ -1,5 +1,5 @@
 #include "RenderTargetTexture/RenderTargetTexture.hpp"
-#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderStage.h>
+#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderStage.hpp>
 
 RenderTargetTextureDemo::RenderTargetTextureDemo(Wasabi* const app) : WTestState(app) {
 	rt = nullptr;
@@ -34,7 +34,7 @@ void RenderTargetTextureDemo::Load() {
 
 	WImage* img = new WImage(m_app);
 	o2->GetMaterials().SetTexture("diffuseTexture", img);
-	img->Load("Media/dummy.bmp");
+	img->Load("media/dummy.bmp");
 	img->RemoveReference();
 
 	l = new WPointLight(m_app);

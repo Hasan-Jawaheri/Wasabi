@@ -1,5 +1,5 @@
 #include "Files/Files.hpp"
-#include <Wasabi/Physics/Bullet/WBulletRigidBody.h>
+#include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
 #include <iostream>
 
 class VS : public WShader {
@@ -84,7 +84,7 @@ FilesDemo::FilesDemo(Wasabi* const app) : WTestState(app) {
 
 void FilesDemo::Load() {
 	WImage* img = new WImage(m_app);
-	img->Load("Media/dummy.bmp", W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_TEXTURE);
+	img->Load("media/dummy.bmp", W_IMAGE_CREATE_DYNAMIC | W_IMAGE_CREATE_TEXTURE);
 
 	WGeometry* geometry = new WGeometry(m_app);
 	geometry->CreateCube(1, W_GEOMETRY_CREATE_DYNAMIC);
@@ -113,11 +113,11 @@ void FilesDemo::Load() {
 
 	// empty out the file
 	std::fstream f;
-	f.open("Media/WFile.WSBI", ios::out);
+	f.open("media/WFile.WSBI", ios::out);
 	f.close();
 
 	WFile file(m_app);
-	file.Open("Media/WFile.WSBI");
+	file.Open("media/WFile.WSBI");
 
 	std::string objName = m_object->GetName();
 	std::string rbName = rb->GetName();
@@ -132,7 +132,7 @@ void FilesDemo::Load() {
 	W_SAFE_REMOVEREF(rb);
 
 	file.Close();
-	file.Open("Media/WFile.WSBI");
+	file.Open("media/WFile.WSBI");
 
 	file.LoadAsset<WObject>(objName, &m_object, WObject::LoadArgs());
 	file.LoadAsset<WBulletRigidBody>(rbName, (WBulletRigidBody**)&rb, WBulletRigidBody::LoadArgs());

@@ -1,6 +1,6 @@
 #if 0
-#include "WHavokPhysics.h"
-#include "../../Objects/WObject.h"
+#include "WHavokPhysics.hpp"
+#include "../../Objects/WObject.hpp"
 
 // Classlists
 #define HK_CLASSES_FILE <Common/Serialize/Classlist/hkClasses.h>

@@ -1,11 +1,11 @@
-#include "Wasabi/Renderers/ForwardRenderer/WForwardRenderStage.h"
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Renderers/WRenderer.h"
-#include "Wasabi/Lights/WLight.h"
-#include "Wasabi/Images/WRenderTarget.h"
-#include "Wasabi/Objects/WObject.h"
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Cameras/WCamera.h"
+#include "Wasabi/Renderers/ForwardRenderer/WForwardRenderStage.hpp"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
+#include "Wasabi/Lights/WLight.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
+#include "Wasabi/Objects/WObject.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Cameras/WCamera.hpp"
 
 WForwardRenderStageObjectVS::WForwardRenderStageObjectVS(Wasabi* const app) : WShader(app) {}
 

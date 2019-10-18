@@ -7,7 +7,7 @@
 
 #ifdef _WIN32
 
-#include "Wasabi/WindowAndInput/Windows/WWindowsWindowAndInputComponent.h"
+#include "Wasabi/WindowAndInput/Windows/WWindowsWindowAndInputComponent.hpp"
 #include <windows.h>
 
 LRESULT CALLBACK hMainWndProc(HWND hWnd, uint32_t msg, WPARAM wParam, LPARAM lParam);

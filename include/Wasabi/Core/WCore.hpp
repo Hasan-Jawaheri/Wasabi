@@ -13,18 +13,18 @@
 
 #pragma once
 
-#include "Wasabi/WCompatibility.h"
+#include "Wasabi/WCompatibility.hpp"
 
-#include "Wasabi/Core/WCommon.h"
-#include "Wasabi/Core/WManager.h"
-#include "Wasabi/Core/WBase.h"
-#include "Wasabi/Core/WOrientation.h"
-#include "Wasabi/Core/WUtilities.h"
-#include "Wasabi/Files/WFile.h"
-#include "Wasabi/Memory/WVulkanMemoryManager.h"
-#include "Wasabi/Memory/WBufferedBuffer.h"
-#include "Wasabi/Memory/WBufferedImage.h"
-#include "Wasabi/Memory/WBufferedFrameBuffer.h"
+#include "Wasabi/Core/WCommon.hpp"
+#include "Wasabi/Core/WManager.hpp"
+#include "Wasabi/Core/WBase.hpp"
+#include "Wasabi/Core/WOrientation.hpp"
+#include "Wasabi/Core/WUtilities.hpp"
+#include "Wasabi/Files/WFile.hpp"
+#include "Wasabi/Memory/WVulkanMemoryManager.hpp"
+#include "Wasabi/Memory/WBufferedBuffer.hpp"
+#include "Wasabi/Memory/WBufferedImage.hpp"
+#include "Wasabi/Memory/WBufferedFrameBuffer.hpp"
 
 #define W_ENGINE_NAME "Wasabi"
 

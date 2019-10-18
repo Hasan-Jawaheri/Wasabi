@@ -1,5 +1,5 @@
-#include "main.h"
-#include "util.h"
+#include "main.hpp"
+#include "util.hpp"
 
 #include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h>
 #include <Wasabi/Renderers/DeferredRenderer/WDeferredRenderer.h>

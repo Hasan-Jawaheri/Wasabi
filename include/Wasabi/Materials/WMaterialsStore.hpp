@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Wasabi/Core/WCommon.h"
+#include "Wasabi/Core/WCommon.hpp"
 
 #include <unordered_map>
 #include <string>

@@ -1,4 +1,4 @@
-#include "Wasabi/Animations/WAnimation.h"
+#include "Wasabi/Animations/WAnimation.hpp"
 
 WAnimationManager::WAnimationManager(Wasabi* const app) : WManager<WAnimation>(app) {
 }

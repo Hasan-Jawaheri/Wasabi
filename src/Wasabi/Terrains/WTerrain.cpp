@@ -1,10 +1,10 @@
-#include "Wasabi/Terrains/WTerrain.h"
-#include "Wasabi/Cameras/WCamera.h"
-#include "Wasabi/Images/WImage.h"
-#include "Wasabi/Images/WRenderTarget.h"
-#include "Wasabi/Geometries/WGeometry.h"
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Materials/WEffect.h"
+#include "Wasabi/Terrains/WTerrain.hpp"
+#include "Wasabi/Cameras/WCamera.hpp"
+#include "Wasabi/Images/WImage.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
+#include "Wasabi/Geometries/WGeometry.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
 /*
 struct TerrainProperties {
 	uint32_t N, M, LOD;
@@ -291,8 +291,8 @@ WError WTerrain::Create(uint32_t N, float size, uint32_t numRings) {
 					err = m_heightTexture->CreateFromPixelsArray(nullptr, N + 1, N + 1, 1, VK_FORMAT_R32_UINT, numRings, W_IMAGE_CREATE_TEXTURE | W_IMAGE_CREATE_DYNAMIC);// | W_IMAGE_CREATE_REWRITE_EVERY_FRAME);
 					if (err) {
 						std::vector<std::string> imageNames({
-							"Media/seamless_grass.jpg",
-							"Media/seamless_snow.jpg"
+							"media/seamless_grass.jpg",
+							"media/seamless_snow.jpg"
 						});
 						std::vector<std::pair<WImage*, void*>> images;
 						for (auto filename : imageNames) {

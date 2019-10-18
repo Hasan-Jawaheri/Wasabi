@@ -1,9 +1,9 @@
-#include "Wasabi/Core/WUtilities.h"
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Cameras/WCamera.h"
-#include "Wasabi/Renderers/WRenderer.h"
-#include "Wasabi/Images/WRenderTarget.h"
-#include "Wasabi/WindowAndInput/WWindowAndInputComponent.h"
+#include "Wasabi/Core/WUtilities.hpp"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Cameras/WCamera.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
+#include "Wasabi/WindowAndInput/WWindowAndInputComponent.hpp"
 
 bool WUtil::Point3DToScreen2D(Wasabi* app, WVector3 point, double* _x, double* _y) {
 	WCamera* cam = app->Renderer->GetRenderTarget(app->Renderer->GetPickingRenderStageName())->GetCamera();

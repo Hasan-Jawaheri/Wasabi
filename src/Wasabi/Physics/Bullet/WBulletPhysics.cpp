@@ -1,6 +1,6 @@
-#include "Wasabi/Physics/Bullet/WBulletPhysics.h"
-#include "Wasabi/Physics/Bullet/WBulletRigidBody.h"
-#include "Wasabi/Physics/Bullet/BulletDebugger.h"
+#include "Wasabi/Physics/Bullet/WBulletPhysics.hpp"
+#include "Wasabi/Physics/Bullet/WBulletRigidBody.hpp"
+#include "Wasabi/Physics/Bullet/BulletDebugger.hpp"
 
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>

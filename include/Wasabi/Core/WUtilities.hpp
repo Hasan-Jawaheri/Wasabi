@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "Wasabi/Core/WMath.h"
+#include "Wasabi/Core/WMath.hpp"
 
 class Wasabi;
 

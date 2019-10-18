@@ -1,13 +1,13 @@
-#include "Wasabi/Renderers/DeferredRenderer/WSceneCompositionRenderStage.h"
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Renderers/WRenderer.h"
-#include "Wasabi/Images/WRenderTarget.h"
-#include "Wasabi/Sprites/WSprite.h"
-#include "Wasabi/Materials/WEffect.h"
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Cameras/WCamera.h"
-#include "Wasabi/Images/WImage.h"
-#include "Wasabi/WindowAndInput/WWindowAndInputComponent.h"
+#include "Wasabi/Renderers/DeferredRenderer/WSceneCompositionRenderStage.hpp"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
+#include "Wasabi/Sprites/WSprite.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Cameras/WCamera.hpp"
+#include "Wasabi/Images/WImage.hpp"
+#include "Wasabi/WindowAndInput/WWindowAndInputComponent.hpp"
 
 class SceneCompositionPS : public WShader {
 public:

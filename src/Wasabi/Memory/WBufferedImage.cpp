@@ -1,5 +1,5 @@
-#include "Wasabi/Memory/WBufferedImage.h"
-#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Memory/WBufferedImage.hpp"
+#include "Wasabi/Core/WCore.hpp"
 namespace {
 	extern std::unordered_map<VkFormat, std::pair<int, int>> g_formatSizes;
 };

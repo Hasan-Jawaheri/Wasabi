@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "Wasabi/WCompatibility.h"
-#include "vulkan/vulkan.h"
+#include "Wasabi/WCompatibility.hpp"
+#include "vulkan/vulkan.hpp"
 
 #include <math.h>
 #include <stdlib.h>
@@ -26,7 +26,7 @@
 #include <fcntl.h>
 #include <io.h>
 #elif defined(__ANDROID__)
-#include "vulkanandroid.h"
+#include "vulkanandroid.hpp"
 #include <android/asset_manager.h>
 #endif
 

@@ -1,5 +1,5 @@
-#include "Wasabi/Memory/WBufferedFrameBuffer.h"
-#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Memory/WBufferedFrameBuffer.hpp"
+#include "Wasabi/Core/WCore.hpp"
 
 WBufferedFrameBuffer::WBufferedFrameBuffer() {
 }

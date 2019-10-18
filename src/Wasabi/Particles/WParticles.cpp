@@ -1,11 +1,11 @@
-#include "Wasabi/Particles/WParticles.h"
-#include "Wasabi/Cameras/WCamera.h"
-#include "Wasabi/Images/WRenderTarget.h"
-#include "Wasabi/Geometries/WGeometry.h"
-#include "Wasabi/Materials/WEffect.h"
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Renderers/WRenderer.h"
-#include "Wasabi/Images/WImage.h"
+#include "Wasabi/Particles/WParticles.hpp"
+#include "Wasabi/Cameras/WCamera.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
+#include "Wasabi/Geometries/WGeometry.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
+#include "Wasabi/Images/WImage.hpp"
 
 class PositionOnlyGeometry : public WGeometry {
 	const W_VERTEX_DESCRIPTION m_desc = W_VERTEX_DESCRIPTION({

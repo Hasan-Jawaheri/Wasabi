@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Wasabi/Core/WCommon.h"
-#include "Wasabi/Memory/WBufferedImage.h"
+#include "Wasabi/Core/WCommon.hpp"
+#include "Wasabi/Memory/WBufferedImage.hpp"
 
 class WBufferedFrameBuffer {
 public:

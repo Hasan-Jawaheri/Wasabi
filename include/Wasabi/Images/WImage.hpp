@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Core/WCore.hpp"
 
 enum W_IMAGE_CREATE_FLAGS: uint32_t {
 	W_IMAGE_CREATE_TEXTURE = 1,

@@ -1,17 +1,17 @@
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Renderers/WRenderer.h"
-#include "Wasabi/Images/WRenderTarget.h"
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Materials/WEffect.h"
-#include "Wasabi/Materials/WMaterialsStore.h"
-#include "Wasabi/Cameras/WCamera.h"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
+#include "Wasabi/Materials/WMaterialsStore.hpp"
+#include "Wasabi/Cameras/WCamera.hpp"
 
-#include "Wasabi/Objects/WObject.h"
-#include "Wasabi/Terrains/WTerrain.h"
-#include "Wasabi/Sprites/WSprite.h"
-#include "Wasabi/Particles/WParticles.h"
+#include "Wasabi/Objects/WObject.hpp"
+#include "Wasabi/Terrains/WTerrain.hpp"
+#include "Wasabi/Sprites/WSprite.hpp"
+#include "Wasabi/Particles/WParticles.hpp"
 
 #include <map>
 

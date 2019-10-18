@@ -1,8 +1,8 @@
-#include "Wasabi/Physics/Bullet/WBulletRigidBody.h"
-#include "Wasabi/Physics/Bullet/WBulletPhysics.h"
-#include "Wasabi/Physics/WRigidBody.h"
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Geometries/WGeometry.h"
+#include "Wasabi/Physics/Bullet/WBulletRigidBody.hpp"
+#include "Wasabi/Physics/Bullet/WBulletPhysics.hpp"
+#include "Wasabi/Physics/WRigidBody.hpp"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Geometries/WGeometry.hpp"
 
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>

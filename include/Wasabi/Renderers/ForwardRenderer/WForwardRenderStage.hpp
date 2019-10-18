@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Wasabi/Renderers/WRenderStage.h"
-#include "Wasabi/Renderers/Common/WRenderFragment.h"
-#include "Wasabi/Materials/WEffect.h"
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Objects/WObject.h"
+#include "Wasabi/Renderers/WRenderStage.hpp"
+#include "Wasabi/Renderers/Common/WRenderFragment.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Objects/WObject.hpp"
 
 struct LightStruct {
 	WVector4 color;

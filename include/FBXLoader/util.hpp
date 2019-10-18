@@ -1,6 +1,6 @@
 #pragma once
 
-#include "main.h"
+#include "main.hpp"
 #include <stdio.h>
 #include <fcntl.h>
 #include <io.h>

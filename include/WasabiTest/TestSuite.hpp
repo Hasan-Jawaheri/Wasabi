@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Wasabi/Wasabi.h>
-#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h>
+#include <Wasabi/Wasabi.hpp>
+#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.hpp>
 
 class WasabiTester : public Wasabi {
 	class WTestState* m_state;

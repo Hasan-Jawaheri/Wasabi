@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "Wasabi/Physics/WRigidBody.h"
-#include "Wasabi/Core/WCore.h"
+#include "Wasabi/Physics/WRigidBody.hpp"
+#include "Wasabi/Core/WCore.hpp"
 
  /**
   * @ingroup engineclass

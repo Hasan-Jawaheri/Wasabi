@@ -1,8 +1,8 @@
-#include "Wasabi/Materials/WMaterial.h"
-#include "Wasabi/Materials/WEffect.h"
-#include "Wasabi/Images/WImage.h"
-#include "Wasabi/Images/WRenderTarget.h"
-#include "Wasabi/Renderers/WRenderer.h"
+#include "Wasabi/Materials/WMaterial.hpp"
+#include "Wasabi/Materials/WEffect.hpp"
+#include "Wasabi/Images/WImage.hpp"
+#include "Wasabi/Images/WRenderTarget.hpp"
+#include "Wasabi/Renderers/WRenderer.hpp"
 
 std::string WMaterialManager::GetTypeName() const {
 	return "Material";

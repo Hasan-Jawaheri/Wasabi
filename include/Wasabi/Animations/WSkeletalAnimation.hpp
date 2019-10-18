@@ -23,8 +23,8 @@
  */
 #pragma once
 
-#include "Wasabi/Core/WCore.h"
-#include "Wasabi/Animations/WAnimation.h"
+#include "Wasabi/Core/WCore.hpp"
+#include "Wasabi/Animations/WAnimation.hpp"
 #include <iostream>
 
 /**

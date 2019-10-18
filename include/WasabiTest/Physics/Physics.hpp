@@ -1,8 +1,8 @@
 #pragma once
 
 #include "TestSuite.hpp"
-#include <Wasabi/Physics/Bullet/WBulletPhysics.h>
-#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.h>
+#include <Wasabi/Physics/Bullet/WBulletPhysics.hpp>
+#include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.hpp>
 
 class PhysicsDemo : public WTestState {
 	WObject* m_ground;
