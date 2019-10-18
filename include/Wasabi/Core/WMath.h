@@ -10,6 +10,9 @@
 #include <cstdint>
 #include <cmath>
 
+#pragma warning(push)
+#pragma warning(disable: 4201) // non-standard anonymous struct inside anonymous union warning
+
 #define W_EPSILON 0.0001f
 #define W_PI (3.14159265358979323846f)
 #define W_RADTODEG(rad) ((rad)*(180.0f/W_PI))
@@ -950,3 +953,5 @@ WPlane WNormalizePlane(const WPlane plane);
  * @return          The interpolated color
  */
 WColor WColorLerp(const WColor c1, const WColor c2, const float fLerpVal);
+
+#pragma warning(pop)
