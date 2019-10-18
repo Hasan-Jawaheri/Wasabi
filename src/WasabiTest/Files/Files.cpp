@@ -25,26 +25,10 @@ public:
 			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 4), // bone indices
 			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, 4), // bone weights
 		}) };
-		LoadCodeGLSL("\
-			#version 450\n\
-			#extension GL_ARB_separate_shader_objects : enable\n\
-			#extension GL_ARB_shading_language_420pack : enable\n\
-			layout(location = 0) in vec3 inPos;\n\
-			layout(location = 1) in vec3 inTang;\n\
-			layout(location = 2) in vec3 inNorm;\n\
-			layout(location = 3) in vec2 inUV;\n\
-			\n\
-			layout(binding = 0) uniform UBO {\n\
-				mat4 projectionMatrix;\n\
-				mat4 worldMatrix;\n\
-				mat4 viewMatrix;\n\
-			} ubo;\n\
-			layout(location = 0) out vec2 outUV;\n\
-			void main() {\n\
-				outUV = inUV;\n\
-				gl_Position = ubo.projectionMatrix * ubo.viewMatrix * ubo.worldMatrix * vec4(inPos.xyz, 1.0);\n\
-			}\n\
-		", bSaveData);
+		std::vector<uint8_t> code = {
+			#include "object.vert.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
@@ -60,20 +44,10 @@ public:
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"),
 			}),
 		};
-		LoadCodeGLSL("\
-			#version 450\n\
-			#extension GL_ARB_separate_shader_objects : enable\n\
-			#extension GL_ARB_shading_language_420pack : enable\n\
-			layout(binding = 3) uniform sampler2D diffuseTexture;\n\
-			layout(location = 0) in vec2 inUV;\n\
-			layout(location = 0) out vec4 outFragColor;\n\
-			layout(binding = 4) uniform UBO {\n\
-				vec4 color;\n\
-			} ubo;\n\
-			void main() {\n\
-				outFragColor = texture(diffuseTexture, inUV) + ubo.color;\n\
-			}\n\
-		", bSaveData);
+		std::vector<uint8_t> code = {
+			#include "object.frag.glsl.spv"
+		};
+		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
 	}
 };
 
