@@ -69,7 +69,7 @@ This will automatically initialize and update submodule dependencies. On Windows
 
 # Usage
 
-To link an application to Wasabi, you will need to link to Vulkan and to the wasabi library `libwasabi.a` (or `wasabi.lib` on Windows). On mac, you will need to add the following frameworks as well: Cocoa, CoreAudio, IOKit, CoreFoundation, CoreVideo, AudioUnit. You may use the CMake helper in `CMake/LinkToWasabi.cmake` (e.g. `link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")` in your cmake file) to automatically link to the engine.
+To link an application to Wasabi, you will need to link to Vulkan and to the wasabi library `libwasabi.a` (or `wasabi.lib` on Windows). On mac, you will need to add the following frameworks as well: Cocoa, CoreAudio, IOKit, CoreFoundation, CoreVideo, AudioUnit. You may use the CMake helper in `CMake/LinkToWasabi.cmake` (e.g. `link_target_to_wasabi(wasabi_test "<PATH_TO_WASABI>")` in your cmake file) to automatically link to the engine.
 
 ```C++
 #include "Wasabi/Wasabi.hpp"
