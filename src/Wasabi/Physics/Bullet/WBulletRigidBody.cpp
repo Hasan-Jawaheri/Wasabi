@@ -362,7 +362,7 @@ WError WBulletRigidBody::SaveToStream(class WFile* file, std::ostream& outputStr
 	outputStream.write((char*)m_savedCreateInfo, sizeof(W_RIGID_BODY_CREATE_INFO));
 	char geometryName[W_MAX_ASSET_NAME_SIZE] = { '\0' };
 	if (m_savedCreateInfo->geometry)
-		strcpy(geometryName, m_savedCreateInfo->geometry->GetName().c_str());
+		strcpy_s(geometryName, W_MAX_ASSET_NAME_SIZE, m_savedCreateInfo->geometry->GetName().c_str());
 	outputStream.write(geometryName, W_MAX_ASSET_NAME_SIZE);
 
 	float linDamp = ((btRigidBody*)m_rigidBody)->getLinearDamping();

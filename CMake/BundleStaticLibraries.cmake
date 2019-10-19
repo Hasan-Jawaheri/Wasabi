@@ -6,7 +6,6 @@ function(bundle_static_library)
     cmake_parse_arguments(FUNCTION_ARGS "${optionArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     set(tgt_name ${FUNCTION_ARGS_TARGET})
     set(bundled_tgt_name ${FUNCTION_ARGS_BUNDLED_TARGET})
-    list(APPEND static_libs ${tgt_name} ${FUNCTION_ARGS_DEPENDENCIES})
 
     function(_recursively_collect_dependencies input_target)
         set(_input_link_libraries LINK_LIBRARIES)
@@ -37,25 +36,33 @@ function(bundle_static_library)
         set(static_libs ${static_libs} PARENT_SCOPE)
     endfunction()
 
+    list(APPEND static_libs ${tgt_name})
     _recursively_collect_dependencies(${tgt_name})
+    list(APPEND all_static_libs ${static_libs})
+    foreach(dependency IN LISTS FUNCTION_ARGS_DEPENDENCIES)
+        list(APPEND static_libs ${dependency})
+        _recursively_collect_dependencies(${dependency})
+        list(APPEND all_static_libs ${static_libs})
+    endforeach()
 
-    list(REMOVE_DUPLICATES static_libs)
+    list(REMOVE_DUPLICATES all_static_libs)
 
     set(bundled_tgt_full_name
     ${CMAKE_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${bundled_tgt_name}${CMAKE_STATIC_LIBRARY_SUFFIX})
 
     if (MACOSX)
-        foreach(tgt IN LISTS static_libs)
+        foreach(tgt IN LISTS all_static_libs)
             list(APPEND static_libs_full_names "$<TARGET_FILE:${tgt}>")
         endforeach()
 
-        set(LIBTOOL_COMMAND "libtool" "-no_warning_for_no_symbols" "-static" "-o")
+        set(BUNDLE_TOOL "libtool")
+        set(LIBTOOL_COMMAND ${BUNDLE_TOOL} "-no_warning_for_no_symbols" "-static" "-o")
         set(BUNDLE_COMMAND ${LIBTOOL_COMMAND} ${bundled_tgt_full_name} ${static_libs_full_names})
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
         file(WRITE ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar.in
             "CREATE ${bundled_tgt_full_name}\n")
 
-        foreach(tgt IN LISTS static_libs)
+        foreach(tgt IN LISTS all_static_libs)
         file(APPEND ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar.in
             "ADDLIB $<TARGET_FILE:${tgt}>\n")
         endforeach()
@@ -72,9 +79,10 @@ function(bundle_static_library)
             set(ar_tool ${CMAKE_CXX_COMPILER_AR})
         endif()
 
-        set(BUNDLE_COMMAND ${ar_tool} -all -M < ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar)
+        set(BUNDLE_TOOL ${ar_tool})
+        set(BUNDLE_COMMAND ${BUNDLE_TOOL} -all -M < ${CMAKE_BINARY_DIR}/${bundled_tgt_name}.ar)
     elseif(MSVC)
-        foreach(tgt IN LISTS static_libs)
+        foreach(tgt IN LISTS all_static_libs)
             list(APPEND static_libs_full_names $<TARGET_FILE:${tgt}>)
         endforeach()
 
@@ -86,10 +94,15 @@ function(bundle_static_library)
         else()
             set(${lib_tool} ${CMAKE_LIBTOOL})
         endif()
-        set(BUNDLE_COMMAND ${lib_tool} /NOLOGO /OUT:${bundled_tgt_full_name} ${static_libs_full_names})
+        set(BUNDLE_TOOL ${lib_tool})
+        set(BUNDLE_COMMAND ${BUNDLE_TOOL} /NOLOGO /OUT:${bundled_tgt_full_name} ${static_libs_full_names})
     else()
         message(FATAL_ERROR "Unknown bundle scenario!")
     endif()
+    
+    message(STATUS "Bundle tool: ${BUNDLE_TOOL}")
+    message(STATUS "All libraries to be bundled: ${all_static_libs}")
+    message(STATUS "Bundle command: ${BUNDLE_COMMAND}")
 
     add_custom_command(
         TARGET ${tgt_name}

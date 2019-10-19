@@ -938,7 +938,7 @@ WError WEffect::SaveToStream(WFile* file, std::ostream& outputStream) {
 	outputStream.write((char*)&tmp, sizeof(tmp));
 	char tmpName[W_MAX_ASSET_NAME_SIZE];
 	for (uint32_t i = 0; i < m_shaders.size(); i++) {
-		strcpy(tmpName, m_shaders[i]->GetName().c_str());
+		strcpy_s(tmpName, W_MAX_ASSET_NAME_SIZE, m_shaders[i]->GetName().c_str());
 		outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
 	}
 

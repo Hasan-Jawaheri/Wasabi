@@ -450,13 +450,13 @@ WError WMaterial::SaveToStream(WFile* file, std::ostream& outputStream) {
 		tmp = (uint32_t)SI->images.size();
 		outputStream.write((char*)&tmp, sizeof(tmp));
 		for (uint32_t j = 0; j < SI->images.size(); j++) {
-			strcpy(tmpName, SI->images[j]->GetName().c_str());
+			strcpy_s(tmpName, W_MAX_ASSET_NAME_SIZE, SI->images[j]->GetName().c_str());
 			outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
 		}
 	}
 	outputStream.write((char*)&m_setIndex, sizeof(m_setIndex));
 
-	strcpy(tmpName, m_effect->GetName().c_str());
+	strcpy_s(tmpName, W_MAX_ASSET_NAME_SIZE, m_effect->GetName().c_str());
 	outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
 
 	// save dependencies

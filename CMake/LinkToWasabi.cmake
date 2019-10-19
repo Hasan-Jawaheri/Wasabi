@@ -14,18 +14,18 @@ function (link_target_to_wasabi target_name wasabi_path)
     if (MSVC)
         target_link_libraries(${target_name} debug ${wasabi_path}/lib/Debug/wasabi.lib)
         target_link_libraries(${target_name} optimized ${wasabi_path}/lib/Release/wasabi.lib)
+
+        target_link_libraries(${target_name} "winmm.lib")
     else()
         target_link_libraries(${target_name} ${wasabi_path}/lib/libwasabi.a)
-    endif()
 
-    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        # set MacOS frameworks
-        target_link_libraries(${target_name} "-framework Cocoa" "-framework CoreAudio" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo" "-framework AudioUnit")
-    elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
-        # set Linux dependencies
-        target_link_libraries(${target_name} -lpthread -lX11 -ldl -lstdc++fs)
-    elseif(MSVC)
-        target_link_libraries(${target_name} "winmm.lib")
+        if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+            # set MacOS frameworks
+            target_link_libraries(${target_name} "-framework Cocoa" "-framework CoreAudio" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo" "-framework AudioUnit")
+        elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
+            # set Linux dependencies
+            target_link_libraries(${target_name} -lpthread -lX11 -ldl -lstdc++fs)
+        endif()
     endif()
 
     # link to vulkan

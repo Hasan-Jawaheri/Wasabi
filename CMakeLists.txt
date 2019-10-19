@@ -67,10 +67,7 @@ target_include_directories(standalone-wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/"
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${TFD_DIR}/")
-# target_link_libraries(standalone-wasabi ${Vulkan_LIBRARY})
-# target_link_libraries(standalone-wasabi ex-common OpenAL)
-# target_link_libraries(standalone-wasabi glfw)
-# target_link_libraries(standalone-wasabi Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
+target_compile_definitions(standalone-wasabi PRIVATE "AL_LIBTYPE_STATIC") # <-- this makes the OpenAL headers not do dllimport (on Windows)
 enable_all_warnings(standalone-wasabi)
 
 # Ignore TFD warnings
@@ -98,10 +95,10 @@ if (WIN32)
 else()
     add_executable(wasabi_test ${TEST_SOURCES} ${TEST_HEADERS})
 endif()
-add_dependencies(wasabi_test build-dist)
-target_include_directories(wasabi_test PRIVATE "include/WasabiTest")
-link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")
 set_property(TARGET wasabi_test PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+target_include_directories(wasabi_test PRIVATE "include/WasabiTest")
+add_dependencies(wasabi_test build-dist)
+link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")
 enable_all_warnings(wasabi_test)
 
 # FBX Loader

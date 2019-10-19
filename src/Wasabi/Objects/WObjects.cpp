@@ -495,9 +495,9 @@ WError WObject::SaveToStream(WFile* file, std::ostream& outputStream) {
 
 	for (uint32_t i = 0; i < dependencies.size(); i++) {
 		if (dependencies[i])
-			strcpy(tmpName, dependencies[i]->GetName().c_str());
+			strcpy_s(tmpName, W_MAX_ASSET_NAME_SIZE, dependencies[i]->GetName().c_str());
 		else
-			strcpy(tmpName, "");
+			strcpy_s(tmpName, W_MAX_ASSET_NAME_SIZE, "");
 		outputStream.write(tmpName, W_MAX_ASSET_NAME_SIZE);
 	}
 
