@@ -47,8 +47,7 @@ function(bundle_static_library)
 
     list(REMOVE_DUPLICATES all_static_libs)
 
-    set(bundled_tgt_full_name
-    ${CMAKE_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${bundled_tgt_name}${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set(bundled_tgt_full_name ${PROJECT_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${bundled_tgt_name}${CMAKE_STATIC_LIBRARY_SUFFIX})
 
     if (MACOSX)
         foreach(tgt IN LISTS all_static_libs)
@@ -99,10 +98,6 @@ function(bundle_static_library)
     else()
         message(FATAL_ERROR "Unknown bundle scenario!")
     endif()
-    
-    message(STATUS "Bundle tool: ${BUNDLE_TOOL}")
-    message(STATUS "All libraries to be bundled: ${all_static_libs}")
-    message(STATUS "Bundle command: ${BUNDLE_COMMAND}")
 
     add_custom_command(
         TARGET ${tgt_name}
@@ -112,9 +107,8 @@ function(bundle_static_library)
     )
     add_library(${bundled_tgt_name} STATIC IMPORTED)
     set_target_properties(${bundled_tgt_name}
-    PROPERTIES
-        IMPORTED_LOCATION ${bundled_tgt_full_name}
-        INTERFACE_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${tgt_name},INTERFACE_INCLUDE_DIRECTORIES>)
+        PROPERTIES
+            IMPORTED_LOCATION ${bundled_tgt_full_name}
+            INTERFACE_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${tgt_name},INTERFACE_INCLUDE_DIRECTORIES>)
     add_dependencies(${bundled_tgt_name} ${tgt_name})
-
 endfunction()
