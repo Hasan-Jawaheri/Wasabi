@@ -22,15 +22,6 @@ else()
     set(VULKAN_SDK_PATH ${Vulkan_INCLUDE_DIRS}/..)
 endif()
 
-set(DEPENDENCIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
-initialize_submodules()
-build_open_al("OPENAL_DIR" "${DEPENDENCIES_DIR}")
-build_bullet("BULLET_DIR" "${DEPENDENCIES_DIR}")
-build_glfw("GLFW_DIR" "${DEPENDENCIES_DIR}")
-build_stb("STB_DIR" "${DEPENDENCIES_DIR}")
-build_tinyfiledialogs("TFD_DIR" "${DEPENDENCIES_DIR}")
-build_glsl(glsl-code ${VULKAN_SDK_PATH})
-
 ############# FBX SDK ###############
 if (NOT FBXSDK_ROOT)
     message(WARNING "Could not find FBX SDK")
@@ -44,30 +35,42 @@ else()
 endif()
 #####################################
 
+set(DEPENDENCIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
+initialize_submodules()
+build_open_al("OPENAL_DIR" "${DEPENDENCIES_DIR}")
+build_bullet("BULLET_DIR" "${DEPENDENCIES_DIR}")
+build_glfw("GLFW_DIR" "${DEPENDENCIES_DIR}")
+build_stb("STB_DIR" "${DEPENDENCIES_DIR}")
+build_tinyfiledialogs("TFD_DIR" "${DEPENDENCIES_DIR}")
+
 # Source files
-file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp")
 file(GLOB_RECURSE TFD_SOURCES "${TFD_DIR}/tinyfiledialogs.c")
+
+file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp")
 file(GLOB_RECURSE LIB_GLSL "src/Wasabi/*.glsl")
 file(GLOB_RECURSE LIB_HEADERS "include/Wasabi/*")
+
 file(GLOB_RECURSE TEST_SOURCES "src/WasabiTest/*.cpp")
 file(GLOB_RECURSE TEST_HEADERS "include/WasabiTest/*")
+file(GLOB_RECURSE TEST_GLSL "src/WasabiTest/*.glsl")
+
 file(GLOB_RECURSE FBX_LOADER_SOURCES "src/FBXLoader/*.cpp")
 file(GLOB_RECURSE FBX_LOADER_HEADERS "include/FBXLoader/*")
 
-include_directories("include/")
-
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${TFD_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
+build_glsl(TARGET lib-glsl-code VULKAN ${VULKAN_SDK_PATH} SOURCES ${LIB_GLSL})
 add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${TFD_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
-add_dependencies(standalone-wasabi glsl-code)
+add_dependencies(standalone-wasabi lib-glsl-code)
 target_compile_definitions(standalone-wasabi PRIVATE COMPILING_WASABI)
+target_compile_definitions(standalone-wasabi PRIVATE AL_LIBTYPE_STATIC) # <-- this makes the OpenAL headers not do dllimport (on Windows)
+target_include_directories(standalone-wasabi PRIVATE "include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM ${Vulkan_INCLUDE_DIRS})
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${OPENAL_DIR}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${TFD_DIR}/")
-target_compile_definitions(standalone-wasabi PRIVATE "AL_LIBTYPE_STATIC") # <-- this makes the OpenAL headers not do dllimport (on Windows)
 enable_all_warnings(standalone-wasabi)
 
 # Ignore TFD warnings
@@ -90,14 +93,16 @@ build_dist(build-dist wasabi)
 
 # Wasabi test application(s)
 assign_source_group(${TEST_SOURCES} ${TEST_HEADERS})
+build_glsl(TARGET test-glsl-code VULKAN ${VULKAN_SDK_PATH} SOURCES ${TEST_GLSL})
 if (WIN32)
     add_executable(wasabi_test WIN32 ${TEST_SOURCES} ${TEST_HEADERS})
 else()
     add_executable(wasabi_test ${TEST_SOURCES} ${TEST_HEADERS})
 endif()
 set_property(TARGET wasabi_test PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+target_include_directories(wasabi_test PRIVATE "include/")
 target_include_directories(wasabi_test PRIVATE "include/WasabiTest")
-add_dependencies(wasabi_test build-dist)
+add_dependencies(wasabi_test test-glsl-code build-dist)
 link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")
 enable_all_warnings(wasabi_test)
 
@@ -109,6 +114,7 @@ if (FBXSDK_ROOT)
     else()
         add_executable(fbx_loader ${FBX_LOADER_SOURCES} ${FBX_LOADER_HEADERS})
     endif()
+    target_include_directories(fbx_loader PRIVATE "include/")
     target_include_directories(fbx_loader PRIVATE "include/FBXLoader")
     link_target_to_wasabi(fbx_loader "${CMAKE_BINARY_DIR}/dist")
     target_link_libraries(fbx_loader optimized ${FBX_LIBRARIES_RELEASE})
@@ -120,15 +126,12 @@ endif()
 
 if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
     # ignore MSVC warnings for external headers
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external /external:W0")
-    set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
-
-    target_compile_options(standalone-wasabi PRIVATE /external:I${STB_DIR})
-    target_compile_options(wasabi_test PRIVATE /external:I${STB_DIR})
-    target_compile_options(standalone-wasabi PRIVATE /external:I${TFD_DIR})
-    target_compile_options(wasabi_test PRIVATE /external:I${TFD_DIR})
-    target_compile_options(standalone-wasabi PRIVATE /external:I${BULLET_DIR}/src)
-    target_compile_options(wasabi_test PRIVATE /external:I${BULLET_DIR}/src)
+    target_compile_options(standalone-wasabi PRIVATE /experimental:external /external:W0 /external:I${STB_DIR})
+    target_compile_options(wasabi_test PRIVATE /experimental:external /external:W0 /external:I${STB_DIR})
+    target_compile_options(standalone-wasabi PRIVATE /experimental:external /external:W0 /external:I${TFD_DIR})
+    target_compile_options(wasabi_test PRIVATE /experimental:external /external:W0 /external:I${TFD_DIR})
+    target_compile_options(standalone-wasabi PRIVATE /experimental:external /external:W0 /external:I${BULLET_DIR}/src)
+    target_compile_options(wasabi_test PRIVATE /experimental:external /external:W0 /external:I${BULLET_DIR}/src)
 endif()
 
 # ignore "object has no symbol" linker errors
