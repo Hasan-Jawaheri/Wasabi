@@ -30,13 +30,14 @@ function(build_glsl)
                 COMMAND ${glslangValidator} "-V" "--entry-point" "${entryPoint}" "${file}" "-o" "${tmpFile}"
                 COMMAND ${Python3_EXECUTABLE} ${spvConverter} "${tmpFile}" "${outputFile}"
                 COMMAND ${CMAKE_COMMAND} -E remove -f ${tmpFile}
-                SOURCES ${file}
+                DEPENDS ${file}
                 VERBATIM
             )
         endif()
     endforeach()
 
     add_custom_target(${FUNCTION_ARGS_TARGET}
+        SOURCES ${FUNCTION_ARGS_SOURCES}
         DEPENDS ${GLSL_COMPILED_SOURCES}
         VERBATIM
     )
