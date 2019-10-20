@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FPS/common.hpp"
+#include "vertagon/common.hpp"
 
 class Map {
     Wasabi* m_app;

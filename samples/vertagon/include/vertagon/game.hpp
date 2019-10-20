@@ -1,8 +1,8 @@
 #pragma once
 
-#include "common.hpp"
+#include "vertagon/common.hpp"
 
-class FPSGame : public Wasabi {
+class Vertagon : public Wasabi {
     friend class GameState;
 
     class GameState : public WGameState {
@@ -58,7 +58,7 @@ class FPSGame : public Wasabi {
     void DispatchLaggedInput(float fDeltaTime);
 
 public:
-    FPSGame();
+    Vertagon();
 
     class Map* m_map;
     class EnemySystem* m_enemySystem;
@@ -69,7 +69,7 @@ public:
     virtual void Cleanup() override;
 
 	virtual WError SetupRenderer() override;
-	virtual WPhysicsComponent* CreatePhysicsComponent();
+	virtual WPhysicsComponent* CreatePhysicsComponent() override;
 
     void FireBullet(WVector2 target);
 };

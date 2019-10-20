@@ -2,7 +2,7 @@
 # adds a custom target that compiles the GLSL code using the compile-glsl-code.py python script
 function(build_glsl)
     set(optionArgs "")
-    set(oneValueArgs "TARGET" "VULKAN")
+    set(oneValueArgs "TARGET" "VULKAN" "CONVERTER")
     set(multiValueArgs "SOURCES")
     cmake_parse_arguments(FUNCTION_ARGS "${optionArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -17,7 +17,6 @@ function(build_glsl)
     else()
         set(glslangValidator ${FUNCTION_ARGS_VULKAN}/bin/glslangValidator)
     endif()
-    set(spvConverter ${CMAKE_SOURCE_DIR}/src/spv-converter.py)
     set(entryPoint "main")
     set(GLSL_COMPILED_SOURCES "")
     foreach(file IN LISTS FUNCTION_ARGS_SOURCES)
@@ -28,7 +27,7 @@ function(build_glsl)
             add_custom_command(
                 OUTPUT ${outputFile}
                 COMMAND ${glslangValidator} "-V" "--entry-point" "${entryPoint}" "${file}" "-o" "${tmpFile}"
-                COMMAND ${Python3_EXECUTABLE} ${spvConverter} "${tmpFile}" "${outputFile}"
+                COMMAND ${Python3_EXECUTABLE} ${FUNCTION_ARGS_CONVERTER} "${tmpFile}" "${outputFile}"
                 COMMAND ${CMAKE_COMMAND} -E remove -f ${tmpFile}
                 DEPENDS ${file}
                 VERBATIM

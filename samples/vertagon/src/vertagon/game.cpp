@@ -1,58 +1,58 @@
-#include "FPS/game.hpp"
-#include "FPS/player.hpp"
-#include "FPS/map.hpp"
-#include "FPS/enemies.hpp"
+#include "vertagon/game.hpp"
+#include "vertagon/player.hpp"
+#include "vertagon/map.hpp"
+#include "vertagon/enemies.hpp"
 
 #include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.hpp>
 #include <Wasabi/Renderers/DeferredRenderer/WDeferredRenderer.hpp>
 #include <Wasabi/Physics/Bullet/WBulletPhysics.hpp>
 
-FPSGame::GameState::GameState(Wasabi* app): WGameState(app) {
+Vertagon::GameState::GameState(Wasabi* app): WGameState(app) {
 }
 
-void FPSGame::GameState::OnMouseDown(W_MOUSEBUTTON button, double mx, double my) {
+void Vertagon::GameState::OnMouseDown(W_MOUSEBUTTON button, double mx, double my) {
     // pass on the input to the player class
-    // ((FPSGame*)m_app)->m_player->OnMouseDown(button, mx, my);
-    ((FPSGame*)m_app)->m_laggedInput.push_back(
+    // ((Vertagon*)m_app)->m_player->OnMouseDown(button, mx, my);
+    ((Vertagon*)m_app)->m_laggedInput.push_back(
         INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_MOUSEDOWN, button, mx, my));
 }
 
-void FPSGame::GameState::OnMouseUp(W_MOUSEBUTTON button, double mx, double my) {
+void Vertagon::GameState::OnMouseUp(W_MOUSEBUTTON button, double mx, double my) {
     // pass on the input to the player class
-    // ((FPSGame*)m_app)->m_player->OnMouseUp(button, mx, my);
-    ((FPSGame*)m_app)->m_laggedInput.push_back(
+    // ((Vertagon*)m_app)->m_player->OnMouseUp(button, mx, my);
+    ((Vertagon*)m_app)->m_laggedInput.push_back(
         INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_MOUSEUP, button, mx, my));
 }
 
-void FPSGame::GameState::OnMouseMove(double mx, double my) {
+void Vertagon::GameState::OnMouseMove(double mx, double my) {
     // pass on the input to the player class
-    // ((FPSGame*)m_app)->m_player->OnMouseMove(mx, my);
-    ((FPSGame*)m_app)->m_laggedInput.push_back(
+    // ((Vertagon*)m_app)->m_player->OnMouseMove(mx, my);
+    ((Vertagon*)m_app)->m_laggedInput.push_back(
         INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_MOUSEMOVE, mx, my));
 }
 
-void FPSGame::GameState::OnKeyDown(char c) {
+void Vertagon::GameState::OnKeyDown(char c) {
     // pass on the input to the player class
-    // ((FPSGame*)m_app)->m_player->OnKeyDown(c);
-    ((FPSGame*)m_app)->m_laggedInput.push_back(
+    // ((Vertagon*)m_app)->m_player->OnKeyDown(c);
+    ((Vertagon*)m_app)->m_laggedInput.push_back(
         INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_KEYDOWN, c));
 }
 
-void FPSGame::GameState::OnKeyUp(char c) {
+void Vertagon::GameState::OnKeyUp(char c) {
     // pass on the input to the player class
-    // ((FPSGame*)m_app)->m_player->OnKeyUp(c);
-    ((FPSGame*)m_app)->m_laggedInput.push_back(
+    // ((Vertagon*)m_app)->m_player->OnKeyUp(c);
+    ((Vertagon*)m_app)->m_laggedInput.push_back(
         INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_KEYUP, c));
 }
 
-void FPSGame::GameState::OnInput(char c) {
+void Vertagon::GameState::OnInput(char c) {
     // pass on the input to the player class
-    // ((FPSGame*)m_app)->m_player->OnInput(c);
-    ((FPSGame*)m_app)->m_laggedInput.push_back(
+    // ((Vertagon*)m_app)->m_player->OnInput(c);
+    ((Vertagon*)m_app)->m_laggedInput.push_back(
         INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_INPUT, c));
 }
 
-void FPSGame::DispatchLaggedInput(float fDeltaTime) {
+void Vertagon::DispatchLaggedInput(float fDeltaTime) {
     static float totalLagMS = 0.0f;
 
     if (WindowAndInputComponent->KeyDown(W_KEY_UP))
@@ -91,13 +91,13 @@ void FPSGame::DispatchLaggedInput(float fDeltaTime) {
     }
 }
 
-FPSGame::FPSGame() {
+Vertagon::Vertagon() {
     m_map = new Map(this);
     m_player = new Player(this);
     m_enemySystem = new EnemySystem(this);
 }
 
-WError FPSGame::Setup() {
+WError Vertagon::Setup() {
     // start the engine
     WError status = StartEngine(640, 480);
     if (!status) {
@@ -131,7 +131,7 @@ WError FPSGame::Setup() {
     return status;
 }
 
-bool FPSGame::Loop(float fDeltaTime) {
+bool Vertagon::Loop(float fDeltaTime) {
     DispatchLaggedInput(fDeltaTime);
 
     TextComponent->RenderText("FPS: " + std::to_string(FPS), 5, 5, 32);
@@ -141,7 +141,7 @@ bool FPSGame::Loop(float fDeltaTime) {
     return true; // return true to continue to next frame
 }
 
-void FPSGame::Cleanup() {
+void Vertagon::Cleanup() {
     m_map->Cleanup();
     m_enemySystem->Cleanup();
     m_player->Cleanup();
@@ -151,12 +151,12 @@ void FPSGame::Cleanup() {
     delete m_player;
 }
 
-WError FPSGame::SetupRenderer() {
+WError Vertagon::SetupRenderer() {
     // return WInitializeForwardRenderer(this);
     return WInitializeDeferredRenderer(this);
 }
 
-WPhysicsComponent* FPSGame::CreatePhysicsComponent() {
+WPhysicsComponent* Vertagon::CreatePhysicsComponent() {
 	WBulletPhysics* physics = new WBulletPhysics(this);
 	SetEngineParam<int>("maxBulletDebugLines", 10000);
 	WError werr = physics->Initialize(true);
@@ -165,7 +165,7 @@ WPhysicsComponent* FPSGame::CreatePhysicsComponent() {
 	return physics;
 }
 
-void FPSGame::FireBullet(WVector2 target) {
+void Vertagon::FireBullet(WVector2 target) {
     WVector3 hitPoint;
     WVector2 hitUV;
     uint32_t hitFace;
@@ -176,5 +176,5 @@ void FPSGame::FireBullet(WVector2 target) {
 }
 
 Wasabi* WInitialize() {
-    return new FPSGame();
+    return new Vertagon();
 }

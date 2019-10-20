@@ -1,6 +1,6 @@
-#include "FPS/enemies.hpp"
-#include "FPS/game.hpp"
-#include "FPS/player.hpp"
+#include "vertagon/enemies.hpp"
+#include "vertagon/game.hpp"
+#include "vertagon/player.hpp"
 
 #include <Wasabi/Renderers/WRenderStage.hpp>
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
@@ -71,8 +71,8 @@ Enemy::Enemy(Wasabi* app) {
 WError Enemy::Load(uint32_t id) {
     m_id = id;
 
-    WGeometry* geometry = ((FPSGame*)m_app)->m_enemySystem->m_resources.enemyGeometry;
-    WEffect* effect = ((FPSGame*)m_app)->m_enemySystem->m_resources.enemyEffect;
+    WGeometry* geometry = ((Vertagon*)m_app)->m_enemySystem->m_resources.enemyGeometry;
+    WEffect* effect = ((Vertagon*)m_app)->m_enemySystem->m_resources.enemyEffect;
 
     m_object = m_app->ObjectManager->CreateObject(effect, 0, m_id);
     if (!m_object) {
@@ -185,8 +185,8 @@ WError EnemySystem::Load() {
     m_resources.enemyGeometry->UnmapVertexBuffer(false);
 
     status = m_resources.enemyGeometry->CreateFromData(newVertices, numVertices, newIndices, numIndices);
-    W_SAFE_DELETE(newVertices);
-    W_SAFE_DELETE(newIndices);
+    W_SAFE_DELETE_ARRAY(newVertices);
+    W_SAFE_DELETE_ARRAY(newIndices);
     if (!status) return status;
 
 	EnemyVS* vs = new EnemyVS(m_app);
@@ -228,7 +228,7 @@ WError EnemySystem::Load() {
 }
 
 void EnemySystem::Update(float fDeltaTime) {
-    Player* player = ((FPSGame*)m_app)->m_player;
+    Player* player = ((Vertagon*)m_app)->m_player;
 
     for (int32_t i = 0; i < m_enemies.size(); i++) {
         if (!m_enemies[i]->Update(fDeltaTime) || WVec3LengthSq(player->GetPosition() - m_enemies[i]->m_object->GetPosition()) > 100.0f * 100.0f) {

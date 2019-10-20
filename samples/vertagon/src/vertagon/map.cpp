@@ -1,4 +1,4 @@
-#include "FPS/map.hpp"
+#include "vertagon/map.hpp"
 
 #include <Wasabi/Renderers/DeferredRenderer/WSceneCompositionRenderStage.hpp>
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
@@ -7,6 +7,8 @@ Map::Map(Wasabi* app): m_app(app) {
     m_plainGeometry = nullptr;
     m_plain = nullptr;
     m_rigidBody = nullptr;
+	m_atmosphere = nullptr;
+	m_atmosphereGeometry = nullptr;
 }
 
 WError Map::Load() {

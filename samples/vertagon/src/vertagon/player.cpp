@@ -1,5 +1,5 @@
-#include "FPS/player.hpp"
-#include "FPS/game.hpp"
+#include "vertagon/player.hpp"
+#include "vertagon/game.hpp"
 
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
 
@@ -106,7 +106,7 @@ void Player::UpdateCamera(float fDeltaTime) {
 
 void Player::FireBullet() {
     WVector2 target = m_cursor->GetPosition() + m_cursor->GetSize() / 2.0f;
-    ((FPSGame*)m_app)->FireBullet(target);
+    ((Vertagon*)m_app)->FireBullet(target);
     m_recoilSpeed += 100.0f;
 }
 

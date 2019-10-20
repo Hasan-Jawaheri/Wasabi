@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FPS/common.hpp"
+#include "vertagon/common.hpp"
 
 class Player {
     Wasabi* m_app;

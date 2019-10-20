@@ -59,7 +59,7 @@ file(GLOB_RECURSE FBX_LOADER_HEADERS "include/FBXLoader/*")
 
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${TFD_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
-build_glsl(TARGET lib-glsl-code VULKAN ${VULKAN_SDK_PATH} SOURCES ${LIB_GLSL})
+build_glsl(TARGET lib-glsl-code VULKAN ${VULKAN_SDK_PATH} CONVERTER ${CMAKE_SOURCE_DIR}/src/spv-converter.py SOURCES ${LIB_GLSL})
 add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${TFD_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
 add_dependencies(standalone-wasabi lib-glsl-code)
 target_compile_definitions(standalone-wasabi PRIVATE COMPILING_WASABI)
@@ -93,7 +93,7 @@ build_dist(build-dist wasabi)
 
 # Wasabi test application(s)
 assign_source_group(${TEST_SOURCES} ${TEST_HEADERS})
-build_glsl(TARGET test-glsl-code VULKAN ${VULKAN_SDK_PATH} SOURCES ${TEST_GLSL})
+build_glsl(TARGET test-glsl-code VULKAN ${VULKAN_SDK_PATH} CONVERTER ${CMAKE_SOURCE_DIR}/src/spv-converter.py SOURCES ${TEST_GLSL})
 if (WIN32)
     add_executable(wasabi_test WIN32 ${TEST_SOURCES} ${TEST_HEADERS})
 else()

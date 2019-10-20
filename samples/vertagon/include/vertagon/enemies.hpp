@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FPS/common.hpp"
+#include "vertagon/common.hpp"
 
 class Enemy {
     friend class EnemySystem;
