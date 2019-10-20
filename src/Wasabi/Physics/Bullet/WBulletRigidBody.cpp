@@ -211,7 +211,7 @@ void WBulletRigidBody::Update(float deltaTime) {
 	UNREFERENCED_PARAMETER(deltaTime);
 
 	m_isUpdating = true;
-	if (m_boundObject && m_rigidBody) {
+	if (m_rigidBody) {
 		btQuaternion rotation = ((btRigidBody*)m_rigidBody)->getOrientation();
 		WQuaternion wRot = BTWConvertQuaternion(rotation);
 		btTransform transformation = ((btRigidBody*)m_rigidBody)->getWorldTransform();
@@ -220,8 +220,10 @@ void WBulletRigidBody::Update(float deltaTime) {
 		SetPosition(wPos);
 		SetAngle(wRot);
 
-		m_boundObject->SetPosition(wPos);
-		m_boundObject->SetAngle(wRot);
+		if (m_boundObject) {
+			m_boundObject->SetPosition(wPos);
+			m_boundObject->SetAngle(wRot);
+		}
 	}
 	m_isUpdating = false;
 }
