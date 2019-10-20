@@ -1,15 +1,31 @@
 #include "Wasabi/Images/WImage.hpp"
 #include "Wasabi/Renderers/WRenderer.hpp"
 
+#ifdef _WIN32
 #pragma warning(push)
 #pragma warning(disable: 4701)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wunused-result"
+#pragma GCC diagnostic ignored "-Wformat-overflow="
+#endif
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_DEFINE
 #include <stb.h>
+
+#ifdef _WIN32
 #pragma warning(pop)
+#else
+#pragma GCC diagnostic pop
+#endif
 
 std::string WImageManager::GetTypeName() const {
 	return "Image";
@@ -225,7 +241,7 @@ WError WImage::Load(std::string filename, W_IMAGE_CREATE_FLAGS flags) {
 		return WError(W_INVALIDFILEFORMAT);
 
 	// convert from 8-bit char components to 32-bit float components
-	uint8_t* pixels = convertPixels<uint8_t>(data, w, h, (uint8_t)n, 4, 0, (uint8_t)-1, [](uint8_t val) { return val; });
+	uint8_t* pixels = convertPixels<uint8_t>(data, w, h, (uint8_t)n, 4, 0, std::numeric_limits<uint8_t>::max(), [](uint8_t val) { return val; });
 	// float* pixels = convertPixels<float>(data, w, h, n, 4, 0.0f, 1.0f, [](uchar val) { return (float)val / (float)(uchar)(-1); }); <--- for VK_FORMAT_R32G32B32A32_SFLOAT
 	free(data);
 	WError err = CreateFromPixelsArray(pixels, w, h, VK_FORMAT_R8G8B8A8_UNORM, flags);

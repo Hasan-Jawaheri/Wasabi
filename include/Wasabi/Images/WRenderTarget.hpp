@@ -173,7 +173,7 @@ public:
 	 * Retrieves the number of color output attachments.
 	 * @return The number of color output attachments
 	 */
-	int GetNumColorOutputs() const;
+	uint32_t GetNumColorOutputs() const;
 
 	/**
 	 * Checks whether or not the render target has a depth attachment.

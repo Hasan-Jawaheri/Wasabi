@@ -170,7 +170,7 @@ WError WTextComponent::CreateTextFont(uint32_t ID, std::string fontName) {
 		std::for_each(fontName.begin(), fontName.end(), [](char& c) { c = (char)std::toupper(c); });
 		ttfFile.open(fontName.c_str(), ios::in | ios::binary);
 	}
-	for (int i = 0; i < m_directories.size() && !ttfFile.is_open(); i++) {
+	for (uint32_t i = 0; i < m_directories.size() && !ttfFile.is_open(); i++) {
 		for (auto& dirPath : stdfs::recursive_directory_iterator(m_directories[i])) {
 			stdfs::path p = dirPath;
 			if (p.has_filename()) {
@@ -350,7 +350,7 @@ void WTextComponent::Render(WRenderTarget* rt) {
 			float fMapSize = (float)font->img->GetWidth();
 			float maxCharHeight = 0.0f;
 			float maxyoff = -FLT_MAX, minyoff = FLT_MAX;
-			for (int i = 0; i < text.str.length(); i++) {
+			for (uint32_t i = 0; i < text.str.length(); i++) {
 				if (text.str[i] == '\n')
 					continue;
 				stbtt_bakedchar *cd = &((stbtt_bakedchar*)font->cdata)[(uint)text.str[i] - 32];
@@ -358,7 +358,7 @@ void WTextComponent::Render(WRenderTarget* rt) {
 				maxyoff = fmax(maxyoff, cd->yoff);
 			}
 			maxCharHeight = (text.fHeight * fScale) * 2.0f / scrHeight;
-			for (int i = 0; i < text.str.length(); i++) {
+			for (uint32_t i = 0; i < text.str.length(); i++) {
 				char c = text.str[i];
 				if (c == '\n') {
 					x = text.x * 2.0f / scrWidth - 1.0f;

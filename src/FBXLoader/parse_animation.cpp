@@ -136,7 +136,7 @@ void EnumNode(FbxNode* pNode, FbxAnimLayer* pAnimLayer, RAWBONE* bone, int minFr
 					bone->siblings[frame - 1]->vals[3] = curRot[0];
 					bone->siblings[frame - 1]->vals[4] = curRot[1];
 					bone->siblings[frame - 1]->vals[5] = curRot[2];
-					//bone->siblings[frame-1]->vals[i] = lKeyValue;
+					//bone->siblings[frame - 1]->vals[i] = lKeyValue;
 					bone->siblings[frame - 1]->bIsKeyFrame[i] = true;
 				}
 			}

@@ -22,20 +22,20 @@ static void ConvertVertices(void* vbFrom, void* vbTo, uint32_t numVerts, W_VERTE
 	for (uint32_t i = 0; i < numVerts; i++) {
 		char* fromvtx = (char*)vbFrom + fromVtxSize * i;
 		char* myvtx = (char*)vbTo + vtxSize * i;
-		for (int j = 0; j < vtxTo.attributes.size(); j++) {
+		for (uint32_t j = 0; j < vtxTo.attributes.size(); j++) {
 			std::string name = vtxTo.attributes[j].name;
 			size_t offInFrom = vtxFrom.GetOffset(name);
 			uint32_t index_in_from = vtxFrom.GetIndex(name);
-			if (offInFrom != (size_t)-1 && vtxTo.attributes[j].numComponents == vtxFrom.attributes[index_in_from].numComponents)
+			if (offInFrom != std::numeric_limits<size_t>::max() && vtxTo.attributes[j].numComponents == vtxFrom.attributes[index_in_from].numComponents)
 				memcpy(myvtx + vtxTo.GetOffset(name), fromvtx + offInFrom, vtxTo.attributes[j].numComponents * 4);
 		}
 	}
 }
 
 size_t W_VERTEX_DESCRIPTION::GetSize() const {
-	if (_size == (size_t)-1) {
+	if (_size == std::numeric_limits<size_t>::max()) {
 		_size = 0;
-		for (int i = 0; i < attributes.size(); i++)
+		for (uint32_t i = 0; i < attributes.size(); i++)
 			_size += 4 * attributes[i].numComponents;
 	}
 	return _size;
@@ -48,7 +48,7 @@ size_t W_VERTEX_DESCRIPTION::GetOffset(uint32_t attribIndex) const {
 			return s;
 		s += 4 * attributes[i].numComponents;
 	}
-	return (size_t)-1;
+	return std::numeric_limits<size_t>::max();
 }
 
 size_t W_VERTEX_DESCRIPTION::GetOffset(std::string attribName) const {
@@ -58,7 +58,7 @@ size_t W_VERTEX_DESCRIPTION::GetOffset(std::string attribName) const {
 			return s;
 		s += 4 * attributes[i].numComponents;
 	}
-	return (size_t)-1;
+	return std::numeric_limits<size_t>::max();
 }
 
 uint32_t W_VERTEX_DESCRIPTION::GetIndex(std::string attribName) const {
@@ -174,7 +174,7 @@ void WGeometry::_CalcMinMax(void* vb, uint32_t numVerts) {
 	size_t offset = GetVertexDescription(0).GetOffset("position");
 	size_t vsize = GetVertexDescription(0).GetSize();
 
-	if (offset == (size_t)-1)
+	if (offset == std::numeric_limits<size_t>::max())
 		return; // no position attribute
 
 	for (uint32_t i = 0; i < numVerts; i++) {
@@ -199,7 +199,7 @@ void WGeometry::_CalcNormals(void* vb, uint32_t numVerts, void* ib, uint32_t num
 	size_t normalOffset = GetVertexDescription(0).GetOffset("normal");
 	size_t vsize = GetVertexDescription(0).GetSize();
 
-	if (offset == (size_t )-1 || normalOffset == (size_t)-1)
+	if (offset == std::numeric_limits<size_t>::max() || normalOffset == std::numeric_limits<size_t>::max())
 		return; // no position/normal attributes
 
 	uint32_t numTris = numIndices / 3;
@@ -222,7 +222,7 @@ void WGeometry::_CalcTangents(void* vb, uint32_t numVerts) {
 	size_t tang_offset = GetVertexDescription(0).GetOffset("tangent");
 	size_t vsize = GetVertexDescription(0).GetSize();
 
-	if (norm_offset == (size_t )-1 || tang_offset == (size_t )-1)
+	if (norm_offset == std::numeric_limits<size_t>::max() || tang_offset == std::numeric_limits<size_t>::max())
 		return; // no position attribute
 
 	for (uint32_t i = 0; i < numVerts; i++) {
@@ -752,9 +752,9 @@ WError WGeometry::CopyFrom(WGeometry* const from, W_GEOMETRY_CREATE_FLAGS flags)
 	else
 		ConvertVertices(fromvb, vb, numVerts, from_desc, my_desc);
 
-	if (my_desc.GetOffset("normal") >= 0 && from_desc.GetOffset("normal") == -1)
+	if (my_desc.GetOffset("normal") >= 0 && from_desc.GetOffset("normal") == std::numeric_limits<size_t>::max())
 		flags |= W_GEOMETRY_CREATE_CALCULATE_NORMALS;
-	if (my_desc.GetOffset("tangent") >= 0 && from_desc.GetOffset("tangent") == -1)
+	if (my_desc.GetOffset("tangent") >= 0 && from_desc.GetOffset("tangent") == std::numeric_limits<size_t>::max())
 		flags |= W_GEOMETRY_CREATE_CALCULATE_TANGENTS;
 
 	from->UnmapVertexBuffer();
@@ -993,7 +993,7 @@ WError WGeometry::Scale(float mulFactor) {
 
 	size_t vtxSize = GetVertexDescription(0).GetSize();
 	size_t offset = GetVertexDescription(0).GetOffset("position");
-	if (offset == (size_t)-1)
+	if (offset == std::numeric_limits<size_t>::max())
 		return W_ERROR(W_NOTVALID);
 	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
@@ -1019,7 +1019,7 @@ WError WGeometry::ScaleX(float mulFactor) {
 
 	size_t vtxSize = GetVertexDescription(0).GetSize();
 	size_t offset = GetVertexDescription(0).GetOffset("position");
-	if (offset == (size_t)-1)
+	if (offset == std::numeric_limits<size_t>::max())
 		return W_ERROR(W_NOTVALID);
 	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
@@ -1045,7 +1045,7 @@ WError WGeometry::ScaleY(float mulFactor) {
 
 	size_t vtxSize = GetVertexDescription(0).GetSize();
 	size_t offset = GetVertexDescription(0).GetOffset("position");
-	if (offset == (size_t)-1)
+	if (offset == std::numeric_limits<size_t>::max())
 		return W_ERROR(W_NOTVALID);
 	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
@@ -1071,7 +1071,7 @@ WError WGeometry::ScaleZ(float mulFactor) {
 
 	size_t vtxSize = GetVertexDescription(0).GetSize();
 	size_t offset = GetVertexDescription(0).GetOffset("position");
-	if (offset == (size_t)-1)
+	if (offset == std::numeric_limits<size_t>::max())
 		return W_ERROR(W_NOTVALID);
 	int size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
@@ -1101,7 +1101,7 @@ WError WGeometry::ApplyOffset(WVector3 _offset) {
 
 	size_t vtxSize = GetVertexDescription(0).GetSize();
 	size_t offset = GetVertexDescription(0).GetOffset("position");
-	if (offset == (size_t)-1)
+	if (offset == std::numeric_limits<size_t>::max())
 		return W_ERROR(W_NOTVALID);
 	size_t size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
@@ -1127,7 +1127,7 @@ WError WGeometry::ApplyTransformation(WMatrix mtx) {
 
 	size_t vtxSize = GetVertexDescription(0).GetSize();
 	size_t offset = GetVertexDescription(0).GetOffset("position");
-	if (offset == (size_t)-1)
+	if (offset == std::numeric_limits<size_t>::max())
 		return W_ERROR(W_NOTVALID);
 	size_t size = GetVertexDescription(0).attributes[GetVertexDescription(0).GetIndex("position")].numComponents * 4;
 
@@ -1199,7 +1199,7 @@ bool WGeometry::Intersect(WVector3 p1, WVector3 p2, WVector3* pt, WVector2* uv, 
 		memcpy(&v0, &((char*)vb)[ib[i * 3 + 0] * vtxSize + pos_offset], sizeof(WVector3));
 		memcpy(&v1, &((char*)vb)[ib[i * 3 + 1] * vtxSize + pos_offset], sizeof(WVector3));
 		memcpy(&v2, &((char*)vb)[ib[i * 3 + 2] * vtxSize + pos_offset], sizeof(WVector3));
-		if (uv_offset != -1) {
+		if (uv_offset != std::numeric_limits<uint32_t>::max()) {
 			memcpy(&uv0, &((char*)vb)[ib[i * 3 + 0] * vtxSize + uv_offset], sizeof(WVector2));
 			memcpy(&uv1, &((char*)vb)[ib[i * 3 + 1] * vtxSize + uv_offset], sizeof(WVector2));
 			memcpy(&uv2, &((char*)vb)[ib[i * 3 + 2] * vtxSize + uv_offset], sizeof(WVector2));
@@ -1448,12 +1448,6 @@ WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream, std::ve
 			ConvertVertices(vb, convertedVB, numV, from_descs[0], my_desc);
 			W_SAFE_FREE(vb);
 		}
-
-		bool bCalcTangents = false, bCalcNormals = false;
-		if (my_desc.GetOffset("normal") >= 0 && from_descs[0].GetOffset("normal") == -1)
-			bCalcNormals = true;
-		if (my_desc.GetOffset("tangent") >= 0 && from_descs[0].GetOffset("tangent") == -1)
-			bCalcTangents = true;
 
 		ret = CreateFromData(convertedVB, numV, ib, numI, flags);
 

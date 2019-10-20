@@ -52,6 +52,6 @@ void SpritesDemo::Update(float fDeltaTime) {
 }
 
 void SpritesDemo::Cleanup() {
-	for (int i = 0; i < sizeof(m_sprites) / sizeof(WSprite*); i++)
+	for (uint32_t i = 0; i < sizeof(m_sprites) / sizeof(WSprite*); i++)
 		W_SAFE_REMOVEREF(m_sprites[i]);
 }

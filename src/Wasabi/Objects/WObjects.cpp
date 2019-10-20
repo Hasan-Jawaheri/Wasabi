@@ -328,7 +328,7 @@ WError WObject::InitInstancing(uint32_t maxInstances) {
 
 void WObject::DestroyInstancingResources() {
 	W_SAFE_REMOVEREF(m_instanceTexture);
-	for (int i = 0; i < m_instanceV.size(); i++)
+	for (uint32_t i = 0; i < m_instanceV.size(); i++)
 		delete m_instanceV[i];
 	m_instanceV.clear();
 }

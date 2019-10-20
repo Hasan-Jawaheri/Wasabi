@@ -220,7 +220,7 @@ protected:
 	 * @return         Must return an index into the list devices, which will
 	 *                 be used by the engine
 	 */
-	virtual int SelectGPU(std::vector<VkPhysicalDevice> devices);
+	virtual uint32_t SelectGPU(std::vector<VkPhysicalDevice> devices);
 
 	/**
 	 * Can be overloaded by the application. This function should return the

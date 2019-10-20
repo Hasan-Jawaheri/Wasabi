@@ -48,13 +48,13 @@ bool WMaterial::Valid() const {
 }
 
 void WMaterial::_DestroyResources() {
-	for (int i = 0; i < m_uniformBuffers.size(); i++) {
+	for (uint32_t i = 0; i < m_uniformBuffers.size(); i++) {
 		m_uniformBuffers[i].buffer.Destroy(m_app);
 		W_SAFE_FREE(m_uniformBuffers[i].data);
 	}
 	m_uniformBuffers.clear();
 
-	for (int i = 0; i < m_samplers.size(); i++) {
+	for (uint32_t i = 0; i < m_samplers.size(); i++) {
 		for (uint32_t j = 0; j < m_samplers[i].images.size(); j++) {
 			if (m_samplers[i].images[j])
 				W_SAFE_REMOVEREF(m_samplers[i].images[j]);
@@ -62,7 +62,7 @@ void WMaterial::_DestroyResources() {
 	}
 	m_samplers.clear();
 
-	for (int i = 0; i < m_pushConstants.size(); i++)
+	for (uint32_t i = 0; i < m_pushConstants.size(); i++)
 		W_SAFE_FREE(m_pushConstants[i].data);
 	m_pushConstants.clear();
 
@@ -99,15 +99,15 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint32_t bindingSet) {
 	//
 	uint32_t numBuffers = m_app->GetEngineParam<uint32_t>("bufferingCount");
 	size_t writeDescriptorsSize = 0;
-	for (int i = 0; i < effect->m_shaders.size(); i++) {
+	for (uint32_t i = 0; i < effect->m_shaders.size(); i++) {
 		WShader* shader = effect->m_shaders[i];
-		for (int j = 0; j < shader->m_desc.bound_resources.size(); j++) {
+		for (uint32_t j = 0; j < shader->m_desc.bound_resources.size(); j++) {
 			if (shader->m_desc.bound_resources[j].binding_set != bindingSet)
 				continue;
 
 			if (shader->m_desc.bound_resources[j].type == W_TYPE_UBO) {
 				bool already_added = false;
-				for (int k = 0; k < m_uniformBuffers.size(); k++) {
+				for (uint32_t k = 0; k < m_uniformBuffers.size(); k++) {
 					if (m_uniformBuffers[k].ubo_info->binding_index == shader->m_desc.bound_resources[j].binding_index) {
 						// two shaders have the same UBO binding index, skip (it is the same UBO, the WEffect::CreatePipeline ensures that)
 						already_added = true;
@@ -138,7 +138,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint32_t bindingSet) {
 				writeDescriptorsSize += ubo.descriptorBufferInfos.size();
 			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_TEXTURE) {
 				bool already_added = false;
-				for (int k = 0; k < m_samplers.size(); k++) {
+				for (uint32_t k = 0; k < m_samplers.size(); k++) {
 					if (m_samplers[k].sampler_info->binding_index == shader->m_desc.bound_resources[j].binding_index) {
 						// two shaders have the same sampler binding index, skip (it is the same sampler, the WEffect::CreatePipeline ensures that)
 						already_added = true;
@@ -170,7 +170,7 @@ WError WMaterial::CreateForEffect(WEffect* const effect, uint32_t bindingSet) {
 				writeDescriptorsSize += sampler.descriptors.size() * sampler.descriptors[0].size();
 			} else if (shader->m_desc.bound_resources[j].type == W_TYPE_PUSH_CONSTANT) {
 				bool already_added = false;
-				for (int k = 0; k < m_pushConstants.size(); k++) {
+				for (uint32_t k = 0; k < m_pushConstants.size(); k++) {
 					if (m_pushConstants[k].pc_info->OffsetAtVariable(0) == shader->m_desc.bound_resources[j].OffsetAtVariable(0) &&
 						m_pushConstants[k].pc_info->GetSize() == shader->m_desc.bound_resources[j].GetSize()) {
 						// two shaders have the same push constant ranges, merge them
@@ -346,7 +346,7 @@ WError WMaterial::SetVariableData(const char* varName, void* data, size_t len) {
 	bool isFound = false;
 	for (auto ubo = m_uniformBuffers.begin(); ubo != m_uniformBuffers.end(); ubo++) {
 		W_BOUND_RESOURCE* info = ubo->ubo_info;
-		for (int j = 0; j < info->variables.size(); j++) {
+		for (uint32_t j = 0; j < info->variables.size(); j++) {
 			if (strcmp(info->variables[j].name.c_str(), varName) == 0) {
 				size_t varsize = info->variables[j].GetSize();
 				size_t offset = info->OffsetAtVariable(j);
@@ -363,7 +363,7 @@ WError WMaterial::SetVariableData(const char* varName, void* data, size_t len) {
 	}
 	for (auto pc = m_pushConstants.begin(); pc != m_pushConstants.end(); pc++) {
 		W_BOUND_RESOURCE* info = pc->pc_info;
-		for (int j = 0; j < info->variables.size(); j++) {
+		for (uint32_t j = 0; j < info->variables.size(); j++) {
 			if (strcmp(info->variables[j].name.c_str(), varName) == 0) {
 				size_t varsize = info->variables[j].GetSize();
 				size_t offset = info->OffsetAtVariable(j);
@@ -378,7 +378,7 @@ WError WMaterial::SetVariableData(const char* varName, void* data, size_t len) {
 
 WError WMaterial::SetTexture(uint32_t binding_index, WImage* img, uint32_t arrayIndex) {
 	bool isFound = false;
-	for (int i = 0; i < m_samplers.size(); i++) {
+	for (uint32_t i = 0; i < m_samplers.size(); i++) {
 		W_BOUND_RESOURCE* info = m_samplers[i].sampler_info;
 		if (info->binding_index == binding_index) {
 			if (arrayIndex < m_samplers[i].images.size()) {
@@ -403,7 +403,7 @@ WError WMaterial::SetTexture(uint32_t binding_index, WImage* img, uint32_t array
 
 WError WMaterial::SetTexture(std::string name, WImage* img, uint32_t arrayIndex) {
 	bool isFound = false;
-	for (int i = 0; i < m_samplers.size(); i++) {
+	for (uint32_t i = 0; i < m_samplers.size(); i++) {
 		W_BOUND_RESOURCE* info = m_samplers[i].sampler_info;
 		if (info->name == name) {
 			if (arrayIndex < m_samplers[i].images.size()) {

@@ -461,8 +461,8 @@ VkCommandBuffer WRenderTarget::GetCommnadBuffer() const {
 	return m_app->Renderer->GetCurrentPrimaryCommandBuffer();
 }
 
-int WRenderTarget::GetNumColorOutputs() const {
-	return !Valid() ? 0 : (int)(m_targets.size() == 0 ? 1 : m_targets.size());
+uint32_t WRenderTarget::GetNumColorOutputs() const {
+	return !Valid() ? 0 : (m_targets.size() == 0 ? 1 : m_targets.size());
 }
 
 bool WRenderTarget::HasDepthOutput() const {

@@ -189,7 +189,7 @@ VkResult WVulkanMemoryManager::EndCopyCommandBuffer(bool waitQueue, VkFence sign
 	err = vkQueueSubmit(m_graphicsQueue, 1, &copySubmitInfo, signalFence);
 	if (err != VK_SUCCESS)
 		return err;
-	
+
 	if (waitQueue)
 		err = vkQueueWaitIdle(m_graphicsQueue);
 
@@ -207,7 +207,7 @@ void WVulkanMemoryManager::ReleaseAllResources(uint32_t setBufferingCount) {
 		}
 		it->clear();
 	}
-	if (setBufferingCount != -1)
+	if (setBufferingCount != std::numeric_limits<uint32_t>::max())
 		m_resourcesToBeFreed.resize(setBufferingCount * 2);
 }
 
@@ -378,4 +378,3 @@ void WVulkanMemoryManager::ReleaseFence(VkFence& obj, uint32_t bufferIndex) {
 		m_resourcesToBeFreed[m_resourcesToBeFreed.size() / 2 + bufferIndex].push_back({ VULKAN_RESOURCE_FENCE, (void*)obj, nullptr });
 	obj = VK_NULL_HANDLE;
 }
-

@@ -304,7 +304,7 @@ WError WTerrain::Create(uint32_t N, float size, uint32_t numRings) {
 						}
 						const size_t imgMemSize = images[0].first->GetWidth() * images[0].first->GetHeight() * images[0].first->GetPixelSize();
 						char* mem = new char[imgMemSize * images.size()];
-						for (int i = 0; i < images.size(); i++)
+						for (uint32_t i = 0; i < images.size(); i++)
 							memcpy(mem + i * imgMemSize, images[i].second, imgMemSize);
 						m_textures = new WImage(m_app);
 						err = m_textures->CreateFromPixelsArray(mem, images[0].first->GetWidth(), images[0].first->GetHeight(), 1, VK_FORMAT_R8G8B8A8_UNORM, (uint32_t)images.size(), W_IMAGE_CREATE_TEXTURE);

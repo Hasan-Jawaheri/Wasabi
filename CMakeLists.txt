@@ -79,7 +79,7 @@ if(MSVC)
     set_source_files_properties(${STB_DIR}/stb.h PROPERTIES COMPILE_FLAGS /wd4701)
 elseif(MACOSX)
 else()
-    set_source_files_properties(${TFD_SOURCES} PROPERTIES COMPILE_FLAGS -Wno-4267)
+    set_source_files_properties(${TFD_SOURCES} PROPERTIES COMPILE_FLAGS -Wno-format-overflow)
     set_source_files_properties(${STB_DIR}/stb.h PROPERTIES COMPILE_FLAGS -Wno-4701)
 endif()
 

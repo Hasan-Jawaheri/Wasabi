@@ -131,19 +131,19 @@ public:
 	 * @param camera         The camera used to render the frame
 	 * @return  True if the particle should die, false otherwise
 	 */
-	virtual inline bool UpdateParticle(float curTime, void* particleData, WParticlesInstance* outputInstance, const WMatrix& worldMatrix, class WCamera* camera) = 0;
+	virtual bool UpdateParticle(float curTime, void* particleData, WParticlesInstance* outputInstance, const WMatrix& worldMatrix, class WCamera* camera) = 0;
 
 	/**
 	 * Must be implemented to return the minimum point in the bounding box of the
 	 * particles in local space of the instances.
 	 */
-	virtual inline WVector3& GetMinPoint() = 0;
+	virtual WVector3& GetMinPoint() = 0;
 
 	/**
 	 * Must be implemented to return the maximum point in the bounding box of the
 	 * particles in local space of the instances.
 	 */
-	virtual inline WVector3& GetMaxPoint() = 0;
+	virtual WVector3& GetMaxPoint() = 0;
 };
 
 /**
@@ -210,10 +210,10 @@ public:
 	std::vector<std::pair<WColor, float>> m_colorGradient;
 
 	WDefaultParticleBehavior(uint32_t maxParticles);
-	virtual void UpdateSystem(float curTime, const WMatrix& worldMatrix, class WCamera* camera);
-	virtual inline bool UpdateParticle(float curTime, void* particleData, WParticlesInstance* outputInstance, const WMatrix& worldMatrix, class WCamera* camera);
-	virtual inline WVector3& GetMinPoint();
-	virtual inline WVector3& GetMaxPoint();
+	virtual void UpdateSystem(float curTime, const WMatrix& worldMatrix, class WCamera* camera) override;
+	virtual inline bool UpdateParticle(float curTime, void* particleData, WParticlesInstance* outputInstance, const WMatrix& worldMatrix, class WCamera* camera) override;
+	virtual inline WVector3& GetMinPoint() override;
+	virtual inline WVector3& GetMaxPoint() override;
 };
 
 /**

@@ -1,10 +1,10 @@
 #include "Wasabi/WindowAndInput/GLFW/WGLFWWindowAndInputComponent.hpp"
-#include <tinyfiledialogs.h>
 
 #include <mutex>
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+#include <tinyfiledialogs.h>
 
 static bool g_glfwInitialized = false;
 static std::mutex g_glfwMutex;

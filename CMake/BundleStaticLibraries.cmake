@@ -99,6 +99,7 @@ function(bundle_static_library)
         message(FATAL_ERROR "Unknown bundle scenario!")
     endif()
 
+    add_dependencies(${tgt_name} ${FUNCTION_ARGS_DEPENDENCIES})
     add_custom_command(
         TARGET ${tgt_name}
         POST_BUILD

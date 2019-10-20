@@ -206,9 +206,9 @@ private:
 struct W_SKELETAL_SUB_ANIMATION : public W_SUB_ANIMATION {
 	/** List of bone indices that are affected by this subanimation */
 	vector<uint32_t> boneIndices;
-	/** Index of the parent bone of this subanimation, -1 if none */
+	/** Index of the parent bone of this subanimation, MAX if none */
 	uint32_t parentIndex;
-	/** Index of the parent subanimation, -1 if none */
+	/** Index of the parent subanimation, MAX if none */
 	uint32_t parentSubAnimation;
 
 	W_SKELETAL_SUB_ANIMATION() {
@@ -280,11 +280,11 @@ public:
 	 * parent subanimation.
 	 * @param subAnimation       The subanimation to set its base bane
 	 * @param boneIndex          The index of the bone to be set as base
-	 * @param parentSubAnimation The parent subanimation, -1 if none
+	 * @param parentSubAnimation The parent subanimation, MAX if none
 	 */
 	void SetSubAnimationBaseBone(uint32_t subAnimation,
 								 uint32_t boneIndex,
-								 uint32_t parentSubAnimation = -1);
+								 uint32_t parentSubAnimation = std::numeric_limits<uint32_t>::max());
 
 	/**
 	 * Steps the state of the playing (or looping) subanimations forward. This is

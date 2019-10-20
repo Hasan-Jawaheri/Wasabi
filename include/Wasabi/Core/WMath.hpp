@@ -10,8 +10,10 @@
 #include <cstdint>
 #include <cmath>
 
+#ifdef _WIN32
 #pragma warning(push)
 #pragma warning(disable: 4201) // non-standard anonymous struct inside anonymous union warning
+#endif
 
 #define W_EPSILON 0.0001f
 #define W_PI (3.14159265358979323846f)
@@ -296,7 +298,7 @@ public:
 			float z;
 		};
 		#pragma pack(pop)
-		
+
 		float components[3];
 	};
 
@@ -426,7 +428,7 @@ public:
 			float w;
 		};
 		#pragma pack(pop)
-		
+
 		float components[4];
 	};
 
@@ -576,7 +578,7 @@ public:
 			float d;
 		};
 		#pragma pack(pop)
-		
+
 		float components[4];
 	};
 
@@ -954,4 +956,6 @@ WPlane WNormalizePlane(const WPlane plane);
  */
 WColor WColorLerp(const WColor c1, const WColor c2, const float fLerpVal);
 
+#ifdef _WIN32
 #pragma warning(pop)
+#endif

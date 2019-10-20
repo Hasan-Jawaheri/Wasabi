@@ -153,7 +153,7 @@ public:
 	 * Retrieves the width that would be occupied by a text if it was to render.
 	 * @param  text    Text to check its width
 	 * @param  fHeight Height that will be used for the render call
-	 * @param  fontID  Font that will be used for the render call, -1 for default
+	 * @param  fontID  Font that will be used for the render call, MAX for default
 	 * @return         Width, in pixels, of the text if it was to render using
 	 *                 the specified parameters
 	 */

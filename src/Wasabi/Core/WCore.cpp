@@ -339,7 +339,7 @@ WError Wasabi::StartEngine(int width, int height) {
 	if (err != VK_SUCCESS)
 		return WError(W_FAILEDTOLISTDEVICES);
 
-	int index = SelectGPU(physicalDevices);
+	uint32_t index = SelectGPU(physicalDevices);
 	if (index >= physicalDevices.size())
 		index = 0;
 	m_vkPhysDev = physicalDevices[index];
@@ -484,7 +484,7 @@ VulkanSwapChain* Wasabi::GetSwapChain() {
 	return &m_swapChain;
 }
 
-int Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {
+uint32_t Wasabi::SelectGPU(std::vector<VkPhysicalDevice> devices) {
 	return 0;
 }
 

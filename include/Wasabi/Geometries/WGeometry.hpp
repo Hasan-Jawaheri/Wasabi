@@ -45,7 +45,7 @@ struct W_VERTEX_ATTRIBUTE {
  */
 struct W_VERTEX_DESCRIPTION {
 	W_VERTEX_DESCRIPTION(std::vector<W_VERTEX_ATTRIBUTE> attribs = {})
-		: attributes(attribs), _size((size_t)-1) {}
+		: attributes(attribs), _size(std::numeric_limits<size_t>::max()) {}
 
 	/** A list of attributes for the vertex */
 	std::vector<W_VERTEX_ATTRIBUTE> attributes;
@@ -61,7 +61,7 @@ struct W_VERTEX_DESCRIPTION {
 	/**
 	 * Retrieves the offset (in bytes) to a certain attribute.
 	 * @param  attrib_index Index of the attribute to get its offset
-	 * @return             The offset of the attribute at attrib_indexm -1 if
+	 * @return             The offset of the attribute at attrib_indexm MAX if
 	 *                     it cannot be found
 	 */
 	size_t GetOffset(uint32_t attrib_index) const;
@@ -69,7 +69,7 @@ struct W_VERTEX_DESCRIPTION {
 	/**
 	 * Retrieves the offset (in bytes) to a certain attribute.
 	 * @param  attrib_name Name of the attribute to get its offset
-	 * @return             The offset of the attribute at attrib_indexm -1 if
+	 * @return             The offset of the attribute at attrib_indexm MAX if
 	 *                     it cannot be found
 	 */
 	size_t GetOffset(std::string attrib_name) const;
@@ -77,7 +77,7 @@ struct W_VERTEX_DESCRIPTION {
 	/**
 	 * Find the index of an attribute given its name.
 	 * @param  attrib_name Attribute name to look for
-	 * @return             Index of the attribute whose name is attrib_name, -1
+	 * @return             Index of the attribute whose name is attrib_name, MAX
 	 *                     if it cannot be found
 	 */
 	uint32_t GetIndex(std::string attrib_name) const;
@@ -216,7 +216,7 @@ public:
 	/**
 	 * Retrieves the vertex description of a vertex buffer. Should return valid
 	 * descriptions for all <a>layout_index</a> values between 0 and
-	 * GetVertexBufferCount()-1.
+	 * GetVertexBufferCount() - 1.
 	 *
 	 * The default vertex description (for default geometry) is:
 	 * - layout 0: (vertex buffer)
@@ -588,16 +588,16 @@ public:
 	 * target must have its Begin() function called before this function is
 	 * called.
 	 * @param  rt             Render target to draw to
-	 * @param  numIndices     Number of indices to draw, -1 for all. If the
+	 * @param  numIndices     Number of indices to draw, MAX for all. If the
 	 *                        geometry has no indices, this is the number of
-	 *                        vertices to draw, -1 for all
+	 *                        vertices to draw, MAX for all
 	 * @param  numInstances   Number of instances to draw
 	 * @param  bindAnimation  true to bind the animation buffer (if not
 	 *                        available, the geometry buffer will be bound
 	 *                        twice), false otherwise
 	 * @return                [description]
 	 */
-	WError Draw(class WRenderTarget* rt, uint32_t numIndices = -1, uint32_t numInstances = 1, bool bindAnimation = true);
+	WError Draw(class WRenderTarget* rt, uint32_t numIndices = std::numeric_limits<uint32_t>::max(), uint32_t numInstances = 1, bool bindAnimation = true);
 
 	/**
 	 * Retrieves the point that represents the minimum boundary of the geometry.

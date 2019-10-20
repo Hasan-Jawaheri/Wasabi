@@ -117,7 +117,7 @@ void WOpenALSoundComponent::SetListenerOrientation(WOrientation* ori) {
 		if (i < 3)
 			fVals[i] = ori->GetLVector()[i];
 		else
-			fVals[i] = ori->GetUVector()[i];
+			fVals[i] = ori->GetUVector()[i - 3];
 	}
 	alListenerfv(AL_ORIENTATION, fVals);
 }
@@ -128,7 +128,7 @@ void WOpenALSoundComponent::SetListenerToOrientation(WOrientation* ori) {
 		if (i < 3)
 			fVals[i] = ori->GetLVector()[i];
 		else
-			fVals[i] = ori->GetUVector()[i];
+			fVals[i] = ori->GetUVector()[i - 3];
 	}
 	alListenerfv(AL_ORIENTATION, fVals);
 	alListener3f(AL_POSITION, ori->GetPositionX(), ori->GetPositionY(), ori->GetPositionZ());

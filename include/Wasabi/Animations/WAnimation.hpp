@@ -122,15 +122,15 @@ public:
 	/**
 	 * Sets the play speed multiplier for the selected subanimation.
 	 * @param fSpeedMultiplier Speed multiplier
-	 * @param subAnimation     subanimation index, -1 will set the speed for all
+	 * @param subAnimation     subanimation index, MAX will set the speed for all
 	 *                         subanimations
 	 */
-	void SetPlaySpeed(float fSpeedMultiplier, uint32_t subAnimation = -1);
+	void SetPlaySpeed(float fSpeedMultiplier, uint32_t subAnimation = std::numeric_limits<uint32_t>::max());
 
 	/**
 	 * Immediately sets the current frame in the subanimation.
 	 * @param frame        The frame index to go to
-	 * @param subAnimation The subanimation to set its frame, -1 for all
+	 * @param subAnimation The subanimation to set its frame, MAX for all
 	 *                     subanimations
 	 */
 	void SetCurrentFrame(uint32_t frame, uint32_t subAnimation = 0);
@@ -138,7 +138,7 @@ public:
 	/**
 	 * Immediately sets the current time in the subanimation.
 	 * @param fTime        The time to set the subanimation to
-	 * @param subAnimation The subanimation to set its time, -1 for all
+	 * @param subAnimation The subanimation to set its time, MAX for all
 	 *                     subanimations
 	 */
 	void SetCurrentTime(float fTime, uint32_t subAnimation = 0);
@@ -147,47 +147,45 @@ public:
 	 * Sets the range in which the subanimation can loop.
 	 * @param startFrame   The first frame to start looping
 	 * @param endFrame     The last frame for the loop
-	 * @param subAnimation The subanimation to set its boundaries, -1 for all
+	 * @param subAnimation The subanimation to set its boundaries, MAX for all
 	 *                     subanimations
 	 */
-	void SetPlayingBounds(uint32_t startFrame, uint32_t endFrame,
-						  uint32_t subAnimation = 0);
+	void SetPlayingBounds(uint32_t startFrame, uint32_t endFrame, uint32_t subAnimation = 0);
 
 	/**
 	 * Sets the range in which the subanimation can loop.
 	 * @param fStartTime   The time at which looping begins
 	 * @param fEndTime     The time at which the loop restarts
-	 * @param subAnimation The subanimation to set its boundaries, -1 for all
+	 * @param subAnimation The subanimation to set its boundaries, MAX for all
 	 *                     subanimations
 	 */
-	void SetPlayingBounds_Time(float fStartTime, float fEndTime,
-							   uint32_t subAnimation = 0);
+	void SetPlayingBounds_Time(float fStartTime, float fEndTime, uint32_t subAnimation = 0);
 
 	/**
 	 * Starts playing the subanimation.
-	 * @param subAnimation subanimation to play, -1 for all subanimations
+	 * @param subAnimation subanimation to play, MAX for all subanimations
 	 */
-	void Play(uint32_t subAnimation = -1);
+	void Play(uint32_t subAnimation = std::numeric_limits<uint32_t>::max());
 
 	/**
 	 * Starts looping the subanimation.
-	 * @param subAnimation subanimation to loop, -1 for all subanimations
+	 * @param subAnimation subanimation to loop, MAX for all subanimations
 	 */
-	void Loop(uint32_t subAnimation = -1);
+	void Loop(uint32_t subAnimation = std::numeric_limits<uint32_t>::max());
 
 	/**
 	 * Stops playing (and looping) the subanimation.
-	 * @param subAnimation subanimation to stop, -1 for all subanimations
+	 * @param subAnimation subanimation to stop, MAX for all subanimations
 	 */
-	void Stop(uint32_t subAnimation = -1);
+	void Stop(uint32_t subAnimation = std::numeric_limits<uint32_t>::max());
 
 	/**
 	 * Resets the subanimation by setting its current time and frame to the
 	 * beginning of the boundaries set for it (Set boundaries using
 	 * SetPlayingBounds and SetPlayingBounds_Time).
-	 * @param subAnimation subanimation to reset, -1 for all subanimations
+	 * @param subAnimation subanimation to reset, MAX for all subanimations
 	 */
-	void Reset(uint32_t subAnimation = -1);
+	void Reset(uint32_t subAnimation = std::numeric_limits<uint32_t>::max());
 
 	/**
 	 * Whether or not the subanimation is playing (or looping).
@@ -232,9 +230,9 @@ protected:
 	/**
 	 * Updates W_SUB_ANIMATION::firstFrame for the given subanimation to match
 	 * its' W_SUB_ANIMATION::fPlayStartTime.
-	 * @param subAnimation subanimation to update, -1 to update all subanimations
+	 * @param subAnimation subanimation to update, MAX to update all subanimations
 	 */
-	void m_UpdateFirstFrame(uint32_t subAnimation = -1);
+	void m_UpdateFirstFrame(uint32_t subAnimation = std::numeric_limits<uint32_t>::max());
 
 	/**
 	 * true if this object owns the frames in m_frames, and can thus free them.

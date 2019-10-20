@@ -138,7 +138,7 @@ public:
 	 */
 	VkCommandBuffer GetCopyCommandBuffer() const;
 
-	void ReleaseAllResources(uint32_t setBufferingCount = -1);
+	void ReleaseAllResources(uint32_t setBufferingCount = std::numeric_limits<uint32_t>::max());
 	void ReleaseFrameResources(uint32_t bufferIndex);
 
 	void ReleaseRenderPass(VkRenderPass& renderPass, uint32_t bufferIndex);
@@ -195,4 +195,3 @@ private:
 	/** Releases a resource from m_resourcesToBeFreed */
 	void _ReleaseResource(int type, void* resource, void* aux);
 };
-

@@ -19,8 +19,8 @@ std::string WBulletRigidBodyManager::GetTypeName() const {
 }
 
 void WBulletRigidBodyManager::Update(float deltaTime) {
-	for (int i = 0; i < W_HASHTABLESIZE; i++) {
-		for (int j = 0; j < m_entities[i].size(); j++) {
+	for (uint32_t i = 0; i < W_HASHTABLESIZE; i++) {
+		for (uint32_t j = 0; j < m_entities[i].size(); j++) {
 			((WBulletRigidBody*)m_entities[i][j])->Update(deltaTime);
 		}
 	}
@@ -119,7 +119,7 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 		size_t stride = vertexDesc.GetSize();
 		uint32_t numVerts = createInfo.geometry->GetNumVertices();
 		size_t posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
-		if (posOffset == (size_t)-1)
+		if (posOffset == std::numeric_limits<size_t>::max())
 			return WError(W_INVALIDPARAM);
 		float* vb = nullptr;
 		createInfo.geometry->MapVertexBuffer((void**)&vb, W_MAP_READ);
@@ -139,7 +139,7 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 		W_VERTEX_DESCRIPTION vertexDesc = createInfo.geometry->GetVertexDescription();
 		size_t stride = vertexDesc.GetSize();
 		size_t posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
-		if (posOffset == (size_t)-1)
+		if (posOffset == std::numeric_limits<size_t>::max())
 			return WError(W_INVALIDPARAM);
 		btScalar* points = nullptr;
 		uint32_t* indices = nullptr;

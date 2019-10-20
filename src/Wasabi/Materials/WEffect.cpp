@@ -148,7 +148,7 @@ W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 	if (t == W_TYPE_UBO || t == W_TYPE_PUSH_CONSTANT) {
 		size_t curOffset = 0;
 		_offsets.resize(variables.size());
-		for (int i = 0; i < variables.size(); i++) {
+		for (uint32_t i = 0; i < variables.size(); i++) {
 			size_t varSize = variables[i].GetSize();
 			size_t varAlignment = variables[i].GetAlignment();
 			if (curOffset % varAlignment > 0)
@@ -159,7 +159,7 @@ W_BOUND_RESOURCE::W_BOUND_RESOURCE(
 		_size = curOffset;
 
 		if (t == W_TYPE_PUSH_CONSTANT) {
-			for (int i = 0; i < _offsets.size(); i++)
+			for (uint32_t i = 0; i < _offsets.size(); i++)
 				_offsets[i] += binding_index;
 			binding_index = std::numeric_limits<uint32_t>::max();
 		}
@@ -179,7 +179,7 @@ size_t W_BOUND_RESOURCE::OffsetAtVariable(uint32_t variable_index) const {
 bool W_BOUND_RESOURCE::IsSimilarTo(W_BOUND_RESOURCE resource) {
 	if (type != resource.type || binding_index != resource.binding_index || variables.size() != resource.variables.size())
 		return false;
-	for (int i = 0; i < variables.size(); i++) {
+	for (uint32_t i = 0; i < variables.size(); i++) {
 		if (variables[i].type != resource.variables[i].type || variables[i].GetSize() != resource.variables[i].GetSize() || variables[i].num_elems != resource.variables[i].num_elems)
 			return false;
 	}
@@ -187,9 +187,9 @@ bool W_BOUND_RESOURCE::IsSimilarTo(W_BOUND_RESOURCE resource) {
 }
 
 size_t W_INPUT_LAYOUT::GetSize() const {
-	if (_size == (size_t)-1) {
+	if (_size == std::numeric_limits<size_t>::max()) {
 		_size = 0;
-		for (int i = 0; i < attributes.size(); i++)
+		for (uint32_t i = 0; i < attributes.size(); i++)
 			_size += attributes[i].GetSize();
 	}
 	return _size;
@@ -239,7 +239,7 @@ WShader::~WShader() {
 void WShader::LoadCodeSPIRV(const char* const code, int len, bool bSaveData) {
 	m_app->MemoryManager->ReleaseShaderModule(m_module, m_app->GetCurrentBufferingIndex());
 
-	int roundedLen = (len + 3) & ((uint)-1 << 2);
+	int roundedLen = (len + 3) & (std::numeric_limits<uint32_t>::max() << 2);
 	m_code = (char*)W_SAFE_ALLOC(roundedLen);
 	memcpy(m_code, code, roundedLen);
 	if (len < roundedLen)
@@ -257,11 +257,11 @@ void WShader::LoadCodeSPIRV(const char* const code, int len, bool bSaveData) {
 void WShader::LoadCodeGLSL(std::string code, bool bSaveData) {
 	m_app->MemoryManager->ReleaseShaderModule(m_module, m_app->GetCurrentBufferingIndex());
 
-	int roundedLen = ((code.size() + 3) & ((uint)-1 << 2));
+	uint32_t roundedLen = ((code.length() + 3) & (std::numeric_limits<uint32_t>::max() << 2));
 	m_code = (char*)W_SAFE_ALLOC(roundedLen);
 	memcpy(m_code, code.c_str(), roundedLen);
-	if (code.size() < roundedLen)
-		memset(m_code + code.size(), '\n', roundedLen - code.size());
+	if (code.length() < roundedLen)
+		memset(m_code + code.length(), '\n', roundedLen - code.length());
 	m_codeLen = roundedLen;
 	m_isSPIRV = false;
 
@@ -516,7 +516,7 @@ WEffect::WEffect(Wasabi* const app, uint32_t ID) : WFileAsset(app, ID), m_depthS
 }
 
 WEffect::~WEffect() {
-	for (int i = 0; i < m_shaders.size(); i++) {
+	for (uint32_t i = 0; i < m_shaders.size(); i++) {
 		m_shaders[i]->RemoveReference();
 	}
 	m_shaders.clear();
@@ -551,7 +551,7 @@ void WEffect::SetName(std::string newName) {
 
 bool WEffect::_ValidShaders() const {
 	// valid when at least one shader has input layout (vertex shader)
-	for (int i = 0; i < m_shaders.size(); i++)
+	for (uint32_t i = 0; i < m_shaders.size(); i++)
 		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER &&
 			m_shaders[i]->m_desc.input_layouts.size() > 0 &&
 			m_shaders[i]->m_desc.input_layouts[0].GetSize() > 0 &&
@@ -568,7 +568,7 @@ WError WEffect::BindShader(WShader* shader) {
 	if (!shader)
 		return WError(W_INVALIDPARAM);
 
-	for (int i = 0; i < m_shaders.size(); i++) {
+	for (uint32_t i = 0; i < m_shaders.size(); i++) {
 		if (m_shaders[i]->m_desc.type == shader->m_desc.type) {
 			m_shaders[i]->RemoveReference();
 			m_shaders.erase(m_shaders.begin() + i);
@@ -645,8 +645,8 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	unordered_map<int, W_BOUND_RESOURCE> used_bindings;
 	unordered_map<uint, vector<VkDescriptorSetLayoutBinding>> layoutBindingsMap;
 	vector<VkPushConstantRange> pushConstantRanges;
-	for (int i = 0; i < m_shaders.size(); i++) {
-		for (int j = 0; j < m_shaders[i]->m_desc.bound_resources.size(); j++) {
+	for (uint32_t i = 0; i < m_shaders.size(); i++) {
+		for (uint32_t j = 0; j < m_shaders[i]->m_desc.bound_resources.size(); j++) {
 			W_BOUND_RESOURCE* boundResource = &m_shaders[i]->m_desc.bound_resources[j];
 			if (boundResource->type == W_TYPE_UBO || boundResource->type == W_TYPE_TEXTURE) {
 				VkDescriptorSetLayoutBinding layoutBinding = {};
@@ -736,7 +736,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	// One blend attachment state
 	vector<VkPipelineColorBlendAttachmentState> blendAttachmentStates;
 	if (m_blendStates.size()) {
-		for (int i = 0; i < rt->GetNumColorOutputs(); i++)
+		for (uint32_t i = 0; i < rt->GetNumColorOutputs(); i++)
 			blendAttachmentStates.push_back(i < m_blendStates.size() ? m_blendStates[i] : m_blendStates[0]);
 		colorBlendState.attachmentCount = (uint32_t)blendAttachmentStates.size();
 		colorBlendState.pAttachments = blendAttachmentStates.data();
@@ -806,7 +806,7 @@ WError WEffect::BuildPipeline(WRenderTarget* rt) {
 	uint32_t num_attributes = 0;
 	for (uint32_t i = 0; i < m_shaders.size(); i++) {
 		if (m_shaders[i]->m_desc.type == W_VERTEX_SHADER) {
-			for (int j = 0; j < m_shaders[i]->m_desc.input_layouts.size(); j++) {
+			for (uint32_t j = 0; j < m_shaders[i]->m_desc.input_layouts.size(); j++) {
 				ILs.push_back(&m_shaders[i]->m_desc.input_layouts[j]);
 				num_attributes += (uint32_t)m_shaders[i]->m_desc.input_layouts[j].attributes.size();
 			}

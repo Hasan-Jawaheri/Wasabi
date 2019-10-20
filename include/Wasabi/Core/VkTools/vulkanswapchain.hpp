@@ -188,7 +188,7 @@ public:
 		}
 		colorSpace = surfaceFormats[0].colorSpace;
 
-		return true;
+		return err == VK_SUCCESS;
 	}
 
 	// Connect to the instance und device and get all required function pointers
@@ -231,7 +231,7 @@ public:
 		assert(!err);
 
 		VkExtent2D swapchainExtent = {};
-		// width and height are either both -1, or both not -1.
+		// width and height are either both MAX, or both not MAX.
 		if (surfCaps.currentExtent.width == std::numeric_limits<uint32_t>::max())
 		{
 			// If the surface size is undefined, the size is set to
@@ -359,6 +359,8 @@ public:
 			err = vkCreateImageView(device, &colorAttachmentView, nullptr, &buffers[i].view);
 			assert(!err);
 		}
+
+		(void)err;
 	}
 
 	// Acquires the next image in the swap chain

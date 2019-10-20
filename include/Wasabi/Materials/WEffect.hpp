@@ -234,9 +234,9 @@ typedef struct W_BOUND_RESOURCE {
 typedef struct W_INPUT_LAYOUT {
 	W_INPUT_LAYOUT(std::vector<W_SHADER_VARIABLE_INFO> a,
 				   W_VERTEX_INPUT_RATE r = W_INPUT_RATE_PER_VERTEX)
-		: attributes(a), input_rate(r), _size((size_t)-1) {
+		: attributes(a), input_rate(r), _size(std::numeric_limits<size_t>::max()) {
 	}
-	W_INPUT_LAYOUT() : attributes({}), _size((size_t)-1) {}
+	W_INPUT_LAYOUT() : attributes({}), _size(std::numeric_limits<size_t>::max()) {}
 
 	/** Attributes of a single "vertex" (or instance, depending on input_rate) */
 	std::vector<W_SHADER_VARIABLE_INFO> attributes;
@@ -695,7 +695,7 @@ private:
 	VkPipeline m_pipeline;
 	/** List of bound shaders */
 	std::vector<WShader*> m_shaders;
-	/** Index of the bound vertex shader (-1 if none is bound) */
+	/** Index of the bound vertex shader (MAX if none is bound) */
 	uint32_t m_vertexShaderIndex;
 	/** Vulkan pipeline layout used for the pipelines creation */
 	VkPipelineLayout m_pipelineLayout;

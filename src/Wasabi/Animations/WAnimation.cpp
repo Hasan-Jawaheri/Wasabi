@@ -55,10 +55,10 @@ void WAnimation::SetName(std::string newName) {
 
 void WAnimation::m_UpdateFirstFrame(uint32_t subAnimation) {
 	if (subAnimation == std::numeric_limits<uint32_t>::max()) {
-		for (int i = 0; i < m_subAnimations.size(); i++) {
+		for (uint32_t i = 0; i < m_subAnimations.size(); i++) {
 			float fStartTime = ((W_SUB_ANIMATION*)m_subAnimations[i])->fPlayStartTime;
 			float fCurTime = 0.0f;
-			for (int n = 0; n < m_frames.size(); n++) {
+			for (uint32_t n = 0; n < m_frames.size(); n++) {
 				if (fCurTime > fStartTime) {
 					((W_SUB_ANIMATION*)m_subAnimations[i])->firstFrame = n;
 					break;
@@ -69,7 +69,7 @@ void WAnimation::m_UpdateFirstFrame(uint32_t subAnimation) {
 	} else {
 		float fStartTime = ((W_SUB_ANIMATION*)m_subAnimations[subAnimation])->fPlayStartTime;
 		float fCurTime = 0.0f;
-		for (int n = 0; n < m_frames.size(); n++) {
+		for (uint32_t n = 0; n < m_frames.size(); n++) {
 			if (fCurTime >= fStartTime) {
 				((W_SUB_ANIMATION*)m_subAnimations[subAnimation])->firstFrame = n;
 				break;
@@ -80,7 +80,7 @@ void WAnimation::m_UpdateFirstFrame(uint32_t subAnimation) {
 }
 
 void WAnimation::Update(float fDeltaTime) {
-	for (int anim = 0; anim < m_subAnimations.size(); anim++) {
+	for (uint32_t anim = 0; anim < m_subAnimations.size(); anim++) {
 		W_SUB_ANIMATION* curSubAnimation = (W_SUB_ANIMATION*)m_subAnimations[anim];
 		if (curSubAnimation->bPlaying)
 			curSubAnimation->fCurrentTime += fDeltaTime * curSubAnimation->fSpeed;
@@ -125,7 +125,7 @@ void WAnimation::AddSubAnimation() {
 }
 
 void WAnimation::RemoveSubAnimation(uint32_t index) {
-	if (index > 0 && index < m_subAnimations.size()) {
+	if (index < m_subAnimations.size()) {
 		delete m_subAnimations[index];
 		m_subAnimations.erase(m_subAnimations.begin() + index);
 	}
@@ -143,7 +143,7 @@ WError WAnimation::SetKeyFrameTime(uint32_t frame, float fTime) {
 }
 
 void WAnimation::SetPlaySpeed(float fSpeedMultiplier, uint32_t subAnimation) {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return;
 	if (subAnimation == std::numeric_limits<uint32_t>::max())
 		for (uint32_t i = 0; i < m_subAnimations.size(); i++)
@@ -153,7 +153,7 @@ void WAnimation::SetPlaySpeed(float fSpeedMultiplier, uint32_t subAnimation) {
 }
 
 void WAnimation::SetCurrentFrame(uint32_t frame, uint32_t subAnimation) {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return;
 	if (frame >= m_frames.size())
 		return;
@@ -177,7 +177,7 @@ void WAnimation::SetCurrentFrame(uint32_t frame, uint32_t subAnimation) {
 }
 
 void WAnimation::SetCurrentTime(float fTime, uint32_t subAnimation) {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return;
 
 	float fTotalTime = 0.0f;
@@ -199,7 +199,7 @@ void WAnimation::SetCurrentTime(float fTime, uint32_t subAnimation) {
 }
 
 void WAnimation::SetPlayingBounds(uint32_t startFrame, uint32_t endFrame, uint32_t subAnimation) {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return;
 	if (endFrame >= m_frames.size())
 		endFrame = (uint32_t)m_frames.size() - 1;
@@ -231,7 +231,7 @@ void WAnimation::SetPlayingBounds(uint32_t startFrame, uint32_t endFrame, uint32
 }
 
 void WAnimation::SetPlayingBounds_Time(float fStartTime, float fEndTime, uint32_t subAnimation) {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return;
 	if (fStartTime >= fEndTime)
 		return;
@@ -250,7 +250,7 @@ void WAnimation::SetPlayingBounds_Time(float fStartTime, float fEndTime, uint32_
 }
 
 void WAnimation::Play(uint32_t subAnimation) {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return;
 
 	if (subAnimation == std::numeric_limits<uint32_t>::max()) {
@@ -265,7 +265,7 @@ void WAnimation::Play(uint32_t subAnimation) {
 }
 
 void WAnimation::Loop(uint32_t subAnimation) {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return;
 
 	if (subAnimation == std::numeric_limits<uint32_t>::max()) {
@@ -280,7 +280,7 @@ void WAnimation::Loop(uint32_t subAnimation) {
 }
 
 void WAnimation::Stop(uint32_t subAnimation) {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return;
 
 	if (subAnimation == std::numeric_limits<uint32_t>::max()) {
@@ -295,7 +295,7 @@ void WAnimation::Stop(uint32_t subAnimation) {
 }
 
 void WAnimation::Reset(uint32_t subAnimation) {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return;
 
 	if (subAnimation == std::numeric_limits<uint32_t>::max()) {
@@ -310,7 +310,7 @@ void WAnimation::Reset(uint32_t subAnimation) {
 }
 
 bool WAnimation::Playing(uint32_t subAnimation) const {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return false;
 
 	if (subAnimation == std::numeric_limits<uint32_t>::max()) {
@@ -325,7 +325,7 @@ bool WAnimation::Playing(uint32_t subAnimation) const {
 }
 
 bool WAnimation::Looping(uint32_t subAnimation) const {
-	if (subAnimation >= m_subAnimations.size() && subAnimation != -1)
+	if (subAnimation >= m_subAnimations.size() && subAnimation != std::numeric_limits<uint32_t>::max())
 		return false;
 
 	if (subAnimation == std::numeric_limits<uint32_t>::max()) {

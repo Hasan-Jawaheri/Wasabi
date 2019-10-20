@@ -233,7 +233,7 @@ bool BulletDebugger::Loop(float fDeltaTime) {
 			vb[i+0] = LineVertex({ curLines[lineIndex].from, curLines[lineIndex].color });
 			vb[i+1] = LineVertex({ curLines[lineIndex].to,   curLines[lineIndex].color });
 		} else
-			memset(&vb[i], 0, sizeof(LineVertex) * 2);
+			memset(static_cast<void*>(&vb[i]), 0, sizeof(LineVertex) * 2);
 	}
 	m_linesDrawer->GetGeometry()->UnmapVertexBuffer(false);
 

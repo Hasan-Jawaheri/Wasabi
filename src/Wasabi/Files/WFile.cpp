@@ -203,7 +203,7 @@ void WFile::ReleaseAsset(WFileAsset* asset) {
 WError WFile::LoadHeaders(std::streamsize maxFileSize) {
 	std::streamoff curOffset = 0;
 
-	while (curOffset != (std::streamoff)-1) {
+	while (curOffset != std::numeric_limits<std::streamoff>::max()) {
 		if (maxFileSize < (std::streamoff)(curOffset + sizeof(FILE_MAGIC) + sizeof(FILE_HEADER::dataSize) + sizeof(FILE_HEADER::nextHeader)))
 			return WError(W_INVALIDFILEFORMAT);
 
@@ -252,7 +252,7 @@ void WFile::CreateNewHeader() {
 	header.start = m_fileSize;
 	header.dataStart = header.start + sizeof(FILE_MAGIC) + sizeof(FILE_HEADER::dataSize) + sizeof(FILE_HEADER::nextHeader);
 	header.dataSize = 200 * FILE_ASSET::GetSize();
-	header.nextHeader = -1;
+	header.nextHeader = std::numeric_limits<std::streamoff>::max();
 	m_file.write((char*)&FILE_MAGIC, sizeof(FILE_MAGIC));
 	m_file.write((char*)&header.dataSize, sizeof(header.dataSize));
 	m_file.write((char*)&header.nextHeader, sizeof(header.nextHeader));

@@ -313,7 +313,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint3
 	WCamera* cam = rt->GetCamera();
 
 	int numLights = 0;
-	for (int i = 0; numLights < m_lights.size(); i++) {
+	for (uint32_t i = 0; (size_t)numLights < m_lights.size(); i++) {
 		WLight* light = m_app->LightManager->GetEntityByIndex(i);
 		if (!light)
 			break;

@@ -304,6 +304,7 @@ namespace vkTools
 		shader_code = malloc(size);
 		retval = fread(shader_code, size, 1, fp);
 		assert(retval == 1);
+		(void)retval;
 
 		*psize = size;
 
