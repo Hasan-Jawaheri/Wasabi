@@ -32,8 +32,6 @@ build_stb("STB_DIR" "${DEPENDENCIES_DIR}")
 build_tinyfiledialogs("TFD_DIR" "${DEPENDENCIES_DIR}")
 
 # Source files
-file(GLOB_RECURSE TFD_SOURCES "${TFD_DIR}/tinyfiledialogs.c")
-
 file(GLOB_RECURSE LIB_SOURCES "src/Wasabi/*.cpp")
 file(GLOB_RECURSE LIB_GLSL "src/Wasabi/*.glsl")
 file(GLOB_RECURSE LIB_HEADERS "include/Wasabi/*")
@@ -46,9 +44,9 @@ file(GLOB_RECURSE FBX_LOADER_SOURCES "src/FBXLoader/*.cpp")
 file(GLOB_RECURSE FBX_LOADER_HEADERS "include/FBXLoader/*")
 
 # Wasabi library
-assign_source_group(${LIB_SOURCES} ${TFD_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
+assign_source_group(${LIB_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
 build_glsl(TARGET lib-glsl-code VULKAN ${VULKAN_SDK_PATH} CONVERTER ${CMAKE_SOURCE_DIR}/src/spv-converter.py SOURCES ${LIB_GLSL})
-add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${TFD_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
+add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
 add_dependencies(standalone-wasabi lib-glsl-code)
 target_compile_definitions(standalone-wasabi PRIVATE COMPILING_WASABI)
 target_compile_definitions(standalone-wasabi PRIVATE AL_LIBTYPE_STATIC) # <-- this makes the OpenAL headers not do dllimport (on Windows)
@@ -62,21 +60,11 @@ target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${TFD_DIR}/")
 enable_all_warnings(standalone-wasabi)
 
-# Ignore TFD warnings
-if(MSVC)
-    set_source_files_properties(${TFD_SOURCES} PROPERTIES COMPILE_FLAGS /wd4267)
-    set_source_files_properties(${STB_DIR}/stb.h PROPERTIES COMPILE_FLAGS /wd4701)
-elseif(MACOSX)
-else()
-    set_source_files_properties(${TFD_SOURCES} PROPERTIES COMPILE_FLAGS -Wno-format-overflow)
-    set_source_files_properties(${STB_DIR}/stb.h PROPERTIES COMPILE_FLAGS -Wno-4701)
-endif()
-
 # Bundle the libraries together
 bundle_static_library(
     TARGET standalone-wasabi
     BUNDLED_TARGET wasabi
-    DEPENDENCIES ex-common OpenAL glfw Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath assimp)
+    DEPENDENCIES tinyfiledialogs ex-common OpenAL glfw Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath assimp)
 # Build the dist folder
 build_dist(build-dist wasabi)
 
