@@ -22,19 +22,6 @@ else()
     set(VULKAN_SDK_PATH ${Vulkan_INCLUDE_DIRS}/..)
 endif()
 
-############# FBX SDK ###############
-if (NOT FBXSDK_ROOT)
-    message(WARNING "Could not find FBX SDK")
-else()
-    SET(FBX_LIBRARIES_RELEASE "${FBXSDK_ROOT}/lib/vs2015/x64/release/libfbxsdk-md.lib")
-    SET(FBX_LIBRARIES_DEBUG "${FBXSDK_ROOT}/lib/vs2015/x64/debug/libfbxsdk-md.lib")
-    SET(FBX_INCLUDE_DIR ${FBXSDK_ROOT}/include)
-
-	message(STATUS "FBXSDK libraries: " ${FBX_LIBRARIES_RELEASE})
-	message(STATUS "FBXSDK include: " ${FBX_INCLUDE_DIR})
-endif()
-#####################################
-
 set(DEPENDENCIES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
 initialize_submodules()
 build_open_al("OPENAL_DIR" "${DEPENDENCIES_DIR}")
@@ -107,24 +94,6 @@ target_include_directories(wasabi_test PRIVATE "include/WasabiTest")
 add_dependencies(wasabi_test test-glsl-code build-dist)
 link_target_to_wasabi(wasabi_test "${CMAKE_BINARY_DIR}/dist")
 enable_all_warnings(wasabi_test)
-
-# FBX Loader
-if (FBXSDK_ROOT)
-    assign_source_group(${FBX_LOADER_SOURCES} ${FBX_LOADER_HEADERS})
-    if (WIN32)
-        add_executable(fbx_loader WIN32 ${FBX_LOADER_SOURCES} ${FBX_LOADER_HEADERS})
-    else()
-        add_executable(fbx_loader ${FBX_LOADER_SOURCES} ${FBX_LOADER_HEADERS})
-    endif()
-    target_include_directories(fbx_loader PRIVATE "include/")
-    target_include_directories(fbx_loader PRIVATE "include/FBXLoader")
-    link_target_to_wasabi(fbx_loader "${CMAKE_BINARY_DIR}/dist")
-    target_link_libraries(fbx_loader optimized ${FBX_LIBRARIES_RELEASE})
-    target_link_libraries(fbx_loader debug ${FBX_LIBRARIES_DEBUG})
-    target_include_directories(fbx_loader PRIVATE ${FBX_INCLUDE_DIR})
-    set_property(TARGET fbx_loader PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-    enable_all_warnings(fbx_loader)
-endif()
 
 if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
     # ignore MSVC warnings for external headers
