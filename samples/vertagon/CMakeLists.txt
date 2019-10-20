@@ -4,6 +4,9 @@ project(Vertagon)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(PREDEFINED_TARGETS_FOLDER "CMakePredefinedTargets")
+
 include(LinkToWasabi)
 include(GLSL)
 
@@ -22,7 +25,7 @@ else()
     add_executable(vertagon ${SOURCES} ${HEADERS})
 endif()
 
-target_include_directories(vertagon PRIVATE SYSTEM "include/")
+target_include_directories(vertagon PRIVATE "include/")
 link_target_to_wasabi(vertagon ${WASABI_PATH})
 
 build_glsl(TARGET glsl-code VULKAN ${VULKAN_SDK_PATH} CONVERTER ${CMAKE_SOURCE_DIR}/src/spv-converter.py SOURCES ${GLSL})
