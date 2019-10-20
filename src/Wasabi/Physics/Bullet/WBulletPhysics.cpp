@@ -68,19 +68,26 @@ void WBulletPhysics::Cleanup() {
 
 	W_SAFE_DELETE(RigidBodyManager);
 
-	//delete dynamics world
-	delete ((btDynamicsWorld*)m_dynamicsWorld);
-
-	//delete solver
-	delete ((btSequentialImpulseConstraintSolver*)m_solver);
-
-	//delete broadphase
-	delete ((btDbvtBroadphase*)m_overlappingPairCache);
-
-	//delete dispatcher
-	delete ((btCollisionDispatcher*)m_dispatcher);
-
-	delete ((btDefaultCollisionConfiguration*)m_collisionConfiguration);
+	if (m_dynamicsWorld) {
+		delete ((btDynamicsWorld*)m_dynamicsWorld);
+		m_dynamicsWorld = nullptr;
+	}
+	if (m_solver) {
+		delete ((btSequentialImpulseConstraintSolver*)m_solver);
+		m_solver = nullptr;
+	}
+	if (m_overlappingPairCache) {
+		delete ((btDbvtBroadphase*)m_overlappingPairCache);
+		m_overlappingPairCache = nullptr;
+	}
+	if (m_dispatcher) {
+		delete ((btCollisionDispatcher*)m_dispatcher);
+		m_dispatcher = nullptr;
+	}
+	if (m_collisionConfiguration) {
+		delete ((btDefaultCollisionConfiguration*)m_collisionConfiguration);
+		m_collisionConfiguration = nullptr;
+	}
 }
 
 void WBulletPhysics::Start() {
