@@ -1,15 +1,20 @@
 [submodule "dependencies/openal"]
 	path = dependencies/openal
 	url = https://github.com/kcat/openal-soft
+	shallow = true
 [submodule "dependencies/bullet3"]
 	path = dependencies/bullet3
 	url = https://github.com/bulletphysics/bullet3.git
+	shallow = true
 [submodule "dependencies/glfw"]
 	path = dependencies/glfw
 	url = https://github.com/glfw/glfw.git
+	shallow = true
 [submodule "dependencies/stb"]
 	path = dependencies/stb
 	url = https://github.com/nothings/stb.git
+	shallow = true
 [submodule "dependencies/tinyfiledialogs"]
 	path = dependencies/tinyfiledialogs
 	url = https://github.com/native-toolkit/tinyfiledialogs
+	shallow = true

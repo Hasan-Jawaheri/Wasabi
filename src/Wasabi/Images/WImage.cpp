@@ -1,17 +1,17 @@
 #include "Wasabi/Images/WImage.hpp"
 #include "Wasabi/Renderers/WRenderer.hpp"
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #pragma warning(push)
 #pragma warning(disable: 4701)
-#else
+#elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wunused-value"
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #pragma GCC diagnostic ignored "-Wunused-result"
-#pragma GCC diagnostic ignored "-Wformat-overflow="
+#pragma GCC diagnostic ignored "-Wformat-overflow"
 #endif
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -21,9 +21,9 @@
 #define STB_DEFINE
 #include <stb.h>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #pragma warning(pop)
-#else
+#elif defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 
