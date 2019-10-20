@@ -40,6 +40,7 @@ initialize_submodules()
 build_open_al("OPENAL_DIR" "${DEPENDENCIES_DIR}")
 build_bullet("BULLET_DIR" "${DEPENDENCIES_DIR}")
 build_glfw("GLFW_DIR" "${DEPENDENCIES_DIR}")
+build_assimp("ASSIMP_DIR" "${DEPENDENCIES_DIR}")
 build_stb("STB_DIR" "${DEPENDENCIES_DIR}")
 build_tinyfiledialogs("TFD_DIR" "${DEPENDENCIES_DIR}")
 
@@ -69,6 +70,7 @@ target_include_directories(standalone-wasabi PRIVATE SYSTEM ${Vulkan_INCLUDE_DIR
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${OPENAL_DIR}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
+target_include_directories(standalone-wasabi PRIVATE SYSTEM "${ASSIMP_DIR}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${TFD_DIR}/")
 enable_all_warnings(standalone-wasabi)
@@ -87,7 +89,7 @@ endif()
 bundle_static_library(
     TARGET standalone-wasabi
     BUNDLED_TARGET wasabi
-    DEPENDENCIES ex-common OpenAL glfw Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath)
+    DEPENDENCIES ex-common OpenAL glfw Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath assimp)
 # Build the dist folder
 build_dist(build-dist wasabi)
 
