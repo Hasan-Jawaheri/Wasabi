@@ -4,7 +4,7 @@
 #if defined(_WIN32)
 #pragma warning(push)
 #pragma warning(disable: 4701)
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #pragma GCC diagnostic ignored "-Wsign-compare"
@@ -23,7 +23,7 @@
 
 #if defined(_WIN32)
 #pragma warning(pop)
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 
