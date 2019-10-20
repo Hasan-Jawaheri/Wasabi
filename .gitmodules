@@ -18,3 +18,7 @@
 	path = dependencies/tinyfiledialogs
 	url = https://github.com/native-toolkit/tinyfiledialogs
 	shallow = true
+[submodule "dependencies/assimp"]
+	path = dependencies/assimp
+	url = https://github.com/assimp/assimp
+	shallow = true
