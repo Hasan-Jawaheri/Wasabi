@@ -384,8 +384,8 @@ WError WImage::SaveToStream(WFile* file, std::ostream& outputStream) {
 	uint32_t arraySize = GetArraySize();
 	outputStream.write((char*)&width, sizeof(width));
 	outputStream.write((char*)&height, sizeof(height));
-	outputStream.write((char*)& depth, sizeof(depth));
-	outputStream.write((char*)& arraySize, sizeof(arraySize));
+	outputStream.write((char*)&depth, sizeof(depth));
+	outputStream.write((char*)&arraySize, sizeof(arraySize));
 	outputStream.write((char*)&m_format, sizeof(m_format));
 	uint32_t dataSize = (uint32_t)m_bufferedImage.GetMemorySize();
 	outputStream.write((char*)&dataSize, sizeof(dataSize));
@@ -418,9 +418,9 @@ WError WImage::LoadFromStream(WFile* file, std::istream& inputStream, std::vecto
 
 	inputStream.read((char*)&width, sizeof(width));
 	inputStream.read((char*)&height, sizeof(height));
-	inputStream.read((char*)&format, sizeof(format));
 	inputStream.read((char*)&depth, sizeof(depth));
 	inputStream.read((char*)&arraySize, sizeof(arraySize));
+	inputStream.read((char*)&format, sizeof(format));
 	uint32_t dataSize;
 	inputStream.read((char*)&dataSize, sizeof(dataSize));
 

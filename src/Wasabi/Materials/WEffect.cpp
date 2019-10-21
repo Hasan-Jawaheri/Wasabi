@@ -385,7 +385,7 @@ WError WShader::LoadFromStream(class WFile* file, std::istream& inputStream, std
 	inputStream.read(code, m_codeLen);
 
 	if (m_isSPIRV)
-		LoadCodeSPIRV(m_code, m_codeLen, bSaveData);
+		LoadCodeSPIRV(code, m_codeLen, bSaveData);
 	else
 		LoadCodeGLSL(std::string(code, m_codeLen), bSaveData);
 

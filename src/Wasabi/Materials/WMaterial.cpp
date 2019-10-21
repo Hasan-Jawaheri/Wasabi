@@ -547,6 +547,8 @@ WError WMaterial::LoadFromStream(WFile* file, std::istream& inputStream, std::ve
 					err = WError(W_INVALIDFILEFORMAT);
 				else
 					memcpy(UBO->data, uboData[i].second, uboData[i].first);
+				for (uint32_t j = 0; j < UBO->dirty.size(); j++)
+					UBO->dirty[j] = true;
 			}
 		}
 	}
