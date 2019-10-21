@@ -205,7 +205,7 @@ void WGeometry::_CalcNormals(void* vb, uint32_t numVerts, void* ib, uint32_t num
 	uint32_t numTris = numIndices / 3;
 	for (uint32_t i = 0; i < numTris; i++) {
 		uint32_t ind[3];
-		memcpy(ind, (char*)ib + (i*3) * sizeof(uint), 3 * sizeof(uint));
+		memcpy(ind, (char*)ib + (i*3) * sizeof(uint32_t), 3 * sizeof(uint32_t));
 		WVector3 p[3];
 		memcpy(&p[0], (char*)vb + vsize * (ind[0]) + offset, sizeof(WVector3));
 		memcpy(&p[1], (char*)vb + vsize * (ind[1]) + offset, sizeof(WVector3));
@@ -250,7 +250,7 @@ WError WGeometry::CreateFromData(void* vb, uint32_t numVerts, void* ib, uint32_t
 		return WError(W_INVALIDPARAM);
 
 	size_t vertexBufferSize = numVerts * GetVertexDescription(0).GetSize();
-	size_t indexBufferSize = numIndices * sizeof(uint);
+	size_t indexBufferSize = numIndices * sizeof(uint32_t);
 
 	_DestroyResources();
 
@@ -807,14 +807,14 @@ WError WGeometry::LoadFromHXM(std::string filename, W_GEOMETRY_CREATE_FLAGS flag
 	file.read((char*)&numV, 4);
 	file.read((char*)&numI, 4);
 
-	if (filesize >= 11 + 44 * numV + sizeof(uint) * numI)
+	if (filesize >= 11 + 44 * numV + sizeof(uint32_t) * numI)
 		file.read(&usedBuffers, 1);
 
 	if (topology != 4 /*D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST*/ ||
 		structSize != 44 || // wrong vertex format, cannot read it (3x position, 3x tangent, 3x normal, 2x uv)
 		!(usedBuffers & 1) || numI == 0 || numV == 0 || // no index/vertex buffers
-		(filesize != 11 + 44 * numV + sizeof(uint) * numI && filesize != 10 + 44 * numV + sizeof(uint) * numI
-		 && filesize != 11 + 44 * numV + sizeof(uint) * numI + (4*4+4*4) * numV)) {
+		(filesize != 11 + 44 * numV + sizeof(uint32_t) * numI && filesize != 10 + 44 * numV + sizeof(uint32_t) * numI
+		 && filesize != 11 + 44 * numV + sizeof(uint32_t) * numI + (4*4+4*4) * numV)) {
 		file.close();
 		return WError(W_INVALIDFILEFORMAT);
 	}
@@ -832,7 +832,7 @@ WError WGeometry::LoadFromHXM(std::string filename, W_GEOMETRY_CREATE_FLAGS flag
 
 	//read data
 	file.read((char*)v, numV * structSize);
-	file.read((char*)ind, numI * sizeof(uint));
+	file.read((char*)ind, numI * sizeof(uint32_t));
 	if (usedBuffers & 2) { // animation data
 		a = new char[numV * (4 * 4 + 4 * 4)];
 		file.read((char*)a, numV * (4 * 4 + 4 * 4));
@@ -1422,7 +1422,7 @@ WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream, std::ve
 
 	void *vb, *ib;
 	vb = W_SAFE_ALLOC(numV * from_descs[0].GetSize());
-	ib = W_SAFE_ALLOC(numI * sizeof(uint));
+	ib = W_SAFE_ALLOC(numI * sizeof(uint32_t));
 	if (!ib || !vb) {
 		W_SAFE_FREE(vb);
 		W_SAFE_FREE(ib);
@@ -1430,7 +1430,7 @@ WError WGeometry::LoadFromStream(WFile* file, std::istream& inputStream, std::ve
 	}
 
 	inputStream.read((char*)vb, numV * from_descs[0].GetSize());
-	inputStream.read((char*)ib, numI * sizeof(uint));
+	inputStream.read((char*)ib, numI * sizeof(uint32_t));
 
 	WError ret;
 	W_VERTEX_DESCRIPTION my_desc = GetVertexDescription(0);
