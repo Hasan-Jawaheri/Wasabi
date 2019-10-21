@@ -24,7 +24,7 @@ function (link_target_to_wasabi target_name wasabi_path)
             target_link_libraries(${target_name} "-framework Cocoa" "-framework CoreAudio" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo" "-framework AudioUnit")
         elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
             # set Linux dependencies
-            target_link_libraries(${target_name} -lpthread -lX11 -ldl -lstdc++fs)
+            target_link_libraries(${target_name} -lpthread -lX11 -ldl -lstdc++fs -lz)
         endif()
     endif()
 
