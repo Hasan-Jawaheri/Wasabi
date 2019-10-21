@@ -20,6 +20,7 @@
 #include "Wasabi/Core/WOrientation.hpp"
 #include "Wasabi/Core/WUtilities.hpp"
 #include "Wasabi/Files/WFile.hpp"
+#include "Wasabi/Files/WAssimpImporter.hpp"
 #include "Wasabi/Memory/WVulkanMemoryManager.hpp"
 #include "Wasabi/Memory/WBufferedBuffer.hpp"
 #include "Wasabi/Memory/WBufferedImage.hpp"

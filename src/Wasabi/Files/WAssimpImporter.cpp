@@ -41,6 +41,7 @@ WError WAssimpImporter::LoadSingleObject(std::string filename, WObject*& object)
 	WError status = WError(W_SUCCEEDED);
 
 	const aiScene* scene = importer.ReadFile(filename,
+		aiProcess_GenNormals |
 		aiProcess_CalcTangentSpace |
 		aiProcess_Triangulate |
 		aiProcess_JoinIdenticalVertices |
@@ -74,6 +75,11 @@ WError WAssimpImporter::LoadSingleObject(std::string filename, WObject*& object)
 		WDefaultVertex* vertices = &allVertices[curVertexOffset];
 		uint32_t* indices = &allIndices[curIndexOffset];
 
+		uint32_t textureIndex = 0;
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		if (mesh->mMaterialIndex < maxTextures && material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+			textureIndex = mesh->mMaterialIndex;
+
 		uint32_t face;
 		for (face = 0; face < mesh->mNumFaces; face++) {
 			if (mesh->mFaces[face].mNumIndices != 3)
@@ -103,7 +109,7 @@ WError WAssimpImporter::LoadSingleObject(std::string filename, WObject*& object)
 			}
 
 			for (uint32_t i = 0; i < mesh->mNumVertices; i++)
-				vertices[i].textureIndex = mesh->mMaterialIndex < maxTextures ? mesh->mMaterialIndex : 0;
+				vertices[i].textureIndex = textureIndex;
 		}
 
 		if (face != mesh->mNumFaces)
