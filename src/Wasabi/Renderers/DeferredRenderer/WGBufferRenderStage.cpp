@@ -103,6 +103,12 @@ WGBufferRenderStage::WGBufferRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_animatedObjectsFragment = nullptr;
 	m_perFrameMaterial = nullptr;
 	m_perFrameAnimatedMaterial = nullptr;
+
+	m_defaultVS = nullptr;
+	m_defaultAnimatedVS = nullptr;
+	m_defaultPS = nullptr;
+	m_defaultFX = nullptr;
+	m_defaultAnimatedFX = nullptr;
 }
 
 WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
@@ -110,56 +116,50 @@ WError WGBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (!err)
 		return err;
 
-	WGBufferVS* vs = new WGBufferVS(m_app);
-	vs->SetName("GBufferDefaultVS");
-	m_app->FileManager->AddDefaultAsset(vs->GetName(), vs);
-	vs->Load();
+	m_defaultVS = new WGBufferVS(m_app);
+	m_defaultVS->SetName("GBufferDefaultVS");
+	m_app->FileManager->AddDefaultAsset(m_defaultVS->GetName(), m_defaultVS);
+	m_defaultVS->Load();
 
-	WGBufferAnimatedVS* vsa = new WGBufferAnimatedVS(m_app);
-	vsa->SetName("GBufferDefaultAnimatedVS");
-	m_app->FileManager->AddDefaultAsset(vsa->GetName(), vsa);
-	vsa->Load();
+	m_defaultAnimatedVS = new WGBufferAnimatedVS(m_app);
+	m_defaultAnimatedVS->SetName("GBufferDefaultAnimatedVS");
+	m_app->FileManager->AddDefaultAsset(m_defaultAnimatedVS->GetName(), m_defaultAnimatedVS);
+	m_defaultAnimatedVS->Load();
 
-	WGBufferPS* ps = new WGBufferPS(m_app);
-	ps->SetName("GBufferDefaultPS");
-	m_app->FileManager->AddDefaultAsset(ps->GetName(), ps);
-	ps->Load();
+	m_defaultPS = new WGBufferPS(m_app);
+	m_defaultPS->SetName("GBufferDefaultPS");
+	m_app->FileManager->AddDefaultAsset(m_defaultPS->GetName(), m_defaultPS);
+	m_defaultPS->Load();
 
-	WEffect* GBufferFX = new WEffect(m_app);
-	GBufferFX->SetName("GBufferDefaultEffect");
-	m_app->FileManager->AddDefaultAsset(GBufferFX->GetName(), GBufferFX);
+	m_defaultFX = new WEffect(m_app);
+	m_defaultFX->SetName("GBufferDefaultEffect");
+	m_app->FileManager->AddDefaultAsset(m_defaultFX->GetName(), m_defaultFX);
 
-	WEffect* GBufferAnimatedFX = new WEffect(m_app);
-	GBufferAnimatedFX->SetName("GBufferDefaultAnimatedEffect");
-	m_app->FileManager->AddDefaultAsset(GBufferAnimatedFX->GetName(), GBufferAnimatedFX);
+	m_defaultAnimatedFX = new WEffect(m_app);
+	m_defaultAnimatedFX->SetName("GBufferDefaultAnimatedEffect");
+	m_app->FileManager->AddDefaultAsset(m_defaultAnimatedFX->GetName(), m_defaultAnimatedFX);
 
-	err = GBufferFX->BindShader(vs);
+	err = m_defaultFX->BindShader(m_defaultVS);
 	if (err) {
-		err = GBufferFX->BindShader(ps);
+		err = m_defaultFX->BindShader(m_defaultPS);
 		if (err) {
-			err = GBufferFX->BuildPipeline(m_renderTarget);
+			err = m_defaultFX->BuildPipeline(m_renderTarget);
 			if (err) {
-				err = GBufferAnimatedFX->BindShader(vsa);
+				err = m_defaultAnimatedFX->BindShader(m_defaultAnimatedVS);
 				if (err) {
-					err = GBufferAnimatedFX->BindShader(ps);
+					err = m_defaultAnimatedFX->BindShader(m_defaultPS);
 					if (err) {
-						err = GBufferAnimatedFX->BuildPipeline(m_renderTarget);
+						err = m_defaultAnimatedFX->BuildPipeline(m_renderTarget);
 					}
 				}
 			}
 		}
 	}
-	W_SAFE_REMOVEREF(ps);
-	W_SAFE_REMOVEREF(vs);
-	W_SAFE_REMOVEREF(vsa);
-	if (!err) {
-		W_SAFE_REMOVEREF(GBufferFX);
-		W_SAFE_REMOVEREF(GBufferAnimatedFX);
+	if (!err)
 		return err;
-	}
 
-	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, GBufferFX, m_app, EFFECT_RENDER_FLAG_RENDER_GBUFFER);
-	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, GBufferAnimatedFX, m_app, EFFECT_RENDER_FLAG_RENDER_GBUFFER);
+	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, m_defaultFX, m_app, EFFECT_RENDER_FLAG_RENDER_GBUFFER);
+	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, m_defaultAnimatedFX, m_app, EFFECT_RENDER_FLAG_RENDER_GBUFFER);
 
 	m_perFrameMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1, true);
 	if (!m_perFrameMaterial)
@@ -182,6 +182,11 @@ void WGBufferRenderStage::Cleanup() {
 	W_SAFE_REMOVEREF(m_perFrameAnimatedMaterial);
 	W_SAFE_DELETE(m_objectsFragment);
 	W_SAFE_DELETE(m_animatedObjectsFragment);
+	W_SAFE_REMOVEREF(m_defaultVS);
+	W_SAFE_REMOVEREF(m_defaultAnimatedVS);
+	W_SAFE_REMOVEREF(m_defaultPS);
+	W_SAFE_REMOVEREF(m_defaultFX);
+	W_SAFE_REMOVEREF(m_defaultAnimatedFX);
 }
 
 WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
@@ -204,4 +209,24 @@ WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint3
 
 WError WGBufferRenderStage::Resize(uint32_t width, uint32_t height) {
 	return WRenderStage::Resize(width, height);
+}
+
+WGBufferVS* WGBufferRenderStage::GetDefaultVertexShader() const {
+	return m_defaultVS;
+}
+
+WGBufferAnimatedVS* WGBufferRenderStage::GetDefaultAnimatedVertexShader() const {
+	return m_defaultAnimatedVS;
+}
+
+WGBufferPS* WGBufferRenderStage::GetDefaultPixelShader() const {
+	return m_defaultPS;
+}
+
+WEffect* WGBufferRenderStage::GetDefaultEffect() const {
+	return m_defaultFX;
+}
+
+WEffect* WGBufferRenderStage::GetDefaultAnimatedEffect() const {
+	return m_defaultAnimatedFX;
 }

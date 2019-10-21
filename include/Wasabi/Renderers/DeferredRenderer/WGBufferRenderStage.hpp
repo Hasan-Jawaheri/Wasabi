@@ -32,6 +32,12 @@ class WGBufferRenderStage : public WRenderStage {
 	WObjectsRenderFragment* m_animatedObjectsFragment;
 	class WMaterial* m_perFrameAnimatedMaterial;
 
+	WGBufferVS* m_defaultVS;
+	WGBufferAnimatedVS* m_defaultAnimatedVS;
+	WGBufferPS* m_defaultPS;
+	WEffect* m_defaultFX;
+	WEffect* m_defaultAnimatedFX;
+
 public:
 	WGBufferRenderStage(class Wasabi* const app);
 
@@ -39,5 +45,10 @@ public:
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint32_t filter);
 	virtual void Cleanup();
 	virtual WError Resize(uint32_t width, uint32_t height);
-};
 
+	WGBufferVS* GetDefaultVertexShader() const;
+	WGBufferAnimatedVS* GetDefaultAnimatedVertexShader() const;
+	WGBufferPS* GetDefaultPixelShader() const;
+	WEffect* GetDefaultEffect() const;
+	WEffect* GetDefaultAnimatedEffect() const;
+};
