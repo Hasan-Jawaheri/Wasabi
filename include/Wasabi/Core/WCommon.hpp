@@ -1,16 +1,6 @@
 #pragma once
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)	
-#ifndef VK_USE_PLATFORM_WIN32_KHR	
-#define VK_USE_PLATFORM_WIN32_KHR	
-#endif	
-#elif (defined __linux__)	
-#ifndef VK_USE_PLATFORM_XCB_KHR	
-#define VK_USE_PLATFORM_XCB_KHR	
-#endif	
-#endif
-
-#include "Wasabi/WCompatibility.hpp"
+#include "Wasabi/Core/WCompatibility.hpp"
 
 #include <vulkan/vulkan.h>
 #include "Wasabi/Core/VkTools/vulkanswapchain.hpp"

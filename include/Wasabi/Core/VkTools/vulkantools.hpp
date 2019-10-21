@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Wasabi/WCompatibility.hpp"
+#include "Wasabi/Core/WCompatibility.hpp"
 #include "vulkan/vulkan.hpp"
 
 #include <math.h>
@@ -62,10 +62,10 @@ namespace vkTools
 		VkImageSubresourceRange subresourceRange);
 	// Uses a fixed sub resource layout with first mip level and layer
 	void setImageLayout(
-		VkCommandBuffer cmdbuffer, 
-		VkImage image, 
-		VkImageAspectFlags aspectMask, 
-		VkImageLayout oldImageLayout, 
+		VkCommandBuffer cmdbuffer,
+		VkImage image,
+		VkImageAspectFlags aspectMask,
+		VkImageLayout oldImageLayout,
 		VkImageLayout newImageLayout);
 
 	// Display error message and exit on fatal error
@@ -85,7 +85,7 @@ namespace vkTools
 
 	// Load a GLSL shader
 	// Note : Only for testing purposes, support for directly feeding GLSL shaders into Vulkan
-	// may be dropped at some point	
+	// may be dropped at some point
 	VkShaderModule loadShaderGLSL(const char *fileName, VkDevice device, VkShaderStageFlagBits stage);
 	VkShaderModule loadShaderGLSLFromCode(const char *code, int len, VkDevice device, VkShaderStageFlagBits stage);
 
@@ -99,7 +99,7 @@ namespace vkTools
 
 	// Contains all vulkan objects
 	// required for a uniform data object
-	struct UniformData 
+	struct UniformData
 	{
 		VkBuffer buffer;
 		VkDeviceMemory memory;
@@ -146,9 +146,9 @@ namespace vkTools
 		VkSubmitInfo submitInfo();
 
 		VkViewport viewport(
-			float width, 
-			float height, 
-			float minDepth, 
+			float width,
+			float height,
+			float minDepth,
 			float maxDepth);
 
 		VkRect2D rect2D(
@@ -160,7 +160,7 @@ namespace vkTools
 		VkBufferCreateInfo bufferCreateInfo();
 
 		VkBufferCreateInfo bufferCreateInfo(
-			VkBufferUsageFlags usage, 
+			VkBufferUsageFlags usage,
 			VkDeviceSize size);
 
 		VkDescriptorPoolCreateInfo descriptorPoolCreateInfo(
@@ -173,8 +173,8 @@ namespace vkTools
 			uint32_t descriptorCount);
 
 		VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(
-			VkDescriptorType type, 
-			VkShaderStageFlags stageFlags, 
+			VkDescriptorType type,
+			VkShaderStageFlags stageFlags,
 			uint32_t binding);
 
 		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo(
@@ -196,20 +196,20 @@ namespace vkTools
 			VkImageLayout imageLayout);
 
 		VkWriteDescriptorSet writeDescriptorSet(
-			VkDescriptorSet dstSet, 
-			VkDescriptorType type, 
-			uint32_t binding, 
+			VkDescriptorSet dstSet,
+			VkDescriptorType type,
+			uint32_t binding,
 			VkDescriptorBufferInfo* bufferInfo);
 
 		VkWriteDescriptorSet writeDescriptorSet(
-			VkDescriptorSet dstSet, 
-			VkDescriptorType type, 
-			uint32_t binding, 
+			VkDescriptorSet dstSet,
+			VkDescriptorType type,
+			uint32_t binding,
 			VkDescriptorImageInfo* imageInfo);
 
 		VkVertexInputBindingDescription vertexInputBindingDescription(
-			uint32_t binding, 
-			uint32_t stride, 
+			uint32_t binding,
+			uint32_t stride,
 			VkVertexInputRate inputRate);
 
 		VkVertexInputAttributeDescription vertexInputAttributeDescription(

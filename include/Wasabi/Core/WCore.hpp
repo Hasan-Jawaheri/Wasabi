@@ -13,8 +13,7 @@
 
 #pragma once
 
-#include "Wasabi/WCompatibility.hpp"
-
+#include "Wasabi/Core/WCompatibility.hpp"
 #include "Wasabi/Core/WCommon.hpp"
 #include "Wasabi/Core/WManager.hpp"
 #include "Wasabi/Core/WBase.hpp"

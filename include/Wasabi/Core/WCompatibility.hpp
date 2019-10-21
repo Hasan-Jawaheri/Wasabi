@@ -5,7 +5,11 @@
 
 #pragma once
 
-#ifndef _WIN32
+/**
+ * MSVC _s functions for non-MSVC
+ */
+
+#ifndef _MSC_VER
 
 #define fopen_s(a,b,c) *a = fopen(b, c)
 #define strcpy_s(a,b,c) strcpy(a,c)
@@ -16,10 +20,23 @@
 #define UNREFERENCED_PARAMETER(p) ((void)p)
 #endif
 
-#else // !defined(_WIN32)
+#else // !defined(_MSC_VER)
 
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 
+#endif
+
+/**
+ * Vulkan extensions
+ */
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#ifndef VK_USE_PLATFORM_WIN32_KHR
+#define VK_USE_PLATFORM_WIN32_KHR
+#endif
+#elif (defined __linux__)
+#ifndef VK_USE_PLATFORM_XCB_KHR
+#define VK_USE_PLATFORM_XCB_KHR
+#endif
 #endif

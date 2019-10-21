@@ -26,7 +26,7 @@
 #include <X11/Xlib.h>
 #endif
 
-#include "Wasabi/WCompatibility.hpp"
+#include "Wasabi/Core/WCompatibility.hpp"
 #include <vulkan/vulkan.h>
 #include "Wasabi/Core/VkTools/vulkantools.hpp"
 
