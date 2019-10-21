@@ -7,6 +7,7 @@
 class FilesDemo : public WTestState {
 	WMaterialCollection m_materials;
 	WObject* m_object;
+	WRigidBody* m_rb;
 	WCamera* m_cam;
 	WSprite* m_sprite;
 
