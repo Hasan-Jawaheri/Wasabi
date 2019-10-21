@@ -27,6 +27,9 @@ endif()
 
 target_include_directories(vertagon PRIVATE "include/")
 link_target_to_wasabi(vertagon ${WASABI_PATH})
+target_precompile_headers(vertagon PRIVATE
+    "${WASABI_PATH}/include/Wasabi/Wasabi.hpp"
+    "include/vertagon/common.hpp")
 
 build_glsl(TARGET glsl-code VULKAN ${VULKAN_SDK_PATH} CONVERTER ${CMAKE_SOURCE_DIR}/src/spv-converter.py SOURCES ${GLSL})
 add_dependencies(vertagon glsl-code)
