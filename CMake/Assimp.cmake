@@ -6,8 +6,6 @@ function(build_assimp ASSIMP_DIR_VAR DEPENDENCIES_DIR)
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" ${ASSIMP_DIR_VAR}_BUILD ${${ASSIMP_DIR_VAR}})
     set(${ASSIMP_DIR_VAR}_BUILD ${${ASSIMP_DIR_VAR}_BUILD} PARENT_SCOPE)
 
-    message(STATUS "========> " ${${ASSIMP_DIR_VAR}_BUILD})
-
     if(NOT EXISTS "${${ASSIMP_DIR_VAR}}/CMakeLists.txt")
         message(STATUS "${${ASSIMP_DIR_VAR}}/CMakeLists.txt was not found")
         message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
