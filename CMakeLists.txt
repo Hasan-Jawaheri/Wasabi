@@ -57,7 +57,7 @@ target_include_directories(standalone-wasabi PRIVATE SYSTEM ${Vulkan_INCLUDE_DIR
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${OPENAL_DIR}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${BULLET_DIR}/src/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${GLFW_DIR}/include/")
-target_include_directories(standalone-wasabi PRIVATE SYSTEM "${ASSIMP_DIR}/include/")
+target_include_directories(standalone-wasabi PRIVATE SYSTEM "${ASSIMP_DIR}/include/" "${ASSIMP_DIR_BUILD}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${TFD_DIR}/")
 target_precompile_headers(standalone-wasabi PRIVATE
@@ -119,6 +119,8 @@ if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
     target_compile_options(wasabi_test PRIVATE /experimental:external /external:W0 /external:I${TFD_DIR})
     target_compile_options(standalone-wasabi PRIVATE /experimental:external /external:W0 /external:I${BULLET_DIR}/src)
     target_compile_options(wasabi_test PRIVATE /experimental:external /external:W0 /external:I${BULLET_DIR}/src)
+    target_compile_options(standalone-wasabi PRIVATE /experimental:external /external:W0 /external:I${ASSIMP_DIR}/include)
+    target_compile_options(wasabi_test PRIVATE /experimental:external /external:W0 /external:I${ASSIMP_DIR}/include)
 endif()
 
 # ignore "object has no symbol" linker errors
