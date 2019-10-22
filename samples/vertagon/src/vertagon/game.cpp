@@ -176,6 +176,50 @@ void Vertagon::FireBullet(WVector2 target) {
     }
 }
 
+WError Vertagon::UnsmoothFeometryNormals(WGeometry* geometry) {
+	uint32_t* indices;
+	uint32_t numIndices = geometry->GetNumIndices();
+	uint32_t* newIndices = new uint32_t[numIndices];
+
+	WDefaultVertex* vertices;
+	uint32_t numVertices = numIndices;
+	WDefaultVertex* newVertices = new WDefaultVertex[numVertices];
+
+	WError status = geometry->MapIndexBuffer((void**)&indices, W_MAP_READ);
+	if (status) {
+		memcpy(newIndices, indices, sizeof(uint32_t) * numIndices);
+		geometry->UnmapIndexBuffer();
+
+		status = geometry->MapVertexBuffer((void**)&vertices, W_MAP_READ);
+
+		if (status) {
+			for (uint32_t face = 0; face < numIndices / 3; face++) {
+				WDefaultVertex v1 = vertices[newIndices[face * 3 + 0]];
+				WDefaultVertex v2 = vertices[newIndices[face * 3 + 1]];
+				WDefaultVertex v3 = vertices[newIndices[face * 3 + 2]];
+				WVector3 norm = WVec3Normalize((v1.pos + v2.pos + v3.pos) / 3.0f);
+				newVertices[face * 3 + 0] = v1;
+				newVertices[face * 3 + 0].norm = norm;
+				newVertices[face * 3 + 1] = v2;
+				newVertices[face * 3 + 1].norm = norm;
+				newVertices[face * 3 + 2] = v3;
+				newVertices[face * 3 + 2].norm = norm;
+				newIndices[face * 3 + 0] = face * 3 + 0;
+				newIndices[face * 3 + 1] = face * 3 + 1;
+				newIndices[face * 3 + 2] = face * 3 + 2;
+			}
+
+			geometry->UnmapVertexBuffer(false);
+
+			status = geometry->CreateFromData(newVertices, numVertices, newIndices, numIndices);
+		}
+	}
+
+	W_SAFE_DELETE_ARRAY(newVertices);
+	W_SAFE_DELETE_ARRAY(newIndices);
+	return status;
+}
+
 Wasabi* WInitialize() {
     return new Vertagon();
 }

@@ -153,40 +153,7 @@ WError EnemySystem::Load() {
     m_resources.enemyGeometry = new WGeometry(m_app);
     WError status = m_resources.enemyGeometry->CreateSphere(1.0f, 14, 14);
     if (!status) return status;
-
-    uint32_t numIndices = m_resources.enemyGeometry->GetNumIndices();
-    uint32_t* newIndices = new uint32_t[numIndices];
-    uint32_t* indices;
-    m_resources.enemyGeometry->MapIndexBuffer((void**)&indices, W_MAP_READ);
-    memcpy(newIndices, indices, sizeof(uint32_t) * numIndices);
-    m_resources.enemyGeometry->UnmapIndexBuffer();
-
-    uint32_t numVertices = numIndices;
-    WDefaultVertex* newVertices = new WDefaultVertex[numVertices];
-    WDefaultVertex* vertices;
-    m_resources.enemyGeometry->MapVertexBuffer((void**)&vertices, W_MAP_READ);
-
-    for (uint32_t face = 0; face < numIndices / 3; face++) {
-        WDefaultVertex v1 = vertices[newIndices[face * 3 + 0]];
-        WDefaultVertex v2 = vertices[newIndices[face * 3 + 1]];
-        WDefaultVertex v3 = vertices[newIndices[face * 3 + 2]];
-        WVector3 norm = WVec3Normalize((v1.pos + v2.pos + v3.pos) / 3.0f);
-        newVertices[face * 3 + 0] = v1;
-        newVertices[face * 3 + 0].norm = norm;
-        newVertices[face * 3 + 1] = v2;
-        newVertices[face * 3 + 1].norm = norm;
-        newVertices[face * 3 + 2] = v3;
-        newVertices[face * 3 + 2].norm = norm;
-        newIndices[face * 3 + 0] = face * 3 + 0;
-        newIndices[face * 3 + 1] = face * 3 + 1;
-        newIndices[face * 3 + 2] = face * 3 + 2;
-    }
-
-    m_resources.enemyGeometry->UnmapVertexBuffer(false);
-
-    status = m_resources.enemyGeometry->CreateFromData(newVertices, numVertices, newIndices, numIndices);
-    W_SAFE_DELETE_ARRAY(newVertices);
-    W_SAFE_DELETE_ARRAY(newIndices);
+	status = ((Vertagon*)m_app)->UnsmoothFeometryNormals(m_resources.enemyGeometry);
     if (!status) return status;
 
 	EnemyVS* vs = new EnemyVS(m_app);
@@ -230,6 +197,29 @@ WError EnemySystem::Load() {
 void EnemySystem::Update(float fDeltaTime) {
     Player* player = ((Vertagon*)m_app)->m_player;
 
+	/**
+	 * Enemies spawn
+	 */
+	if (m_enemies.size() < m_maxEnemies && m_app->Timer.GetElapsedTime() - m_lastRespawn > m_respawnInterval) {
+		m_lastRespawn = m_app->Timer.GetElapsedTime();
+		// spawn new enemy
+		Enemy* enemy = new Enemy(m_app);
+		WError status = enemy->Load(m_freeEnemyIds[0]);
+		if (!status) {
+			enemy->Destroy();
+			delete enemy;
+		} else {
+			m_freeEnemyIds.erase(m_freeEnemyIds.begin());
+			m_enemies.push_back(enemy);
+			float x = ((float)(std::rand() % 1000 - 500) / 500.0f) * 25.0f;
+			float z = ((float)(std::rand() % 1000 - 500) / 500.0f) * 25.0f;
+			enemy->m_rigidBody->SetPosition(WVector3(x, 0.0f, z) + player->GetPosition());
+		}
+	}
+
+	/**
+	 * Enemies death
+	 */
     for (int32_t i = 0; i < m_enemies.size(); i++) {
         if (!m_enemies[i]->Update(fDeltaTime) || WVec3LengthSq(player->GetPosition() - m_enemies[i]->m_object->GetPosition()) > 100.0f * 100.0f) {
             m_freeEnemyIds.push_back(m_enemies[i]->m_id);
@@ -237,23 +227,6 @@ void EnemySystem::Update(float fDeltaTime) {
             delete m_enemies[i];
             m_enemies.erase(m_enemies.begin() + i);
             i--;
-        }
-    }
-
-    if (m_enemies.size() < m_maxEnemies && m_app->Timer.GetElapsedTime() - m_lastRespawn > m_respawnInterval) {
-        m_lastRespawn = m_app->Timer.GetElapsedTime();
-        // spawn new enemy
-        Enemy* enemy = new Enemy(m_app);
-        WError status = enemy->Load(m_freeEnemyIds[0]);
-        if (!status) {
-            enemy->Destroy();
-            delete enemy;
-        } else {
-            m_freeEnemyIds.erase(m_freeEnemyIds.begin());
-            m_enemies.push_back(enemy);
-            float x = ((float)(std::rand() % 1000 - 500) / 500.0f) * 25.0f;
-            float z = ((float)(std::rand() % 1000 - 500) / 500.0f) * 25.0f;
-            enemy->m_rigidBody->SetPosition(WVector3(x, 0.0f, z) + player->GetPosition());
         }
     }
 }

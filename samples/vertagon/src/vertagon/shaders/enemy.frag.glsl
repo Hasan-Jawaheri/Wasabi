@@ -16,9 +16,7 @@ layout(set = 0, binding = 0) uniform UBO {
 layout(set = 0, binding = 1) uniform sampler2D diffuseTexture;
 
 void main() {
-    float L = max(0, dot(inNorm, vec3(0, 1, 0)) + 0.2);
 	vec4 color = vec4(0.5, 0.5, 0.5, 1);//texture(diffuseTexture, inUV).rgba;
-    color.rgb *= L;
     color.a *= 1.0f - uboPerObject.percentage;
 	outColor = color;
     outNormal = (vec4(inNorm.xyz, 1.0f) + 1) / 2;

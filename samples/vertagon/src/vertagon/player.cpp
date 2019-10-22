@@ -116,7 +116,7 @@ WError Player::Load() {
     m_cam = m_app->CameraManager->GetDefaultCamera();
 
     m_flashLight = new WSpotLight(m_app);
-    m_flashLight->SetIntensity(4.0f);
+    m_flashLight->SetIntensity(1.0f);
     m_flashLight->SetRange(20.0f);
 
     WImage* cursorImg = m_app->ImageManager->CreateImage();
