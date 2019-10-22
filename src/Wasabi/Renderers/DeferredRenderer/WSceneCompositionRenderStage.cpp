@@ -65,14 +65,10 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	m_fullscreenSprite->SetSize(WVector2((float)windowWidth, (float)windowHeight));
 	m_fullscreenSprite->Hide();
 
-	VkPipelineColorBlendAttachmentState bs = {};
-	bs.blendEnable = VK_FALSE;
-	bs.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-
 	SceneCompositionPS* pixelShader = new SceneCompositionPS(m_app);
 	pixelShader->Load();
 
-	m_effect = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget, pixelShader, bs);
+	m_effect = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget, pixelShader);
 	W_SAFE_REMOVEREF(pixelShader);
 	if (!m_effect)
 		return WError(W_OUTOFMEMORY);
