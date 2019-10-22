@@ -98,6 +98,7 @@ Vertagon::Vertagon() {
 }
 
 WError Vertagon::Setup() {
+    // SetEngineParam("enableVulkanValidation", false);
     // start the engine
     WError status = StartEngine(640, 480);
     if (!status) {

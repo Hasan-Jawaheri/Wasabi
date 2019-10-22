@@ -9,8 +9,9 @@ class Map {
     WObject* m_plain;
     WRigidBody* m_rigidBody;
 
-    WGeometry* m_atmosphereGeometry;
-    WObject* m_atmosphere;
+    WGeometry* m_skyGeometry;
+    WEffect* m_skyEffect;
+    WObject* m_sky;
 
 public:
     Map(Wasabi* app);
