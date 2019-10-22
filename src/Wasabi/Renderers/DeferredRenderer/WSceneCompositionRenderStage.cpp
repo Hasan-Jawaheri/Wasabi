@@ -41,9 +41,10 @@ public:
 	}
 };
 
-WSceneCompositionRenderStage::WSceneCompositionRenderStage(Wasabi* const app) : WRenderStage(app) {
+WSceneCompositionRenderStage::WSceneCompositionRenderStage(Wasabi* const app) : WForwardRenderStage(app) {
 	m_stageDescription.name = __func__;
-	m_stageDescription.target = RENDER_STAGE_TARGET_BACK_BUFFER;
+	m_stageDescription.flags = RENDER_STAGE_FLAG_NONE;
+	m_addDefaultEffects = false;
 
 	m_fullscreenSprite = nullptr;
 	m_effect = nullptr;
@@ -52,7 +53,7 @@ WSceneCompositionRenderStage::WSceneCompositionRenderStage(Wasabi* const app) : 
 }
 
 WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
-	WError err = WRenderStage::Initialize(previousStages, width, height);
+	WError err = WForwardRenderStage::Initialize(previousStages, width, height);
 	if (!err)
 		return err;
 
@@ -132,7 +133,7 @@ WError WSceneCompositionRenderStage::Render(class WRenderer* renderer, class WRe
 	m_effect->Bind(rt);
 	m_fullscreenSprite->Render(rt);
 
-	return WError(W_SUCCEEDED);
+	return WForwardRenderStage::Render(renderer, rt, filter);
 }
 
 void WSceneCompositionRenderStage::Cleanup() {
@@ -145,7 +146,7 @@ void WSceneCompositionRenderStage::Cleanup() {
 WError WSceneCompositionRenderStage::Resize(uint32_t width, uint32_t height) {
 	if (m_fullscreenSprite)
 		m_fullscreenSprite->SetSize(WVector2((float)width, (float)height));
-	return WRenderStage::Resize(width, height);
+	return WForwardRenderStage::Resize(width, height);
 }
 
 void WSceneCompositionRenderStage::SetAmbientLight(WColor color) {

@@ -172,26 +172,34 @@ struct WObjectSortingKey {
 
 class WObjectsRenderFragment : public WRenderFragment<WObject, WObjectSortingKey> {
 	bool m_animated;
+	bool m_addDefaultEffects;
 
 public:
-	WObjectsRenderFragment(std::string fragmentName, bool animated, WEffect* fx, class Wasabi* wasabi, W_EFFECT_RENDER_FLAGS renderFlags) : WRenderFragment(fragmentName, fx, wasabi->ObjectManager) {
+	WObjectsRenderFragment(std::string fragmentName, bool animated, WEffect* fx, class Wasabi* wasabi, W_EFFECT_RENDER_FLAGS renderFlags, bool addDefaultEffects = true)
+		: WRenderFragment(fragmentName, fx, wasabi->ObjectManager) {
 		m_animated = animated;
+		m_addDefaultEffects = addDefaultEffects;
 		m_requiredRenderFlags = renderFlags;
 		fx->SetRenderFlags(m_requiredRenderFlags);
 	}
 
-	virtual void RenderEntity(WObject* object, class WRenderTarget* rt, class WMaterial* material) {
+	virtual void RenderEntity(WObject* object, class WRenderTarget* rt, class WMaterial* material) override {
 		object->Render(rt, material);
 	}
 
-	virtual bool KeyChanged(WObject* obj, class WEffect* effect, WObjectSortingKey key) {
+	virtual bool KeyChanged(WObject* obj, class WEffect* effect, WObjectSortingKey key) override {
 		UNREFERENCED_PARAMETER(obj);
 		return key.fx != effect;
 	}
 
-	virtual bool ShouldRenderEntity(WObject* object) {
+	virtual bool ShouldRenderEntity(WObject* object) override {
 		return (object->GetAnimation() != nullptr) == m_animated;
 	};
+
+	virtual void OnEntityAdded(WObject* object) override {
+		if (m_addDefaultEffects)
+			WRenderFragment<WObject, WObjectSortingKey>::OnEntityAdded(object);
+	}
 };
 
 struct WTerrainSortingKey {
@@ -211,16 +219,17 @@ struct WTerrainSortingKey {
 
 class WTerrainRenderFragment : public WRenderFragment<WTerrain, WTerrainSortingKey> {
 public:
-	WTerrainRenderFragment(std::string fragmentName, WEffect* fx, class Wasabi* wasabi, W_EFFECT_RENDER_FLAGS renderFlags) : WRenderFragment(fragmentName, fx, wasabi->TerrainManager) {
+	WTerrainRenderFragment(std::string fragmentName, WEffect* fx, class Wasabi* wasabi, W_EFFECT_RENDER_FLAGS renderFlags)
+		: WRenderFragment(fragmentName, fx, wasabi->TerrainManager) {
 		m_requiredRenderFlags = renderFlags;
 		fx->SetRenderFlags(m_requiredRenderFlags);
 	}
 
-	virtual void RenderEntity(WTerrain* terrain, class WRenderTarget* rt, class WMaterial* material) {
+	virtual void RenderEntity(WTerrain* terrain, class WRenderTarget* rt, class WMaterial* material) override {
 		terrain->Render(rt, material);
 	}
 
-	virtual bool KeyChanged(WTerrain* terrain, class WEffect* effect, WTerrainSortingKey key) {
+	virtual bool KeyChanged(WTerrain* terrain, class WEffect* effect, WTerrainSortingKey key) override {
 		UNREFERENCED_PARAMETER(terrain);
 		UNREFERENCED_PARAMETER(effect);
 		UNREFERENCED_PARAMETER(key);
@@ -256,12 +265,12 @@ public:
 		fx->SetRenderFlags(m_requiredRenderFlags);
 	}
 
-	virtual void RenderEntity(WSprite* sprite, class WRenderTarget* rt, class WMaterial* material) {
+	virtual void RenderEntity(WSprite* sprite, class WRenderTarget* rt, class WMaterial* material) override {
 		material->Bind(rt);
 		sprite->Render(rt);
 	}
 
-	virtual bool KeyChanged(WSprite* sprite, class WEffect* effect, WSpriteSortingKey key) {
+	virtual bool KeyChanged(WSprite* sprite, class WEffect* effect, WSpriteSortingKey key) override {
 		return sprite->GetPriority() != key.priority || key.fx != effect;
 	}
 };
@@ -311,7 +320,7 @@ public:
 		m_particleEffects.clear();
 	}
 
-	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt) {
+	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt) override {
 		WError err = WError(W_SUCCEEDED);
 		for (auto renderEffect : m_particleEffects) {
 			m_renderEffect = renderEffect.second;
@@ -323,15 +332,15 @@ public:
 		return err;
 	}
 
-	virtual void RenderEntity(WParticles* particles, class WRenderTarget* rt, class WMaterial* material) {
+	virtual void RenderEntity(WParticles* particles, class WRenderTarget* rt, class WMaterial* material) override {
 		particles->Render(rt, material);
 	}
 
-	virtual bool KeyChanged(WParticles* particles, class WEffect* effect, WParticlesSortingKey key) {
+	virtual bool KeyChanged(WParticles* particles, class WEffect* effect, WParticlesSortingKey key) override {
 		return particles->GetPriority() != key.priority || key.fx != effect;
 	}
 
-	virtual void OnEntityAdded(WParticles* particles) {
+	virtual void OnEntityAdded(WParticles* particles) override {
 		auto it = m_particleEffects.find(particles->GetEffectType());
 		if (it != m_particleEffects.end()) {
 			m_renderEffect = it->second;

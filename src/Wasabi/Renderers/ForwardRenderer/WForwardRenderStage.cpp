@@ -175,6 +175,7 @@ WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_perFrameObjectsMaterial = nullptr;
 	m_perFrameAnimatedObjectsMaterial = nullptr;
 	m_perFrameTerrainsMaterial = nullptr;
+	m_addDefaultEffects = true;
 }
 
 WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
@@ -267,8 +268,8 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 		return err;
 	}
 
-	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, fx, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD);
-	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, fxa, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD);
+	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, fx, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD, m_addDefaultEffects);
+	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, fxa, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD, m_addDefaultEffects);
 
 	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, terrainFX, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD);
 

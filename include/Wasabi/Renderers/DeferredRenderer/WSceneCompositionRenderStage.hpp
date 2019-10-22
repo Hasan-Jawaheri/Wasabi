@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Wasabi/Renderers/WRenderStage.hpp"
+#include "Wasabi/Renderers/ForwardRenderer/WForwardRenderStage.hpp"
 
-class WSceneCompositionRenderStage : public WRenderStage {
+class WSceneCompositionRenderStage : public WForwardRenderStage {
 	class WSprite* m_fullscreenSprite;
 	class WEffect* m_effect;
 	class WMaterial* m_perFrameMaterial;

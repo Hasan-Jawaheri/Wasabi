@@ -65,6 +65,9 @@ class WForwardRenderStage : public WRenderStage {
 
 	std::vector<LightStruct> m_lights;
 
+protected:
+	bool m_addDefaultEffects; // @TODO please fix this mess
+
 public:
 	WForwardRenderStage(class Wasabi* const app);
 
