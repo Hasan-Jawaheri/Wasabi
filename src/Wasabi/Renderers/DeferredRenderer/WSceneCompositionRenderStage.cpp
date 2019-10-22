@@ -65,10 +65,23 @@ WError WSceneCompositionRenderStage::Initialize(std::vector<WRenderStage*>& prev
 	m_fullscreenSprite->SetSize(WVector2((float)windowWidth, (float)windowHeight));
 	m_fullscreenSprite->Hide();
 
+	// The fullscreen sprite will compose the GBuffer and output the same depth outputted in the GBuffer
+	VkPipelineDepthStencilStateCreateInfo dss = {};
+	dss.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	dss.depthTestEnable = VK_TRUE;
+	dss.depthWriteEnable = VK_TRUE;
+	dss.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	dss.depthBoundsTestEnable = VK_FALSE;
+	dss.back.failOp = VK_STENCIL_OP_KEEP;
+	dss.back.passOp = VK_STENCIL_OP_KEEP;
+	dss.back.compareOp = VK_COMPARE_OP_ALWAYS;
+	dss.stencilTestEnable = VK_FALSE;
+	dss.front = dss.back;
+
 	SceneCompositionPS* pixelShader = new SceneCompositionPS(m_app);
 	pixelShader->Load();
 
-	m_effect = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget, pixelShader);
+	m_effect = m_app->SpriteManager->CreateSpriteEffect(m_renderTarget, pixelShader, {}, dss);
 	W_SAFE_REMOVEREF(pixelShader);
 	if (!m_effect)
 		return WError(W_OUTOFMEMORY);

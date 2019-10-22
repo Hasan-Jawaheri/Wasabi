@@ -25,12 +25,16 @@ layout(set = 1, binding = 1) uniform UBOParams {
 	float camFarClip;
 } uboParams;
 
-vec3 getPosition(vec2 uv) {
-	float z = texture(depthTexture, uv).r;
+vec3 getPosition_depth(vec2 uv, float z) {
 	float x = uv.x * 2.0f - 1.0f;
 	float y = uv.y * 2.0f - 1.0f;
 	vec4 vPositionVS = uboPerFrame.projInv * vec4 (x, y, z, 1.0f);
 	return vPositionVS.xyz / vPositionVS.w;
+}
+
+vec3 getPosition(vec2 uv) {
+	float z = texture(depthTexture, uv).r;
+	return getPosition_depth(uv, z);
 }
 
 vec3 getPositionBackface(vec2 uv) {
@@ -77,7 +81,8 @@ void main() {
 	vec4 light = texture(lightTexture, inUV);
 
 	vec2 occludersUVs[4] = {vec2(1, 0), vec2(-1, 0), vec2(0, 1), vec2(0, -1)};
-	vec3 occluderPos = getPosition(inUV);
+	float depth = texture(depthTexture, inUV).r;
+	vec3 occluderPos = getPosition_depth(inUV, depth);
 	vec3 occluderNorm = getNormal(inUV);
 	vec2 rand = getRandom(inUV);
 	float rad = uboParams.SSAOSampleRadius / occluderPos.z;
@@ -105,4 +110,5 @@ void main() {
 	vec3 ambient = max(vec3(0,0,0), color.rgb * uboParams.ambient.rgb - vec3(ao));
 	vec3 lit = color.rgb * light.rgb * light.a;
 	outFragColor = vec4(ambient + lit, color.a);
+	gl_FragDepth = depth;
 }
