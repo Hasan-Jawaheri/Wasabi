@@ -185,8 +185,6 @@ void WGBufferRenderStage::Cleanup() {
 	W_SAFE_REMOVEREF(m_defaultVS);
 	W_SAFE_REMOVEREF(m_defaultAnimatedVS);
 	W_SAFE_REMOVEREF(m_defaultPS);
-	W_SAFE_REMOVEREF(m_defaultFX);
-	W_SAFE_REMOVEREF(m_defaultAnimatedFX);
 }
 
 WError WGBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
