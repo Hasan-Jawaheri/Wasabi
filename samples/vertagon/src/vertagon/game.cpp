@@ -160,7 +160,7 @@ WError Vertagon::SetupRenderer() {
 WPhysicsComponent* Vertagon::CreatePhysicsComponent() {
 	WBulletPhysics* physics = new WBulletPhysics(this);
 	SetEngineParam<int>("maxBulletDebugLines", 10000);
-	WError werr = physics->Initialize(false);
+	WError werr = physics->Initialize(true);
 	if (!werr)
 		W_SAFE_DELETE(physics);
 	return physics;
