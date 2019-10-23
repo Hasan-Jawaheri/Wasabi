@@ -90,7 +90,7 @@ WError Map::Load() {
      * Sky
      */
     m_skyGeometry = new WGeometry(m_app);
-    status = m_skyGeometry->CreateSphere(-5000.0f, 20, 20);
+    status = m_skyGeometry->CreateSphere(-5000.0f, 28, 28);
     if (!status) return status;
 	status = ((Vertagon*)m_app)->UnsmoothFeometryNormals(m_skyGeometry);
 	if (!status) return status;
