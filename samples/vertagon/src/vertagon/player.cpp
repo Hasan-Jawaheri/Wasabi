@@ -84,7 +84,7 @@ void Player::UpdateInput(float fDeltaTime) {
         }
         if (m_controls.currentInput.isJumpPressed && !m_controls.currentInput.isJumpTriggered) {
             m_controls.currentInput.isJumpTriggered = true;
-            m_rigidBody->ApplyForce(WVector3(0.0f, m_controls.jumpPower, 0.0f));
+            m_rigidBody->ApplyForce((WVector3(0.0f, 1.0f, 0.0f) + (direction * 0.6f)) * m_controls.jumpPower);
         }
     }
     m_rigidBody->SetAngle(WQuaternion());
@@ -125,7 +125,7 @@ WError Player::Load() {
     /**
      * Create a crossfire image (+ sign)
      */
-    uint32_t w = 32, h = 32, c = 4;
+    uint32_t w = 20, h = 20, c = 4;
     uint8_t* cursorImgData = new uint8_t[w * h * c];
     for (uint32_t y = 0; y < h; y++) {
         for (uint32_t x = 0; x < w; x++) {
