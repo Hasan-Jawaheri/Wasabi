@@ -31,21 +31,21 @@ void Vertagon::GameState::OnMouseMove(double mx, double my) {
         INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_MOUSEMOVE, mx, my));
 }
 
-void Vertagon::GameState::OnKeyDown(char c) {
+void Vertagon::GameState::OnKeyDown(uint32_t c) {
     // pass on the input to the player class
     // ((Vertagon*)m_app)->m_player->OnKeyDown(c);
     ((Vertagon*)m_app)->m_laggedInput.push_back(
         INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_KEYDOWN, c));
 }
 
-void Vertagon::GameState::OnKeyUp(char c) {
+void Vertagon::GameState::OnKeyUp(uint32_t c) {
     // pass on the input to the player class
     // ((Vertagon*)m_app)->m_player->OnKeyUp(c);
     ((Vertagon*)m_app)->m_laggedInput.push_back(
         INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_KEYUP, c));
 }
 
-void Vertagon::GameState::OnInput(char c) {
+void Vertagon::GameState::OnInput(uint32_t c) {
     // pass on the input to the player class
     // ((Vertagon*)m_app)->m_player->OnInput(c);
     ((Vertagon*)m_app)->m_laggedInput.push_back(
@@ -76,13 +76,13 @@ void Vertagon::DispatchLaggedInput(float fDeltaTime) {
                     m_player->OnMouseMove(m_laggedInput[0].mx, m_laggedInput[0].my);
                     break;
                 case IT_KEYDOWN:
-                    m_player->OnKeyDown(m_laggedInput[0].c);
+                    m_player->OnKeyDown(m_laggedInput[0].key);
                     break;
                 case IT_KEYUP:
-                    m_player->OnKeyUp(m_laggedInput[0].c);
+                    m_player->OnKeyUp(m_laggedInput[0].key);
                     break;
                 case IT_INPUT:
-                    m_player->OnInput(m_laggedInput[0].c);
+                    m_player->OnInput(m_laggedInput[0].key);
                     break;
             }
             m_laggedInput.erase(m_laggedInput.begin());

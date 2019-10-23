@@ -344,7 +344,7 @@ double WWindowsWindowAndInputComponent::WWindowsWindowAndInputComponent::MouseX(
 
 double WWindowsWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
 	UNREFERENCED_PARAMETER(vpID);
-	
+
 	//get mouse position and convert it to the desired type
 	RECT rc;
 	POINT pt, __pt;
@@ -374,7 +374,7 @@ double WWindowsWindowAndInputComponent::MouseZ() const {
 
 bool WWindowsWindowAndInputComponent::MouseInScreen(W_MOUSEPOSTYPE posT, uint32_t vpID) const {
 	UNREFERENCED_PARAMETER(vpID);
-	
+
 	if (posT == MOUSEPOS_WINDOW) { //check if mouse is in the window
 		POINT pt;
 		GetCursorPos(&pt);
@@ -498,19 +498,19 @@ LRESULT CALLBACK hMainWndProc(HWND hWnd, uint32_t msg, WPARAM wParam, LPARAM lPa
 			appInst->__EXIT = true;
 		Component->InsertRawInput((uint32_t)wParam, true);
 		if (appInst->curState)
-			appInst->curState->OnKeyDown((char)wParam);
+			appInst->curState->OnKeyDown((uint32_t)wParam);
 		break;
 	case WM_KEYUP:
 		if (!Component)
 			break;
 		Component->InsertRawInput((uint32_t)wParam, false);
 		if (appInst->curState)
-			appInst->curState->OnKeyUp((char)wParam);
+			appInst->curState->OnKeyUp((uint32_t)wParam);
 		break;
 	case WM_CHAR:
 		if (appInst->curState) {
 			for (uint32_t i = 0; i < LOWORD(lParam); i++)
-				appInst->curState->OnInput((char)wParam);
+				appInst->curState->OnInput((uint32_t)wParam);
 		}
 		break;
 	case WM_GETMINMAXINFO:

@@ -59,9 +59,9 @@ public:
     void OnMouseDown(W_MOUSEBUTTON button, double mx, double my);
     void OnMouseUp(W_MOUSEBUTTON button, double mx, double my);
     void OnMouseMove(double mx, double my);
-    void OnKeyDown(char c);
-    void OnKeyUp(char c);
-    void OnInput(char c);
+    void OnKeyDown(uint32_t key);
+    void OnKeyUp(uint32_t key);
+    void OnInput(uint32_t key);
 
     WVector3 GetPosition() const;
 };

@@ -297,7 +297,7 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 	glfwSetCharCallback((GLFWwindow*)m_window, [](GLFWwindow* window, uint32_t c) {
 		WGLFWWindowAndInputComponent* comp = (WGLFWWindowAndInputComponent*)glfwGetWindowUserPointer(window);
 		if (comp->m_app->curState)
-			comp->m_app->curState->OnInput((uint8_t)c);
+			comp->m_app->curState->OnInput(c);
 	});
 
 	glfwSetKeyCallback((GLFWwindow*)m_window, [](GLFWwindow* window, int key, int scancode, int mode, int mods) {
@@ -307,13 +307,13 @@ void WGLFWWindowAndInputComponent::SetCallbacks() {
 		if (mode == GLFW_RELEASE) {
 			comp->InsertRawInput(key, false);
 			if (comp->m_app->curState)
-				comp->m_app->curState->OnKeyUp((uint8_t)key);
+				comp->m_app->curState->OnKeyUp((uint32_t)key);
 		} else if (mode == GLFW_PRESS) {
 			comp->InsertRawInput(key, true);
 			if ((key == W_KEY_ESCAPE && comp->m_escapeQuit) || (key == W_KEY_W && (mods & GLFW_MOD_SUPER) && comp->m_cmdWQuit))
 				glfwSetWindowShouldClose(window, 1);
 			if (comp->m_app->curState)
-				comp->m_app->curState->OnKeyDown((uint8_t)key);
+				comp->m_app->curState->OnKeyDown((uint32_t)key);
 		} else if (mode == GLFW_REPEAT) {}
 	});
 

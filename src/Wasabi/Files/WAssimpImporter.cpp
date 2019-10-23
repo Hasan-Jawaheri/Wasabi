@@ -66,7 +66,7 @@ WError WAssimpImporter::LoadSingleObject(std::string filename, WObject*& object)
 	uint32_t* allIndices = new uint32_t[totalIndexCount];
 
 	// zero out the vertices
-	memset(allVertices, 0, sizeof(WDefaultVertex) * totalVertexCount);
+	memset(static_cast<void*>(allVertices), 0, sizeof(WDefaultVertex) * totalVertexCount);
 
 	uint32_t curVertexOffset = 0;
 	uint32_t curIndexOffset = 0;

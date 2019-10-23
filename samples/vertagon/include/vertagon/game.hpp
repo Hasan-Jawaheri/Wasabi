@@ -12,9 +12,9 @@ class Vertagon : public Wasabi {
     	virtual void OnMouseDown(W_MOUSEBUTTON button, double mx, double my) override;
     	virtual void OnMouseUp(W_MOUSEBUTTON button, double mx, double my) override;
         virtual void OnMouseMove(double mx, double my) override;
-        virtual void OnKeyDown(char c) override;
-        virtual void OnKeyUp(char c) override;
-        virtual void OnInput(char c) override;
+        virtual void OnKeyDown(uint32_t c) override;
+        virtual void OnKeyUp(uint32_t c) override;
+        virtual void OnInput(uint32_t c) override;
     };
 
     enum INPUT_TYPE {
@@ -30,7 +30,7 @@ class Vertagon : public Wasabi {
         INPUT_TYPE type;
         W_MOUSEBUTTON btn;
         double mx, my;
-        char c;
+        uint32_t key;
 
         INPUT_DATA(float _time, INPUT_TYPE _type, W_MOUSEBUTTON _button, double x, double y) {
             timestamp = _time;
@@ -47,10 +47,10 @@ class Vertagon : public Wasabi {
             my = y;
         }
 
-        INPUT_DATA(float _time, INPUT_TYPE _type, char _c) {
+        INPUT_DATA(float _time, INPUT_TYPE _type, uint32_t _key) {
             timestamp = _time;
             type = _type;
-            c = _c;
+            key = _key;
         }
     };
 

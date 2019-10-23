@@ -360,8 +360,8 @@ public:
 	 * active.
 	 * @param c The pushed key
 	 */
-	virtual void OnKeyDown(char c) {
-		UNREFERENCED_PARAMETER(c);
+	virtual void OnKeyDown(uint32_t key) {
+		UNREFERENCED_PARAMETER(key);
 	}
 
 	/**
@@ -369,8 +369,8 @@ public:
 	 * active.
 	 * @param c The released key
 	 */
-	virtual void OnKeyUp(char c) {
-		UNREFERENCED_PARAMETER(c);
+	virtual void OnKeyUp(uint32_t key) {
+		UNREFERENCED_PARAMETER(key);
 	}
 
 	/**
@@ -416,7 +416,7 @@ public:
 	 * suitable for capturing input for things like text boxes.
 	 * @param c [description]
 	 */
-	virtual void OnInput(char c) {
+	virtual void OnInput(uint32_t c) {
 		UNREFERENCED_PARAMETER(c);
 	}
 

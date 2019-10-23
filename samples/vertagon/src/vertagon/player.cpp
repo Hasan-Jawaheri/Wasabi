@@ -193,7 +193,7 @@ void Player::OnMouseMove(double mx, double my) {
     m_controls.currentInput.mousePos = WVector2((float)mx, (float)my);
 }
 
-void Player::OnKeyDown(char c) {
+void Player::OnKeyDown(uint32_t c) {
     if (c == m_controls.bindings.moveForward)
         m_controls.currentInput.isForwardPressed = true;
     if (c == m_controls.bindings.moveBackward)
@@ -206,7 +206,7 @@ void Player::OnKeyDown(char c) {
         m_controls.currentInput.isJumpPressed = true;
 }
 
-void Player::OnKeyUp(char c) {
+void Player::OnKeyUp(uint32_t c) {
     if (c == m_controls.bindings.moveForward)
         m_controls.currentInput.isForwardPressed = false;
     if (c == m_controls.bindings.moveBackward)
@@ -221,7 +221,7 @@ void Player::OnKeyUp(char c) {
     }
 }
 
-void Player::OnInput(char c) {
+void Player::OnInput(uint32_t c) {
     UNREFERENCED_PARAMETER(c);
 }
 
