@@ -50,7 +50,7 @@ vec3 getPositionBackface(vec2 uv) {
 
 vec3 getNormal(vec2 uv) {
 	vec4 normalAndSpec = texture(normalTexture, uv); //rg is packed norm
-	return unpackNormalSpheremapTransform(normalAndSpec.xy);
+	return WasabiUnpackNormalSpheremapTransform(normalAndSpec.xy);
 }
 
 vec2 getRandom(vec2 uv) {

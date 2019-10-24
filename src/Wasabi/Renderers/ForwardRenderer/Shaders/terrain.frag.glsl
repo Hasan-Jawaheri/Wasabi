@@ -4,7 +4,7 @@
 #extension GL_ARB_shading_language_420pack : enable
 #extension GL_GOOGLE_include_directive : enable
 
-#include "../../Common/Shaders/lighting_utils.glsl"
+#include "../../Common/Shaders/utils.glsl"
 
 struct Light {
 	vec4 color;
@@ -47,7 +47,7 @@ void main() {
 		float lightIntensity = uboPerFrame.lights[i].color.a;
 		vec4 light;
 		if (uboPerFrame.lights[i].type == 0) {
-			light = DirectionalLight(
+			light = WasabiDirectionalLight(
 				inWorldPos,
 				inWorldNorm,
 				uboPerFrame.camDirW,
@@ -56,7 +56,7 @@ void main() {
 				uboPerFrame.lights[i].color.rgb
 			);
 		} else if (uboPerFrame.lights[i].type == 1) {
-			light = PointLight(
+			light = WasabiPointLight(
 				inWorldPos,
 				inWorldNorm,
 				uboPerFrame.camDirW,
@@ -66,7 +66,7 @@ void main() {
 				uboPerFrame.lights[i].dir.a
 			);
 		} else if (uboPerFrame.lights[i].type == 2) {
-			light = SpotLight(
+			light = WasabiSpotLight(
 				inWorldPos,
 				inWorldNorm,
 				uboPerFrame.camDirW,

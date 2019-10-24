@@ -1,9 +1,21 @@
 
-// Return values:
-// RGB: Light computed
-// A: Specular Term
+vec2 WasabiPackNormalSpheremapTransform(vec3 norm) {
+    vec2 packed = normalize(norm.xy) * (sqrt(-norm.z*0.5+0.5));
+    packed = packed * 0.5 + 0.5;
+    return packed;
+}
 
-vec4 DirectionalLight(
+vec3 WasabiUnpackNormalSpheremapTransform(vec2 packed2) {
+	vec4 packed = vec4(packed2, 0, 0);
+    vec4 nn = packed * vec4(2,2,0,0) + vec4(-1,-1,1,-1);
+    float l = dot(nn.xyz, -nn.xyw);
+    nn.z = l;
+    nn.xy *= sqrt(l);
+    vec3 unpacked = nn.xyz * 2 + vec3(0,0,-1);
+    return unpacked;
+}
+
+vec4 WasabiDirectionalLight(
 	in vec3 pixelPos,
 	in vec3 pixelNorm,
 	in vec3 camDir,
@@ -22,7 +34,7 @@ vec4 DirectionalLight(
 	return vec4(lightColor * nl, spec);
 }
 
-vec4 PointLight(
+vec4 WasabiPointLight(
 	in vec3 pixelPos,
 	in vec3 pixelNorm,
 	in vec3 camDir,
@@ -47,7 +59,7 @@ vec4 PointLight(
 	return vec4(lightColor * nl * xVal, spec);
 }
 
-vec4 SpotLight(
+vec4 WasabiSpotLight(
 	in vec3 pixelPos,
 	in vec3 pixelNorm,
 	in vec3 camDir,
@@ -58,7 +70,7 @@ vec4 SpotLight(
 	in float lightRange,
 	in float minCosAngle
 ) {
-	vec4 color = PointLight(pixelPos, pixelNorm, camDir, specularPower, lightPos, lightColor, lightRange);
+	vec4 color = WasabiPointLight(pixelPos, pixelNorm, camDir, specularPower, lightPos, lightColor, lightRange);
 
 	// The vector from the surface to the light.
 	vec3 lightVec = normalize(lightPos - pixelPos);

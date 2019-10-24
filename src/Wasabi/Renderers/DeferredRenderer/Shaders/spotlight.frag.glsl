@@ -3,7 +3,6 @@
 #extension GL_ARB_shading_language_420pack : enable
 #extension GL_GOOGLE_include_directive : enable
 
-#include "../../Common/Shaders/lighting_utils.glsl"
 #include "../../Common/Shaders/utils.glsl"
 
 layout(location = 0) in vec4 inPos;
@@ -36,12 +35,12 @@ void main() {
 	vec3 pixelPositionV = vPositionVS.xyz / vPositionVS.w;
 
 	vec4 normalAndSpec = texture(normalTexture, uv); //rg=packed-normal, b=specPower, a=specIntensityy
-	vec3 pixelNormalV = unpackNormalSpheremapTransform(normalAndSpec.xy);
+	vec3 pixelNormalV = WasabiUnpackNormalSpheremapTransform(normalAndSpec.xy);
 	float specularPower = normalAndSpec.b;
 	float specularIntensity = normalAndSpec.a;
 	vec3 camDirV = vec3(0, 0, 1); // since pixelPositionV is in view space
 
-	vec4 light = SpotLight(
+	vec4 light = WasabiSpotLight(
 		pixelPositionV,
 		pixelNormalV,
 		camDirV,
