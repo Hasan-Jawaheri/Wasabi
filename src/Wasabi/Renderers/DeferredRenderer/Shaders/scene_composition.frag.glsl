@@ -1,6 +1,9 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : enable
+
+#include "../../Common/Shaders/utils.glsl"
 
 layout(set = 1, binding = 2) uniform sampler2D diffuseTexture;
 layout(set = 1, binding = 3) uniform sampler2D lightTexture;
@@ -46,9 +49,8 @@ vec3 getPositionBackface(vec2 uv) {
 }
 
 vec3 getNormal(vec2 uv) {
-	vec4 normalAndSpec = texture(normalTexture, uv); //rgb norm, a spec
-	vec3 pixelNormalV = vec3(normalAndSpec.xy, sqrt(1.0f - normalAndSpec.x * normalAndSpec.x - normalAndSpec.y * normalAndSpec.y));
-	return pixelNormalV;
+	vec4 normalAndSpec = texture(normalTexture, uv); //rg is packed norm
+	return unpackNormalSpheremapTransform(normalAndSpec.xy);
 }
 
 vec2 getRandom(vec2 uv) {
@@ -107,7 +109,6 @@ void main() {
 
 	ao /= iterations * 8.0f;
 
-	ao=0;
 	vec3 ambientLight = max(vec3(0,0,0), color.rgb * uboParams.ambient.rgb - vec3(ao));
 	vec3 lit = color.rgb * light.rgb;
 	outFragColor = vec4(ambientLight + lit, color.a);
