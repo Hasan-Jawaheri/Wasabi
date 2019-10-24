@@ -26,6 +26,6 @@ layout(location = 1) out vec4 outNormals;
 
 void main() {
 	outColor = texture(diffuseTexture[inTexIndex], inUV) * uboPerObject.isTextured + uboPerObject.color;
-    outNormals.rg = packNormalSpheremapTransform(inViewNorm);
+    outNormals.rg = WasabiPackNormalSpheremapTransform(inViewNorm);
 	outNormals.ba = vec2(uboPerObject.specularPower, uboPerObject.specularIntensity);
 }
