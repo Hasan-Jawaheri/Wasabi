@@ -29,7 +29,7 @@ layout(set = 0, binding = 0) uniform UBO {
 layout(set = 1, binding = 1) uniform LUBO {
 	mat4 viewMatrix;
 	mat4 projectionMatrix;
-	vec3 camPosW;
+	vec3 camDirW;
 	int numLights;
 	Light lights[16];
 } uboPerFrame;
@@ -48,8 +48,8 @@ void main() {
 
 	vec4 localPos = instMtx * vec4(inPos.xyz, 1.0);
 	vec4 localNorm = instMtx * vec4(inNorm.xyz, 0.0f);
-	outWorldPos = (uboPerObject.worldMatrix * localPos).xyz;
-	outWorldNorm = (uboPerObject.worldMatrix * localNorm).xyz;
+	outWorldPos = (uboPerObject.worldMatrix * vec4(localPos.xyz, 1.0f)).xyz;
+	outWorldNorm = (uboPerObject.worldMatrix * vec4(localNorm.xyz, 0.0f)).xyz;
 	outUV = inUV;
 	outTexIndex = inTexIndex;
 	gl_Position = uboPerFrame.projectionMatrix * uboPerFrame.viewMatrix * vec4(outWorldPos, 1.0);

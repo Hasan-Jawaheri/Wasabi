@@ -14,11 +14,10 @@ layout(set = 1, binding = 2) uniform sampler2D depthTexture;
 layout(set = 0, binding = 0) uniform UBOPerLight {
 	mat4 wvp;
 	vec3 lightDir;
-	float lightSpec;
+	float range;
 	vec3 lightColor;
 	float intensity;
 	vec3 position;
-	float range;
 } uboPerLight;
 
 layout(set = 1, binding = 3) uniform UBOPerFrame {
@@ -37,15 +36,16 @@ void main() {
 
 	//clip(normalT.x + normalT.y + normalT.z - 0.01); // reject pixel
 	vec3 pixelNormal = normalize((normalT.xyz * 2.0f) - 1.0f);
-	vec3 camDir = normalize(-pixelPosition); // since pixelPosition is in view space
+	vec3 camDir = vec3(0, 0, 1); // since pixelPosition is in view space
 	vec4 light = PointLight(
+		uboPerLight.intensity,
 		pixelPosition,
 		pixelNormal,
+		normalT.a,
 		camDir,
 		uboPerLight.position,
 		uboPerLight.lightColor,
-		uboPerLight.lightSpec,
 		uboPerLight.range
 	);
-	outFragColor = light * uboPerLight.intensity; //scale by intensity
+	outFragColor = vec4(light.rgb + light.rgb * light.a, 1);
 }

@@ -31,7 +31,7 @@ layout(set = 0, binding = 0) uniform UBO {
 layout(set = 1, binding = 1) uniform LUBO {
 	mat4 viewMatrix;
 	mat4 projectionMatrix;
-	vec3 camPosW;
+	vec3 camDirW;
 	int numLights;
 	Light lights[16];
 } uboPerFrame;

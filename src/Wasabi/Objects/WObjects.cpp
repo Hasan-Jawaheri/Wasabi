@@ -237,6 +237,7 @@ bool WObject::Valid() const {
 
 void WObject::OnMaterialAdded(WMaterial* newMaterial) {
 	newMaterial->SetVariable<WColor>("color", WColor(0.0f, 0.0f, 0.0f, 0.0f));
+	newMaterial->SetVariable<float>("specular", 50.0f);
 	newMaterial->SetVariable<int>("isTextured", 1);
 }
 

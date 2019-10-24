@@ -106,9 +106,8 @@ void main() {
 
 	ao /= iterations * 8.0f;
 
-	//outFragColor = vec4(vec3(1-(min(1, ao))), 1);
-	vec3 ambient = max(vec3(0,0,0), color.rgb * uboParams.ambient.rgb - vec3(ao));
-	vec3 lit = color.rgb * light.rgb * light.a;
-	outFragColor = vec4(ambient + lit, color.a);
+	vec3 ambientLight = color.rgb * 0.2f;//max(vec3(0,0,0), color.rgb * 0.2f - vec3(ao));
+	vec3 lit = color.rgb * light.rgb;
+	outFragColor = vec4(ambientLight + lit, color.a);
 	gl_FragDepth = depth;
 }

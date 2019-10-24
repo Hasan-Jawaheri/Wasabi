@@ -26,7 +26,7 @@ void LightsDemo::Load() {
 
 	// Create the boxes
 	WGeometry* boxGeometry = new WGeometry(m_app);
-	boxGeometry->CreateCube(2.0f);
+	boxGeometry->CreateSphere(2.0f, 18, 18);
 	for (int i = 0; i < 40; i++) {
 		float x = 20.0f * (float)(rand() % 10000) / 10000.0f - 10.0f;
 		float y =  2.0f * (float)(rand() % 10000) / 10000.0f -  0.0f;

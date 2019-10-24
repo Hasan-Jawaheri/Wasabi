@@ -6,6 +6,7 @@
 layout(set = 0, binding = 0) uniform UBOPerObject {
 	mat4 worldMatrix;
 	vec4 color;
+	float specular;
 	int isInstanced;
 	int isTextured;
 } uboPerObject;
@@ -22,5 +23,6 @@ layout(location = 1) out vec4 outNormals;
 
 void main() {
 	outColor = texture(diffuseTexture[inTexIndex], inUV) * uboPerObject.isTextured + uboPerObject.color;
-	outNormals = (vec4(inViewNorm, 1.0) + 1) / 2;
+	outNormals.rgb = (inViewNorm + 1) / 2;
+	outNormals.a = uboPerObject.specular;
 }

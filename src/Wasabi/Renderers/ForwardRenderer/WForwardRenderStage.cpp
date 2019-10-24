@@ -25,13 +25,14 @@ W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
 		W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerObject", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"), // object color
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specular"), // object specular
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isInstanced"), // whether or not instancing is enabled
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isTextured"), // whether or not to use diffuse texture
 		}),
 		W_BOUND_RESOURCE(W_TYPE_UBO, 1, 1, "uboPerFrame", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projectionMatrix"), // projection
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "camPosW"),
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "camDirW"),
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "numLights"),
 			W_SHADER_VARIABLE_INFO(W_TYPE_STRUCT, maxLights, sizeof(LightStruct), 16, "lights"),
 		}),
@@ -114,11 +115,12 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 	desc.bound_resources = {
 		W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerTerrain", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specular"), // specular
 		}),
 		W_BOUND_RESOURCE(W_TYPE_UBO, 1, 1, "uboPerFrame", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projectionMatrix"), // projection
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "camPosW"),
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "camDirW"),
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "numLights"),
 			W_SHADER_VARIABLE_INFO(W_TYPE_STRUCT, maxLights, sizeof(LightStruct), 16, "lights"),
 		}),
@@ -334,7 +336,7 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint3
 		// create the per-frame UBO data
 		m_perFrameTerrainsMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameTerrainsMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
-		m_perFrameTerrainsMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
+		m_perFrameTerrainsMaterial->SetVariable<WVector3>("camDirW", cam->GetLVector());
 		m_perFrameTerrainsMaterial->SetVariable<int>("numLights", numLights);
 		m_perFrameTerrainsMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
 
@@ -345,13 +347,13 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint3
 		// create the per-frame UBO data
 		m_perFrameObjectsMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameObjectsMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
-		m_perFrameObjectsMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
+		m_perFrameObjectsMaterial->SetVariable<WVector3>("camDirW", cam->GetLVector());
 		m_perFrameObjectsMaterial->SetVariable<int>("numLights", numLights);
 		m_perFrameObjectsMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
 
 		m_perFrameAnimatedObjectsMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameAnimatedObjectsMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
-		m_perFrameAnimatedObjectsMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
+		m_perFrameAnimatedObjectsMaterial->SetVariable<WVector3>("camDirW", cam->GetLVector());
 		m_perFrameAnimatedObjectsMaterial->SetVariable<int>("numLights", numLights);
 		m_perFrameAnimatedObjectsMaterial->SetVariableData("lights", m_lights.data(), sizeof(LightStruct) * numLights);
 

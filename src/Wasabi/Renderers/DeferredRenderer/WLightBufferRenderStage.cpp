@@ -45,11 +45,10 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerLight", {
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "wvp"), // world * view * projection
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightDir"), // light direction (L vector)
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "lightSpec"), // light specular
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "range"), // light range
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightColor"), // light color
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "intensity"), // light intensity
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "position"), // light color
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "range"), // light range
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "minCosAngle"), // used for spot light (angle of beam precomputed)
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "spotRadius"), // radius of the circle at the end of the cone
 			}),
@@ -99,11 +98,10 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerLight", {
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "wvp"), // world * view * projection
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightDir"), // light direction (L vector)
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "lightSpec"), // light specular
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "range"), // light range
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightColor"), // light color
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "intensity"), // light intensity
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "position"), // light position
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "range"), // light range
 			}),
 		};
 	}
@@ -152,11 +150,10 @@ public:
 			W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerLight", {
 				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "wvp"), // world * view * projection
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightDir"), // light direction (L vector)
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "lightSpec"), // light specular
+				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "range"), // light range
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "lightColor"), // light color
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "intensity"), // light intensity
 				W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3, "position"), // light position
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "range"), // light range
 				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "minCosAngle"), // used for spot light (angle of beam precomputed)
 			}),
 			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, 1, "normalTexture"),
@@ -176,7 +173,7 @@ WLightBufferRenderStage::WLightBufferRenderStage(Wasabi* const app) : WRenderSta
 	m_stageDescription.name = __func__;
 	m_stageDescription.target = RENDER_STAGE_TARGET_BUFFER;
 	m_stageDescription.colorOutputs = std::vector<WRenderStage::OUTPUT_IMAGE>({
-		WRenderStage::OUTPUT_IMAGE("LightBuffer", VK_FORMAT_R8G8B8A8_UNORM, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
+		WRenderStage::OUTPUT_IMAGE("LightBuffer", VK_FORMAT_R16G16B16A16_SFLOAT, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
 	});
 }
 
@@ -192,7 +189,7 @@ WError WLightBufferRenderStage::Initialize(std::vector<WRenderStage*>& previousS
 	m_blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
 	m_blendState.colorBlendOp = VK_BLEND_OP_ADD;
 	m_blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	m_blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	m_blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 	m_blendState.alphaBlendOp = VK_BLEND_OP_ADD;
 
 	m_rasterizationState = {};
@@ -259,7 +256,6 @@ WError WLightBufferRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, u
 					material->SetVariable<WVector3>("lightDir", WVec3TransformNormal(light->GetLVector(), cam->GetViewMatrix()));
 					material->SetVariable<WVector3>("position", WVec3TransformCoord(light->GetPosition(), cam->GetViewMatrix()));
 					material->SetVariable<WVector3>("lightColor", WVector3(lightColor.r, lightColor.g, lightColor.b));
-					material->SetVariable<float>("lightSpec", lightColor.a); // specular power is stored in alpha component
 					material->SetVariable<float>("intensity", light->GetIntensity());
 					material->SetVariable<float>("range", light->GetRange());
 					material->SetVariable<float>("minCosAngle", light->GetMinCosAngle());
