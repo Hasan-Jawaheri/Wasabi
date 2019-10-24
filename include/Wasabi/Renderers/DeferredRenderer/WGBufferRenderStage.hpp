@@ -25,6 +25,14 @@ public:
 	static W_SHADER_DESC GetDesc();
 };
 
+/**
+ * GBuffer layout:
+ * Depth attachment: D16 - depth
+ * Color attachment 0: R8G8B8A8 - albedo (diffuse color)
+ * Color attachment 1: R16G16B16A16 - rg is packed normals, b is specular power, a is specular intensity
+ * Code for packing and unpacking of normals can be found in `src/Wasabi/Renderers/Common/Shaders/utils.glsl`
+ * (WasabiPackNormalSpheremapTransform and WasabiUnpackNormalSpheremapTransform)
+ */
 class WGBufferRenderStage : public WRenderStage {
 	WObjectsRenderFragment* m_objectsFragment;
 	class WMaterial* m_perFrameMaterial;

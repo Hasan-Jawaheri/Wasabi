@@ -1,6 +1,9 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : enable
+
+#include "../../Common/Shaders/utils.glsl"
 
 layout(set = 1, binding = 2) uniform sampler2D diffuseTexture;
 layout(set = 1, binding = 3) uniform sampler2D lightTexture;
@@ -46,8 +49,8 @@ vec3 getPositionBackface(vec2 uv) {
 }
 
 vec3 getNormal(vec2 uv) {
-	vec4 normalT = texture(normalTexture, uv); //rgb norm, a spec
-	return normalize((normalT.xyz * 2.0f) - 1.0f);
+	vec4 normalAndSpec = texture(normalTexture, uv); //rg is packed norm
+	return WasabiUnpackNormalSpheremapTransform(normalAndSpec.xy);
 }
 
 vec2 getRandom(vec2 uv) {
@@ -106,9 +109,8 @@ void main() {
 
 	ao /= iterations * 8.0f;
 
-	//outFragColor = vec4(vec3(1-(min(1, ao))), 1);
-	vec3 ambient = max(vec3(0,0,0), color.rgb * uboParams.ambient.rgb - vec3(ao));
-	vec3 lit = color.rgb * light.rgb * light.a;
-	outFragColor = vec4(ambient + lit, color.a);
+	vec3 ambientLight = max(vec3(0,0,0), color.rgb * uboParams.ambient.rgb - vec3(ao));
+	vec3 lit = color.rgb * light.rgb;
+	outFragColor = vec4(ambientLight + lit, color.a);
 	gl_FragDepth = depth;
 }

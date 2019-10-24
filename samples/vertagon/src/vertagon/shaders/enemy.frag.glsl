@@ -1,6 +1,9 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
+#extension GL_GOOGLE_include_directive : enable
+
+#include "utils.glsl"
 
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec3 inNorm;
@@ -19,5 +22,6 @@ void main() {
 	vec4 color = vec4(0.5, 0.5, 0.5, 1);//texture(diffuseTexture, inUV).rgba;
     color.a *= 1.0f - uboPerObject.percentage;
 	outColor = color;
-    outNormal = (vec4(inNorm.xyz, 1.0f) + 1) / 2;
+    outNormal.rg = WasabiPackNormalSpheremapTransform(inNorm);
+    outNormal.ba = vec2(2.0f, 1.0f);
 }

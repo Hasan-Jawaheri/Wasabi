@@ -134,11 +134,11 @@ WError WBackfaceDepthRenderStage::Render(WRenderer* renderer, WRenderTarget* rt,
 		// create the per-frame UBO data
 		m_perFrameMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
-		m_perFrameMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
+		m_perFrameMaterial->SetVariable<WVector3>("camDirW", cam->GetLVector());
 
 		m_perFrameAnimatedMaterial->SetVariable<WMatrix>("viewMatrix", cam->GetViewMatrix());
 		m_perFrameAnimatedMaterial->SetVariable<WMatrix>("projectionMatrix", cam->GetProjectionMatrix());
-		m_perFrameAnimatedMaterial->SetVariable<WVector3>("camPosW", cam->GetPosition());
+		m_perFrameAnimatedMaterial->SetVariable<WVector3>("camDirW", cam->GetLVector());
 
 		m_objectsFragment->Render(renderer, rt);
 

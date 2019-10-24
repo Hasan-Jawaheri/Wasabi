@@ -8,11 +8,10 @@ layout(location = 0) out vec4 outPos;
 layout(set = 0, binding = 0) uniform UBOPerLight {
 	mat4 wvp;
 	vec3 lightDir;
-	float lightSpec;
+	float range;
 	vec3 lightColor;
 	float intensity;
 	vec3 position;
-	float range;
 	float minCosAngle;
 	float spotRadius;
 } uboPerLight;

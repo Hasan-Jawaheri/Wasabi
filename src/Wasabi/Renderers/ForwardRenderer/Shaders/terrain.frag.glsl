@@ -4,7 +4,7 @@
 #extension GL_ARB_shading_language_420pack : enable
 #extension GL_GOOGLE_include_directive : enable
 
-#include "../../Common/Shaders/lighting_utils.glsl"
+#include "../../Common/Shaders/utils.glsl"
 
 struct Light {
 	vec4 color;
@@ -15,12 +15,14 @@ struct Light {
 
 layout(set = 0, binding = 0) uniform UBO {
 	mat4 worldMatrix;
+	float specularPower;
+	float specularIntensity;
 } uboPerObject;
 
 layout(set = 1, binding = 1) uniform LUBO {
 	mat4 viewMatrix;
 	mat4 projectionMatrix;
-	vec3 camPosW;
+	vec3 camDirW;
 	int numLights;
 	Light lights[16];
 } uboPerFrame;
@@ -39,45 +41,46 @@ void main() {
 	// outFragColor = vec4(inTexIndex == 0 || inTexIndex == 4 || inTexIndex == 5 ? 1 : 0, inTexIndex == 1 || inTexIndex == 4 || inTexIndex == 3 ? 1 : 0, inTexIndex == 2 || inTexIndex == 3 || inTexIndex == 5 ? 1 : 0, 1);// texture(diffuseTexture[inTexIndex], inUV);
 	// outFragColor.rgb *= inAlpha * min(max(inWorldPos.y / 50.0f, 0.2f), 2.0f);
 	float heightAlpha = min(max((inWorldPos.y + 70) / 150.0f, 0.5f), 2.0f);
-	outFragColor = texture(diffuseTexture, vec3(inWorldPos.xz / 50.0f, heightAlpha)) * heightAlpha;
-	vec3 camDir = normalize(uboPerFrame.camPosW - inWorldPos);
-	vec3 lighting = vec3(0,0,0);
+	vec4 color = texture(diffuseTexture, vec3(inWorldPos.xz / 50.0f, heightAlpha)) * heightAlpha;
+	vec3 totalLighting = vec3(0,0,0);
 	for (int i = 0; i < uboPerFrame.numLights; i++) {
+		float lightIntensity = uboPerFrame.lights[i].color.a;
+		vec4 light;
 		if (uboPerFrame.lights[i].type == 0) {
-			vec4 light = DirectionalLight(
+			light = WasabiDirectionalLight(
 				inWorldPos,
 				inWorldNorm,
-				camDir,
+				uboPerFrame.camDirW,
+				uboPerObject.specularPower,
 				uboPerFrame.lights[i].dir.xyz,
-				uboPerFrame.lights[i].color.rgb,
-				uboPerFrame.lights[i].color.a
+				uboPerFrame.lights[i].color.rgb
 			);
-			lighting += light.rgb * light.a;
 		} else if (uboPerFrame.lights[i].type == 1) {
-			vec4 light = PointLight(
+			light = WasabiPointLight(
 				inWorldPos,
 				inWorldNorm,
-				camDir,
+				uboPerFrame.camDirW,
+				uboPerObject.specularPower,
 				uboPerFrame.lights[i].pos.xyz,
 				uboPerFrame.lights[i].color.rgb,
-				uboPerFrame.lights[i].color.a,
 				uboPerFrame.lights[i].dir.a
 			);
-			lighting += light.rgb * light.a;
 		} else if (uboPerFrame.lights[i].type == 2) {
-			vec4 light = SpotLight(
+			light = WasabiSpotLight(
 				inWorldPos,
 				inWorldNorm,
-				camDir,
+				uboPerFrame.camDirW,
+				uboPerObject.specularPower,
 				uboPerFrame.lights[i].pos.xyz,
 				uboPerFrame.lights[i].dir.xyz,
 				uboPerFrame.lights[i].color.rgb,
-				uboPerFrame.lights[i].color.a,
 				uboPerFrame.lights[i].dir.a, // light range
 				uboPerFrame.lights[i].pos.a // min cosine angle
 			);
-			lighting += light.rgb * light.a;
 		}
+		totalLighting += light.rgb * lightIntensity + light.rgb * light.a * uboPerObject.specularIntensity;
 	}
-	outFragColor.rgb = outFragColor.rgb * 0.2f + outFragColor.rgb * 0.8f * lighting; // ambient 20%
+	vec3 ambientLight = color.rgb * 0.2f;
+	vec3 lit = color.rgb * totalLighting.rgb;
+	outFragColor = vec4(ambientLight + lit, color.a);
 }

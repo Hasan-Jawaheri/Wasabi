@@ -63,9 +63,9 @@ Map::Map(Wasabi* app): m_app(app) {
     m_towerParams.anglePerGap = W_RADTODEG(m_towerParams.distanceBetweenPlatforms / m_towerParams.towerRadius); // angle occupied the gap between platforms
     m_towerParams.platformWidth = 20.0f;
     m_towerParams.platformResWidth = 4;
-    m_towerParams.platformResLength = 12;
-    m_towerParams.xzRandomness = 4.0f;
-    m_towerParams.yRandomness = 0.25f;
+    m_towerParams.platformResLength = 16;
+    m_towerParams.xzRandomness = 2.0f;
+    m_towerParams.yRandomness = 0.4f;
 }
 
 WError Map::Load() {
@@ -243,7 +243,7 @@ WError Map::BuildPlatformGeometry(WGeometry* geometry, WVector3 center, float an
         WVector3 p3 = vertices[v3].pos;
         WVector3 U = p2 - p1;
         WVector3 V = p3 - p1;
-        WVector3 norm = WVector3(U.y*V.z - U.z*V.y, U.z*V.x - U.x*V.z, U.x*V.y - U.y*V.x);
+        WVector3 norm = WVec3Normalize(WVector3(U.y*V.z - U.z*V.y, U.z*V.x - U.x*V.z, U.x*V.y - U.y*V.x));
         vertices[v1].norm = vertices[v2].norm = vertices[v3].norm = norm;
     };
 
