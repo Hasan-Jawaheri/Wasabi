@@ -13,8 +13,8 @@ Player::Player(Wasabi* app): m_app(app) {
     m_recoilAcceleration = 0.0f;
     m_alreadyShot = false;
 
-    m_controls.moveSpeed = 300000.0f;
-    m_controls.jumpPower = 80000.0f;
+    m_controls.moveSpeed = 500000.0f;
+    m_controls.jumpPower = 110000.0f;
     m_controls.mouseSensitivity = 0.1f;
     m_controls.maxPitchUp = 50.0f;
     m_controls.maxPitchDown = 50.0f;
@@ -73,15 +73,16 @@ void Player::UpdateInput(float fDeltaTime) {
         direction -= rightVec;
     if (m_controls.currentInput.isStrafeRightPressed)
         direction += rightVec;
-    float dirLen = WVec3Length(direction);
     if (isGrounded) {
+        float dirLen = WVec3Length(direction);
+        WVector3 velocity = m_rigidBody->getLinearVelocity();
         if (dirLen > 0.01f) {
             direction /= dirLen;
-            WVector3 velocity = m_rigidBody->getLinearVelocity();
             float speed = WVec3Length(velocity);
             float multiplier = std::max(std::min((27.0f - speed) / 20.0f, 2.0f), 0.01f);
             m_rigidBody->ApplyForce(direction * m_controls.moveSpeed * multiplier * fDeltaTime);
         }
+
         if (m_controls.currentInput.isJumpPressed && !m_controls.currentInput.isJumpTriggered) {
             m_controls.currentInput.isJumpTriggered = true;
             m_rigidBody->ApplyForce((WVector3(0.0f, 1.0f, 0.0f) + (direction * 0.6f)) * m_controls.jumpPower);

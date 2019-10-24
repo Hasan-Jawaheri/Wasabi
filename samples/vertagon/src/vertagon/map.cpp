@@ -52,6 +52,20 @@ Map::Map(Wasabi* app): m_app(app) {
 	m_sky = nullptr;
 	m_skyGeometry = nullptr;
     m_skyEffect = nullptr;
+
+    m_towerParams.numPlatforms = 20; // number of platforms to create
+    m_towerParams.platformLength = 80.0f; // the length of the 2D (top-down view) arc representing each platform
+    m_towerParams.distanceBetweenPlatforms = 2.0f; // distance (arc) to leave between platforms
+    m_towerParams.platformHeight = 2.0f; // height from the beginning of the platform to the end
+    m_towerParams.heightBetweenPlatforms = 2.0f; // height difference between the end of a platform and beginning of the next one
+    m_towerParams.towerRadius = 70.0f; // radius of the tower
+    m_towerParams.anglePerPlatform = W_RADTODEG(m_towerParams.platformLength / m_towerParams.towerRadius); // angle occupied by each platform
+    m_towerParams.anglePerGap = W_RADTODEG(m_towerParams.distanceBetweenPlatforms / m_towerParams.towerRadius); // angle occupied the gap between platforms
+    m_towerParams.platformWidth = 20.0f;
+    m_towerParams.platformResWidth = 4;
+    m_towerParams.platformResLength = 12;
+    m_towerParams.xzRandomness = 4.0f;
+    m_towerParams.yRandomness = 0.25f;
 }
 
 WError Map::Load() {
@@ -156,20 +170,6 @@ void Map::Cleanup() {
 
 
 WError Map::BuildTower() {
-    m_towerParams.numPlatforms = 20; // number of platforms to create
-    m_towerParams.platformLength = 80.0f; // the length of the 2D (top-down view) arc representing each platform
-    m_towerParams.distanceBetweenPlatforms = 2.0f; // distance (arc) to leave between platforms
-    m_towerParams.platformHeight = 2.0f; // height from the beginning of the platform to the end
-    m_towerParams.heightBetweenPlatforms = 2.0f; // height difference between the end of a platform and beginning of the next one
-    m_towerParams.towerRadius = 70.0f; // radius of the tower
-    m_towerParams.anglePerPlatform = W_RADTODEG(m_towerParams.platformLength / m_towerParams.towerRadius); // angle occupied by each platform
-    m_towerParams.anglePerGap = W_RADTODEG(m_towerParams.distanceBetweenPlatforms / m_towerParams.towerRadius); // angle occupied the gap between platforms
-    m_towerParams.platformWidth = 20.0f;
-    m_towerParams.platformResWidth = 4;
-    m_towerParams.platformResLength = 12;
-    m_towerParams.xzRandomness = 4.0f;
-    m_towerParams.yRandomness = 1.0f;
-
     WError status = WError(W_SUCCEEDED);
     float curAngle = 0.0f;
     float curHeight = 0.0f;
