@@ -26,7 +26,7 @@ void LightsDemo::Load() {
 
 	// Create the boxes
 	WGeometry* boxGeometry = new WGeometry(m_app);
-	boxGeometry->CreateSphere(2.0f, 18, 18);
+	boxGeometry->CreateCube(2.0f);
 	for (int i = 0; i < 40; i++) {
 		float x = 20.0f * (float)(rand() % 10000) / 10000.0f - 10.0f;
 		float y =  2.0f * (float)(rand() % 10000) / 10000.0f -  0.0f;
@@ -68,7 +68,7 @@ void LightsDemo::Load() {
 		float z = (10.0f + 15.0f * (float)(rand() % 10000) / 10000.0f) * (rand() % 2 == 0 ? 1.0f : -1.0f);
 
 		WLight* l = new WSpotLight(m_app);
-		l->SetIntensity(5.0f);
+		l->SetIntensity(2.0f);
 		l->SetRange(30.0f);
 		l->SetPosition(x, 4.0f, z);
 		l->Point(WVector3(x, 0.0f, z) * 0.5f);
@@ -108,6 +108,8 @@ void LightsDemo::Update(float fDeltaTime) {
 		// WObject* box = *it;
 		// box->Yaw(10.0f * fDeltaTime);
 	}
+
+	m_app->TextComponent->RenderText(m_isDeferred ? "Deferred" : "Forward", 5, 46, 32);
 }
 
 void LightsDemo::Cleanup() {

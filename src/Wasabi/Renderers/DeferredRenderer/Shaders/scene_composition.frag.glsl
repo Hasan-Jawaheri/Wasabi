@@ -46,8 +46,9 @@ vec3 getPositionBackface(vec2 uv) {
 }
 
 vec3 getNormal(vec2 uv) {
-	vec4 normalT = texture(normalTexture, uv); //rgb norm, a spec
-	return normalize((normalT.xyz * 2.0f) - 1.0f);
+	vec4 normalAndSpec = texture(normalTexture, uv); //rgb norm, a spec
+	vec3 pixelNormalV = vec3(normalAndSpec.xy, sqrt(1.0f - normalAndSpec.x * normalAndSpec.x - normalAndSpec.y * normalAndSpec.y));
+	return pixelNormalV;
 }
 
 vec2 getRandom(vec2 uv) {
@@ -106,7 +107,8 @@ void main() {
 
 	ao /= iterations * 8.0f;
 
-	vec3 ambientLight = color.rgb * 0.2f;//max(vec3(0,0,0), color.rgb * 0.2f - vec3(ao));
+	ao=0;
+	vec3 ambientLight = max(vec3(0,0,0), color.rgb * uboParams.ambient.rgb - vec3(ao));
 	vec3 lit = color.rgb * light.rgb;
 	outFragColor = vec4(ambientLight + lit, color.a);
 	gl_FragDepth = depth;

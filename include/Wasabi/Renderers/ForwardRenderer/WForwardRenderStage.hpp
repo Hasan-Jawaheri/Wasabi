@@ -75,4 +75,6 @@ public:
 	virtual WError Render(class WRenderer* renderer, class WRenderTarget* rt, uint32_t filter);
 	virtual void Cleanup();
 	virtual WError Resize(uint32_t width, uint32_t height);
+
+	void SetAmbientLight(WColor color);
 };

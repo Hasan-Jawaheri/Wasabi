@@ -23,7 +23,8 @@ W_SHADER_DESC WGBufferVS::GetDesc() {
 		W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerObject", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"), // object color
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specular"), // object specular
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specularPower"), // specular power (dot raised to this power)
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specularIntensity"), // specular intensity (specular term is multiplied by this)
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isInstanced"), // whether or not instancing is enabled
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isTextured"), // whether or not to use diffuse texture
 		}),
@@ -96,7 +97,7 @@ WGBufferRenderStage::WGBufferRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_stageDescription.depthOutput = WRenderStage::OUTPUT_IMAGE("GBufferDepth", VK_FORMAT_D16_UNORM, WColor(1.0f, 0.0f, 0.0f, 0.0f));
 	m_stageDescription.colorOutputs = std::vector<WRenderStage::OUTPUT_IMAGE>({
 		WRenderStage::OUTPUT_IMAGE("GBufferDiffuse", VK_FORMAT_R8G8B8A8_UNORM, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
-		WRenderStage::OUTPUT_IMAGE("GBufferViewSpaceNormal", VK_FORMAT_R8G8B8A8_UNORM, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
+		WRenderStage::OUTPUT_IMAGE("GBufferViewSpaceNormal", VK_FORMAT_R16G16B16A16_SFLOAT, WColor(0.0f, 0.0f, 0.0f, 0.0f)),
 	});
 	m_stageDescription.flags = RENDER_STAGE_FLAG_PICKING_RENDER_STAGE;
 

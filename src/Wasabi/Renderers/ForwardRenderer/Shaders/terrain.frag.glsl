@@ -15,7 +15,8 @@ struct Light {
 
 layout(set = 0, binding = 0) uniform UBO {
 	mat4 worldMatrix;
-	float specular;
+	float specularPower;
+	float specularIntensity;
 } uboPerObject;
 
 layout(set = 1, binding = 1) uniform LUBO {
@@ -41,39 +42,35 @@ void main() {
 	// outFragColor.rgb *= inAlpha * min(max(inWorldPos.y / 50.0f, 0.2f), 2.0f);
 	float heightAlpha = min(max((inWorldPos.y + 70) / 150.0f, 0.5f), 2.0f);
 	vec4 color = texture(diffuseTexture, vec3(inWorldPos.xz / 50.0f, heightAlpha)) * heightAlpha;
-	vec3 lighting = vec3(0,0,0);
-	float spec = 0.0f;
+	vec3 totalLighting = vec3(0,0,0);
 	for (int i = 0; i < uboPerFrame.numLights; i++) {
 		float lightIntensity = uboPerFrame.lights[i].color.a;
 		vec4 light;
 		if (uboPerFrame.lights[i].type == 0) {
 			light = DirectionalLight(
-				lightIntensity,
 				inWorldPos,
 				inWorldNorm,
-				uboPerObject.specular,
 				uboPerFrame.camDirW,
+				uboPerObject.specularPower,
 				uboPerFrame.lights[i].dir.xyz,
 				uboPerFrame.lights[i].color.rgb
 			);
 		} else if (uboPerFrame.lights[i].type == 1) {
 			light = PointLight(
-				lightIntensity,
 				inWorldPos,
 				inWorldNorm,
-				uboPerObject.specular,
 				uboPerFrame.camDirW,
+				uboPerObject.specularPower,
 				uboPerFrame.lights[i].pos.xyz,
 				uboPerFrame.lights[i].color.rgb,
 				uboPerFrame.lights[i].dir.a
 			);
 		} else if (uboPerFrame.lights[i].type == 2) {
 			light = SpotLight(
-				lightIntensity,
 				inWorldPos,
 				inWorldNorm,
-				uboPerObject.specular,
 				uboPerFrame.camDirW,
+				uboPerObject.specularPower,
 				uboPerFrame.lights[i].pos.xyz,
 				uboPerFrame.lights[i].dir.xyz,
 				uboPerFrame.lights[i].color.rgb,
@@ -81,11 +78,9 @@ void main() {
 				uboPerFrame.lights[i].pos.a // min cosine angle
 			);
 		}
-		lighting += light.rgb;
-		spec += light.a;
+		totalLighting += light.rgb * lightIntensity + light.rgb * light.a * uboPerObject.specularIntensity;
 	}
-	vec3 ambientLight = lighting * 0.2f;
-	vec3 diffuseLight = lighting;
-	vec3 specularLight = lighting * spec;
-	outFragColor = vec4(color.rgb * (ambientLight + diffuseLight + specularLight), color.a);
+	vec3 ambientLight = color.rgb * 0.2f;
+	vec3 lit = color.rgb * totalLighting.rgb;
+	outFragColor = vec4(ambientLight + lit, color.a);
 }

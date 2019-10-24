@@ -25,7 +25,8 @@ W_SHADER_DESC WForwardRenderStageObjectVS::GetDesc(int maxLights) {
 		W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerObject", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
 			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "color"), // object color
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specular"), // object specular
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specularPower"), // specular power (dot raised to this power)
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specularIntensity"), // specular intensity (specular term is multiplied by this)
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isInstanced"), // whether or not instancing is enabled
 			W_SHADER_VARIABLE_INFO(W_TYPE_INT, "isTextured"), // whether or not to use diffuse texture
 		}),
@@ -93,6 +94,9 @@ W_SHADER_DESC WForwardRenderStageObjectPS::GetDesc(int maxLights) {
 	desc.bound_resources = {
 		WForwardRenderStageObjectVS::GetDesc(maxLights).bound_resources[0],
 		WForwardRenderStageObjectVS::GetDesc(maxLights).bound_resources[1],
+		W_BOUND_RESOURCE(W_TYPE_UBO, 5, 1, "uboParams", {
+			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_4, "ambient"), // Ambient lighting
+		}),
 		W_BOUND_RESOURCE(W_TYPE_TEXTURE, 4, 0, "diffuseTexture", {}, 8),
 	};
 	return desc;
@@ -115,7 +119,8 @@ W_SHADER_DESC WForwardRenderStageTerrainVS::GetDesc(int maxLights) {
 	desc.bound_resources = {
 		W_BOUND_RESOURCE(W_TYPE_UBO, 0, 0, "uboPerTerrain", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "worldMatrix"), // world
-			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specular"), // specular
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specularPower"), // specular power (dot raised to this power)
+			W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "specularIntensity"), // specular intensity (specular term is multiplied by this)
 		}),
 		W_BOUND_RESOURCE(W_TYPE_UBO, 1, 1, "uboPerFrame", {
 			W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "viewMatrix"), // view
@@ -299,6 +304,8 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 		m_app->FileManager->AddDefaultAsset(m_perFrameTerrainsMaterial->GetName(), m_perFrameTerrainsMaterial);
 	}
 
+	SetAmbientLight(WColor(0.3f, 0.3f, 0.3f));
+
 	return err;
 }
 
@@ -367,4 +374,9 @@ WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint3
 
 WError WForwardRenderStage::Resize(uint32_t width, uint32_t height) {
 	return WRenderStage::Resize(width, height);
+}
+
+void WForwardRenderStage::SetAmbientLight(WColor color) {
+	m_perFrameObjectsMaterial->SetVariable<WColor>("ambient", color);
+	m_perFrameAnimatedObjectsMaterial->SetVariable<WColor>("ambient", color);
 }
