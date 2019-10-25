@@ -8,77 +8,77 @@
 
 class SkyVS : public WShader {
 public:
-	SkyVS(class Wasabi* const app) : WShader(app) {}
+    SkyVS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load(bool bSaveData = false) {
-		m_desc.type = W_VERTEX_SHADER;
-		m_desc.bound_resources = {W_BOUND_RESOURCE(
-			W_TYPE_UBO, 0, "uboPerObject", {
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "wvp"),
-			}
-		)};
-		m_desc.input_layouts = { W_INPUT_LAYOUT({
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
-			W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
-			W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 1), // texture index
-		}) };
-		vector<uint8_t> code{
-			#include "shaders/sky.vert.glsl.spv"
-		};
-		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
-	}
+    virtual void Load(bool bSaveData = false) {
+        m_desc.type = W_VERTEX_SHADER;
+        m_desc.bound_resources = {W_BOUND_RESOURCE(
+            W_TYPE_UBO, 0, "uboPerObject", {
+                W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "wvp"),
+            }
+        )};
+        m_desc.input_layouts = { W_INPUT_LAYOUT({
+            W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
+            W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
+            W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
+            W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
+            W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 1), // texture index
+        }) };
+        vector<uint8_t> code{
+            #include "shaders/sky.vert.glsl.spv"
+        };
+        LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
+    }
 };
 
 class SkyPS : public WShader {
 public:
-	SkyPS(class Wasabi* const app) : WShader(app) {}
+    SkyPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load(bool bSaveData = false) {
-		m_desc.type = W_FRAGMENT_SHADER;
-		m_desc.bound_resources = {};
-		vector<uint8_t> code{
-			#include "shaders/sky.frag.glsl.spv"
-		};
-		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
-	}
+    virtual void Load(bool bSaveData = false) {
+        m_desc.type = W_FRAGMENT_SHADER;
+        m_desc.bound_resources = {};
+        vector<uint8_t> code{
+            #include "shaders/sky.frag.glsl.spv"
+        };
+        LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
+    }
 };
 
 Map::Map(Wasabi* app): m_app(app) {
     m_plainGeometry = nullptr;
     m_plain = nullptr;
     m_rigidBody = nullptr;
-	m_sky = nullptr;
-	m_skyGeometry = nullptr;
+    m_sky = nullptr;
+    m_skyGeometry = nullptr;
     m_skyEffect = nullptr;
 
     m_towerParams.numPlatforms = 20; // number of platforms to create
     m_towerParams.platformLength = 80.0f; // the length of the 2D (top-down view) arc representing each platform
-    m_towerParams.distanceBetweenPlatforms = 2.0f; // distance (arc) to leave between platforms
+    m_towerParams.distanceBetweenPlatforms = 10.0f; // distance (arc) to leave between platforms
     m_towerParams.platformHeight = 2.0f; // height from the beginning of the platform to the end
-    m_towerParams.heightBetweenPlatforms = 2.0f; // height difference between the end of a platform and beginning of the next one
+    m_towerParams.heightBetweenPlatforms = 10.0f; // height difference between the end of a platform and beginning of the next one
     m_towerParams.towerRadius = 70.0f; // radius of the tower
     m_towerParams.anglePerPlatform = W_RADTODEG(m_towerParams.platformLength / m_towerParams.towerRadius); // angle occupied by each platform
     m_towerParams.anglePerGap = W_RADTODEG(m_towerParams.distanceBetweenPlatforms / m_towerParams.towerRadius); // angle occupied the gap between platforms
     m_towerParams.platformWidth = 20.0f;
-    m_towerParams.platformResWidth = 4;
-    m_towerParams.platformResLength = 16;
-    m_towerParams.xzRandomness = 2.0f;
-    m_towerParams.yRandomness = 0.4f;
+    m_towerParams.platformResWidth = 5;
+    m_towerParams.platformResLength = 20;
+    m_towerParams.xzRandomness = 1.0f;
+    m_towerParams.yRandomness = 0.5f;
 }
 
 WError Map::Load() {
     Cleanup();
 
     WGBufferRenderStage* GBufferRenderStage = (WGBufferRenderStage*)m_app->Renderer->GetRenderStage("WGBufferRenderStage");
-	WSceneCompositionRenderStage* SceneCompositionRenderStage = (WSceneCompositionRenderStage*)m_app->Renderer->GetRenderStage("WSceneCompositionRenderStage");
+    WSceneCompositionRenderStage* SceneCompositionRenderStage = (WSceneCompositionRenderStage*)m_app->Renderer->GetRenderStage("WSceneCompositionRenderStage");
 
     /**
      * Liughting
      */
     // m_app->LightManager->GetDefaultLight()->Hide();
-	SceneCompositionRenderStage->SetAmbientLight(WColor(0.01f, 0.01f, 0.01f));
+    SceneCompositionRenderStage->SetAmbientLight(WColor(0.01f, 0.01f, 0.01f));
 
     /**
      * Ground
@@ -106,38 +106,38 @@ WError Map::Load() {
     m_skyGeometry = new WGeometry(m_app);
     status = m_skyGeometry->CreateSphere(-5000.0f, 28, 28);
     if (!status) return status;
-	status = ((Vertagon*)m_app)->UnsmoothFeometryNormals(m_skyGeometry);
-	if (!status) return status;
+    status = ((Vertagon*)m_app)->UnsmoothFeometryNormals(m_skyGeometry);
+    if (!status) return status;
 
     SkyPS* skyPS = new SkyPS(m_app);
     skyPS->Load();
-	SkyVS* skyVS = new SkyVS(m_app);
-	skyVS->Load();
+    SkyVS* skyVS = new SkyVS(m_app);
+    skyVS->Load();
 
-	if (!skyPS->Valid() || !skyVS->Valid())
-		status = WError(W_NOTVALID);
+    if (!skyPS->Valid() || !skyVS->Valid())
+        status = WError(W_NOTVALID);
 
-	if (status) {
-		m_skyEffect = new WEffect(m_app);
-		m_skyEffect->SetRenderFlags(EFFECT_RENDER_FLAG_RENDER_FORWARD | EFFECT_RENDER_FLAG_TRANSLUCENT);
+    if (status) {
+        m_skyEffect = new WEffect(m_app);
+        m_skyEffect->SetRenderFlags(EFFECT_RENDER_FLAG_RENDER_FORWARD | EFFECT_RENDER_FLAG_TRANSLUCENT);
 
-		status = m_skyEffect->BindShader(skyVS);
-		if (status) {
-			status = m_skyEffect->BindShader(skyPS);
-			if (status) {
-				status = m_skyEffect->BuildPipeline(SceneCompositionRenderStage->GetRenderTarget());
-			}
-		}
-	}
+        status = m_skyEffect->BindShader(skyVS);
+        if (status) {
+            status = m_skyEffect->BindShader(skyPS);
+            if (status) {
+                status = m_skyEffect->BuildPipeline(SceneCompositionRenderStage->GetRenderTarget());
+            }
+        }
+    }
 
-	W_SAFE_REMOVEREF(skyPS);
-	W_SAFE_REMOVEREF(skyVS);
+    W_SAFE_REMOVEREF(skyPS);
+    W_SAFE_REMOVEREF(skyVS);
     if (!status) return status;
 
     m_sky = m_app->ObjectManager->CreateObject(m_skyEffect, 0);
     if (!m_sky) return WError(W_ERRORUNK);
-	m_sky->ClearEffects();
-	m_sky->AddEffect(m_skyEffect, 0);
+    m_sky->ClearEffects();
+    m_sky->AddEffect(m_skyEffect, 0);
     status = m_sky->SetGeometry(m_skyGeometry);
     if (!status) return status;
     m_sky->SetName("Mapsky");
@@ -149,8 +149,8 @@ WError Map::Load() {
 }
 
 void Map::Update(float fDeltaTime) {
-	WCamera* cam = m_app->CameraManager->GetDefaultCamera();
-	m_sky->GetMaterials().SetVariable("wvp", WTranslationMatrix(((Vertagon*)m_app)->m_player->GetPosition()) * cam->GetViewMatrix() * cam->GetProjectionMatrix());
+    WCamera* cam = m_app->CameraManager->GetDefaultCamera();
+    m_sky->GetMaterials().SetVariable("wvp", WTranslationMatrix(((Vertagon*)m_app)->m_player->GetPosition()) * cam->GetViewMatrix() * cam->GetProjectionMatrix());
 }
 
 void Map::Cleanup() {
@@ -230,22 +230,18 @@ WError Map::BuildPlatformGeometry(WGeometry* geometry, WVector3 center, float an
     uint32_t zsegs = m_towerParams.platformResLength;
     float width = m_towerParams.platformWidth;
 
-	uint32_t numVertices = (xsegs+1) * (zsegs+1) * 2 * 3;
-	uint32_t numIndices = numVertices;
+    /**
+     * Create a grid of triangles that is curved (using the radius of the tower)
+     * with two parts: a top part and a bottom part. The top part is the platform
+     * to walk on and the bottom part is to make it floating-island-like.
+     * Multiply by 2 (one for top part one for bottom).
+     */
+    uint32_t numVertices = ((xsegs + 1) * (zsegs + 1) * 2 * 3) *2;
+    uint32_t numIndices = numVertices;
 
-	//allocate the plain vertices
-	vector<WDefaultVertex> vertices(numVertices);
-	vector<uint32_t> indices(numIndices);
-
-    auto computeNormal = [&vertices](uint32_t v1, uint32_t v2, uint32_t v3) {
-        WVector3 p1 = vertices[v1].pos;
-        WVector3 p2 = vertices[v2].pos;
-        WVector3 p3 = vertices[v3].pos;
-        WVector3 U = p2 - p1;
-        WVector3 V = p3 - p1;
-        WVector3 norm = WVec3Normalize(WVector3(U.y*V.z - U.z*V.y, U.z*V.x - U.x*V.z, U.x*V.y - U.y*V.x));
-        vertices[v1].norm = vertices[v2].norm = vertices[v3].norm = norm;
-    };
+    //allocate the plain vertices
+    vector<WDefaultVertex> vertices(numVertices);
+    vector<uint32_t> indices(vertices.size());
 
     std::vector<WVector3> randomValues((xsegs+2) * (zsegs+2));
     for (uint32_t i = 0; i < randomValues.size(); i++)
@@ -254,7 +250,24 @@ WError Map::BuildPlatformGeometry(WGeometry* geometry, WVector3 center, float an
             WVector3(m_towerParams.xzRandomness, m_towerParams.yRandomness, m_towerParams.xzRandomness) *
             WVector3(rand() % 10000, rand() % 10000, rand() % 10000) / 10000.0f;
 
-	uint32_t curVert = 0;
+    auto computeNormal = [&vertices](uint32_t v1, uint32_t v2, uint32_t v3) {
+        WVector3 p1 = vertices[v1].pos;
+        WVector3 p2 = vertices[v2].pos;
+        WVector3 p3 = vertices[v3].pos;
+        WVector3 U = p2 - p1;
+        WVector3 V = p3 - p1;
+        WVector3 norm = WVec3Normalize(WVector3(U.y * V.z - U.z * V.y, U.z * V.x - U.x * V.z, U.x * V.y - U.y * V.x));
+        vertices[v1].norm = vertices[v2].norm = vertices[v3].norm = norm;
+    };
+
+    auto randomness = [&randomValues](uint32_t l, uint32_t w, uint32_t W) {
+        return randomValues[w * W + l];
+    };
+
+    /**
+     * Create the top part: a curved grid
+     */
+    uint32_t curVert = 0;
     for (uint32_t celll = 0; celll < zsegs + 1; celll++) {
         float _v1 = ((float)celll / (float)(zsegs+1));
         float _v2 = ((float)(celll+1) / (float)(zsegs+1));
@@ -262,40 +275,67 @@ WError Map::BuildPlatformGeometry(WGeometry* geometry, WVector3 center, float an
             float _u1 = (float)(cellw) / (float)(xsegs+1);
             float _u2 = (float)(cellw+1) / (float)(xsegs+1);
 
-            auto vtx = [this, &center, &angleFrom, &angleTo, &width, &heightFrom, &heightTo](float u, float v, WVector3 randomness) {
+            auto vtx = [this, &center, &angleFrom, &angleTo, &heightFrom, &heightTo, &width](float u, float v, WVector3 randomness) {
                 auto xc = [this, &angleFrom, &angleTo, &width](float u, float v) {
                     return cosf(W_DEGTORAD(v * (angleTo - angleFrom) + angleFrom)) * (m_towerParams.towerRadius - width / 2.0f + width * u);
                 };
-                auto yc = [&heightFrom, &heightTo](float v) {
-                    return heightFrom + (heightTo - heightFrom) * v;
+                auto yc = [&heightFrom, &heightTo, &width](float u, float v) {
+                    float h = heightFrom + (heightTo - heightFrom) * v;
+                    if (std::abs(u) < W_EPSILON || std::abs(u - 1.0f) < W_EPSILON || std::abs(v) < W_EPSILON || std::abs(v - 1.0f) < W_EPSILON)
+                        h -= width / 10.0f;
+                    return h;
                 };
                 auto zc = [this, &angleFrom, &angleTo, &width](float u, float v) {
                     return sinf(W_DEGTORAD(v * (angleTo - angleFrom) + angleFrom)) * (m_towerParams.towerRadius - width / 2.0f + width * u);
                 };
 
-                WDefaultVertex vtx = WDefaultVertex(xc(u, v), yc(v), zc(u, v), 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, u, v);
+                WDefaultVertex vtx = WDefaultVertex(xc(u, v), yc(u, v), zc(u, v), 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, u, v);
                 vtx.pos += randomness - center;
                 return vtx;
             };
 
-            auto randomness = [&randomValues](uint32_t l, uint32_t w, uint32_t W) {
-                return randomValues[w*W + l];
-            };
+            vertices[curVert + 0] = vtx(_u1, _v1, randomness(celll+0, cellw+0, xsegs+1));
+            vertices[curVert + 1] = vtx(_u1, _v2, randomness(celll+1, cellw+0, xsegs+1));
+            vertices[curVert + 2] = vtx(_u2, _v2, randomness(celll+1, cellw+1, xsegs+1));
 
-			vertices[curVert+0] = vtx(_u1, _v1, randomness(celll+0, cellw+0, xsegs+1));
-			vertices[curVert+1] = vtx(_u1, _v2, randomness(celll+1, cellw+0, xsegs+1));
-			vertices[curVert+2] = vtx(_u2, _v2, randomness(celll+1, cellw+1, xsegs+1));
+            vertices[curVert + 3] = vtx(_u1, _v1, randomness(celll+0, cellw+0, xsegs+1));
+            vertices[curVert + 4] = vtx(_u2, _v2, randomness(celll+1, cellw+1, xsegs+1));
+            vertices[curVert + 5] = vtx(_u2, _v1, randomness(celll+0, cellw+1, xsegs+1));
 
-			vertices[curVert+3] = vtx(_u1, _v1, randomness(celll+0, cellw+0, xsegs+1));
-			vertices[curVert+4] = vtx(_u2, _v2, randomness(celll+1, cellw+1, xsegs+1));
-			vertices[curVert+5] = vtx(_u2, _v1, randomness(celll+0, cellw+1, xsegs+1));
+            // Those 2 vertices are outliers (they make flat triangles that look bad on edges), hide their triangles
+            if (cellw == xsegs && celll == 0)
+                vertices[curVert + 5].pos = WVector3(vertices[curVert + 1].pos.x, vertices[curVert + 5].pos.y, vertices[curVert + 1].pos.z);
+            else if (cellw == 0 && celll == zsegs)
+                vertices[curVert + 1].pos = WVector3(vertices[curVert + 5].pos.x, vertices[curVert + 1].pos.y, vertices[curVert + 5].pos.z);
 
             for (uint32_t i = 0; i < 6; i++)
                 indices[curVert + i] = curVert + i;
-            computeNormal(curVert+0, curVert+1, curVert+2);
-            computeNormal(curVert+3, curVert+4, curVert+5);
+            computeNormal(curVert + 0, curVert + 1, curVert + 2);
+            computeNormal(curVert + 3, curVert + 4, curVert + 5);
             curVert += 6;
         }
+    }
+
+    /**
+     * Create the bottom part: mirror of the top part but with a different height
+     * (and has flipped indices)
+     */
+    float heightRandomness = 5.0f + 100.0f * m_towerParams.yRandomness * (float)(std::rand() % 10000) / 10000.0f;
+    for (; curVert < numVertices; curVert += 3) {
+        for (uint32_t i = 0; i < 3; i++) {
+            vertices[curVert + i] = vertices[curVert + i - numVertices / 2];
+            indices[curVert + i] = curVert + 2 - i;
+
+            // adjust the y component
+            float u = vertices[curVert + i].texC.x;
+            float v = vertices[curVert + i].texC.y;
+            WVector2 dist = WVector2(0.5f - std::abs(u - 0.5f), 0.5f - std::abs(v - 0.5f)) * 2.0f;
+            float distFromEdge = std::min(dist.x, dist.y); // between 0 (at edges) and 1 (in the center)
+            vertices[curVert + i].pos.y -= sqrt(distFromEdge * width * heightRandomness);
+            if (distFromEdge > W_EPSILON)
+                vertices[curVert + i].pos.y -= width / 10.0f;
+        }
+        computeNormal(curVert + 2, curVert + 1, curVert + 0);
     }
 
     return geometry->CreateFromDefaultVerticesData(vertices, indices);

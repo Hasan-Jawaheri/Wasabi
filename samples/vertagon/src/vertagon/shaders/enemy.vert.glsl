@@ -18,7 +18,7 @@ layout(set = 0, binding = 0) uniform UBO {
 } uboPerObject;
 
 layout(push_constant) uniform PushConstant {
-	mat4 world;
+    mat4 world;
     mat4 view;
     mat4 projection;
 } pcPerObject;
@@ -28,7 +28,7 @@ void main() {
     vec3 pos = inPos.xyz;
     // pos *= 1.0f - uboPerObject.percentage;
     pos += uboPerObject.percentage * direction * uboPerObject.explosionRange;
-	gl_Position = pcPerObject.projection * pcPerObject.view * pcPerObject.world * vec4(pos, 1.0);
-	outUV = inUV;
+    gl_Position = pcPerObject.projection * pcPerObject.view * pcPerObject.world * vec4(pos, 1.0);
+    outUV = inUV;
     outNorm = (pcPerObject.view * pcPerObject.world * vec4(inNorm, 0.0)).xyz;
 }

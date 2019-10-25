@@ -9,14 +9,14 @@ layout(location = 3) in vec2 inUV;
 layout(location = 4) in uint inTexIndex;
 
 layout(set = 0, binding = 0) uniform UBOPerObject {
-	mat4 wvp;
+    mat4 wvp;
 } uboPerObject;
 
 layout(location = 0) out vec2 outUV;
 layout(location = 1) out vec3 outNorm;
 
 void main() {
-	outUV = inUV;
+    outUV = inUV;
     outNorm = inNorm;
-	gl_Position = uboPerObject.wvp * vec4(inPos.xyz, 1.0);
+    gl_Position = uboPerObject.wvp * vec4(inPos.xyz, 1.0);
 }

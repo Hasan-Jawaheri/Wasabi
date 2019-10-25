@@ -9,8 +9,8 @@ class Vertagon : public Wasabi {
     public:
         GameState(Wasabi* app);
 
-    	virtual void OnMouseDown(W_MOUSEBUTTON button, double mx, double my) override;
-    	virtual void OnMouseUp(W_MOUSEBUTTON button, double mx, double my) override;
+        virtual void OnMouseDown(W_MOUSEBUTTON button, double mx, double my) override;
+        virtual void OnMouseUp(W_MOUSEBUTTON button, double mx, double my) override;
         virtual void OnMouseMove(double mx, double my) override;
         virtual void OnKeyDown(uint32_t c) override;
         virtual void OnKeyUp(uint32_t c) override;
@@ -68,9 +68,9 @@ public:
     virtual bool Loop(float fDeltaTime) override;
     virtual void Cleanup() override;
 
-	virtual WError SetupRenderer() override;
-	virtual WPhysicsComponent* CreatePhysicsComponent() override;
+    virtual WError SetupRenderer() override;
+    virtual WPhysicsComponent* CreatePhysicsComponent() override;
 
     void FireBullet(WVector2 target);
-	WError UnsmoothFeometryNormals(WGeometry* geometry);
+    WError UnsmoothFeometryNormals(WGeometry* geometry);
 };

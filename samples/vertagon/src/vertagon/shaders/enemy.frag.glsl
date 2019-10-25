@@ -19,9 +19,9 @@ layout(set = 0, binding = 0) uniform UBO {
 layout(set = 0, binding = 1) uniform sampler2D diffuseTexture;
 
 void main() {
-	vec4 color = vec4(0.5, 0.5, 0.5, 1);//texture(diffuseTexture, inUV).rgba;
+    vec4 color = vec4(0.5, 0.5, 0.5, 1);//texture(diffuseTexture, inUV).rgba;
     color.a *= 1.0f - uboPerObject.percentage;
-	outColor = color;
+    outColor = color;
     outNormal.rg = WasabiPackNormalSpheremapTransform(inNorm);
     outNormal.ba = vec2(2.0f, 1.0f);
 }

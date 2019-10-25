@@ -7,54 +7,54 @@
 
 class EnemyVS : public WShader {
 public:
-	EnemyVS(class Wasabi* const app) : WShader(app) {}
+    EnemyVS(class Wasabi* const app) : WShader(app) {}
 
-	static vector<W_BOUND_RESOURCE> GetBoundResources() {
-		return {
+    static vector<W_BOUND_RESOURCE> GetBoundResources() {
+        return {
             W_BOUND_RESOURCE(W_TYPE_UBO, 0, "uboPerFrame", {
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "explosionRange"),
-				W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "percentage"),
+                W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "explosionRange"),
+                W_SHADER_VARIABLE_INFO(W_TYPE_FLOAT, "percentage"),
             }),
-			W_BOUND_RESOURCE(W_TYPE_PUSH_CONSTANT, 0, "pcPerObject", {
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "world"),
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"),
-				W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projection"),
-			}),
-		};
-	}
+            W_BOUND_RESOURCE(W_TYPE_PUSH_CONSTANT, 0, "pcPerObject", {
+                W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "world"),
+                W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "view"),
+                W_SHADER_VARIABLE_INFO(W_TYPE_MAT4X4, "projection"),
+            }),
+        };
+    }
 
-	virtual void Load(bool bSaveData = false) override {
-		m_desc.type = W_VERTEX_SHADER;
-		m_desc.bound_resources = GetBoundResources();
-		m_desc.input_layouts = { W_INPUT_LAYOUT({
+    virtual void Load(bool bSaveData = false) override {
+        m_desc.type = W_VERTEX_SHADER;
+        m_desc.bound_resources = GetBoundResources();
+        m_desc.input_layouts = { W_INPUT_LAYOUT({
             W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // position
             W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // tangent
             W_SHADER_VARIABLE_INFO(W_TYPE_VEC_3), // normal
             W_SHADER_VARIABLE_INFO(W_TYPE_VEC_2), // UV
             W_SHADER_VARIABLE_INFO(W_TYPE_UINT, 1), // texture index
-		})};
-		vector<uint8_t> code {
-			#include "shaders/enemy.vert.glsl.spv"
-		};
-		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
-	}
+        })};
+        vector<uint8_t> code {
+            #include "shaders/enemy.vert.glsl.spv"
+        };
+        LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
+    }
 };
 
 class EnemyPS : public WShader {
 public:
-	EnemyPS(class Wasabi* const app) : WShader(app) {}
+    EnemyPS(class Wasabi* const app) : WShader(app) {}
 
-	virtual void Load(bool bSaveData = false) {
-		m_desc.type = W_FRAGMENT_SHADER;
-		m_desc.bound_resources = {
+    virtual void Load(bool bSaveData = false) {
+        m_desc.type = W_FRAGMENT_SHADER;
+        m_desc.bound_resources = {
             EnemyVS::GetBoundResources()[0],
-			W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "diffuseTexture"),
-		};
-		vector<uint8_t> code {
-			#include "shaders/enemy.frag.glsl.spv"
-		};
-		LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
-	}
+            W_BOUND_RESOURCE(W_TYPE_TEXTURE, 1, "diffuseTexture"),
+        };
+        vector<uint8_t> code {
+            #include "shaders/enemy.frag.glsl.spv"
+        };
+        LoadCodeSPIRV((char*)code.data(), (int)code.size(), bSaveData);
+    }
 };
 
 Enemy::Enemy(Wasabi* app) {
@@ -153,13 +153,13 @@ WError EnemySystem::Load() {
     m_resources.enemyGeometry = new WGeometry(m_app);
     WError status = m_resources.enemyGeometry->CreateSphere(1.0f, 14, 14);
     if (!status) return status;
-	status = ((Vertagon*)m_app)->UnsmoothFeometryNormals(m_resources.enemyGeometry);
+    status = ((Vertagon*)m_app)->UnsmoothFeometryNormals(m_resources.enemyGeometry);
     if (!status) return status;
 
-	EnemyVS* vs = new EnemyVS(m_app);
-	vs->Load();
-	EnemyPS* ps = new EnemyPS(m_app);
-	ps->Load();
+    EnemyVS* vs = new EnemyVS(m_app);
+    vs->Load();
+    EnemyPS* ps = new EnemyPS(m_app);
+    ps->Load();
 
     if (!vs->Valid() || !ps->Valid())
         status = WError(W_INVALIDPARAM);
@@ -197,29 +197,29 @@ WError EnemySystem::Load() {
 void EnemySystem::Update(float fDeltaTime) {
     Player* player = ((Vertagon*)m_app)->m_player;
 
-	/**
-	 * Enemies spawn
-	 */
-	if (m_enemies.size() < m_maxEnemies && m_app->Timer.GetElapsedTime() - m_lastRespawn > m_respawnInterval) {
-		m_lastRespawn = m_app->Timer.GetElapsedTime();
-		// spawn new enemy
-		Enemy* enemy = new Enemy(m_app);
-		WError status = enemy->Load(m_freeEnemyIds[0]);
-		if (!status) {
-			enemy->Destroy();
-			delete enemy;
-		} else {
-			m_freeEnemyIds.erase(m_freeEnemyIds.begin());
-			m_enemies.push_back(enemy);
-			float x = ((float)(std::rand() % 1000 - 500) / 500.0f) * 25.0f;
-			float z = ((float)(std::rand() % 1000 - 500) / 500.0f) * 25.0f;
-			enemy->m_rigidBody->SetPosition(WVector3(x, 0.0f, z) + player->GetPosition());
-		}
-	}
+    /**
+     * Enemies spawn
+     */
+    /*if (m_enemies.size() < m_maxEnemies && m_app->Timer.GetElapsedTime() - m_lastRespawn > m_respawnInterval) {
+        m_lastRespawn = m_app->Timer.GetElapsedTime();
+        // spawn new enemy
+        Enemy* enemy = new Enemy(m_app);
+        WError status = enemy->Load(m_freeEnemyIds[0]);
+        if (!status) {
+            enemy->Destroy();
+            delete enemy;
+        } else {
+            m_freeEnemyIds.erase(m_freeEnemyIds.begin());
+            m_enemies.push_back(enemy);
+            float x = ((float)(std::rand() % 1000 - 500) / 500.0f) * 25.0f;
+            float z = ((float)(std::rand() % 1000 - 500) / 500.0f) * 25.0f;
+            enemy->m_rigidBody->SetPosition(WVector3(x, 0.0f, z) + player->GetPosition());
+        }
+    }*/
 
-	/**
-	 * Enemies death
-	 */
+    /**
+     * Enemies death
+     */
     for (int32_t i = 0; i < m_enemies.size(); i++) {
         if (!m_enemies[i]->Update(fDeltaTime) || WVec3LengthSq(player->GetPosition() - m_enemies[i]->m_object->GetPosition()) > 100.0f * 100.0f) {
             m_freeEnemyIds.push_back(m_enemies[i]->m_id);
