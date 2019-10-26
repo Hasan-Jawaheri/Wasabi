@@ -1,5 +1,6 @@
 #include "vertagon/player.hpp"
 #include "vertagon/game.hpp"
+#include "vertagon/map.hpp"
 
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
 
@@ -13,10 +14,10 @@ Player::Player(Wasabi* app): m_app(app) {
     m_recoilAcceleration = 0.0f;
     m_alreadyShot = false;
 
-    m_controls.moveSpeed = 500000.0f;
-    m_controls.jumpPower = 110000.0f;
+    m_controls.moveSpeed = 600000.0f;
+    m_controls.jumpPower = 210000.0f;
     m_controls.mouseSensitivity = 0.1f;
-    m_controls.maxPitchUp = 50.0f;
+    m_controls.maxPitchUp = 70.0f;
     m_controls.maxPitchDown = 50.0f;
 
     m_controls.bindings.moveForward = W_KEY_W;
@@ -60,7 +61,13 @@ void Player::UpdateInput(float fDeltaTime) {
      * Keyboard movement
      */
     WVector3 position = m_rigidBody->GetPosition();
-    bool isGrounded = m_app->PhysicsComponent->RayCast(position + WVector3(0.0f, -0.9f, 0.0f), position + WVector3(0.0f, -1.3f, 0.0f));
+    float rad = 0.3f;
+    bool isGrounded =
+        m_app->PhysicsComponent->RayCast(position + WVector3(0.0f, -0.9f, 0.0f), position + WVector3(0.0f, -1.3f, 0.0f)) ||
+        m_app->PhysicsComponent->RayCast(position + WVector3(-rad, -0.85f, -rad), position + WVector3(-rad, -1.3f, -rad)) ||
+        m_app->PhysicsComponent->RayCast(position + WVector3(+rad, -0.85f, -rad), position + WVector3(+rad, -1.3f, -rad)) ||
+        m_app->PhysicsComponent->RayCast(position + WVector3(-rad, -0.85f, +rad), position + WVector3(-rad, -1.3f, +rad)) ||
+        m_app->PhysicsComponent->RayCast(position + WVector3(+rad, -0.85f, +rad), position + WVector3(+rad, -1.3f, +rad));
 
     WVector3 direction = WVector3();
     WVector3 lookVec = WVec3TransformNormal(WVector3(0.0f, 0.0f, 1.0f), WRotationMatrixY(W_DEGTORAD(m_yaw)));
@@ -117,8 +124,8 @@ WError Player::Load() {
     m_cam = m_app->CameraManager->GetDefaultCamera();
 
     m_flashLight = new WSpotLight(m_app);
-    m_flashLight->SetIntensity(1.0f);
-    m_flashLight->SetRange(20.0f);
+    m_flashLight->SetIntensity(2.0f);
+    m_flashLight->SetRange(100.0f);
 
     WImage* cursorImg = m_app->ImageManager->CreateImage();
     if (!cursorImg) return WError(W_ERRORUNK);
@@ -150,19 +157,25 @@ WError Player::Load() {
     m_rigidBody = new WBulletRigidBody(m_app);
     status = m_rigidBody->Create(W_RIGID_BODY_CREATE_INFO::ForCapsule(1.0f, 0.5f, 50.0f, nullptr, WVector3(0.0f, 2.0f, 0.0f)));
     if (!status) return status;
-    m_rigidBody->SetLinearDamping(0.95f);
+    m_rigidBody->SetLinearDamping(0.7f);
     m_rigidBody->SetAngularDamping(1.0f);
     m_rigidBody->SetBouncingPower(0.0f);
-    m_rigidBody->SetFriction(1.0f);
+    m_rigidBody->SetFriction(4.0f);
 
     m_controls.mouseReferencePosition.x = m_app->WindowAndInputComponent->MouseX();
     m_controls.mouseReferencePosition.y = m_app->WindowAndInputComponent->MouseY();
     m_app->WindowAndInputComponent->SetCursorMotionMode(true);
 
+    m_rigidBody->SetPosition(((Vertagon*)m_app)->m_map->GetSpawnPoint());
+
     return WError(W_SUCCEEDED);
 }
 
 void Player::Update(float fDeltaTime) {
+    Map* map = ((Vertagon*)m_app)->m_map;
+    if (m_rigidBody->GetPosition().y < map->GetMinPoint())
+        map->RandomSpawn(m_rigidBody);
+
     UpdateInput(fDeltaTime);
     UpdateCamera(fDeltaTime);
 

@@ -5,10 +5,6 @@
 class Map {
     Wasabi* m_app;
 
-    WGeometry* m_plainGeometry;
-    WObject* m_plain;
-    WRigidBody* m_rigidBody;
-
     WGeometry* m_skyGeometry;
     WEffect* m_skyEffect;
     WObject* m_sky;
@@ -20,24 +16,28 @@ class Map {
         float platformHeight; // height from the beginning of the platform to the end
         float heightBetweenPlatforms; // height difference between the end of a platform and beginning of the next one
         float towerRadius; // radius of the tower
-        float anglePerPlatform; // angle occupied by each platform
-        float anglePerGap; // angle occupied the gap between platforms
         float platformWidth; // width of a platform
         uint32_t platformResWidth; // platform segmentation on the width
         uint32_t platformResLength; // platform segmentation on the width
         float xzRandomness; // randomness of platform vertices on xz axis
         float yRandomness; // randomness of platform vertices on y axis
+        float lengthRandomness; // randomness of platform length
     } m_towerParams;
 
     struct TOWER_PLATFORM {
         WGeometry* geometry;
         WRigidBody* rigidBody;
         WObject* object;
+		WVector3 center;
+        WVector3 curCenter;
     };
+    float m_firstTowerUpdate;
+    WImage* m_towerTexture;
     std::vector<TOWER_PLATFORM> m_tower;
     WError BuildTower();
     WError BuildTowerPlatform(float angleFrom, float angleTo, float heightFrom, float heightTo);
     WError BuildPlatformGeometry(WGeometry* geometry, WVector3 center, float angleFrom, float angleTo, float heightFrom, float heightTo);
+    void ComputePlatformCurrentCenter(uint32_t i, float time);
 
 public:
     Map(Wasabi* app);
@@ -45,4 +45,8 @@ public:
     WError Load();
     void Update(float fDeltaTime);
     void Cleanup();
+
+    WVector3 GetSpawnPoint() const;
+    float GetMinPoint() const;
+    void RandomSpawn(WOrientation* object) const;
 };

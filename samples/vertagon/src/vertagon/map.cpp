@@ -46,26 +46,25 @@ public:
 };
 
 Map::Map(Wasabi* app): m_app(app) {
-    m_plainGeometry = nullptr;
-    m_plain = nullptr;
-    m_rigidBody = nullptr;
     m_sky = nullptr;
     m_skyGeometry = nullptr;
     m_skyEffect = nullptr;
 
-    m_towerParams.numPlatforms = 20; // number of platforms to create
+    m_firstTowerUpdate = -1.0f;
+
+    m_towerTexture = nullptr;
+    m_towerParams.numPlatforms = 10; // number of platforms to create
     m_towerParams.platformLength = 120.0f; // the length of the 2D (top-down view) arc representing each platform
     m_towerParams.distanceBetweenPlatforms = 10.0f; // distance (arc) to leave between platforms
     m_towerParams.platformHeight = 2.0f; // height from the beginning of the platform to the end
     m_towerParams.heightBetweenPlatforms = 15.0f; // height difference between the end of a platform and beginning of the next one
     m_towerParams.towerRadius = 90.0f; // radius of the tower
-    m_towerParams.anglePerPlatform = W_RADTODEG(m_towerParams.platformLength / m_towerParams.towerRadius); // angle occupied by each platform
-    m_towerParams.anglePerGap = W_RADTODEG(m_towerParams.distanceBetweenPlatforms / m_towerParams.towerRadius); // angle occupied the gap between platforms
     m_towerParams.platformWidth = 40.0f;
     m_towerParams.platformResWidth = 5;
     m_towerParams.platformResLength = 20;
     m_towerParams.xzRandomness = 3.0f;
     m_towerParams.yRandomness = 1.0f;
+    m_towerParams.lengthRandomness = 60.0f;
 }
 
 WError Map::Load() {
@@ -77,34 +76,14 @@ WError Map::Load() {
     /**
      * Liughting
      */
-    // m_app->LightManager->GetDefaultLight()->Hide();
-    SceneCompositionRenderStage->SetAmbientLight(WColor(0.01f, 0.01f, 0.01f));
-
-    /**
-     * Ground
-     */
-    m_plainGeometry = new WGeometry(m_app);
-    WError status = m_plainGeometry->CreatePlain(100.0f, 0, 0);
-    if (!status) return status;
-
-    m_plain = m_app->ObjectManager->CreateObject();
-    if (!m_plain) return WError(W_ERRORUNK);
-    status = m_plain->SetGeometry(m_plainGeometry);
-    if (!status) return status;
-    m_plain->SetName("MapPlain");
-
-    m_plain->GetMaterials().SetVariable("color", WColor(0.2f, 0.2f, 0.2f));
-    m_plain->GetMaterials().SetVariable("isTextured", 0);
-
-    m_rigidBody = new WBulletRigidBody(m_app);
-    status = m_rigidBody->Create(W_RIGID_BODY_CREATE_INFO::ForCube(WVector3(100.0f, 0.01f, 100.0f), 0.0f));
-    if (!status) return status;
+    m_app->LightManager->GetDefaultLight()->Hide();
+    SceneCompositionRenderStage->SetAmbientLight(WColor(0.3f, 0.3f, 0.3f));
 
     /**
      * Sky
      */
     m_skyGeometry = new WGeometry(m_app);
-    status = m_skyGeometry->CreateSphere(-5000.0f, 28, 28);
+    WError status = m_skyGeometry->CreateSphere(-5000.0f, 28, 28);
     if (!status) return status;
     status = ((Vertagon*)m_app)->UnsmoothFeometryNormals(m_skyGeometry);
     if (!status) return status;
@@ -145,22 +124,35 @@ WError Map::Load() {
     m_sky->GetMaterials().SetVariable("color", WColor(0.9f, 0.2f, 0.2f));
     m_sky->GetMaterials().SetVariable("isTextured", 0);
 
-    return BuildTower();
+    status = BuildTower();
+    if (!status) return status;
+
+    return status;
 }
 
 void Map::Update(float fDeltaTime) {
     WCamera* cam = m_app->CameraManager->GetDefaultCamera();
     m_sky->GetMaterials().SetVariable("wvp", WTranslationMatrix(((Vertagon*)m_app)->m_player->GetPosition()) * cam->GetViewMatrix() * cam->GetProjectionMatrix());
+
+    /**
+     * Update the platforms
+     */
+    float time = m_app->Timer.GetElapsedTime() / 6.0f;
+    if (m_firstTowerUpdate < 0.0f)
+        m_firstTowerUpdate = time;
+    time -= m_firstTowerUpdate;
+    for (uint32_t i = 0; i < m_tower.size(); i++) {
+        ComputePlatformCurrentCenter(i, time);
+        m_tower[i].rigidBody->SetPosition(m_tower[i].curCenter);
+    }
 }
 
 void Map::Cleanup() {
     W_SAFE_REMOVEREF(m_sky);
     W_SAFE_REMOVEREF(m_skyGeometry);
     W_SAFE_REMOVEREF(m_skyEffect);
-    W_SAFE_REMOVEREF(m_plain);
-    W_SAFE_REMOVEREF(m_plainGeometry);
-    W_SAFE_REMOVEREF(m_rigidBody);
 
+    W_SAFE_REMOVEREF(m_towerTexture);
     for (auto platform : m_tower) {
         W_SAFE_REMOVEREF(platform.geometry);
         W_SAFE_REMOVEREF(platform.rigidBody);
@@ -168,14 +160,34 @@ void Map::Cleanup() {
     }
 }
 
+void Map::ComputePlatformCurrentCenter(uint32_t i, float time) {
+    float phase = (float)i * 5.0f;
+    float scale = 1.0f+ (float)i / (float)m_tower.size();
+    float magnitude = m_towerParams.heightBetweenPlatforms * 0.4f;
+    m_tower[i].curCenter = m_tower[i].center + WVector3(0.0f, std::sin(phase + time * scale) * magnitude, 0.0f);
+}
 
 WError Map::BuildTower() {
     WError status = WError(W_SUCCEEDED);
+
+    uint8_t pixels[2*2*4] = {
+        76, 187, 27, 255,
+        76, 187, 27, 255,
+        155, 118, 83, 255,
+        155, 118, 83, 255,
+    };
+    m_towerTexture = m_app->ImageManager->CreateImage(static_cast<void*>(pixels), 2, 2, VK_FORMAT_R8G8B8A8_UNORM);
+    if (!m_towerTexture)
+        return WError(W_ERRORUNK);
+
     float curAngle = 0.0f;
     float curHeight = 0.0f;
+    float anglePerGap = W_RADTODEG(m_towerParams.distanceBetweenPlatforms / m_towerParams.towerRadius); // angle occupied the gap between platforms
     for (uint32_t platform = 0; platform < m_towerParams.numPlatforms && status; platform++) {
-        status = BuildTowerPlatform(curAngle, curAngle + m_towerParams.anglePerPlatform, curHeight, curHeight + m_towerParams.platformHeight);
-        curAngle += m_towerParams.anglePerPlatform + m_towerParams.anglePerGap;
+        float platformLength = m_towerParams.platformLength - m_towerParams.lengthRandomness / 2.0f + (m_towerParams.lengthRandomness * (std::rand() % 10000) / 10000.0f);
+        float platformAngle = W_RADTODEG(platformLength / m_towerParams.towerRadius); // angle occupied by each platform
+        status = BuildTowerPlatform(curAngle, curAngle + platformAngle, curHeight, curHeight + m_towerParams.platformHeight);
+        curAngle += platformAngle + anglePerGap;
         curHeight += m_towerParams.platformHeight + m_towerParams.heightBetweenPlatforms;
     }
 
@@ -183,13 +195,13 @@ WError Map::BuildTower() {
 }
 
 WError Map::BuildTowerPlatform(float angleFrom, float angleTo, float heightFrom, float heightTo) {
+    WError status = WError(W_SUCCEEDED);
+    TOWER_PLATFORM p;
     float midAngle = (angleTo + angleFrom) / 2.0f;
-    WVector3 center =
+    p.center =
         (WVector3(cosf(W_DEGTORAD(midAngle)), 0.0f, sinf(W_DEGTORAD(midAngle))) * m_towerParams.towerRadius) +
         WVector3(0.0f, (heightTo + heightFrom) / 2.0f, 0.0f);
 
-    WError status = WError(W_SUCCEEDED);
-    TOWER_PLATFORM p;
     p.object = m_app->ObjectManager->CreateObject();
     p.geometry = new WGeometry(m_app);
     p.rigidBody = new WBulletRigidBody(m_app);
@@ -197,16 +209,15 @@ WError Map::BuildTowerPlatform(float angleFrom, float angleTo, float heightFrom,
     if (!p.object) status = WError(W_ERRORUNK);
 
     if (status) {
-        status = BuildPlatformGeometry(p.geometry, center, angleFrom, angleTo, heightFrom, heightTo);
+        status = BuildPlatformGeometry(p.geometry, p.center, angleFrom, angleTo, heightFrom, heightTo);
         if (status) {
             status = p.object->SetGeometry(p.geometry);
             if (status) {
                 p.object->SetName("Platform-" + std::to_string(heightFrom) + "-" + std::to_string(heightTo));
 
-                p.object->GetMaterials().SetVariable("color", WColor(0.2f, 0.2f, 0.2f));
-                p.object->GetMaterials().SetVariable("isTextured", 0);
+                p.object->GetMaterials().SetTexture("diffuseTexture", m_towerTexture);
 
-                status = p.rigidBody->Create(W_RIGID_BODY_CREATE_INFO::ForComplexGeometry(p.geometry, true, nullptr, center));
+                status = p.rigidBody->Create(W_RIGID_BODY_CREATE_INFO::ForComplexGeometry(p.geometry, true, nullptr, p.center));
                 if (status) {
                     p.rigidBody->BindObject(p.object, p.object);
                 }
@@ -220,6 +231,7 @@ WError Map::BuildTowerPlatform(float angleFrom, float angleTo, float heightFrom,
         W_SAFE_REMOVEREF(p.rigidBody);
     } else {
         m_tower.push_back(p);
+        ComputePlatformCurrentCenter(m_tower.size() - 1, 0.0f);
     }
 
     return status;
@@ -330,7 +342,7 @@ WError Map::BuildPlatformGeometry(WGeometry* geometry, WVector3 center, float an
             float u = vertices[curVert + i].texC.x;
             float v = vertices[curVert + i].texC.y;
             WVector2 dist = WVector2(0.5f - std::abs(u - 0.5f), 0.5f - std::abs(v - 0.5f)) * 2.0f;
-            float distFromEdge = std::min(dist.x, dist.y); // between 0 (at edges) and 1 (in the center)
+            float distFromEdge = std::min(dist.x * ((float)m_towerParams.platformResWidth / (float)m_towerParams.platformResLength), dist.y); // between 0 (at edges) and 1 (in the center)
             vertices[curVert + i].pos.y -= sqrt(distFromEdge * width * heightRandomness);
             if (distFromEdge > W_EPSILON)
                 vertices[curVert + i].pos.y -= width / 10.0f;
@@ -338,5 +350,25 @@ WError Map::BuildPlatformGeometry(WGeometry* geometry, WVector3 center, float an
         computeNormal(curVert + 2, curVert + 1, curVert + 0);
     }
 
+    /**
+     * Fix the UVs
+     */
+    for (uint32_t i = 0; i < numVertices; i++) {
+        vertices[i].texC = WVector2((i < numVertices / 2) ? 0.1f : 0.9f, (i < numVertices / 2) ? 0.1f : 0.9f);
+    }
+
     return geometry->CreateFromDefaultVerticesData(vertices, indices);
+}
+
+WVector3 Map::GetSpawnPoint() const {
+    return m_tower[0].center + WVector3(0.0f, 5.0f, 0.0f);
+}
+
+void Map::RandomSpawn(WOrientation* object) const {
+    WVector3 spawn = m_tower[rand() % m_tower.size()].curCenter + WVector3(0.0f, 5.0f, 0.0f);
+    object->SetPosition(spawn);
+}
+
+float Map::GetMinPoint() const {
+    return -200.0f;
 }
