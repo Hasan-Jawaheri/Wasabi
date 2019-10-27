@@ -45,12 +45,11 @@ WError Spell_Fireball::Load() {
 }
 
 void Spell_Fireball::Update(float fDeltaTime) {
-    m_app->TextComponent->RenderText("hallo", 100, 100, 128);
     WVector3 E = ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionPosition;
     WVector3 O = m_targetOrigin;
     WVector3 EtoO = O - E;
     WVector3 D = m_targetDirection;
-    float targetDistance = WVec3Dot(WVec3Normalize(EtoO), D) * WVec3Length(EtoO);
+    float targetDistance = abs(WVec3Dot(WVec3Normalize(EtoO), D)) * WVec3Length(EtoO);
     float speed = 100.0f;
     WVector3 targetPoint = O + D * (targetDistance + speed * 2.0f);
     WVector3 direction = WVec3Normalize(targetPoint - E);
@@ -68,7 +67,6 @@ void Spell_Fireball::Update(float fDeltaTime) {
         } else {
             float percentage = (elapsedTime-0.5f) / 2.5f;
             m_light->SetIntensity(2.5f - percentage * 2.5f);
-            m_light->SetRange(30.0f - percentage * 30.0f);
             if (elapsedTime > 2.0f)
                 ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionFrequency = 0.0f;
         }
