@@ -1,5 +1,6 @@
 #include "vertagon/player.hpp"
 #include "vertagon/map/map.hpp"
+#include "vertagon/spells/fireball.hpp"
 
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
 
@@ -115,6 +116,8 @@ void Player::FireBullet() {
     WVector2 target = m_cursor->GetPosition() + m_cursor->GetSize() / 2.0f;
     m_app->FireBullet(target);
     m_recoilSpeed += 100.0f;
+
+    m_app->m_spellSystem->CastSpell(std::make_shared<Spell_Fireball>(m_app));
 }
 
 WError Player::Load() {

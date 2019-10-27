@@ -63,6 +63,7 @@ public:
     class Map* m_map;
     class EnemySystem* m_enemySystem;
     class Player* m_player;
+    class SpellSystem* m_spellSystem;
 
     virtual WError Setup() override;
     virtual bool Loop(float fDeltaTime) override;

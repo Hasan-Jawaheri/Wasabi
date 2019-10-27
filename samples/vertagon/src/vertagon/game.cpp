@@ -2,6 +2,7 @@
 #include "vertagon/player.hpp"
 #include "vertagon/map/map.hpp"
 #include "vertagon/enemies.hpp"
+#include "vertagon/spells/spells.hpp"
 
 #include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.hpp>
 #include <Wasabi/Renderers/DeferredRenderer/WDeferredRenderer.hpp>
@@ -95,11 +96,13 @@ Vertagon::Vertagon() {
     m_map = new Map(this);
     m_player = new Player(this);
     m_enemySystem = new EnemySystem(this);
+    m_spellSystem = new SpellSystem(this);
 }
 
 WError Vertagon::Setup() {
     // SetEngineParam("enableVulkanValidation", false);
     // start the engine
+    maxFPS = 0;
     WError status = StartEngine(640, 480);
     if (!status) {
         WindowAndInputComponent->ShowErrorMessage(status.AsString());
@@ -110,18 +113,16 @@ WError Vertagon::Setup() {
     PhysicsComponent->SetGravity(WVector3(0.0f, -100.0f, 0.0f));
 
     status = m_map->Load();
-    if (!status) {
-        WindowAndInputComponent->ShowErrorMessage(status.AsString());
-        return status;
+    if (status) {
+        status = m_enemySystem->Load();
+        if (status) {
+            status = m_player->Load();
+            if (status) {
+                status = m_spellSystem->Load();
+            }
+        }
     }
 
-    status = m_enemySystem->Load();
-    if (!status) {
-        WindowAndInputComponent->ShowErrorMessage(status.AsString());
-        return status;
-    }
-
-    status = m_player->Load();
     if (!status) {
         WindowAndInputComponent->ShowErrorMessage(status.AsString());
         return status;
@@ -139,6 +140,7 @@ bool Vertagon::Loop(float fDeltaTime) {
     m_map->Update(fDeltaTime);
     m_enemySystem->Update(fDeltaTime);
     m_player->Update(fDeltaTime);
+    m_spellSystem->Update(fDeltaTime);
     return true; // return true to continue to next frame
 }
 
@@ -146,10 +148,12 @@ void Vertagon::Cleanup() {
     m_map->Cleanup();
     m_enemySystem->Cleanup();
     m_player->Cleanup();
+    m_spellSystem->Cleanup();
 
-    delete m_map;
-    delete m_enemySystem;
-    delete m_player;
+    W_SAFE_DELETE(m_map);
+    W_SAFE_DELETE(m_enemySystem);
+    W_SAFE_DELETE(m_player);
+    W_SAFE_DELETE(m_spellSystem);
 }
 
 WError Vertagon::SetupRenderer() {
