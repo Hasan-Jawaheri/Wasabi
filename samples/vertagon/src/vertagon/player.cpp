@@ -1,5 +1,6 @@
 #include "vertagon/player.hpp"
 #include "vertagon/map/map.hpp"
+#include "vertagon/spells/spells.hpp"
 #include "vertagon/spells/fireball.hpp"
 
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
@@ -27,6 +28,8 @@ Player::Player(Vertagon* app): m_app(app) {
     m_controls.bindings.jump = W_KEY_SPACE;
 
     memset(&m_controls.currentInput, 0, sizeof(m_controls.currentInput));
+
+    m_casting.fireball = nullptr;
 }
 
 void Player::UpdateInput(float fDeltaTime) {
@@ -36,7 +39,7 @@ void Player::UpdateInput(float fDeltaTime) {
     if (m_controls.currentInput.isShootTriggered) {
         if (!m_alreadyShot) {
             m_alreadyShot = true;
-            FireBullet();
+            m_recoilSpeed += 100.0f;
         }
     }
 
@@ -105,29 +108,12 @@ void Player::UpdateCamera(float fDeltaTime) {
     m_cam->SetAngle(WQuaternion());
     m_cam->Yaw(m_yaw);
     m_cam->Pitch(m_pitch);
-
-    m_flashLight->SetPosition(position);
-    m_flashLight->SetAngle(WQuaternion());
-    m_flashLight->Yaw(m_yaw);
-    m_flashLight->Pitch(m_pitch);
-}
-
-void Player::FireBullet() {
-    WVector2 target = m_cursor->GetPosition() + m_cursor->GetSize() / 2.0f;
-    m_app->FireBullet(target);
-    m_recoilSpeed += 100.0f;
-
-    m_app->m_spellSystem->CastSpell(std::make_shared<Spell_Fireball>(m_app));
 }
 
 WError Player::Load() {
     Cleanup();
 
     m_cam = m_app->CameraManager->GetDefaultCamera();
-
-    m_flashLight = new WSpotLight(m_app);
-    m_flashLight->SetIntensity(2.0f);
-    m_flashLight->SetRange(100.0f);
 
     WImage* cursorImg = m_app->ImageManager->CreateImage();
     if (!cursorImg) return WError(W_ERRORUNK);
@@ -181,6 +167,24 @@ void Player::Update(float fDeltaTime) {
     UpdateInput(fDeltaTime);
     UpdateCamera(fDeltaTime);
 
+    /**
+     * Update the fireball spell
+     */
+    if (!m_casting.fireball || !m_casting.fireball->IsAlive()) {
+        m_alreadyShot = false;
+        m_casting.fireball = std::make_shared<Spell_Fireball>(m_app);
+        m_app->m_spellSystem->CastSpell(m_casting.fireball);
+    }
+
+    Spell_Fireball* fireball = dynamic_cast<Spell_Fireball*>(m_casting.fireball.get());
+    if (!m_alreadyShot)
+        fireball->SetIdlePosition(m_cam->GetPosition() + m_cam->GetLVector() * 4 + m_cam->GetRVector() * 2);
+    else
+        fireball->SetDirection(m_cam->GetPosition(), m_cam->GetLVector());
+
+    /**
+     * Update the cursor
+     */
     float WW = (float)m_app->WindowAndInputComponent->GetWindowWidth();
     float WH = (float)m_app->WindowAndInputComponent->GetWindowHeight();
     m_cursor->SetPosition((WVector2(WW, WH) - m_cursor->GetSize()) / 2.0f);
@@ -199,10 +203,8 @@ void Player::OnMouseDown(W_MOUSEBUTTON button, double mx, double my) {
 }
 
 void Player::OnMouseUp(W_MOUSEBUTTON button, double mx, double my) {
-    if (button == MOUSE_LEFT) {
+    if (button == MOUSE_LEFT)
         m_controls.currentInput.isShootTriggered = false;
-        m_alreadyShot = false;
-    }
 }
 
 void Player::OnMouseMove(double mx, double my) {

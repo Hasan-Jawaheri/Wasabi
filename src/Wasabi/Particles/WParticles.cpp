@@ -123,6 +123,10 @@ uint32_t WParticlesBehavior::UpdateAndCopyToBuffer(float curTime, void* buffer, 
 	return m_numParticles;
 }
 
+uint32_t WParticlesBehavior::GetNumParticles() const {
+	return m_numParticles;
+}
+
 WDefaultParticleBehavior::WDefaultParticleBehavior(uint32_t maxParticles)
 	: WParticlesBehavior(maxParticles, sizeof(WDefaultParticleBehavior::Particle)) {
 	m_lastEmit = 0.0f;
@@ -349,6 +353,18 @@ WParticles* WParticlesManager::CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE ty
 	return particles;
 }
 
+void WParticlesManager::Update(WRenderTarget* rt) {
+	for (uint32_t i = 0; i < GetEntitiesCount(); i++) {
+		WParticles* particles = GetEntityByIndex(i);
+		// update the geometry
+		void* instances;
+		particles->m_instancesTexture->MapPixels(&instances, W_MAP_WRITE);
+		float curTime = m_app->Timer.GetElapsedTime();
+		uint32_t numParticles = particles->m_behavior->UpdateAndCopyToBuffer(curTime, instances, particles->m_maxParticles, particles->GetWorldMatrix(), rt->GetCamera());
+		particles->m_instancesTexture->UnmapPixels();
+	}
+}
+
 WParticles::WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE type, uint32_t ID) : WBase(app, ID) {
 	m_effectType = type;
 	m_hidden = false;
@@ -477,13 +493,7 @@ void WParticles::Render(WRenderTarget* const rt, WMaterial* material) {
 		material->Bind(rt);
 	}
 
-	// update the geometry
-	void* instances;
-	m_instancesTexture->MapPixels(&instances, W_MAP_WRITE);
-	float curTime = m_app->Timer.GetElapsedTime();
-	uint32_t numParticles = m_behavior->UpdateAndCopyToBuffer(curTime, instances, m_maxParticles, GetWorldMatrix(), rt->GetCamera());
-	m_instancesTexture->UnmapPixels();
-
+	uint32_t numParticles = m_behavior->GetNumParticles();
 	if (numParticles > 0)
 		m_app->ParticlesManager->m_plainGeometry->Draw(rt, UINT32_MAX, numParticles, false);
 }

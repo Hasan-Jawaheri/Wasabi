@@ -8,11 +8,14 @@ WError Spell::Load() {
     return WError(W_SUCCEEDED);
 }
 
-bool Spell::Update(float fDeltaTime) {
-    return false;
+void Spell::Update(float fDeltaTime) {
 }
 
 void Spell::Cleanup() {
+}
+
+bool Spell::IsAlive() {
+    return false;
 }
 
 
@@ -25,7 +28,8 @@ WError SpellSystem::Load() {
 
 void SpellSystem::Update(float fDeltaTime) {
     for (uint32_t i = 0; i < m_spells.size(); i++) {
-        if (!m_spells[i]->Update(fDeltaTime)) {
+        m_spells[i]->Update(fDeltaTime);
+        if (!m_spells[i]->IsAlive()) {
             m_spells[i]->Cleanup();
             m_spells.erase(m_spells.begin() + i);
             i--;
@@ -40,8 +44,10 @@ void SpellSystem::Cleanup() {
 }
 
 void SpellSystem::CastSpell(std::shared_ptr<Spell> spell) {
-    m_spells.push_back(spell);
     WError status = spell->Load();
-    if (!status)
+    if (!status) {
+        spell->Cleanup();
         m_app->WindowAndInputComponent->ShowErrorMessage("Spell failed to load (" + spell->m_name + "): " + status.AsString());
+    } else
+        m_spells.push_back(spell);
 }

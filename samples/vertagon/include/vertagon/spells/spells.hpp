@@ -14,8 +14,9 @@ public:
     Spell(Vertagon* app);
 
     virtual WError Load();
-    virtual bool Update(float fDeltaTime);
+    virtual void Update(float fDeltaTime);
     virtual void Cleanup();
+    virtual bool IsAlive();
 };
 
 class SpellSystem {

@@ -106,6 +106,12 @@ public:
 	uint32_t UpdateAndCopyToBuffer(float curTime, void* buffer, uint32_t maxParticles, const WMatrix& worldMatrix, class WCamera* camera);
 
 	/**
+	 * @return The number of particles currently active (as as what
+	 * WParticlesBehavior::UpdateAndCopyToBuffer() would return)
+	 */
+	uint32_t GetNumParticles() const;
+
+	/**
 	 * Must be implemented by a derived class to define the per-frame behavior
 	 * of the particle system. Typically this should control emission by
 	 * calling Emit() when a particle needs to be emitted.
@@ -395,6 +401,11 @@ public:
 	 * @return Error code, see WError.h
 	 */
 	WError Load();
+
+	/**
+	 * Updates all the particle systems
+	 */
+	void Update(WRenderTarget* rt);
 
 	/**
 	 * Creates a WEffect that can be used to render particles

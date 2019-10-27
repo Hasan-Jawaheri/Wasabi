@@ -6,7 +6,6 @@ class Player {
     Vertagon* m_app;
     WCamera* m_cam;
 
-    WSpotLight* m_flashLight;
     WSprite* m_cursor;
     WRigidBody* m_rigidBody;
 
@@ -44,10 +43,12 @@ class Player {
         } currentInput;
     } m_controls;
 
+    struct {
+        std::shared_ptr<class Spell> fireball;
+    } m_casting;
+
     void UpdateInput(float fDeltaTime);
     void UpdateCamera(float fDeltaTime);
-
-    void FireBullet();
 
 public:
     Player(Vertagon* app);

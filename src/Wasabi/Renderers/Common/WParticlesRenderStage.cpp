@@ -47,6 +47,7 @@ void WParticlesRenderStage::Cleanup() {
 
 WError WParticlesRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
 	if (filter & RENDER_FILTER_PARTICLES) {
+		m_app->ParticlesManager->Update(rt);
 		m_particlesFragment->Render(renderer, rt);
 	}
 
