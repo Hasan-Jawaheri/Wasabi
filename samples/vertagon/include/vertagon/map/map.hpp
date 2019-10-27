@@ -5,13 +5,13 @@
 #include "vertagon/map/sky.hpp"
 
 class Map {
-    Wasabi* m_app;
+    Vertagon* m_app;
 
     Sky m_sky;
     PlatformSpiral m_platforms;
 
 public:
-    Map(Wasabi* app);
+    Map(Vertagon* app);
 
     WError Load();
     void Update(float fDeltaTime);

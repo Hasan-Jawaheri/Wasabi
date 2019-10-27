@@ -5,7 +5,7 @@
 class Enemy {
     friend class EnemySystem;
 
-    Wasabi* m_app;
+    Vertagon* m_app;
     WObject* m_object;
     WRigidBody* m_rigidBody;
     WPointLight* m_light;
@@ -20,7 +20,7 @@ class Enemy {
     } m_state;
 
 public:
-    Enemy(Wasabi* app);
+    Enemy(Vertagon* app);
 
     WError Load(uint32_t id);
     bool Update(float fDeltaTime);
@@ -33,7 +33,7 @@ public:
 class EnemySystem {
     friend class Enemy;
 
-    Wasabi* m_app;
+    Vertagon* m_app;
 
     std::vector<Enemy*> m_enemies;
     std::vector<uint32_t> m_freeEnemyIds;
@@ -47,7 +47,7 @@ class EnemySystem {
     } m_resources;
 
 public:
-    EnemySystem(Wasabi* app);
+    EnemySystem(Vertagon* app);
 
     WError Load();
     void Update(float fDeltaTime);

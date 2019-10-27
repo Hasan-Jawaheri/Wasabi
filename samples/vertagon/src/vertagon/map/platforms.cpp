@@ -1,10 +1,9 @@
 #include "vertagon/map/platforms.hpp"
-#include "vertagon/game.hpp"
 
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
 
 
-PlatformSpiral::PlatformSpiral(Wasabi* app) : m_app(app) {
+PlatformSpiral::PlatformSpiral(Vertagon* app) : m_app(app) {
     m_firstUpdate = -1.0f;
 
     m_texture = nullptr;

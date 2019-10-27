@@ -1,10 +1,9 @@
 #include "vertagon/player.hpp"
-#include "vertagon/game.hpp"
 #include "vertagon/map/map.hpp"
 
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
 
-Player::Player(Wasabi* app): m_app(app) {
+Player::Player(Vertagon* app): m_app(app) {
     m_cursor = nullptr;
     m_rigidBody = nullptr;
 
@@ -114,7 +113,7 @@ void Player::UpdateCamera(float fDeltaTime) {
 
 void Player::FireBullet() {
     WVector2 target = m_cursor->GetPosition() + m_cursor->GetSize() / 2.0f;
-    ((Vertagon*)m_app)->FireBullet(target);
+    m_app->FireBullet(target);
     m_recoilSpeed += 100.0f;
 }
 
@@ -166,13 +165,13 @@ WError Player::Load() {
     m_controls.mouseReferencePosition.y = m_app->WindowAndInputComponent->MouseY();
     m_app->WindowAndInputComponent->SetCursorMotionMode(true);
 
-    m_rigidBody->SetPosition(((Vertagon*)m_app)->m_map->GetSpawnPoint());
+    m_rigidBody->SetPosition(m_app->m_map->GetSpawnPoint());
 
     return WError(W_SUCCEEDED);
 }
 
 void Player::Update(float fDeltaTime) {
-    Map* map = ((Vertagon*)m_app)->m_map;
+    Map* map = m_app->m_map;
     if (m_rigidBody->GetPosition().y < map->GetMinPoint())
         map->RandomSpawn(m_rigidBody);
 

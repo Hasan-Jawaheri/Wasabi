@@ -3,7 +3,7 @@
 #include "vertagon/common.hpp"
 
 class Player {
-    Wasabi* m_app;
+    Vertagon* m_app;
     WCamera* m_cam;
 
     WSpotLight* m_flashLight;
@@ -50,7 +50,7 @@ class Player {
     void FireBullet();
 
 public:
-    Player(Wasabi* app);
+    Player(Vertagon* app);
 
     WError Load();
     void Update(float fDeltaTime);

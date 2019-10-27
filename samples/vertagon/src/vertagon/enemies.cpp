@@ -1,5 +1,4 @@
 #include "vertagon/enemies.hpp"
-#include "vertagon/game.hpp"
 #include "vertagon/player.hpp"
 
 #include <Wasabi/Renderers/WRenderStage.hpp>
@@ -57,7 +56,7 @@ public:
     }
 };
 
-Enemy::Enemy(Wasabi* app) {
+Enemy::Enemy(Vertagon* app) {
     m_app = app;
     m_object = nullptr;
     m_light = nullptr;
@@ -71,8 +70,8 @@ Enemy::Enemy(Wasabi* app) {
 WError Enemy::Load(uint32_t id) {
     m_id = id;
 
-    WGeometry* geometry = ((Vertagon*)m_app)->m_enemySystem->m_resources.enemyGeometry;
-    WEffect* effect = ((Vertagon*)m_app)->m_enemySystem->m_resources.enemyEffect;
+    WGeometry* geometry = m_app->m_enemySystem->m_resources.enemyGeometry;
+    WEffect* effect = m_app->m_enemySystem->m_resources.enemyEffect;
 
     m_object = m_app->ObjectManager->CreateObject(effect, 0, m_id);
     if (!m_object) {
@@ -135,7 +134,7 @@ void Enemy::Explode() {
     W_SAFE_REMOVEREF(m_rigidBody);
 }
 
-EnemySystem::EnemySystem(Wasabi* app): m_app(app) {
+EnemySystem::EnemySystem(Vertagon* app): m_app(app) {
     m_respawnInterval = 1.0f;
     m_lastRespawn = 0.0f;
     m_maxEnemies = 30;
@@ -153,7 +152,7 @@ WError EnemySystem::Load() {
     /*m_resources.enemyGeometry = new WGeometry(m_app);
     WError status = m_resources.enemyGeometry->CreateSphere(1.0f, 14, 14);
     if (!status) return status;
-    status = ((Vertagon*)m_app)->UnsmoothGeometryNormals(m_resources.enemyGeometry);
+    status = m_app->UnsmoothGeometryNormals(m_resources.enemyGeometry);
     if (!status) return status;
 
     EnemyVS* vs = new EnemyVS(m_app);
@@ -195,7 +194,7 @@ WError EnemySystem::Load() {
 }
 
 void EnemySystem::Update(float fDeltaTime) {
-    Player* player = ((Vertagon*)m_app)->m_player;
+    Player* player = m_app->m_player;
 
     /**
      * Enemies spawn

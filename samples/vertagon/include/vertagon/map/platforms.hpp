@@ -11,7 +11,7 @@ struct Platform {
 };
 
 class PlatformSpiral {
-    Wasabi* m_app;
+    Vertagon* m_app;
 
     struct {
         uint32_t numPlatforms; // number of platforms to create
@@ -37,7 +37,7 @@ class PlatformSpiral {
     void ComputePlatformCurrentCenter(uint32_t i, float time);
 
 public:
-    PlatformSpiral(Wasabi* app);
+    PlatformSpiral(Vertagon* app);
 
     WError Load();
     void Update(float fDeltaTime);

@@ -4,13 +4,13 @@
 
 
 class Sky {
-    Wasabi* m_app;
+    Vertagon* m_app;
     WGeometry* m_geometry;
     WEffect* m_effect;
     WObject* m_object;
 
 public:
-    Sky(Wasabi* app);
+    Sky(Vertagon* app);
 
     WError Load(WRenderStage* renderStage);
     void Update(float fDeltaTime);

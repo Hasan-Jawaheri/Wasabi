@@ -12,44 +12,44 @@ Vertagon::GameState::GameState(Wasabi* app): WGameState(app) {
 
 void Vertagon::GameState::OnMouseDown(W_MOUSEBUTTON button, double mx, double my) {
     // pass on the input to the player class
-    // ((Vertagon*)m_app)->m_player->OnMouseDown(button, mx, my);
+    // m_app->m_player->OnMouseDown(button, mx, my);
     ((Vertagon*)m_app)->m_laggedInput.push_back(
-        INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_MOUSEDOWN, button, mx, my));
+        INPUT_DATA(((Vertagon*)m_app)->Timer.GetElapsedTime(), IT_MOUSEDOWN, button, mx, my));
 }
 
 void Vertagon::GameState::OnMouseUp(W_MOUSEBUTTON button, double mx, double my) {
     // pass on the input to the player class
     // ((Vertagon*)m_app)->m_player->OnMouseUp(button, mx, my);
     ((Vertagon*)m_app)->m_laggedInput.push_back(
-        INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_MOUSEUP, button, mx, my));
+        INPUT_DATA(((Vertagon*)m_app)->Timer.GetElapsedTime(), IT_MOUSEUP, button, mx, my));
 }
 
 void Vertagon::GameState::OnMouseMove(double mx, double my) {
     // pass on the input to the player class
     // ((Vertagon*)m_app)->m_player->OnMouseMove(mx, my);
     ((Vertagon*)m_app)->m_laggedInput.push_back(
-        INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_MOUSEMOVE, mx, my));
+        INPUT_DATA(((Vertagon*)m_app)->Timer.GetElapsedTime(), IT_MOUSEMOVE, mx, my));
 }
 
 void Vertagon::GameState::OnKeyDown(uint32_t c) {
     // pass on the input to the player class
     // ((Vertagon*)m_app)->m_player->OnKeyDown(c);
     ((Vertagon*)m_app)->m_laggedInput.push_back(
-        INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_KEYDOWN, c));
+        INPUT_DATA(((Vertagon*)m_app)->Timer.GetElapsedTime(), IT_KEYDOWN, c));
 }
 
 void Vertagon::GameState::OnKeyUp(uint32_t c) {
     // pass on the input to the player class
     // ((Vertagon*)m_app)->m_player->OnKeyUp(c);
     ((Vertagon*)m_app)->m_laggedInput.push_back(
-        INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_KEYUP, c));
+        INPUT_DATA(((Vertagon*)m_app)->Timer.GetElapsedTime(), IT_KEYUP, c));
 }
 
 void Vertagon::GameState::OnInput(uint32_t c) {
     // pass on the input to the player class
     // ((Vertagon*)m_app)->m_player->OnInput(c);
     ((Vertagon*)m_app)->m_laggedInput.push_back(
-        INPUT_DATA(m_app->Timer.GetElapsedTime(), IT_INPUT, c));
+        INPUT_DATA(((Vertagon*)m_app)->Timer.GetElapsedTime(), IT_INPUT, c));
 }
 
 void Vertagon::DispatchLaggedInput(float fDeltaTime) {

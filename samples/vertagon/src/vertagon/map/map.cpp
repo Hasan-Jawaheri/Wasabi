@@ -1,5 +1,4 @@
 #include "vertagon/map/map.hpp"
-#include "vertagon/game.hpp"
 #include "vertagon/map/sky.hpp"
 #include "vertagon/map/platforms.hpp"
 
@@ -8,7 +7,7 @@
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
 
 
-Map::Map(Wasabi* app): m_app(app), m_platforms(app), m_sky(app) {
+Map::Map(Vertagon* app): m_app(app), m_platforms(app), m_sky(app) {
 }
 
 WError Map::Load() {

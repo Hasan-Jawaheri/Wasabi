@@ -1,6 +1,5 @@
 #include "vertagon/map/sky.hpp"
 #include "vertagon/player.hpp"
-#include "vertagon/game.hpp"
 
 
 class SkyVS : public WShader {
@@ -42,7 +41,7 @@ public:
     }
 };
 
-Sky::Sky(Wasabi* app): m_app(app) {
+Sky::Sky(Vertagon* app): m_app(app) {
     m_geometry = nullptr;
     m_effect = nullptr;
     m_object = nullptr;
@@ -54,7 +53,7 @@ WError Sky::Load(WRenderStage* renderStage) {
     m_geometry = new WGeometry(m_app);
     WError status = m_geometry->CreateSphere(-5000.0f, 28, 28);
     if (!status) return status;
-    status = ((Vertagon*)m_app)->UnsmoothGeometryNormals(m_geometry);
+    status = m_app->UnsmoothGeometryNormals(m_geometry);
     if (!status) return status;
 
     SkyPS* skyPS = new SkyPS(m_app);
@@ -98,7 +97,7 @@ WError Sky::Load(WRenderStage* renderStage) {
 
 void Sky::Update(float fDeltaTime) {
     WCamera* cam = m_app->CameraManager->GetDefaultCamera();
-    m_object->GetMaterials().SetVariable("wvp", WTranslationMatrix(((Vertagon*)m_app)->m_player->GetPosition()) * cam->GetViewMatrix() * cam->GetProjectionMatrix());
+    m_object->GetMaterials().SetVariable("wvp", WTranslationMatrix(m_app->m_player->GetPosition()) * cam->GetViewMatrix() * cam->GetProjectionMatrix());
 }
 
 void Sky::Cleanup() {
