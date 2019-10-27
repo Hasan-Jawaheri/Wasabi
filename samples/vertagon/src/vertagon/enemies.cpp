@@ -150,10 +150,10 @@ EnemySystem::EnemySystem(Wasabi* app): m_app(app) {
 WError EnemySystem::Load() {
     Cleanup();
 
-    m_resources.enemyGeometry = new WGeometry(m_app);
+    /*m_resources.enemyGeometry = new WGeometry(m_app);
     WError status = m_resources.enemyGeometry->CreateSphere(1.0f, 14, 14);
     if (!status) return status;
-    status = ((Vertagon*)m_app)->UnsmoothFeometryNormals(m_resources.enemyGeometry);
+    status = ((Vertagon*)m_app)->UnsmoothGeometryNormals(m_resources.enemyGeometry);
     if (!status) return status;
 
     EnemyVS* vs = new EnemyVS(m_app);
@@ -189,7 +189,7 @@ WError EnemySystem::Load() {
     if (!status) {
         W_SAFE_REMOVEREF(m_resources.enemyEffect);
         return status;
-    }
+    }*/
 
     return WError(W_SUCCEEDED);
 }

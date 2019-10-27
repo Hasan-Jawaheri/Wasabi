@@ -2,12 +2,16 @@
 
 #include "vertagon/common.hpp"
 
-class Map {
-    Wasabi* m_app;
+struct Platform {
+    WGeometry* geometry;
+    WRigidBody* rigidBody;
+    WObject* object;
+    WVector3 center;
+    WVector3 curCenter;
+};
 
-    WGeometry* m_skyGeometry;
-    WEffect* m_skyEffect;
-    WObject* m_sky;
+class PlatformSpiral {
+    Wasabi* m_app;
 
     struct {
         uint32_t numPlatforms; // number of platforms to create
@@ -22,31 +26,23 @@ class Map {
         float xzRandomness; // randomness of platform vertices on xz axis
         float yRandomness; // randomness of platform vertices on y axis
         float lengthRandomness; // randomness of platform length
-    } m_towerParams;
+    } m_params;
 
-    struct TOWER_PLATFORM {
-        WGeometry* geometry;
-        WRigidBody* rigidBody;
-        WObject* object;
-		WVector3 center;
-        WVector3 curCenter;
-    };
-    float m_firstTowerUpdate;
-    WImage* m_towerTexture;
-    std::vector<TOWER_PLATFORM> m_tower;
-    WError BuildTower();
-    WError BuildTowerPlatform(float angleFrom, float angleTo, float heightFrom, float heightTo);
+    float m_firstUpdate;
+    WImage* m_texture;
+    std::vector<Platform> m_platforms;
+
+    WError BuildPlatform(float angleFrom, float angleTo, float heightFrom, float heightTo);
     WError BuildPlatformGeometry(WGeometry* geometry, WVector3 center, float angleFrom, float angleTo, float heightFrom, float heightTo);
     void ComputePlatformCurrentCenter(uint32_t i, float time);
 
 public:
-    Map(Wasabi* app);
+    PlatformSpiral(Wasabi* app);
 
     WError Load();
     void Update(float fDeltaTime);
     void Cleanup();
 
     WVector3 GetSpawnPoint() const;
-    float GetMinPoint() const;
     void RandomSpawn(WOrientation* object) const;
 };

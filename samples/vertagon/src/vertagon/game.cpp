@@ -1,6 +1,6 @@
 #include "vertagon/game.hpp"
 #include "vertagon/player.hpp"
-#include "vertagon/map.hpp"
+#include "vertagon/map/map.hpp"
 #include "vertagon/enemies.hpp"
 
 #include <Wasabi/Renderers/ForwardRenderer/WForwardRenderer.hpp>
@@ -153,8 +153,8 @@ void Vertagon::Cleanup() {
 }
 
 WError Vertagon::SetupRenderer() {
-    // return WInitializeForwardRenderer(this);
-    return WInitializeDeferredRenderer(this);
+    return WInitializeForwardRenderer(this);
+    // return WInitializeDeferredRenderer(this);
 }
 
 WPhysicsComponent* Vertagon::CreatePhysicsComponent() {
@@ -176,7 +176,7 @@ void Vertagon::FireBullet(WVector2 target) {
     }
 }
 
-WError Vertagon::UnsmoothFeometryNormals(WGeometry* geometry) {
+WError Vertagon::UnsmoothGeometryNormals(WGeometry* geometry) {
     uint32_t* indices;
     uint32_t numIndices = geometry->GetNumIndices();
     uint32_t* newIndices = new uint32_t[numIndices];

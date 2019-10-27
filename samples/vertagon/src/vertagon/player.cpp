@@ -1,6 +1,6 @@
 #include "vertagon/player.hpp"
 #include "vertagon/game.hpp"
-#include "vertagon/map.hpp"
+#include "vertagon/map/map.hpp"
 
 #include <Wasabi/Physics/Bullet/WBulletRigidBody.hpp>
 
