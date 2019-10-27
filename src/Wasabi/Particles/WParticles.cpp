@@ -360,7 +360,7 @@ void WParticlesManager::Update(WRenderTarget* rt) {
 		void* instances;
 		particles->m_instancesTexture->MapPixels(&instances, W_MAP_WRITE);
 		float curTime = m_app->Timer.GetElapsedTime();
-		uint32_t numParticles = particles->m_behavior->UpdateAndCopyToBuffer(curTime, instances, particles->m_maxParticles, particles->GetWorldMatrix(), rt->GetCamera());
+		particles->m_behavior->UpdateAndCopyToBuffer(curTime, instances, particles->m_maxParticles, particles->GetWorldMatrix(), rt->GetCamera());
 		particles->m_instancesTexture->UnmapPixels();
 	}
 }
