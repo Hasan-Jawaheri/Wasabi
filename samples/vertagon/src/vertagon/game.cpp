@@ -180,7 +180,7 @@ void Vertagon::FireBullet(WVector2 target) {
     }
 }
 
-WError Vertagon::UnsmoothGeometryNormals(WGeometry* geometry) {
+WError Vertagon::UnsmoothGeometryNormals(WGeometry* geometry, W_GEOMETRY_CREATE_FLAGS flags) {
     uint32_t* indices;
     uint32_t numIndices = geometry->GetNumIndices();
     uint32_t* newIndices = new uint32_t[numIndices];
@@ -215,7 +215,7 @@ WError Vertagon::UnsmoothGeometryNormals(WGeometry* geometry) {
 
             geometry->UnmapVertexBuffer(false);
 
-            status = geometry->CreateFromData(newVertices, numVertices, newIndices, numIndices);
+            status = geometry->CreateFromData(newVertices, numVertices, newIndices, numIndices, flags);
         }
     }
 

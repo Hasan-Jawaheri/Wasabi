@@ -8,8 +8,17 @@ class Spell_Fireball : public Spell {
     WPointLight* m_light;
 
     float m_shotTime;
+    bool m_exploded;
     WVector3 m_targetOrigin;
     WVector3 m_targetDirection;
+
+    struct {
+        float lifetime;
+        float growthPeriod;
+        float emissionPeriod;
+        float idleTrailSpeed;
+        float speed;
+    } m_params;
 
 public:
     Spell_Fireball(Vertagon* app);
@@ -19,6 +28,6 @@ public:
     virtual void Cleanup() override;
     virtual bool IsAlive() override;
 
-    void SetIdlePosition(WVector3 position);
+    void SetIdlePosition(WVector3 position, WVector3 up);
     void SetDirection(WVector3 origin, WVector3 direction);
 };

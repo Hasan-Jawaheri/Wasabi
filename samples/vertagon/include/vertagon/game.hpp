@@ -73,5 +73,5 @@ public:
     virtual WPhysicsComponent* CreatePhysicsComponent() override;
 
     void FireBullet(WVector2 target);
-    WError UnsmoothGeometryNormals(WGeometry* geometry);
+    WError UnsmoothGeometryNormals(WGeometry* geometry, W_GEOMETRY_CREATE_FLAGS flags = W_GEOMETRY_CREATE_CPU_READABLE);
 };
