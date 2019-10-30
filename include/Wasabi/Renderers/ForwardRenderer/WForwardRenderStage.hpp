@@ -65,6 +65,16 @@ class WForwardRenderStage : public WRenderStage {
 
 	std::vector<LightStruct> m_lights;
 
+	WForwardRenderStageObjectVS* m_defaultObjectVS;
+	WForwardRenderStageAnimatedObjectVS* m_defaultAnimatedObjectVS;
+	WForwardRenderStageObjectPS* m_defaultObjectPS;
+	WEffect* m_defaultObjectFX;
+	WEffect* m_defaultAnimatedObjectFX;
+
+	WForwardRenderStageTerrainVS* m_defaultTerrainVS;
+	WForwardRenderStageTerrainPS* m_defaultTerrainPS;
+	WEffect* m_defaultTerrainFX;
+
 protected:
 	bool m_addDefaultEffects; // @TODO please fix this mess
 
@@ -77,4 +87,14 @@ public:
 	virtual WError Resize(uint32_t width, uint32_t height);
 
 	void SetAmbientLight(WColor color);
+
+	WForwardRenderStageObjectVS* GetDefaultObjectVertexShader() const;
+	WForwardRenderStageAnimatedObjectVS* GetDefaultAnimatedObjectVertexShader() const;
+	WForwardRenderStageObjectPS* GetDefaultObjectPixelShader() const;
+	WEffect* GetDefaultObjectEffect() const;
+	WEffect* GetDefaultAnimatedObjectEffect() const;
+
+	WForwardRenderStageTerrainVS* GetDefaultTerrainVertexShader() const;
+	WForwardRenderStageTerrainPS* GetDefaultTerrainPixelShader() const;
+	WEffect* GetDefaultTerrainEffect() const;
 };
