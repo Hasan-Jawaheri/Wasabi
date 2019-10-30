@@ -222,16 +222,29 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	m_defaultAnimatedObjectFX->SetName("DefaultForwardAnimatedEffect");
 	m_app->FileManager->AddDefaultAsset(m_defaultAnimatedObjectFX->GetName(), m_defaultAnimatedObjectFX);
 
+	VkPipelineColorBlendAttachmentState blendState = {};
+	blendState.colorWriteMask = 0xff;
+	blendState.blendEnable = VK_TRUE;
+	blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	blendState.colorBlendOp = VK_BLEND_OP_ADD;
+	blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+
 	err = m_defaultObjectFX->BindShader(m_defaultObjectVS);
 	if (err) {
 		err = m_defaultObjectFX->BindShader(m_defaultObjectPS);
 		if (err) {
+			m_defaultObjectFX->SetBlendingState(blendState);
 			err = m_defaultObjectFX->BuildPipeline(m_renderTarget);
 			if (err) {
 				err = m_defaultAnimatedObjectFX->BindShader(m_defaultAnimatedObjectVS);
 				if (err) {
 					err = m_defaultAnimatedObjectFX->BindShader(m_defaultObjectPS);
 					if (err) {
+						m_defaultAnimatedObjectFX->SetBlendingState(blendState);
 						err = m_defaultAnimatedObjectFX->BuildPipeline(m_renderTarget);
 					}
 				}
