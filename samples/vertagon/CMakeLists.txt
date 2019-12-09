@@ -30,6 +30,7 @@ link_target_to_wasabi(vertagon ${WASABI_PATH})
 target_precompile_headers(vertagon PRIVATE
     "${WASABI_PATH}/include/Wasabi/Wasabi.hpp"
     "include/vertagon/common.hpp")
+set_property(TARGET vertagon PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 build_glsl(TARGET glsl-code VULKAN ${VULKAN_SDK_PATH} CONVERTER ${CMAKE_SOURCE_DIR}/src/spv-converter.py SOURCES ${GLSL})
 add_dependencies(vertagon glsl-code)
