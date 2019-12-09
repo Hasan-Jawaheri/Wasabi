@@ -3,12 +3,14 @@
 #include "vertagon/common.hpp"
 #include "vertagon/map/platforms.hpp"
 #include "vertagon/map/sky.hpp"
+#include "vertagon/map/water.hpp"
 
 class Map {
     Vertagon* m_app;
 
     Sky m_sky;
     PlatformSpiral m_platforms;
+    Water m_water;
 
 public:
     Map(Vertagon* app);

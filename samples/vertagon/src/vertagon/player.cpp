@@ -178,7 +178,7 @@ void Player::Update(float fDeltaTime) {
 
     Spell_Fireball* fireball = dynamic_cast<Spell_Fireball*>(m_casting.fireball.get());
     if (!m_alreadyShot)
-        fireball->SetIdlePosition(m_cam->GetPosition() + m_cam->GetLVector() * 4 + m_cam->GetRVector() * 2);
+        fireball->SetIdlePosition(m_cam->GetPosition() + m_cam->GetLVector() * 4 - m_cam->GetRVector() * 2, m_cam->GetUVector());
     else
         fireball->SetDirection(m_cam->GetPosition(), m_cam->GetLVector());
 

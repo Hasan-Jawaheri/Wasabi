@@ -183,6 +183,15 @@ WForwardRenderStage::WForwardRenderStage(Wasabi* const app) : WRenderStage(app) 
 	m_perFrameAnimatedObjectsMaterial = nullptr;
 	m_perFrameTerrainsMaterial = nullptr;
 	m_addDefaultEffects = true;
+
+	m_defaultObjectVS = nullptr;
+	m_defaultAnimatedObjectVS = nullptr;
+	m_defaultObjectPS = nullptr;
+	m_defaultObjectFX = nullptr;
+	m_defaultAnimatedObjectFX = nullptr;
+	m_defaultTerrainVS = nullptr;
+	m_defaultTerrainPS = nullptr;
+	m_defaultTerrainFX = nullptr;
 }
 
 WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStages, uint32_t width, uint32_t height) {
@@ -190,70 +199,77 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 	if (!err)
 		return err;
 
-	WForwardRenderStageObjectVS* vs = new WForwardRenderStageObjectVS(m_app);
-	vs->SetName("DefaultForwardVS");
-	m_app->FileManager->AddDefaultAsset(vs->GetName(), vs);
-	vs->Load();
+	m_defaultObjectVS = new WForwardRenderStageObjectVS(m_app);
+	m_defaultObjectVS->SetName("DefaultForwardVS");
+	m_app->FileManager->AddDefaultAsset(m_defaultObjectVS->GetName(), m_defaultObjectVS);
+	m_defaultObjectVS->Load();
 
-	WForwardRenderStageAnimatedObjectVS* vsa = new WForwardRenderStageAnimatedObjectVS(m_app);
-	vsa->SetName("DefaultForwardAnimatedVS");
-	m_app->FileManager->AddDefaultAsset(vsa->GetName(), vsa);
-	vsa->Load();
+	m_defaultAnimatedObjectVS = new WForwardRenderStageAnimatedObjectVS(m_app);
+	m_defaultAnimatedObjectVS->SetName("DefaultForwardAnimatedVS");
+	m_app->FileManager->AddDefaultAsset(m_defaultAnimatedObjectVS->GetName(), m_defaultAnimatedObjectVS);
+	m_defaultAnimatedObjectVS->Load();
 
-	WForwardRenderStageObjectPS* ps = new WForwardRenderStageObjectPS(m_app);
-	ps->SetName("DefaultForwardPS");
-	m_app->FileManager->AddDefaultAsset(ps->GetName(), ps);
-	ps->Load();
+	m_defaultObjectPS = new WForwardRenderStageObjectPS(m_app);
+	m_defaultObjectPS->SetName("DefaultForwardPS");
+	m_app->FileManager->AddDefaultAsset(m_defaultObjectPS->GetName(), m_defaultObjectPS);
+	m_defaultObjectPS->Load();
 
-	WEffect* fx = new WEffect(m_app);
-	fx->SetName("DefaultForwardEffect");
-	m_app->FileManager->AddDefaultAsset(fx->GetName(), fx);
+	m_defaultObjectFX = new WEffect(m_app);
+	m_defaultObjectFX->SetName("DefaultForwardEffect");
+	m_app->FileManager->AddDefaultAsset(m_defaultObjectFX->GetName(), m_defaultObjectFX);
 
-	WEffect* fxa = new WEffect(m_app);
-	fxa->SetName("DefaultForwardAnimatedEffect");
-	m_app->FileManager->AddDefaultAsset(fxa->GetName(), fxa);
+	m_defaultAnimatedObjectFX = new WEffect(m_app);
+	m_defaultAnimatedObjectFX->SetName("DefaultForwardAnimatedEffect");
+	m_app->FileManager->AddDefaultAsset(m_defaultAnimatedObjectFX->GetName(), m_defaultAnimatedObjectFX);
 
-	err = fx->BindShader(vs);
+	VkPipelineColorBlendAttachmentState blendState = {};
+	blendState.colorWriteMask = 0xff;
+	blendState.blendEnable = VK_TRUE;
+	blendState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	blendState.colorBlendOp = VK_BLEND_OP_ADD;
+	blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+
+	err = m_defaultObjectFX->BindShader(m_defaultObjectVS);
 	if (err) {
-		err = fx->BindShader(ps);
+		err = m_defaultObjectFX->BindShader(m_defaultObjectPS);
 		if (err) {
-			err = fx->BuildPipeline(m_renderTarget);
+			m_defaultObjectFX->SetBlendingState(blendState);
+			err = m_defaultObjectFX->BuildPipeline(m_renderTarget);
 			if (err) {
-				err = fxa->BindShader(vsa);
+				err = m_defaultAnimatedObjectFX->BindShader(m_defaultAnimatedObjectVS);
 				if (err) {
-					err = fxa->BindShader(ps);
+					err = m_defaultAnimatedObjectFX->BindShader(m_defaultObjectPS);
 					if (err) {
-						err = fxa->BuildPipeline(m_renderTarget);
+						m_defaultAnimatedObjectFX->SetBlendingState(blendState);
+						err = m_defaultAnimatedObjectFX->BuildPipeline(m_renderTarget);
 					}
 				}
 			}
 		}
 	}
-	W_SAFE_REMOVEREF(vs);
-	W_SAFE_REMOVEREF(vsa);
-	W_SAFE_REMOVEREF(ps);
-	if (!err) {
-		W_SAFE_REMOVEREF(fx);
-		W_SAFE_REMOVEREF(fxa);
+	if (!err)
 		return err;
-	}
 
-	WForwardRenderStageTerrainVS* terrainVS = new WForwardRenderStageTerrainVS(m_app);
-	terrainVS->SetName("DefaultForwardTerrainVS");
-	m_app->FileManager->AddDefaultAsset(terrainVS->GetName(), terrainVS);
-	terrainVS->Load();
+	m_defaultTerrainVS = new WForwardRenderStageTerrainVS(m_app);
+	m_defaultTerrainVS->SetName("DefaultForwardTerrainVS");
+	m_app->FileManager->AddDefaultAsset(m_defaultTerrainVS->GetName(), m_defaultTerrainVS);
+	m_defaultTerrainVS->Load();
 
-	WForwardRenderStageTerrainPS* terrainPS = new WForwardRenderStageTerrainPS(m_app);
-	terrainPS->SetName("DefaultForwardTerrainPS");
-	m_app->FileManager->AddDefaultAsset(terrainPS->GetName(), terrainPS);
-	terrainPS->Load();
+	m_defaultTerrainPS = new WForwardRenderStageTerrainPS(m_app);
+	m_defaultTerrainPS->SetName("DefaultForwardTerrainPS");
+	m_app->FileManager->AddDefaultAsset(m_defaultTerrainPS->GetName(), m_defaultTerrainPS);
+	m_defaultTerrainPS->Load();
 
-	WEffect* terrainFX = new WEffect(m_app);
-	terrainFX->SetName("DefaultForwardTerrainEffect");
-	m_app->FileManager->AddDefaultAsset(terrainFX->GetName(), terrainFX);
-	err = terrainFX->BindShader(terrainVS);
+	m_defaultTerrainFX = new WEffect(m_app);
+	m_defaultTerrainFX->SetName("DefaultForwardTerrainEffect");
+	m_app->FileManager->AddDefaultAsset(m_defaultTerrainFX->GetName(), m_defaultTerrainFX);
+	err = m_defaultTerrainFX->BindShader(m_defaultTerrainVS);
 	if (err) {
-		err = terrainFX->BindShader(terrainPS);
+		err = m_defaultTerrainFX->BindShader(m_defaultTerrainPS);
 		if (err) {
 			/*VkPipelineRasterizationStateCreateInfo rs = {};
 			rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -265,20 +281,16 @@ WError WForwardRenderStage::Initialize(std::vector<WRenderStage*>& previousStage
 			rs.depthBiasEnable = VK_FALSE;
 			rs.lineWidth = 1.0f;
 			terrainFX->SetRasterizationState(rs);*/
-			err = terrainFX->BuildPipeline(m_renderTarget);
+			err = m_defaultTerrainFX->BuildPipeline(m_renderTarget);
 		}
 	}
-	W_SAFE_REMOVEREF(terrainVS);
-	W_SAFE_REMOVEREF(terrainPS);
-	if (!err) {
-		W_SAFE_REMOVEREF(terrainFX);
+	if (!err)
 		return err;
-	}
 
-	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, fx, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD, m_addDefaultEffects);
-	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, fxa, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD, m_addDefaultEffects);
+	m_objectsFragment = new WObjectsRenderFragment(m_stageDescription.name, false, m_defaultObjectFX, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD, m_addDefaultEffects);
+	m_animatedObjectsFragment = new WObjectsRenderFragment(m_stageDescription.name + "-animated", true, m_defaultAnimatedObjectFX, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD, m_addDefaultEffects);
 
-	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, terrainFX, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD);
+	m_terrainsFragment = new WTerrainRenderFragment(m_stageDescription.name, m_defaultTerrainFX, m_app, EFFECT_RENDER_FLAG_RENDER_FORWARD);
 
 	m_perFrameObjectsMaterial = m_objectsFragment->GetEffect()->CreateMaterial(1, true);
 	if (!m_perFrameObjectsMaterial) {
@@ -317,6 +329,12 @@ void WForwardRenderStage::Cleanup() {
 	W_SAFE_DELETE(m_objectsFragment);
 	W_SAFE_DELETE(m_animatedObjectsFragment);
 	W_SAFE_DELETE(m_terrainsFragment);
+
+	W_SAFE_REMOVEREF(m_defaultObjectVS);
+	W_SAFE_REMOVEREF(m_defaultAnimatedObjectVS);
+	W_SAFE_REMOVEREF(m_defaultObjectPS);
+	W_SAFE_REMOVEREF(m_defaultTerrainVS);
+	W_SAFE_REMOVEREF(m_defaultTerrainPS);
 }
 
 WError WForwardRenderStage::Render(WRenderer* renderer, WRenderTarget* rt, uint32_t filter) {
@@ -379,4 +397,36 @@ WError WForwardRenderStage::Resize(uint32_t width, uint32_t height) {
 void WForwardRenderStage::SetAmbientLight(WColor color) {
 	m_perFrameObjectsMaterial->SetVariable<WColor>("ambient", color);
 	m_perFrameAnimatedObjectsMaterial->SetVariable<WColor>("ambient", color);
+}
+
+WForwardRenderStageObjectVS* WForwardRenderStage::GetDefaultObjectVertexShader() const {
+	return m_defaultObjectVS;
+}
+
+WForwardRenderStageAnimatedObjectVS* WForwardRenderStage::GetDefaultAnimatedObjectVertexShader() const {
+	return m_defaultAnimatedObjectVS;
+}
+
+WForwardRenderStageObjectPS* WForwardRenderStage::GetDefaultObjectPixelShader() const {
+	return m_defaultObjectPS;
+}
+
+WEffect* WForwardRenderStage::GetDefaultObjectEffect() const {
+	return m_defaultObjectFX;
+}
+
+WEffect* WForwardRenderStage::GetDefaultAnimatedObjectEffect() const {
+	return m_defaultAnimatedObjectFX;
+}
+
+WForwardRenderStageTerrainVS* WForwardRenderStage::GetDefaultTerrainVertexShader() const {
+	return m_defaultTerrainVS;
+}
+
+WForwardRenderStageTerrainPS* WForwardRenderStage::GetDefaultTerrainPixelShader() const {
+	return m_defaultTerrainPS;
+}
+
+WEffect* WForwardRenderStage::GetDefaultTerrainEffect() const {
+	return m_defaultTerrainFX;
 }
