@@ -355,13 +355,13 @@ WParticles* WParticlesManager::CreateParticles(W_DEFAULT_PARTICLE_EFFECT_TYPE ty
 }
 
 void WParticlesManager::Update(WRenderTarget* rt) {
+	float curTime = m_app->Timer.GetElapsedTime();
 	for (uint32_t i = 0; i < GetEntitiesCount(); i++) {
 		WParticles* particles = GetEntityByIndex(i);
 		// update the geometry
 		void* instances;
 		particles->m_instancesTexture->MapPixels(&instances, W_MAP_WRITE);
-		float curTime = m_app->Timer.GetElapsedTime();
-		particles->m_behavior->UpdateAndCopyToBuffer(curTime, instances, particles->m_maxParticles, particles->GetWorldMatrix(), rt->GetCamera());
+		particles->m_behavior->UpdateAndCopyToBuffer(curTime - particles->m_behaviorStartTime, instances, particles->m_maxParticles, particles->GetWorldMatrix(), rt->GetCamera());
 		particles->m_instancesTexture->UnmapPixels();
 	}
 }
@@ -372,6 +372,7 @@ WParticles::WParticles(class Wasabi* const app, W_DEFAULT_PARTICLE_EFFECT_TYPE t
 	m_bAltered = true;
 	m_bFrustumCull = true;
 	m_priority = 0;
+	m_behaviorStartTime = 0.0f;
 
 	m_WorldM = WMatrix();
 
@@ -475,6 +476,7 @@ WError WParticles::Create(uint32_t maxParticles, WParticlesBehavior* behavior) {
 		return WError(W_OUTOFMEMORY);
 	}
 
+	m_behaviorStartTime = m_app->Timer.GetElapsedTime();
 	m_behavior = behavior ? behavior : new WDefaultParticleBehavior(maxParticles);
 	m_maxParticles = maxParticles;
 
