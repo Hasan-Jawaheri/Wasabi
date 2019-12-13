@@ -208,12 +208,13 @@ inline bool WDefaultParticleBehavior::UpdateParticle(float curTime, void* partic
 		m_type == WDefaultParticleBehavior::Type::BILLBOARD ? size : 0.0f
 	);
 
-	m_minPoint.x = std::min(m_minPoint.x, particleWroldPosition.x);
-	m_minPoint.y = std::min(m_minPoint.y, particleWroldPosition.y);
-	m_minPoint.z = std::min(m_minPoint.z, particleWroldPosition.z);
-	m_maxPoint.x = std::max(m_maxPoint.x, particleWroldPosition.x);
-	m_maxPoint.y = std::max(m_maxPoint.y, particleWroldPosition.y);
-	m_maxPoint.z = std::max(m_maxPoint.z, particleWroldPosition.z);
+	float maxParticleSize = std::max(m_deathSize, m_emissionSize);
+	m_minPoint.x = std::min(m_minPoint.x, particleWroldPosition.x - maxParticleSize);
+	m_minPoint.y = std::min(m_minPoint.y, particleWroldPosition.y - maxParticleSize);
+	m_minPoint.z = std::min(m_minPoint.z, particleWroldPosition.z - maxParticleSize);
+	m_maxPoint.x = std::max(m_maxPoint.x, particleWroldPosition.x + maxParticleSize);
+	m_maxPoint.y = std::max(m_maxPoint.y, particleWroldPosition.y + maxParticleSize);
+	m_maxPoint.z = std::max(m_maxPoint.z, particleWroldPosition.z + maxParticleSize);
 
 	return true;
 }
