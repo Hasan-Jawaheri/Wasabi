@@ -115,7 +115,7 @@ public:
 	 * Must be implemented by a derived class to define the per-frame behavior
 	 * of the particle system. Typically this should control emission by
 	 * calling Emit() when a particle needs to be emitted.
-	 * @param curTime     The time elapsed since the beginning of the program
+	 * @param curTime     The time elapsed since the beginning of the behavior
 	 * @param worldMatrix The world matrix of the camera rendering the particles
 	 * @param camera      The camera used to render the frame
 	 */
@@ -124,7 +124,7 @@ public:
 	/**
 	 * Must be implemented by a derived class to define the per-frame behavior
 	 * of a single particle.
-	 * @param curTime        The time elapsed since the beginning of the program
+	 * @param curTime        The time elapsed since the beginning of the behavior
 	 * @param particleData   A pointer to the beginning of the vertices memory to
 	 *                       fill. The memory will have sizeof(WParticlesInstance)
 	 *                       bytes to be filled with the 4 vertices of the particle
@@ -367,6 +367,8 @@ private:
 	uint32_t m_priority;
 	/** Local world matrix */
 	WMatrix m_WorldM;
+	/** Time at which the behavior was set */
+	float m_behaviorStartTime;
 
 	/** Behavior of the particle system */
 	WParticlesBehavior* m_behavior;
