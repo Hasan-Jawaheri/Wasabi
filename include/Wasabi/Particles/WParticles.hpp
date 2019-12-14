@@ -172,7 +172,12 @@ class WDefaultParticleBehavior : public WParticlesBehavior {
 
 	/** Time of last emission */
 	float m_lastEmit;
-	WVector3 m_minPoint, m_maxPoint;
+	/** Emission position of the previous update */
+	WVector3 m_lastEmitPosition;
+	/** Minimum point of particles bounding box */
+	WVector3 m_minPoint;
+	/** Maximum point of particles bounding box */
+	WVector3 m_maxPoint;
 
 public:
 
@@ -199,6 +204,9 @@ public:
 	bool m_moveOutwards;
 	/** Number of particles to emit per second (default is 20) */
 	float m_emissionFrequency;
+	/** Maximum allowed spacing between particles. If emission position changes too fast between
+	    frames then particles will be automatically emitted in between according to this spacing */
+	float m_maxEmissionSpacing;
 	/** Size of a particle at emission (default is 1) */
 	float m_emissionSize;
 	/** Size of a particle at death (default is 3) */
@@ -220,6 +228,12 @@ public:
 	virtual inline bool UpdateParticle(float curTime, void* particleData, WParticlesInstance* outputInstance, const WMatrix& worldMatrix, class WCamera* camera) override;
 	virtual inline WVector3& GetMinPoint() override;
 	virtual inline WVector3& GetMaxPoint() override;
+
+	/**
+	 * "Teleports" emission, ignoring m_maxEmissionSpacing
+	 * @param position  New emission position
+	 */
+	void SetEmissionPosition(WVector3 position);
 };
 
 /**

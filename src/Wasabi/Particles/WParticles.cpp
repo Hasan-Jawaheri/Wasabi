@@ -130,12 +130,14 @@ uint32_t WParticlesBehavior::GetNumParticles() const {
 WDefaultParticleBehavior::WDefaultParticleBehavior(uint32_t maxParticles)
 	: WParticlesBehavior(maxParticles, sizeof(WDefaultParticleBehavior::Particle)) {
 	m_lastEmit = 0.0f;
+	m_lastEmitPosition = WVector3(0.0f, 0.0f, 0.0f);
 	m_emissionPosition = WVector3(0.0f, 0.0f, 0.0f);
 	m_emissionRandomness = WVector3(1.0f, 1.0f, 1.0f);
 	m_particleLife = 1.5f;
 	m_particleSpawnVelocity = WVector3(0.0f, 4.0f, 0.0f);
 	m_moveOutwards = false;
 	m_emissionFrequency = 30.0f;
+	m_maxEmissionSpacing = std::numeric_limits<float>::max();
 	m_emissionSize = 0.3f;
 	m_deathSize = 1.5f;
 	m_type = BILLBOARD;
@@ -155,24 +157,33 @@ void WDefaultParticleBehavior::UpdateSystem(float curTime, const WMatrix& worldM
 	UNREFERENCED_PARAMETER(worldMatrix);
 	UNREFERENCED_PARAMETER(camera);
 
+	WVector3 fromToVec = m_emissionPosition - m_lastEmitPosition;
+	float deltaPositionSq = WVec3Length(fromToVec);
+	float maxDeltaSq = m_maxEmissionSpacing * m_maxEmissionSpacing;
 	uint32_t numTilesRows = (uint)(ceilf((float)m_numTiles / (float)m_numTilesColumns) + 0.01f);
-	int num_emitted = 0;
-	while (curTime > m_lastEmit + 1.0f / m_emissionFrequency && num_emitted++ < 10) {
-		m_lastEmit += 1.0f / m_emissionFrequency;
+	uint32_t numParticlesToEmit = std::max(
+		std::min((uint32_t)10, (uint32_t)std::ceil((curTime - m_lastEmit) / m_emissionFrequency)),
+		(uint32_t)std::floor(deltaPositionSq / maxDeltaSq)
+	);
+	for (uint32_t i = 0; i < numParticlesToEmit; i++) {
+		m_lastEmit = std::min(curTime, m_lastEmit + 1.0f / m_emissionFrequency);
+		WVector3 emisionPosition = m_lastEmitPosition + fromToVec * ((float)(i+1) / numParticlesToEmit);
 		Particle p = {};
-		p.initialPos = m_emissionPosition + m_emissionRandomness * WVector3(WUtil::frand_0_1() - 0.5f, WUtil::frand_0_1() - 0.5f, WUtil::frand_0_1() - 0.5f);
+		p.initialPos = emisionPosition + m_emissionRandomness * WVector3(WUtil::frand_0_1() - 0.5f, WUtil::frand_0_1() - 0.5f, WUtil::frand_0_1() - 0.5f);
 		p.velocity = m_particleSpawnVelocity;
 		p.spawnTime = m_lastEmit;
 		if (m_moveOutwards)
-			p.velocity = WVec3Normalize(p.initialPos - m_emissionPosition) * WVec3Length(m_particleSpawnVelocity);
+			p.velocity = WVec3Normalize(p.initialPos - emisionPosition) * WVec3Length(m_particleSpawnVelocity);
 
 		// calculate tiling
 		uint32_t x = rand() % m_numTilesColumns;
 		uint32_t y = rand() % numTilesRows;
 		p.UVTopLeft = WVector2((float)x / m_numTilesColumns, (float)y / m_numTilesColumns);
-		p.UVBottomRight = WVector2((float)(x+1) / m_numTilesColumns, (float)(y + 1) / m_numTilesColumns);
+		p.UVBottomRight = WVector2((float)(x + 1) / m_numTilesColumns, (float)(y + 1) / m_numTilesColumns);
 		Emit((void*)&p);
 	}
+
+	m_lastEmitPosition = m_emissionPosition;
 
 	// flip those and update them in UpdateParticle
 	m_minPoint = WVector3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
@@ -225,6 +236,10 @@ inline WVector3& WDefaultParticleBehavior::GetMinPoint() {
 
 inline WVector3& WDefaultParticleBehavior::GetMaxPoint() {
 	return m_maxPoint;
+}
+
+void WDefaultParticleBehavior::SetEmissionPosition(WVector3 position) {
+	m_emissionPosition = m_lastEmitPosition = position;
 }
 
 WParticlesManager::WParticlesManager(class Wasabi* const app)

@@ -9,6 +9,7 @@ Spell_Fireball::Spell_Fireball(Vertagon* app) : Spell(app) {
     m_light = nullptr;
     m_shotTime = -1.0f;
     m_exploded = false;
+	m_firstPosition = true;
 
     m_params.lifetime = 3.0f;
     m_params.growthPeriod = 0.5f;
@@ -27,15 +28,18 @@ WError Spell_Fireball::Load() {
 	((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_numTilesColumns = 2;
 	((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_colorGradient = {
 		std::make_pair(WColor(0xf7e01c00), 0.3f),
-		std::make_pair(WColor(0xf7691cff), 0.4f),
-		std::make_pair(WColor(0x0f0f0f11), 0.3f),
+		std::make_pair(WColor(0xf7691c44), 0.4f),
+		std::make_pair(WColor(0x0f0f0f2f), 0.3f),
 		std::make_pair(WColor(0x0f0f0f00), 0.0f),
 	};
     ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_particleSpawnVelocity = WVector3(0.0f, 0.4f, 0.0f);
-    ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionSize = 0.2f;
-    ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_deathSize = 0.5f;
-    ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionFrequency = 30.0f;
+	((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_particleLife = 1.0f;
+	((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionSize = 0.2f;
+    ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_deathSize = 0.8f;
+	((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionFrequency = 20.0f;
+	((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_maxEmissionSpacing = 0.5f;
     ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionRandomness = WVector3(0.2f, 0.2f, 0.2f);
+	m_firstPosition = true;
 
 	WImage* texture = m_app->ImageManager->CreateImage("../../media/fire_particles_tiles.png");
     if (!texture) return WError(W_ERRORUNK);
@@ -112,6 +116,10 @@ void Spell_Fireball::Cleanup() {
 
 void Spell_Fireball::SetIdlePosition(WVector3 position, WVector3 up) {
     if (IsAlive()) {
+		if (m_firstPosition) {
+			((WDefaultParticleBehavior*)m_particles->GetBehavior())->SetEmissionPosition(position);
+			m_firstPosition = false;
+		}
         ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionPosition = position;
         ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_particleSpawnVelocity = up * m_params.idleTrailSpeed;
     }
@@ -121,10 +129,11 @@ void Spell_Fireball::SetDirection(WVector3 origin, WVector3 direction) {
     if (IsAlive()) {
         if (m_shotTime < 0.0f) {
             m_shotTime = m_app->Timer.GetElapsedTime();
-            ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionRandomness = WVector3(1.0f, 1.0f, 1.0f);
-            ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionFrequency = 60.0f;
+            ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionRandomness = WVector3(2.0f, 2.0f, 2.0f);
+            ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionFrequency = 20.0f;
             ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_emissionSize = 0.5f;
-            ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_deathSize = 1.5f;
+            ((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_deathSize = 2.5f;
+			((WDefaultParticleBehavior*)m_particles->GetBehavior())->m_particleLife = 0.5f;
         }
         m_targetOrigin = origin;
         m_targetDirection = direction;

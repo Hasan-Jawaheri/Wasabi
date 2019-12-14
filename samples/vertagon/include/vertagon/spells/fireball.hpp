@@ -8,6 +8,7 @@ class Spell_Fireball : public Spell {
     WPointLight* m_light;
 
     float m_shotTime;
+	bool m_firstPosition;
     bool m_exploded;
     WVector3 m_targetOrigin;
     WVector3 m_targetDirection;
