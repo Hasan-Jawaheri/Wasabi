@@ -35,6 +35,7 @@ build_glfw("GLFW_DIR" "${DEPENDENCIES_DIR}")
 build_assimp("ASSIMP_DIR" "${DEPENDENCIES_DIR}")
 build_stb("STB_DIR" "${DEPENDENCIES_DIR}")
 build_tinyfiledialogs("TFD_DIR" "${DEPENDENCIES_DIR}")
+build_loguru("LOGURU_DIR" "${DEPENDENCIES_DIR}")
 
 #
 # Build the Wasabi library
@@ -48,7 +49,7 @@ file(GLOB_RECURSE LIB_HEADERS "include/Wasabi/*")
 # Wasabi library
 assign_source_group(${LIB_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
 build_glsl(TARGET lib-glsl-code VULKAN ${VULKAN_SDK_PATH} CONVERTER ${CMAKE_SOURCE_DIR}/src/spv-converter.py SOURCES ${LIB_GLSL})
-add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${LIB_GLSL} ${LIB_HEADERS})
+add_library(standalone-wasabi STATIC ${LIB_SOURCES} ${LOGURU_DIR}/loguru.cpp ${LIB_GLSL} ${LIB_HEADERS})
 add_dependencies(standalone-wasabi lib-glsl-code)
 target_compile_definitions(standalone-wasabi PRIVATE COMPILING_WASABI)
 target_compile_definitions(standalone-wasabi PRIVATE AL_LIBTYPE_STATIC) # <-- this makes the OpenAL headers not do dllimport (on Windows)
@@ -60,6 +61,7 @@ target_include_directories(standalone-wasabi PRIVATE SYSTEM "${GLFW_DIR}/include
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${ASSIMP_DIR}/include/" "${ASSIMP_DIR_BUILD}/include/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${STB_DIR}/")
 target_include_directories(standalone-wasabi PRIVATE SYSTEM "${TFD_DIR}/")
+target_include_directories(standalone-wasabi PRIVATE SYSTEM "${LOGURU_DIR}/")
 target_precompile_headers(standalone-wasabi PRIVATE
     "include/Wasabi/Core/WCore.hpp"
     "include/Wasabi/Core/VkTools/vulkanswapchain.hpp"
@@ -81,7 +83,7 @@ bundle_static_library(
     BUNDLED_TARGET wasabi
     DEPENDENCIES tinyfiledialogs ex-common OpenAL glfw Bullet3Collision Bullet3Common Bullet3Dynamics Bullet3Geometry BulletCollision BulletDynamics LinearMath assimp)
 # Build the dist folder
-build_dist(build-dist wasabi)
+build_dist(build-dist wasabi "${LOGURU_DIR}/loguru.hpp")
 
 #
 # Build the tests
