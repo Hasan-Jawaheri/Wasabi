@@ -22,3 +22,6 @@
 	path = dependencies/assimp
 	url = https://github.com/assimp/assimp
 	shallow = true
+[submodule "loguru"]
+	path = dependencies/loguru
+	url = https://github.com/emilk/loguru
