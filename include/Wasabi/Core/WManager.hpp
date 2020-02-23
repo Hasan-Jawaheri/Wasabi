@@ -101,7 +101,7 @@ public:
 		if (!entity)
 			return;
 		m_entities[W_HASH(entity->GetID())].push_back(entity);
-		std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Added to the manager.\n";
+		// std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Added to the manager.\n";
 		for (auto it = m_changeCallbacks.begin(); it != m_changeCallbacks.end(); it++)
 			it->second(entity, true);
 	}
@@ -117,8 +117,8 @@ public:
 		for (uint32_t i = 0; i < m_entities[tableIndex].size(); i++) {
 			if (m_entities[tableIndex][i] == entity)
 			{
-				if (!__bDbgDestructing)
-					std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Removed from manager.\n";
+				// if (!__bDbgDestructing)
+				// 	std::cout << "[" << GetTypeName() << " " << entity->GetID() << "] Removed from manager.\n";
 
 				m_entities[tableIndex].erase(m_entities[tableIndex].begin() + i);
 
