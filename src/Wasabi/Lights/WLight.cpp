@@ -166,6 +166,10 @@ WError WLight::LoadFromStream(WFile* file, std::istream& inputStream, std::vecto
 	UNREFERENCED_PARAMETER(file);
 	UNREFERENCED_PARAMETER(args);
 
+	// remove the entity from the manager, will re-add after changing the type
+	// this is necessary because we will change the m_type (this will allow e.g. lights renderer to reconfigure stuff for this light)
+	m_app->LightManager->RemoveEntity(this);
+
 	WVector3 pos;
 	WQuaternion rot;
 	inputStream.read((char*)&m_type, sizeof(m_type));
@@ -180,8 +184,7 @@ WError WLight::LoadFromStream(WFile* file, std::istream& inputStream, std::vecto
 	SetPosition(pos);
 	SetAngle(rot);
 
-	// this is necessary because we changed the m_type (this will allow e.g. lights renderer to reconfigure stuff for this light)
-	m_app->LightManager->RemoveEntity(this);
+	// add the entity back
 	m_app->LightManager->AddEntity(this);
 
 	return WError(W_SUCCEEDED);
