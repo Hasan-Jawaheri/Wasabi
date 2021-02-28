@@ -203,7 +203,7 @@ void WFile::ReleaseAsset(WFileAsset* asset) {
 WError WFile::LoadHeaders(std::streamsize maxFileSize) {
 	std::streamoff curOffset = 0;
 
-	while (curOffset != std::numeric_limits<std::streamoff>::max()) {
+	while (curOffset != std::numeric_limits<std::streamoff>::max() && curOffset >= 0) {
 		if (maxFileSize < (std::streamoff)(curOffset + sizeof(FILE_MAGIC) + sizeof(FILE_HEADER::dataSize) + sizeof(FILE_HEADER::nextHeader)))
 			return WError(W_INVALIDFILEFORMAT);
 

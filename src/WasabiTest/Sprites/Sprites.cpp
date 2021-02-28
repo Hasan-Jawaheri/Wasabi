@@ -23,17 +23,18 @@ void SpritesDemo::Load() {
 	WImage* img;
 
 	img = m_app->ImageManager->CreateImage("media/seamless_grass.jpg");
+	assert(img != nullptr);
 	m_sprites[0] = m_app->SpriteManager->CreateSprite(img);
 	img->RemoveReference();
 	m_sprites[0]->SetPriority(1);
 
-	img = m_app->ImageManager->CreateImage("media/seamless_snow.bmp");
+	img = m_app->ImageManager->CreateImage("media/seamless_snow.jpg");
+	assert(img != nullptr);
 	m_sprites[1] = m_app->SpriteManager->CreateSprite(img);
 	m_sprites[1]->SetPosition(WVector2(100, 100));
 	m_sprites[1]->GetMaterials().SetVariable<float>("alpha", 0.5f);
 	img->RemoveReference();
 	m_sprites[1]->SetPriority(2);
-
 
 	WShader* pixelShader = new CustomSpritePS(m_app);
 	pixelShader->Load();
