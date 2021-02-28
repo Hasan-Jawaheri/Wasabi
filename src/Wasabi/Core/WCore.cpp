@@ -263,7 +263,7 @@ VkInstance Wasabi::CreateVKInstance() {
 	WindowAndInputComponent->GetVulkanRequiredExtensions(enabledExtensions);
 #if (defined(DEBUG) || defined(_DEBUG))
 	if ((bool)engineParams["enableVulkanValidation"])
-		enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+		enabledLayers.push_back("VK_LAYER_KHRONOS_validation");
 	enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
 
