@@ -9,18 +9,18 @@ class WasabiTester : public Wasabi {
 	float fYaw, fPitch, fDist;
 	WVector3 vPos;
 
-	void ApplyMousePivot();
-
 public:
 	WasabiTester();
 	virtual WError Setup();
 	virtual bool Loop(float fDeltaTime);
+	virtual bool PreRenderLoop(float fDeltaTime);
 	virtual void Cleanup();
 
 	void SetCameraPosition(WVector3 pos);
 	void SetZoom(float d);
 	WVector3 GetCameraPosition() const;
 	float GetYawAngle() const;
+	void ApplyMousePivot();
 
 	virtual WError SetupRenderer();
 	virtual WPhysicsComponent* CreatePhysicsComponent();

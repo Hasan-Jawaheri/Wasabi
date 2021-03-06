@@ -68,17 +68,21 @@ int RunWasabi(Wasabi* app) {
 				if (app->WindowAndInputComponent && !app->WindowAndInputComponent->Loop())
 					continue;
 
-				if (deltaTime >= 0.00001f) {
+				if (deltaTime >= W_EPSILON) {
 					if (!app->Loop(deltaTime))
 						break;
 					if (app->curState)
 						app->curState->Update(deltaTime);
 					if (app->PhysicsComponent)
 						app->PhysicsComponent->Step(deltaTime);
+					if (app->AnimationManager)
+						app->AnimationManager->Update(deltaTime);
+					if (!app->PreRenderLoop(deltaTime))
+						break;
+					if (app->curState)
+						app->curState->PreRenderUpdate(deltaTime);
 				}
 
-				if (app->AnimationManager)
-					app->AnimationManager->Update(deltaTime);
 				if (app->Renderer)
 					app->Renderer->Render();
 

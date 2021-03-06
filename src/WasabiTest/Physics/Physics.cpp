@@ -45,15 +45,14 @@ void PhysicsDemo::Load() {
 }
 
 void PhysicsDemo::Update(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
+
 	static bool isDown = false;
 	static bool didDash = true;
 	static WVector3 jumpDirection;
 
 	WasabiTester* app = (WasabiTester*)m_app;
 	WVector3 rbPos = m_ballRB->GetPosition();
-	WVector3 cameraPos = app->GetCameraPosition();
-	if (WVec3LengthSq(rbPos - cameraPos) > 0.1)
-		app->SetCameraPosition(cameraPos + (rbPos - cameraPos) * 10.0f * fDeltaTime);
 
 	WVector3 direction = WVec3TransformNormal(WVector3(0, 0, 1), WRotationMatrixY(W_DEGTORAD(app->GetYawAngle())));
 	WVector3 right = WVec3TransformNormal(WVector3(1, 0, 0), WRotationMatrixY(W_DEGTORAD(app->GetYawAngle())));
@@ -94,7 +93,7 @@ void PhysicsDemo::Update(float fDeltaTime) {
 
 	if (isDirection && isGrounded) {
 		inputDirection = WVec3Normalize(inputDirection);
-		m_ballRB->ApplyForce(inputDirection * 500.0f , WVector3(0.0f, 0.3f, 0.0f));
+		m_ballRB->ApplyForce(inputDirection * 50.0f , WVector3(0.0f, 0.3f, 0.0f));
 	}
 
 	if (m_app->WindowAndInputComponent->KeyDown('R')) {
@@ -102,6 +101,22 @@ void PhysicsDemo::Update(float fDeltaTime) {
 		m_ballRB->SetLinearVelocity(WVector3(0.0f, 0.0f, 0.0f));
 		//m_ballRB->SetAngularVelocity(WVector3(0.0f, 0.0f, 0.0f));
 	}
+}
+
+void PhysicsDemo::PreRenderUpdate(float fDeltaTime) {
+	WasabiTester* app = (WasabiTester*)m_app;
+	WVector3 rbPos = m_ballRB->GetPosition();
+	WVector3 cameraPos = app->GetCameraPosition();
+	if (WVec3LengthSq(rbPos - cameraPos) > W_EPSILON) {
+		const float maxDistanceFromTarget = 2.0f;
+		const float regularFollowSpeed = 5.0f;
+		float distanceToTarget = WVec3Length(rbPos - cameraPos);
+		float followSpeed = distanceToTarget < maxDistanceFromTarget
+			? std::min(regularFollowSpeed * fDeltaTime, distanceToTarget)
+			: std::max(regularFollowSpeed * fDeltaTime, (distanceToTarget - maxDistanceFromTarget));
+		app->SetCameraPosition(cameraPos + WVec3Normalize(rbPos - cameraPos) * followSpeed);
+	}
+	app->ApplyMousePivot();
 }
 
 void PhysicsDemo::Cleanup() {

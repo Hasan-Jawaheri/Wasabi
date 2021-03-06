@@ -134,6 +134,20 @@ public:
 	virtual bool Loop(float fDeltaTime) = 0;
 
 	/**
+	 * This function can be implemented by an application. It is called by the
+	 * engine every frame right before rendering. This is useful to apply
+	 * updates after physics and animation updates (which happen after Loop(),
+	 * but before PreRenderLoop()).
+	 * @param fDeltaTime  The step time for this frame (roughly 1 / FPS)
+	 * @return            If this function returns true, execution continues,
+	 *                    otherwise, the application will exit
+	 */
+	virtual bool PreRenderLoop(float fDeltaTime) {
+		UNREFERENCED_PARAMETER(fDeltaTime);
+		return true;
+	}
+
+	/**
 	 * This function must be implemented by an application. It is called by the
 	 * engine to give the application a last chance to clean up its resources
 	 * before the engine exits.
@@ -352,6 +366,15 @@ public:
 	 * @param fDeltaTime The step time for this frame (roughly 1 / FPS)
 	 */
 	virtual void Update(float fDeltaTime) {
+		UNREFERENCED_PARAMETER(fDeltaTime);
+	}
+
+	/**
+	 * This function is called every frame (right after Wasabi::PreRenderLoop())
+	 * while the state is active.
+	 * @param fDeltaTime The step time for this frame (roughly 1 / FPS)
+	 */
+	virtual void PreRenderUpdate(float fDeltaTime) {
 		UNREFERENCED_PARAMETER(fDeltaTime);
 	}
 

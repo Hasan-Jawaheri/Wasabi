@@ -15,6 +15,7 @@ public:
 
 	virtual void Load();
 	virtual void Update(float fDeltaTime);
+	virtual void PreRenderUpdate(float fDeltaTime);
 	virtual void Cleanup();
 
 	virtual WError SetupRenderer() { return WInitializeForwardRenderer(m_app); }

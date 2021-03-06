@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ LightsDemo
+#define _DEMO_STATE_CLASSNAME_ PhysicsDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo
@@ -104,8 +104,6 @@ WError WasabiTester::Setup() {
 bool WasabiTester::Loop(float fDeltaTime) {
 	UNREFERENCED_PARAMETER(fDeltaTime);
 
-	ApplyMousePivot();
-
 	if (!WindowAndInputComponent->KeyDown(W_KEY_F1)) {
 		char title[128];
 		sprintf_s(title, 128, "FPS: %.2f (Elapsed %.2fs)", FPS, Timer.GetElapsedTime());
@@ -119,6 +117,12 @@ bool WasabiTester::Loop(float fDeltaTime) {
 		WindowAndInputComponent->SetFullScreenState(false);
 	}
 
+	return true;
+}
+
+bool WasabiTester::PreRenderLoop(float fDeltaTime) {
+	UNREFERENCED_PARAMETER(fDeltaTime);
+	ApplyMousePivot();
 	return true;
 }
 
