@@ -9,6 +9,7 @@ class PhysicsDemo : public WTestState {
 	WRigidBody* m_groundRB;
 	WObject* m_ball;
 	WRigidBody* m_ballRB;
+	std::vector<WRigidBody*> m_boxes;
 
 public:
 	PhysicsDemo(Wasabi* const app);

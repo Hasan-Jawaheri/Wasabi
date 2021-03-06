@@ -25,6 +25,18 @@ void PhysicsDemo::Load() {
 	m_groundRB->BindObject(m_ground, m_ground);
 	m_groundRB->Create(W_RIGID_BODY_CREATE_INFO::ForComplexObject(m_ground));
 
+	WGeometry* obstacleGeometry = new WGeometry(m_app);
+	obstacleGeometry->CreateCone(8.0f, 16.0f, 2, 16);
+	for (int i = 0; i < 10; i++) {
+		WObject* boxObject = m_app->ObjectManager->CreateObject();
+		boxObject->SetGeometry(obstacleGeometry);
+		WRigidBody* boxRB = m_app->PhysicsComponent->CreateRigidBody();
+		boxRB->BindObject(boxObject, boxObject);
+		boxRB->Create(W_RIGID_BODY_CREATE_INFO::ForComplexGeometry(obstacleGeometry));
+		boxRB->SetPosition(rand() % 100 - 50.0f, rand() % 10 - 5.0f, rand() % 100 - 50.0f);
+	}
+	obstacleGeometry->RemoveReference();
+
 	WGeometry* ball = new WGeometry(m_app);
 	ball->CreateSphere(1.0f);
 	m_ball = m_app->ObjectManager->CreateObject();

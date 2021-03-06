@@ -113,6 +113,7 @@ MyApplication must implement 3 functions from Wasabi: Setup, Loop and Cleanup:
 
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/particles.png" />
 <img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/ssao.png" />
+<img src="https://github.com/Hasan-Jawaheri/Wasabi/raw/master/gitstuff/physics.png" />
 
 ## Contribution
 
