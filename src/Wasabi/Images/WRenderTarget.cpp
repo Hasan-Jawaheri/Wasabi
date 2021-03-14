@@ -32,7 +32,7 @@ WRenderTarget::WRenderTarget(Wasabi* const app, uint32_t ID) : WBase(app, ID) {
 		m_camera->AddReference();
 
 	m_depthTarget = nullptr;
-	m_renderCmdBuffer = VK_NULL_HANDLE;
+	m_depthFormat = VK_FORMAT_UNDEFINED;
 	m_renderPass = VK_NULL_HANDLE;
 	m_pipelineCache = VK_NULL_HANDLE;
 
@@ -71,7 +71,10 @@ bool WRenderTarget::Valid() const {
 void WRenderTarget::_DestroyResources() {
 	m_app->MemoryManager->ReleaseRenderPass(m_renderPass, m_app->GetCurrentBufferingIndex());
 	m_app->MemoryManager->ReleasePipelineCache(m_pipelineCache, m_app->GetCurrentBufferingIndex());
-	m_app->MemoryManager->ReleaseCommandBuffer(m_renderCmdBuffer, m_app->GetCurrentBufferingIndex());
+	for (auto it = m_renderCmdBuffers.begin(); it != m_renderCmdBuffers.end(); it++)
+		m_app->MemoryManager->ReleaseCommandBuffer(*it, m_app->GetCurrentBufferingIndex());
+	for (auto it = m_renderCmdBufferFences.begin(); it != m_renderCmdBufferFences.end(); it++)
+		m_app->MemoryManager->ReleaseFence(*it, m_app->GetCurrentBufferingIndex());
 	m_bufferedFrameBuffer.Destroy(m_app);
 
 	if (m_depthTarget)
@@ -81,12 +84,38 @@ void WRenderTarget::_DestroyResources() {
 	m_targets.clear();
 }
 
+WError WRenderTarget::_CreateCommandBuffers() {
+	VkDevice device = m_app->GetVulkanDevice();
+
+	uint32_t bufferCount = m_app->GetEngineParam<uint32_t>("bufferingCount");
+	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
+		vkTools::initializers::commandBufferAllocateInfo(
+			m_app->MemoryManager->GetCommandPool(),
+			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			bufferCount);
+
+	m_renderCmdBuffers.resize(bufferCount);
+	VkResult err = vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, m_renderCmdBuffers.data());
+	if (err != VK_SUCCESS)
+		return WError(W_OUTOFMEMORY);
+	
+	VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
+	m_renderCmdBufferFences.resize(bufferCount);
+	for (uint32_t i = 0; i < bufferCount; i++) {
+		err = vkCreateFence(device, &fenceCreateInfo, nullptr, &m_renderCmdBufferFences[i]);
+		if (err != VK_SUCCESS)
+			return WError(W_OUTOFMEMORY);
+	}
+
+	return WError(W_SUCCEEDED);
+}
+
 WError WRenderTarget::Create(uint32_t width, uint32_t height, WImage* target, WImage* depth) {
 	return Create(width, height, vector<WImage*>({ target }), depth);
 }
 
 WError WRenderTarget::Create(uint32_t width, uint32_t height, vector<class WImage*> targets, WImage* depth) {
-	if ((!targets.size() && (!depth || !depth->Valid())) || (depth && !depth->Valid()))
+	if ((targets.empty() && (!depth || !depth->Valid())) || (depth && !depth->Valid()))
 		return WError(W_INVALIDPARAM);
 	for (auto it = targets.begin(); it != targets.end(); it++)
 		if (!(*it) || !(*it)->Valid())
@@ -98,16 +127,10 @@ WError WRenderTarget::Create(uint32_t width, uint32_t height, vector<class WImag
 	_DestroyResources();
 
 	if (m_haveCommandBuffer) {
-		VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-			vkTools::initializers::commandBufferAllocateInfo(
-				m_app->MemoryManager->GetCommandPool(),
-				VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-				1);
-
-		err = vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &m_renderCmdBuffer);
-		if (err != VK_SUCCESS) {
+		WError werr = _CreateCommandBuffers();
+		if (!werr) {
 			_DestroyResources();
-			return WError(W_OUTOFMEMORY);
+			return werr;
 		}
 	}
 
@@ -134,9 +157,11 @@ WError WRenderTarget::Create(uint32_t width, uint32_t height, vector<class WImag
 	attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	// Color attachments
+	m_colorFormats.clear();
 	for (auto it = targets.begin(); it != targets.end(); it++) {
 		attachment.format = (*it)->GetFormat();
 		attachmentDescs.push_back(attachment);
+		m_colorFormats.push_back(attachment.format);
 	}
 
 	if (depth) {
@@ -145,6 +170,7 @@ WError WRenderTarget::Create(uint32_t width, uint32_t height, vector<class WImag
 		attachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		attachmentDescs.push_back(attachment);
+		m_depthFormat = attachment.format;
 	}
 
 	vector<VkAttachmentReference> colorReferences;
@@ -231,16 +257,10 @@ WError WRenderTarget::Create(uint32_t width, uint32_t height, VkImageView* views
 	VkResult err = VK_SUCCESS;
 
 	if (m_haveCommandBuffer) {
-		VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-			vkTools::initializers::commandBufferAllocateInfo(
-				m_app->MemoryManager->GetCommandPool(),
-				VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-				1);
-
-		err = vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &m_renderCmdBuffer);
-		if (err != VK_SUCCESS) {
+		WError werr = _CreateCommandBuffers();
+		if (!werr) {
 			_DestroyResources();
-			return WError(W_OUTOFMEMORY);
+			return werr;
 		}
 	}
 
@@ -267,6 +287,8 @@ WError WRenderTarget::Create(uint32_t width, uint32_t height, VkImageView* views
 	attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	m_colorFormats.resize(1);
+	m_colorFormats[0] = colorFormat;
 
 	// Depth attachment
 	attachments[1].format = depthFormat;
@@ -277,6 +299,7 @@ WError WRenderTarget::Create(uint32_t width, uint32_t height, VkImageView* views
 	attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	attachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 	attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	m_depthFormat = depthFormat;
 
 	VkAttachmentReference colorReference = {};
 	colorReference.attachment = 0;
@@ -331,13 +354,22 @@ WError WRenderTarget::Create(uint32_t width, uint32_t height, VkImageView* views
 }
 
 WError WRenderTarget::Begin() {
-	if (m_renderCmdBuffer != VK_NULL_HANDLE) {
-		VkResult err = vkResetCommandBuffer(m_renderCmdBuffer, 0);
+	VkDevice device = m_app->GetVulkanDevice();
+
+	if (!m_renderCmdBuffers.empty()) {
+		uint32_t bufferingIndex = m_app->Renderer->GetCurrentBufferingIndex();
+		VkResult err = vkWaitForFences(device, 1, &m_renderCmdBufferFences[bufferingIndex], VK_TRUE, std::numeric_limits<uint64_t>::max());
+		if (err == VK_SUCCESS)
+			err = vkResetFences(device, 1, &m_renderCmdBufferFences[bufferingIndex]);
+		else
+			WError(W_ERRORUNK); // fence is not ready yet or can't be reset
+
+		err = vkResetCommandBuffer(m_renderCmdBuffers[bufferingIndex], 0);
 		if (err)
 			return WError(W_ERRORUNK);
 
 		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
-		err = vkBeginCommandBuffer(m_renderCmdBuffer, &cmdBufInfo);
+		err = vkBeginCommandBuffer(m_renderCmdBuffers[bufferingIndex], &cmdBufInfo);
 		if (err)
 			return WError(W_ERRORUNK);
 	}
@@ -392,8 +424,9 @@ WError WRenderTarget::End(bool bSubmit) {
 	if (m_depthTarget)
 		m_depthTarget->TransitionLayoutTo(GetCommnadBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-	if (m_renderCmdBuffer != VK_NULL_HANDLE) {
-		VkResult err = vkEndCommandBuffer(m_renderCmdBuffer);
+	if (!m_renderCmdBuffers.empty()) {
+		uint32_t bufferingIndex = m_app->Renderer->GetCurrentBufferingIndex();
+		VkResult err = vkEndCommandBuffer(m_renderCmdBuffers[bufferingIndex]);
 		if (err)
 			return WError(W_ERRORUNK);
 
@@ -404,27 +437,42 @@ WError WRenderTarget::End(bool bSubmit) {
 	return WError(W_SUCCEEDED);
 }
 
-WError WRenderTarget::Submit(VkSubmitInfo custom_info) {
-	if (!custom_info.pCommandBuffers) {
-		if (m_renderCmdBuffer == VK_NULL_HANDLE)
-			return WError(W_NOTVALID);
+WError WRenderTarget::Submit(VkSubmitInfo submitInfo) {
+	VkFence fence = nullptr;
+
+	if (!m_renderCmdBuffers.empty()) {
+		uint32_t bufferingIndex = m_app->Renderer->GetCurrentBufferingIndex();
+		fence = m_renderCmdBufferFences[bufferingIndex];
 
 		VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		memset(&custom_info, 0, sizeof(VkSubmitInfo));
-		custom_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		custom_info.pWaitDstStageMask = &submitPipelineStages;
-		custom_info.waitSemaphoreCount = 0;
-		custom_info.pWaitSemaphores = nullptr;
-		custom_info.signalSemaphoreCount = 0;
-		custom_info.pSignalSemaphores = nullptr;
-		custom_info.commandBufferCount = 1;
-		custom_info.pCommandBuffers = &m_renderCmdBuffer;
+		memset(&submitInfo, 0, sizeof(VkSubmitInfo));
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pWaitDstStageMask = &submitPipelineStages;
+		submitInfo.waitSemaphoreCount = 0;
+		submitInfo.pWaitSemaphores = nullptr;
+		submitInfo.signalSemaphoreCount = 0;
+		submitInfo.pSignalSemaphores = nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &m_renderCmdBuffers[bufferingIndex];
 	}
 
 	// Submit to queue
-	VkResult err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &custom_info, VK_NULL_HANDLE);
+	VkResult err = vkQueueSubmit(m_app->Renderer->GetQueue(), 1, &submitInfo, fence);
 	if (err)
 		return WError(W_ERRORUNK);
+	
+	/* TODO: THIS SHOULDN'T BE HERE
+	 * This is needed because  currently we support rendering objects using the same
+	 * effect in different render targets. Although this render target's command
+	 * buffers are buffered (and fenced), the resources use (descriptor sets,
+	 * etc...) are being shared between the render target and the main renderer's
+	 * render target which is not allowed by Vulkan.
+	 */
+	if (!m_renderCmdBuffers.empty()) {
+		err = vkQueueWaitIdle(m_app->Renderer->GetQueue());
+		if (err)
+			return WError(W_ERRORUNK);
+	}
 
 	return WError(W_SUCCEEDED);
 }
@@ -456,17 +504,39 @@ VkPipelineCache WRenderTarget::GetPipelineCache() const {
 }
 
 VkCommandBuffer WRenderTarget::GetCommnadBuffer() const {
-	if (m_renderCmdBuffer != VK_NULL_HANDLE)
-		return m_renderCmdBuffer;
+	if (!m_renderCmdBuffers.empty()) {
+		uint32_t bufferingIndex = m_app->Renderer->GetCurrentBufferingIndex();
+		return m_renderCmdBuffers[bufferingIndex];
+	}
 	return m_app->Renderer->GetCurrentPrimaryCommandBuffer();
 }
 
 uint32_t WRenderTarget::GetNumColorOutputs() const {
-	return !Valid() ? 0 : (m_targets.size() == 0 ? 1 : (uint32_t)m_targets.size());
+	return !Valid() ? 0 : (m_targets.empty() ? 1 : (uint32_t)m_targets.size());
 }
 
 bool WRenderTarget::HasDepthOutput() const {
-	return m_depthTarget != nullptr || (Valid() && m_targets.size() == 0);
+	return m_depthTarget != nullptr || (Valid() && m_targets.empty());
+}
+
+WImage* WRenderTarget::GetTarget(uint32_t targetIndex) const {
+	if (targetIndex >= m_targets.size())
+		return nullptr;
+	return m_targets[targetIndex];
+}
+
+WImage* WRenderTarget::GetDepthTarget() const {
+	return m_depthTarget;
+}
+
+VkFormat WRenderTarget::GetTargetFormat(uint32_t targetIndex) const {
+	if (targetIndex >= m_colorFormats.size())
+		return VK_FORMAT_UNDEFINED;
+	return m_colorFormats[targetIndex];
+}
+
+VkFormat WRenderTarget::GetDepthTargetFormat() const {
+	return m_depthFormat;
 }
 
 WCamera* WRenderTarget::GetCamera() const {

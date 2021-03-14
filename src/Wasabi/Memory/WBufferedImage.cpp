@@ -306,6 +306,10 @@ uint32_t WBufferedImage::GetArraySize() const {
 	return m_properties.arraySize;
 }
 
+WBufferedImageProperties WBufferedImage::GetProperties() const {
+	return m_properties;
+}
+
 namespace {
 	std::unordered_map<VkFormat, std::pair<int, int>> g_formatSizes = {
 		{VK_FORMAT_R4G4_UNORM_PACK8, std::make_pair(2, 8)},

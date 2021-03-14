@@ -123,13 +123,13 @@ public:
 	/**
 	 * Submit the command queue (generated between a call to Begin() and End()) to be performed
 	 * by Vulkan.
-	 * @params custom_info  Optional custom VkSubmitInfo structure passed to vkQueueSubmit, this
-	 *                      will be filled automatically if you ignore this argument (or pass a
-	 *                      VkSubmitInfo with pCommandBuffers = NULL. Normally, you should fill
-	 *                      pCommandBuffers with GetCommnadBuffer()
-	 * @return              Error code, see WError.h
+	 * @params submitInfo  Optional custom VkSubmitInfo structure passed to vkQueueSubmit, this
+	 *                     will be filled automatically if you ignore this argument (or pass a
+	 *                     VkSubmitInfo with pCommandBuffers = NULL. Normally, you should fill
+	 *                     pCommandBuffers with GetCommnadBuffer()
+	 * @return             Error code, see WError.h
 	 */
-	WError Submit(VkSubmitInfo custom_info = {});
+	WError Submit(VkSubmitInfo submitInfo = {});
 
 	/**
 	 * Sets the color to use when the render target is cleared upon calling
@@ -182,6 +182,34 @@ public:
 	bool HasDepthOutput() const;
 
 	/**
+	 * Retrieves the color attachment's backing WImage
+	 * @param targetIndex  Index of the color attachment
+	 * @return             Color attachment's backing WImage, or nullptr if none
+	 *                     found at targetIndex
+	 */
+	WImage* GetTarget(uint32_t targetIndex) const;
+
+	/**
+	 * Retrieves the depth attachment's backing WImage.
+	 * @return Depth attachment's backing WImage, or nullptr if none exists
+	 */
+	WImage* GetDepthTarget() const;
+
+	/**
+	 * Retrieves the color attachment's format
+	 * @param targetIndex  Index of the color attachment
+	 * @return             The format of the color attachment, or
+	 *                     VK_FORMAT_UNDEFINED if none found at targetIndex
+	 */
+	VkFormat GetTargetFormat(uint32_t targetIndex) const;
+
+	/**
+	 * Retrieves the depth attachment's format
+	 * @return Depth attachment's format
+	 */
+	VkFormat GetDepthTargetFormat() const;
+
+	/**
 	 * Retrieve the camera for this render target.
 	 * @return Pointer to the camera of this render target
 	 */
@@ -201,14 +229,20 @@ private:
 	WImage* m_depthTarget;
 	/** WImage's backing the frame buffer attachments (if available) */
 	vector<class WImage*> m_targets;
+	/** Depth format used for the depth target used in m_bufferedFrameBuffer */
+	VkFormat m_depthFormat;
+	/** Color formats used for the color attachment targets used in m_bufferedFrameBuffer */
+	std::vector<VkFormat> m_colorFormats;
 	/** Render pass associated with this render target */
 	VkRenderPass m_renderPass;
 	/** A pipeline cache */
 	VkPipelineCache m_pipelineCache;
 	/** Whether or not this render target has an independent command buffer */
 	bool m_haveCommandBuffer;
-	/** The command buffer used for rendering on this render target */
-	VkCommandBuffer m_renderCmdBuffer;
+	/** The command buffers used for rendering on this render target, one per buffering */
+	std::vector<VkCommandBuffer> m_renderCmdBuffers;
+	/** Semaphore to ensure command buffers are done executing on GPU before reusing them */
+	std::vector<VkFence> m_renderCmdBufferFences;
 	/** Clear values to be used by Vulkan */
 	vector<VkClearValue> m_clearValues;
 	/** Width of the render target */
@@ -222,6 +256,11 @@ private:
 	 * Free all the resources allocated by this render target.
 	 */
 	void _DestroyResources();
+
+	/**
+	 * Create command buffers to use for this render target.
+	 */
+	WError _CreateCommandBuffers();
 };
 
 /**

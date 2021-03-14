@@ -8,6 +8,7 @@ class RenderTargetTextureDemo : public WTestState {
 	WLight* l;
 	WRenderTarget* rt;
 	WImage* rtImg;
+	WImage* depthImg;
 
 public:
 	RenderTargetTextureDemo(Wasabi* const app);

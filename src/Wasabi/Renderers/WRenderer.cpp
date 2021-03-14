@@ -113,10 +113,9 @@ WError WRenderer::Initialize() {
 void WRenderer::Render() {
 	// wait for the fence to be signalled (by vkQueueSubmit of the last frame that used this buffer index (m_perBufferResources.curIndex))
 	VkResult err = vkWaitForFences(m_device, 1, &m_perBufferResources.memoryFences[m_perBufferResources.curIndex], VK_TRUE, std::numeric_limits<uint64_t>::max());
-	if (err == VK_SUCCESS) {
+	if (err == VK_SUCCESS)
 		err = vkResetFences(m_device, 1, &m_perBufferResources.memoryFences[m_perBufferResources.curIndex]);
-	}
-	if (err != VK_SUCCESS)
+	else
 		return; // fence is not ready yet or can't be reset
 
 	// allow the memory manager to free any resources pending on this frame, now that the fence is signalled

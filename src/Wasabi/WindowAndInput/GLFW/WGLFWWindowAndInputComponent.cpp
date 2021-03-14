@@ -210,7 +210,7 @@ double WGLFWWindowAndInputComponent::MouseX(W_MOUSEPOSTYPE posT, uint32_t vpID) 
 	if (posT == MOUSEPOS_WINDOW)
 		return mx;
 	else if (posT == MOUSEPOS_VIEWPORT)
-		return mx * m_dpiXScale;
+		return mx;
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
 		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
@@ -227,7 +227,7 @@ double WGLFWWindowAndInputComponent::MouseY(W_MOUSEPOSTYPE posT, uint32_t vpID) 
 	if (posT == MOUSEPOS_WINDOW)
 		return my;
 	else if (posT == MOUSEPOS_VIEWPORT)
-		return my * m_dpiYScale;
+		return my;
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
 		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);
@@ -251,7 +251,7 @@ void WGLFWWindowAndInputComponent::SetMousePosition(double x, double y, W_MOUSEP
 	if (posT == MOUSEPOS_WINDOW)
 		glfwSetCursorPos((GLFWwindow*)m_window, x, y);
 	else if (posT == MOUSEPOS_VIEWPORT)
-		glfwSetCursorPos((GLFWwindow*)m_window, x / m_dpiXScale, y / m_dpiYScale);
+		glfwSetCursorPos((GLFWwindow*)m_window, x, y);
 	else if (posT == MOUSEPOS_DESKTOP) {
 		int wx, wy;
 		glfwGetWindowPos((GLFWwindow*)m_window, &wx, &wy);

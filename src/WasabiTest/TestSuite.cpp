@@ -3,7 +3,7 @@
 /******************************************************************
  *          CHANGE THIS LINE TO CHOOSE THE DEMO TO RUN            *
  ******************************************************************/
-#define _DEMO_STATE_CLASSNAME_ PhysicsDemo
+#define _DEMO_STATE_CLASSNAME_ RenderTargetTextureDemo
  /******************************************************************
  * OPTIONS:
  * - RenderTargetTextureDemo

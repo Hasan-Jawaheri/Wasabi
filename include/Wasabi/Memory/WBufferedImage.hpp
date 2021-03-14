@@ -44,6 +44,7 @@ public:
 	uint32_t GetHeight() const;
 	uint32_t GetDepth() const;
 	uint32_t GetArraySize() const;
+	WBufferedImageProperties GetProperties() const;
 
 private:
 	VkImageAspectFlags m_aspect;
