@@ -79,6 +79,8 @@ void WBulletRigidBody::_DestroyResources() {
 	W_SAFE_DELETE(collisionShape);
 	if (m_savedCreateInfo) {
 		W_SAFE_REMOVEREF(m_savedCreateInfo->geometry);
+		W_SAFE_DELETE_ARRAY(m_savedCreateInfo->vertices);
+		W_SAFE_DELETE_ARRAY(m_savedCreateInfo->indices);
 		W_SAFE_DELETE(m_savedCreateInfo);
 	}
 }
@@ -89,8 +91,9 @@ bool WBulletRigidBody::Valid() const {
 
 WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveInfo) {
 	if (createInfo.mass < 0.0f ||
-		((createInfo.shape == RIGID_BODY_SHAPE_CONVEX || createInfo.shape == RIGID_BODY_SHAPE_MESH) && !createInfo.geometry) ||
-		(createInfo.shape == RIGID_BODY_SHAPE_MESH && createInfo.geometry->GetNumIndices() <= 0 && createInfo.isTriangleList))
+		((createInfo.shape == RIGID_BODY_SHAPE_CONVEX || createInfo.shape == RIGID_BODY_SHAPE_MESH) && !createInfo.geometry &&
+			!(createInfo.vertices && createInfo.indices && createInfo.numTriangles > 0)) ||
+		(createInfo.shape == RIGID_BODY_SHAPE_MESH && createInfo.geometry && createInfo.geometry->GetNumIndices() <= 0 && createInfo.isTriangleList))
 		return WError(W_INVALIDPARAM);
 
 	_DestroyResources();
@@ -117,53 +120,62 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 	{
 		W_VERTEX_DESCRIPTION vertexDesc = createInfo.geometry->GetVertexDescription();
 		size_t stride = vertexDesc.GetSize();
-		uint32_t numVerts = createInfo.geometry->GetNumVertices();
+		uint32_t numVertices = createInfo.geometry->GetNumVertices();
 		size_t posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
 		if (posOffset == std::numeric_limits<size_t>::max())
 			return WError(W_INVALIDPARAM);
 		float* vb = nullptr;
 		createInfo.geometry->MapVertexBuffer((void**)&vb, W_MAP_READ);
-		btScalar* points = new btScalar[numVerts*3];
-		for (uint32_t i = 0; i < numVerts; i++) {
+		btScalar* points = new btScalar[numVertices *3];
+		for (uint32_t i = 0; i < numVertices; i++) {
 			points[i*3 + 0] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 0);
 			points[i*3 + 1] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 4);
 			points[i*3 + 2] = (btScalar)*(float*)((char*)vb + stride * i + posOffset + 8);
 		}
 		createInfo.geometry->UnmapVertexBuffer();
-		m_collisionShape = (void*)new btConvexHullShape(points, numVerts, 3 * sizeof(btScalar));
+		m_collisionShape = (void*)new btConvexHullShape(points, numVertices, 3 * sizeof(btScalar));
 		delete[] points;
 		break;
 	}
 	case RIGID_BODY_SHAPE_MESH:
 	{
-		W_VERTEX_DESCRIPTION vertexDesc = createInfo.geometry->GetVertexDescription();
-		size_t stride = vertexDesc.GetSize();
-		size_t posOffset = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
-		if (posOffset == std::numeric_limits<size_t>::max())
-			return WError(W_INVALIDPARAM);
-		btScalar* points = nullptr;
-		uint32_t* indices = nullptr;
-		createInfo.geometry->MapVertexBuffer((void**)&points, W_MAP_READ);
-		if (createInfo.isTriangleList)
-			createInfo.geometry->MapIndexBuffer((void**)&indices, W_MAP_READ);
+		size_t vertexStride = sizeof(WVector3);
+		size_t posOffsetIntoVertex = 0;
+		uint32_t numTriangles = createInfo.numTriangles;
+		btScalar* points = (btScalar*) createInfo.vertices;
+		uint32_t* indices = createInfo.indices;
 
-		uint32_t num_triangles = createInfo.isTriangleList ? createInfo.geometry->GetNumIndices() / 3 : createInfo.geometry->GetNumVertices() - 2;
+		if (createInfo.geometry) {
+			W_VERTEX_DESCRIPTION vertexDesc = createInfo.geometry->GetVertexDescription();
+			vertexStride = vertexDesc.GetSize();
+			posOffsetIntoVertex = vertexDesc.GetOffset(W_ATTRIBUTE_POSITION.name);
+			numTriangles = createInfo.isTriangleList ? createInfo.geometry->GetNumIndices() / 3 : createInfo.geometry->GetNumVertices() - 2;
+			if (posOffsetIntoVertex == std::numeric_limits<size_t>::max())
+				return WError(W_INVALIDPARAM);
+			createInfo.geometry->MapVertexBuffer((void**)&points, W_MAP_READ);
+			if (createInfo.isTriangleList)
+				createInfo.geometry->MapIndexBuffer((void**)&indices, W_MAP_READ);
+		}
+
 		btTriangleMesh* mesh = new btTriangleMesh(true, false);
-		for (uint32_t tri = 0; tri < num_triangles; tri++) {
+		for (uint32_t tri = 0; tri < numTriangles; tri++) {
 			int i0 = tri, i1 = tri + 1, i2 = tri + 2;
 			if (createInfo.isTriangleList) {
 				i0 = indices[tri * 3 + 0], i1 = indices[tri * 3 + 1], i2 = indices[tri * 3 + 2];
 			}
-			WVector3 t0 = *(WVector3*)((char*)points + (i0 * stride) + posOffset);
-			WVector3 t1 = *(WVector3*)((char*)points + (i1 * stride) + posOffset);
-			WVector3 t2 = *(WVector3*)((char*)points + (i2 * stride) + posOffset);
+			WVector3 t0 = *(WVector3*)((char*)points + (i0 * vertexStride) + posOffsetIntoVertex);
+			WVector3 t1 = *(WVector3*)((char*)points + (i1 * vertexStride) + posOffsetIntoVertex);
+			WVector3 t2 = *(WVector3*)((char*)points + (i2 * vertexStride) + posOffsetIntoVertex);
 			mesh->addTriangle(WBTConvertVec3(t0), WBTConvertVec3(t1), WBTConvertVec3(t2), false);
 		}
 		createInfo.mass = 0.0f;
 		m_collisionShape = (void*)new btBvhTriangleMeshShape(mesh, true);
-		createInfo.geometry->UnmapVertexBuffer();
-		if (createInfo.isTriangleList)
-			createInfo.geometry->UnmapIndexBuffer();
+
+		if (createInfo.geometry) {
+			createInfo.geometry->UnmapVertexBuffer();
+			if (createInfo.isTriangleList)
+				createInfo.geometry->UnmapIndexBuffer();
+		}
 		break;
 	}
 	}
@@ -200,8 +212,18 @@ WError WBulletRigidBody::Create(W_RIGID_BODY_CREATE_INFO createInfo, bool bSaveI
 	if (bSaveInfo) {
 		m_savedCreateInfo = new W_RIGID_BODY_CREATE_INFO(createInfo);
 		m_savedCreateInfo->orientation = nullptr;
+		
 		if (m_savedCreateInfo->geometry)
 			m_savedCreateInfo->geometry->AddReference(); // hold a reference to the geometry
+
+		// create a copy of the provided indices and vertices to allow saving it later on
+		if (m_savedCreateInfo->vertices && m_savedCreateInfo->indices && m_savedCreateInfo->numTriangles > 0) {
+			uint32_t numIndices = m_savedCreateInfo->isTriangleList ? m_savedCreateInfo->numTriangles * 3 : m_savedCreateInfo->numTriangles + 2;
+			m_savedCreateInfo->vertices = new WVector3[m_savedCreateInfo->numVertices];
+			m_savedCreateInfo->indices = new uint32_t[numIndices];
+			memcpy(m_savedCreateInfo->vertices, createInfo.vertices, m_savedCreateInfo->numVertices * sizeof(WVector3));
+			memcpy(m_savedCreateInfo->indices, createInfo.indices, numIndices * sizeof(uint32_t));
+		}
 	}
 
 	return WError(W_SUCCEEDED);
@@ -366,6 +388,11 @@ WError WBulletRigidBody::SaveToStream(class WFile* file, std::ostream& outputStr
 	if (m_savedCreateInfo->geometry)
 		strcpy_s(geometryName, W_MAX_ASSET_NAME_SIZE, m_savedCreateInfo->geometry->GetName().c_str());
 	outputStream.write(geometryName, W_MAX_ASSET_NAME_SIZE);
+	if (m_savedCreateInfo->numVertices) {
+		uint32_t numIndices = m_savedCreateInfo->isTriangleList ? m_savedCreateInfo->numTriangles * 3 : m_savedCreateInfo->numTriangles + 2;
+		outputStream.write((char*)m_savedCreateInfo->vertices, m_savedCreateInfo->numVertices * sizeof(WVector3));
+		outputStream.write((char*)m_savedCreateInfo->indices, numIndices * sizeof(uint32_t));
+	}
 
 	float linDamp = ((btRigidBody*)m_rigidBody)->getLinearDamping();
 	outputStream.write((char*)&linDamp, sizeof(linDamp));
@@ -405,6 +432,14 @@ WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputSt
 	char geometryName[W_MAX_ASSET_NAME_SIZE];
 	inputStream.read(geometryName, W_MAX_ASSET_NAME_SIZE);
 
+	if (info.numVertices) {
+		uint32_t numIndices = info.isTriangleList ? info.numTriangles * 3 : info.numTriangles + 2;
+		info.vertices = new WVector3[info.numVertices];
+		info.indices = new uint32_t[numIndices];
+		inputStream.read((char*)info.vertices, info.numVertices * sizeof(WVector3));
+		inputStream.read((char*)info.indices, numIndices * sizeof(uint32_t));
+	}
+
 	float linDamp, angDamp, bouncePower, mass, friction;
 	WVector3 centerOfMass;
 	inputStream.read((char*)&linDamp, sizeof(linDamp));
@@ -428,6 +463,11 @@ WError WBulletRigidBody::LoadFromStream(class WFile* file, std::istream& inputSt
 
 	Create(info, bSaveInfo);
 	W_SAFE_REMOVEREF(info.geometry);
+
+	if (info.numVertices) {
+		W_SAFE_DELETE_ARRAY(info.vertices);
+		W_SAFE_DELETE_ARRAY(info.indices);
+	}
 
 	return WError(W_SUCCEEDED);
 }

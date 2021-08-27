@@ -100,3 +100,19 @@ W_RIGID_BODY_CREATE_INFO W_RIGID_BODY_CREATE_INFO::ForCone(float height, float r
 	return info;
 }
 
+W_RIGID_BODY_CREATE_INFO W_RIGID_BODY_CREATE_INFO::ForComplexRawGeometry(WVector3* vertices, uint32_t numVertices, uint32_t* indices, uint32_t numTriangles, bool isTriangleList,
+		class WOrientation* orientation, WVector3 pos, WQuaternion rot) {
+	W_RIGID_BODY_CREATE_INFO info = {};
+	info.mass = 0.0f;
+	info.shape = RIGID_BODY_SHAPE_MESH;
+	info.isTriangleList = isTriangleList;
+	info.vertices = vertices;
+	info.indices = indices;
+	info.numVertices = numVertices;
+	info.numTriangles = numTriangles;
+	info.orientation = orientation;
+	info.initialPosition = pos;
+	info.initialRotation = rot;
+	return info;
+}
+

@@ -45,8 +45,16 @@ struct W_RIGID_BODY_CREATE_INFO {
 	WVector3 dimensions;
 	/** An optional geometry object to use (only when shape is _CONVEX) */
 	class WGeometry* geometry;
-	/** If shape is mesh, this is whether the geometry uses triangle list or strip*/
+	/** If shape is mesh, this is whether the geometry uses triangle list or triangle strip*/
 	bool isTriangleList;
+	/** Optional pointer to an array of vertices to create the RB mesh from. Caller is responsible to free */
+	WVector3* vertices;
+	/** Optional pointer to an array of indices to create the RB mesh from (isTriangleList decides if using list or strip). Caller is responsible to free */
+	uint32_t* indices;
+	/** Optional number of vertices used if using vertices and indices */
+	uint32_t numVertices;
+	/** Optional number of triangles used if using vertices and indices */
+	uint32_t numTriangles;
 
 	/** Initial position/orientation */
 	/** Initial position */
@@ -65,6 +73,8 @@ struct W_RIGID_BODY_CREATE_INFO {
 	static W_RIGID_BODY_CREATE_INFO ForCapsule(float height, float radius, float mass, class WOrientation* orientation = nullptr, WVector3 pos = WVector3(), WQuaternion rot = WQuaternion());
 	static W_RIGID_BODY_CREATE_INFO ForCylinder(float height, float radius, float mass, class WOrientation* orientation = nullptr, WVector3 pos = WVector3(), WQuaternion rot = WQuaternion());
 	static W_RIGID_BODY_CREATE_INFO ForCone(float height, float radius, float mass, class WOrientation* orientation = nullptr, WVector3 pos = WVector3(), WQuaternion rot = WQuaternion());
+	static W_RIGID_BODY_CREATE_INFO ForComplexRawGeometry(WVector3* vertices, uint32_t numVertices, uint32_t* indices, uint32_t numTriangles, bool isTriangleList = true, class WOrientation* orientation = nullptr,
+		WVector3 pos = WVector3(), WQuaternion rot = WQuaternion());
 };
 
  /**
